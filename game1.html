@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>字詞 suá 位講看覓</title>
+  <style>
+    body {
+      font-family: 'Microsoft JhengHei', sans-serif;
+      text-align: center;
+      background-color: #d2e8b0;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #33691e;
+    }
+    .option {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 15px;
+      background-color: #fff176;
+      border: 2px solid #fbc02d;
+      border-radius: 10px;
+      cursor: grab;
+    }
+    .dropzone {
+      display: inline-block;
+      width: 100px;
+      min-height: 40px;
+      margin: 5px;
+      padding: 10px;
+      border: 2px dashed #8bc34a;
+      background-color: #f1f8e9;
+      border-radius: 8px;
+    }
+    #answer-area {
+      margin-top: 20px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .cat-left, .cat-right {
+      position: absolute;
+      top: 50%;
+      width: 120px;
+      height: auto;
+      z-index: 10;
+      display: none;
+    }
+    .cat-left {
+      left: -150px;
+    }
+    .cat-right {
+      right: -150px;
+    }
+    @keyframes catLeftMove {
+      0% { left: -150px; }
+      50% { left: 30%; }
+      100% { left: -150px; }
+    }
+    @keyframes catRightMove {
+      0% { right: -150px; }
+      50% { right: 30%; }
+      100% { right: -150px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>字詞 suá 位講看覓</h1>
+  <div id="question"></div>
+  <div id="options"></div>
+  <div id="answer-area"></div>
+  <div id="result"></div>
+  <button id="checkBtn">確認答案</button>
+  <button id="nextBtn">後一條</button>
+
+  <!-- 橘貓動畫圖案 -->
+  <img class="cat-left" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/120px-Cat03.jpg" />
+  <img class="cat-right" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/120px-Cat03.jpg" />
+
+  <!-- 音效 -->
+  <audio id="sound-ready" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+  <audio id="sound-correct" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="sound-wrong" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+
+  <script>
+    const questions = [
+      ["下課", "干焦", "十", "分", "鐘"],
+      ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
+      ["人", "講", "中指", "毋通", "烏白", "比"],
+      ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
+      ["今仔日", "的", "日頭", "真", "猛"],
+      ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
+      ["大水雨", "閣", "拄著", "滇流"],
+      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
+    ];
+
+    let currentQuestionIndex = 0;
+    let current = [];
+    let currentAnswer = [];
+
+    function loadNext(index = 0) {
+      currentQuestionIndex = index % questions.length;
+      const q = questions[currentQuestionIndex];
+      currentAnswer = [...q];
+      current = [...q].sort(() => Math.random() - 0.5);
+
+      document.getElementById("question").textContent = `第 ${currentQuestionIndex + 1} 題，請組合正確句子：`;
+      const options = document.getElementById("options");
+      const answerArea = document.getElementById("answer-area");
+      const resultDiv = document.getElementById("result");
+      options.innerHTML = "";
+      answerArea.innerHTML = "";
+      resultDiv.textContent = "";
+
+      current.forEach(word => {
+        const span = document.createElement("span");
+        span.textContent = word;
+        span.className = "option";
+        span.draggable = true;
+        span.addEventListener("dragstart", e => {
+          e.dataTransfer.setData("text/plain", word);
+        });
+        options.appendChild(span);
+      });
+
+      currentAnswer.forEach(() => {
+        const drop = document.createElement("div");
+        drop.className = "dropzone";
+        drop.addEventListener("dragover", e => e.preventDefault());
+        drop.addEventListener("drop", function(e) {
+          e.preventDefault();
+          const word = e.dataTransfer.getData("text/plain");
+          if (!drop.textContent) {
+            drop.textContent = word;
+          }
+        });
+        drop.addEventListener("click", function() {
+          drop.textContent = "";
+        });
+        answerArea.appendChild(drop);
+      });
+
+      document.getElementById("sound-ready").play();
+    }
+
+    function checkAnswer() {
+      const userAnswer = Array.from(document.querySelectorAll(".dropzone")).map(d => d.textContent);
+      const resultDiv = document.getElementById("result");
+
+      if (JSON.stringify(userAnswer) === JSON.stringify(currentAnswer)) {
+        resultDiv.textContent = "✅ 著！有夠𠢕！";
+        resultDiv.style.color = "green";
+        document.getElementById("sound-correct").play();
+
+        const catLeft = document.querySelector(".cat-left");
+        const catRight = document.querySelector(".cat-right");
+
+        catLeft.style.display = "block";
+        catRight.style.display = "block";
+        catLeft.style.animation = "none";
+        catRight.style.animation = "none";
+        void catLeft.offsetWidth;
+        void catRight.offsetWidth;
+
+        catLeft.style.animation = "catLeftMove 3s linear";
+        catRight.style.animation = "catRightMove 3s linear";
+
+        setTimeout(() => {
+          catLeft.style.display = "none";
+          catRight.style.display = "none";
+        }, 3000);
+      } else {
+        resultDiv.textContent = "❌ 毋著，重來喔！";
+        resultDiv.style.color = "red";
+        document.getElementById("sound-wrong").play();
+      }
+    }
+
+    document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      loadNext(currentQuestionIndex + 1);
+    });
+
+    loadNext(currentQuestionIndex);
+  </script>
+</body>
+</html>
