@@ -1,218 +1,41 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>字詞 suá 位講看覓</title>
+  <title>互動小遊戲選單</title>
   <style>
     body {
-      font-family: sans-serif;
-      margin: 0;
-      height: 100vh;
-      background-color: #dcedc8; /* 清新綠色背景 */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .container {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
       text-align: center;
-      z-index: 10;
+      padding: 50px;
     }
-
     h1 {
-      margin-bottom: 10px;
+      color: #333;
     }
-
-    #instruction {
-      margin-bottom: 20px;
-      font-size: 18px;
+    ul {
+      list-style: none;
+      padding: 0;
     }
-
-    #words {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      min-height: 50px;
-      padding: 10px;
-      background-color: #fff;
-      border: 2px dashed #aaa;
-      margin-bottom: 20px;
+    li {
+      margin: 20px 0;
     }
-
-    .word {
-      background-color: #a5d6a7; /* 草綠色氣泡 */
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: grab;
-      user-select: none;
-      color: #000;
+    a {
+      text-decoration: none;
+      font-size: 1.5em;
+      color: #007acc;
     }
-
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      cursor: pointer;
-    }
-
-    .bee {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background-image: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2dqeGl3eW4yMm1jNzN2Y2N4YWM5MDVuOTRlY290ZDhteGxxemZsNCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/1OrzLUhqBIfiEOTKen/giphy.webp');
-      background-size: contain;
-      background-repeat: no-repeat;
-      animation: fly 15s linear infinite;
-      opacity: 0.8;
-      z-index: 1;
-    }
-
-    @keyframes fly {
-      0%   { top: 5%; left: -70px; transform: rotate(0deg); }
-      25%  { top: 20%; left: 30%; transform: rotate(15deg); }
-      50%  { top: 60%; left: 60%; transform: rotate(-10deg); }
-      75%  { top: 30%; left: 80%; transform: rotate(20deg); }
-      100% { top: 10%; left: 110%; transform: rotate(0deg); }
-    }
-
-    .cat-left, .cat-right {
-      position: absolute;
-      bottom: 0;
-      width: 80px;
-      height: 80px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 2;
-      display: none; /* 預設隱藏 */
-    }
-
-    .cat-left {
-      background-image: url('https://cdn.pixabay.com/photo/2021/12/30/10/53/cat-6903446_1280.png');
-    }
-
-    .cat-right {
-      background-image: url('https://cdn.pixabay.com/photo/2023/04/12/11/01/cat-7919394_1280.png');
-    }
-
-    @keyframes catLeftMove {
-      0%   { left: -100px; }
-      50%  { left: 100%; transform: scaleX(1); }
-      100% { left: -100px; }
-    }
-
-    @keyframes catRightMove {
-      0%   { right: -100px; }
-      50%  { right: 100%; transform: scaleX(-1); }
-      100% { right: -100px; }
+    a:hover {
+      color: #005099;
     }
   </style>
 </head>
 <body>
-  <div class="bee"></div>
-  <div class="cat-left"></div>
-  <div class="cat-right"></div>
-
-  <!-- 音效 -->
-  <audio id="sound-ready" src="https://cdn.pixabay.com/audio/2022/03/15/audio_740d8d538b.mp3"></audio>
-  <audio id="sound-correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_65b1c0d12c.mp3"></audio>
-  <audio id="sound-wrong" src="https://cdn.pixabay.com/audio/2022/03/15/audio_e893b50e2f.mp3"></audio>
-
-  <div class="container">
-    <h1>字詞 suá 位講看覓</h1>
-    <div id="instruction">請共 tsia-ê 語詞 suá 位，tsâinn 做正確 ê 一句話，koh 講看覓：</div>
-    <div id="words"></div>
-    <button onclick="checkAnswer()">確認</button>
-    <button onclick="loadNext()">後一條</button>
-    <div id="result"></div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script>
-    const sentences = [
-      ["下課", "干焦", "十", "分", "鐘"],
-      ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
-      ["人", "講", "中指", "毋通", "烏白", "比"],
-      ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
-      ["今仔日", "的", "日頭", "真", "猛"],
-      ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
-      ["大水雨", "閣", "拄著", "滇流"],
-      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
-    ];
-
-    let currentAnswer = [];
-    const wordsContainer = document.getElementById("words");
-    const resultDiv = document.getElementById("result");
-
-    const sortable = new Sortable(wordsContainer, {
-      animation: 150
-    });
-
-    function shuffle(array) {
-      const copy = [...array];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    }
-
-    function loadNext() {
-      document.getElementById("sound-ready").play();  // 出題音效
-      resultDiv.textContent = "";
-      wordsContainer.innerHTML = "";
-      const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-      currentAnswer = sentence;
-      const shuffled = shuffle(sentence);
-      for (let word of shuffled) {
-        const el = document.createElement("div");
-        el.className = "word";
-        el.textContent = word;
-        wordsContainer.appendChild(el);
-      }
-    }
-
-    function checkAnswer() {
-      const current = Array.from(wordsContainer.children).map(el => el.textContent);
-      if (JSON.stringify(current) === JSON.stringify(currentAnswer)) {
-        resultDiv.textContent = "✅ 著！有夠𠢕！";
-        resultDiv.style.color = "green";
-        document.getElementById("sound-correct").play();
-
-        // 出現貓咪動畫
-        const catLeft = document.querySelector(".cat-left");
-        const catRight = document.querySelector(".cat-right");
-
-        catLeft.style.display = "block";
-        catRight.style.display = "block";
-        catLeft.style.animation = "none";
-        catRight.style.animation = "none";
-        void catLeft.offsetWidth;
-        void catRight.offsetWidth;
-
-        catLeft.style.animation = "catLeftMove 3s linear";
-        catRight.style.animation = "catRightMove 3s linear";
-
-        setTimeout(() => {
-          catLeft.style.display = "none";
-          catRight.style.display = "none";
-        }, 3000);
-      } else {
-        resultDiv.textContent = "❌ 毋著喔！閣試看覓！";
-        resultDiv.style.color = "red";
-        document.getElementById("sound-wrong").play();
-      }
-    }
-
-    loadNext();
-  </script>
+  <h1>🎮 我的互動小遊戲列表</h1>
+  <ul>
+    <li><a href="index.html">🟢 遊戲 1（首頁）</a></li>
+    <li><a href="game2.html">🐝 遊戲 2：字詞 suá 位講看覓</a></li>
+    <!-- 可繼續新增更多遊戲 -->
+  </ul>
 </body>
 </html>
