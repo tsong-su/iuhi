@@ -1,98 +1,120 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>字詞重組遊戲</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台語句子配對遊戲</title>
   <style>
     body {
       font-family: sans-serif;
-      background-color: #f3e8ff;
-      text-align: center;
+      background-color: #f0e6ff;
+      margin: 0;
       padding: 20px;
+      text-align: center;
     }
     h1 {
-      color: #6b21a8;
+      color: #5c4080;
     }
-    .container {
-      max-width: 800px;
-      margin: auto;
+    #question {
+      margin: 20px 0;
+      font-size: 1.2em;
+      color: #333;
     }
-    .word-bank, .answer-zone {
+    #choices, #dropzone {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin: 20px 0;
+      margin: 10px 0;
+      min-height: 60px;
+      border: 2px dashed #ccc;
       padding: 10px;
-      border: 2px dashed #999;
-      min-height: 80px;
-      background-color: white;
+      background-color: #fff;
     }
     .word {
-      padding: 8px 12px;
+      background-color: #d2b4f4;
       margin: 5px;
-      background-color: #ddd6fe;
-      border: 1px solid #6b21a8;
-      border-radius: 5px;
+      padding: 10px 15px;
+      border-radius: 10px;
       cursor: grab;
-      transition: background-color 0.3s;
+      user-select: none;
+      transition: transform 0.2s, background-color 0.2s;
     }
-    .word.dragging {
-      opacity: 0.5;
-      background-color: #facc15;
+    .word:active {
+      transform: scale(1.1);
     }
-    .flash-correct {
-      animation: flash-green 0.6s;
+    .highlight {
+      animation: flash 0.3s ease-in-out;
     }
-    .flash-wrong {
-      animation: flash-red 0.6s;
+    @keyframes flash {
+      0% { background-color: #fff; }
+      50% { background-color: #ffff99; }
+      100% { background-color: #d2b4f4; }
     }
-    @keyframes flash-green {
-      0% { background-color: #4ade80; }
-      100% { background-color: white; }
+    .correct {
+      animation: correctFlash 0.5s ease-in-out;
     }
-    @keyframes flash-red {
-      0% { background-color: #f87171; }
-      100% { background-color: white; }
+    @keyframes correctFlash {
+      0% { background-color: #d2b4f4; }
+      50% { background-color: #aaffaa; }
+      100% { background-color: #d2b4f4; }
+    }
+    .wrong {
+      animation: wrongFlash 0.5s ease-in-out;
+    }
+    @keyframes wrongFlash {
+      0% { background-color: #d2b4f4; }
+      50% { background-color: #ff8888; }
+      100% { background-color: #d2b4f4; }
+    }
+    #controls {
+      margin: 20px 0;
     }
     button {
-      margin: 10px;
-      padding: 8px 16px;
-      background-color: #c084fc;
-      color: white;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1em;
+      background-color: #9e7bb5;
       border: none;
       border-radius: 5px;
+      color: white;
       cursor: pointer;
     }
     button:hover {
-      background-color: #a855f7;
+      background-color: #7a5d9a;
     }
-    .cat {
-      width: 80px;
-      position: absolute;
-      top: 20px;
-      animation: moveCat 1s ease-out forwards;
+    #message {
+      font-size: 1.2em;
+      color: #b22222;
+      margin-top: 10px;
     }
-    @keyframes moveCat {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100vw); }
+    #cat {
+      width: 100px;
+      display: none;
+      margin: 10px auto;
+      animation: slide 1s ease-in-out;
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); opacity: 0; }
+      50% { transform: translateX(50%); opacity: 1; }
+      100% { transform: translateX(0); opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>字詞重組遊戲</h1>
-    <div class="word-bank" id="wordBank"></div>
-    <div class="answer-zone" id="answerZone"></div>
-    <div>
-      <button onclick="checkAnswer()">確認</button>
-      <button onclick="nextQuestion()">下一條</button>
-      <button onclick="resetGame()">重新開始</button>
-    </div>
+  <h1>台語句子配對遊戲</h1>
+  <div id="question">請將正確字詞依序拖曳至下方</div>
+  <div id="choices"></div>
+  <div id="dropzone"></div>
+  <div id="controls">
+    <button onclick="checkAnswer()">確認答案</button>
+    <button onclick="nextQuestion()">下一題</button>
+    <button onclick="shuffleAndRestart()">重新開始</button>
+    <button onclick="goHome()">回到遊戲首頁</button>
   </div>
-
-  <audio id="correctSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_e7886ad63b.mp3"></audio>
-  <audio id="wrongSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_6f597e7724.mp3"></audio>
+  <div id="message"></div>
+  <img id="cat" src="https://media.giphy.com/media/v6aOjy0Qo1fIA/giphy.gif" alt="貓咪動畫">
+  <audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-4.mp3"></audio>
+  <audio id="wrongSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
 
   <script>
     const questions = [
@@ -107,95 +129,99 @@
     ];
 
     let currentIndex = 0;
-    let wrongCount = 0;
+    let mistakeCount = 0;
+    let shuffledIndices = [];
 
-    function shuffle(arr) {
-      return [...arr].sort(() => Math.random() - 0.5);
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
 
-    function loadQuestion() {
-      wrongCount = 0;
-      const wordBank = document.getElementById("wordBank");
-      const answerZone = document.getElementById("answerZone");
-      wordBank.innerHTML = "";
-      answerZone.innerHTML = "";
-      const words = shuffle(questions[currentIndex]);
-      for (let word of words) {
+    function showQuestion() {
+      const container = document.getElementById("choices");
+      const dropzone = document.getElementById("dropzone");
+      const message = document.getElementById("message");
+      const cat = document.getElementById("cat");
+
+      container.innerHTML = "";
+      dropzone.innerHTML = "";
+      message.textContent = "";
+      cat.style.display = "none";
+
+      const question = questions[shuffledIndices[currentIndex]];
+      const shuffledWords = shuffleArray([...question]);
+
+      shuffledWords.forEach(word => {
         const div = document.createElement("div");
         div.className = "word";
-        div.draggable = true;
         div.textContent = word;
+        div.draggable = true;
         div.addEventListener("dragstart", e => {
           e.dataTransfer.setData("text/plain", word);
-          div.classList.add("dragging");
+          div.classList.add("highlight");
         });
-        div.addEventListener("dragend", () => div.classList.remove("dragging"));
-        wordBank.appendChild(div);
-      }
+        container.appendChild(div);
+      });
+
+      dropzone.addEventListener("dragover", e => e.preventDefault());
+      dropzone.addEventListener("drop", e => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData("text/plain");
+        const dragged = Array.from(container.children).find(el => el.textContent === data);
+        if (dragged) {
+          dragged.classList.remove("highlight");
+          dropzone.appendChild(dragged);
+        }
+      });
     }
 
-    const answerZone = document.getElementById("answerZone");
-    answerZone.addEventListener("dragover", e => e.preventDefault());
-    answerZone.addEventListener("drop", e => {
-      e.preventDefault();
-      const word = e.dataTransfer.getData("text/plain");
-      const div = document.createElement("div");
-      div.className = "word";
-      div.textContent = word;
-      div.draggable = true;
-      div.addEventListener("click", () => div.remove());
-      answerZone.appendChild(div);
-    });
-
     function checkAnswer() {
-      const userWords = Array.from(answerZone.children).map(d => d.textContent);
-      const correctWords = questions[currentIndex];
-      const correct = userWords.length === correctWords.length && userWords.every((w, i) => w === correctWords[i]);
-      if (correct) {
-        answerZone.classList.add("flash-correct");
+      const dropzone = document.getElementById("dropzone");
+      const droppedWords = Array.from(dropzone.children).map(div => div.textContent);
+      const correct = questions[shuffledIndices[currentIndex]];
+
+      if (droppedWords.join() === correct.join()) {
+        dropzone.childNodes.forEach(el => el.classList.add("correct"));
         document.getElementById("correctSound").play();
-        showCat();
+        document.getElementById("cat").style.display = "block";
+        document.getElementById("message").textContent = "答對了！好棒喔！";
+        mistakeCount = 0;
       } else {
-        wrongCount++;
-        answerZone.classList.add("flash-wrong");
+        dropzone.childNodes.forEach(el => el.classList.add("wrong"));
         document.getElementById("wrongSound").play();
-        if (wrongCount >= 2) {
-          if (confirm("要看正確答案嗎？")) {
-            answerZone.innerHTML = "";
-            for (let word of questions[currentIndex]) {
-              const div = document.createElement("div");
-              div.className = "word";
-              div.textContent = word;
-              answerZone.appendChild(div);
-            }
-          }
+        mistakeCount++;
+        document.getElementById("message").textContent = "毋著喔，閣試一擺";
+
+        if (mistakeCount >= 2) {
+          document.getElementById("message").textContent += "\n提示答案：" + correct.join(" ");
         }
+
+        // 重排字詞
+        setTimeout(() => {
+          showQuestion();
+        }, 1000);
       }
-      setTimeout(() => {
-        answerZone.classList.remove("flash-correct");
-        answerZone.classList.remove("flash-wrong");
-      }, 600);
     }
 
     function nextQuestion() {
       currentIndex = (currentIndex + 1) % questions.length;
-      loadQuestion();
+      mistakeCount = 0;
+      showQuestion();
     }
 
-    function resetGame() {
+    function shuffleAndRestart() {
+      shuffledIndices = Array.from(Array(questions.length).keys());
+      shuffledIndices = shuffleArray(shuffledIndices);
       currentIndex = 0;
-      loadQuestion();
+      mistakeCount = 0;
+      showQuestion();
     }
 
-    function showCat() {
-      const cat = document.createElement("img");
-      cat.src = "https://cdn-icons-png.flaticon.com/512/2206/2206368.png";
-      cat.className = "cat";
-      document.body.appendChild(cat);
-      setTimeout(() => cat.remove(), 1000);
+    function goHome() {
+      window.location.href = "index.html";
     }
 
-    loadQuestion();
+    // 初始
+    shuffleAndRestart();
   </script>
 </body>
 </html>
