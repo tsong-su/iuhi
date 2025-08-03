@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>字詞重組遊戲</title>
   <style>
     body {
-      background-color: #f3e6ff;
-      font-family: sans-serif;
+      background-color: #f3e8ff;
+      font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
       margin: 0;
       padding: 20px;
@@ -14,184 +14,201 @@
     h1 {
       color: #6a1b9a;
     }
-    #question {
-      font-size: 20px;
-      margin-bottom: 15px;
-    }
-    .words, .answer-box {
+    .word-bank, .answer-area {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      margin: 10px;
-      min-height: 60px;
-      border: 2px dashed #999;
-      padding: 10px;
-      border-radius: 8px;
+      flex-wrap: wrap;
+      margin: 20px auto;
+      min-height: 80px;
     }
     .word {
-      background: #fff;
-      padding: 8px 12px;
-      margin: 5px;
-      border: 1px solid #aaa;
-      border-radius: 6px;
+      background-color: white;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 10px 15px;
+      margin: 8px;
       cursor: grab;
       user-select: none;
-      transition: box-shadow 0.2s ease;
+      transition: transform 0.2s, background-color 0.2s;
     }
-    .word.dragging {
-      box-shadow: 0 0 10px #00bcd4;
+    .word:active {
+      cursor: grabbing;
     }
-    .answer-box.correct {
-      animation: flash-green 0.5s;
+    .word.flash {
+      animation: flash 0.3s;
     }
-    @keyframes flash-green {
+    @keyframes flash {
+      0%, 100% { background-color: white; }
+      50% { background-color: #ffd54f; }
+    }
+    .word.correct {
+      animation: correctFlash 0.6s;
+    }
+    @keyframes correctFlash {
       0% { background-color: #c8e6c9; }
-      100% { background-color: transparent; }
+      50% { background-color: #81c784; }
+      100% { background-color: white; }
     }
-    .controls {
-      margin-top: 15px;
+    .word.wrong {
+      background-color: #ffcdd2 !important;
     }
-    .cat {
-      position: absolute;
-      width: 80px;
-      bottom: 30px;
-      display: none;
-    }
-    #cat-left { left: -100px; }
-    #cat-right { right: -100px; }
-    .show-cat {
-      animation: slide-in 1s forwards;
-    }
-    @keyframes slide-in {
-      to { transform: translateX(120px); }
+    .button-area {
+      margin-top: 30px;
     }
     button {
-      padding: 10px 15px;
-      margin: 5px;
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
       background-color: #9575cd;
       color: white;
-      border: none;
-      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
+    }
+    #cat {
+      display: none;
+      width: 80px;
+      margin: 20px auto;
     }
   </style>
 </head>
 <body>
+  <h1>字詞重組遊戲</h1>
+  <div><strong>請將字詞拖曳至下方正確順序</strong></div>
+  <div class="word-bank" id="wordBank"></div>
+  <div class="answer-area" id="answerArea"></div>
+  <img id="cat" src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="cat" />
+  <div id="feedback" style="font-weight: bold; margin-top: 10px;"></div>
+  <div id="hint" style="margin-top: 15px; color: #d32f2f;"></div>
+  <div class="button-area">
+    <button onclick="checkAnswer()">檢查答案</button>
+    <button onclick="nextQuestion()">下一題</button>
+    <button onclick="restartGame()">重新開始</button>
+  </div>
 
-<h1>字詞重組遊戲</h1>
-<div id="question">請拖曳正確的順序：</div>
+  <!-- 音效 -->
+  <audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2ed2490f19.mp3"></audio>
+  <audio id="wrongSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_fa10e29e09.mp3"></audio>
 
-<div class="words" id="word-bank"></div>
-<div class="answer-box" id="answer-box" ondragover="event.preventDefault()"></div>
+  <script>
+    const questions = [
+      ["下課", "干焦", "十", "分", "鐘"],
+      ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
+      ["人", "講", "中指", "毋通", "烏白", "比"],
+      ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
+      ["今仔日", "的", "日頭", "真", "猛"],
+      ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
+      ["大水雨", "閣", "拄著", "滇流"],
+      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
+    ];
+    let currentIndex = 0;
+    let errorCount = 0;
 
-<div class="controls">
-  <button onclick="nextQuestion()">下一題</button>
-  <button onclick="restartGame()">重新開始</button>
-</div>
+    const wordBank = document.getElementById("wordBank");
+    const answerArea = document.getElementById("answerArea");
+    const feedback = document.getElementById("feedback");
+    const cat = document.getElementById("cat");
+    const hint = document.getElementById("hint");
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
 
-<img src="https://i.imgur.com/OB0y6MR.png" class="cat" id="cat-left">
-<img src="https://i.imgur.com/OB0y6MR.png" class="cat" id="cat-right" style="transform: scaleX(-1);">
+    function shuffle(array) {
+      return array.slice().sort(() => Math.random() - 0.5);
+    }
 
-<audio id="correct-sound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
-<audio id="wrong-sound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
+    function createWordElements(words, container, isDraggable = true) {
+      container.innerHTML = "";
+      words.forEach(word => {
+        const span = document.createElement("span");
+        span.textContent = word;
+        span.className = "word";
+        if (isDraggable) {
+          span.draggable = true;
+          span.addEventListener("dragstart", dragStart);
+        } else {
+          span.addEventListener("dragover", allowDrop);
+          span.addEventListener("drop", drop);
+        }
+        container.appendChild(span);
+      });
+    }
 
-<script>
-const questions = [
-  ["下課", "干焦", "十", "分", "鐘"],
-  ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"], 
-  ["人", "講", "中指", "毋通", "烏白", "比"],
-  ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
-  ["今仔日", "的", "日頭", "真", "猛"],
-  ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
-  ["大水雨", "閣", "拄著", "滇流"],
-  ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
-];
+    function dragStart(e) {
+      e.dataTransfer.setData("text", e.target.textContent);
+      e.target.classList.add("flash");
+    }
 
-let current = 0;
-let wrongCount = 0;
+    function allowDrop(e) {
+      e.preventDefault();
+    }
 
-function shuffle(arr) {
-  return arr.slice().sort(() => Math.random() - 0.5);
-}
+    function drop(e) {
+      e.preventDefault();
+      const draggedText = e.dataTransfer.getData("text");
+      const newSpan = document.createElement("span");
+      newSpan.textContent = draggedText;
+      newSpan.className = "word";
+      newSpan.draggable = true;
+      newSpan.addEventListener("dragstart", dragStart);
+      newSpan.addEventListener("click", () => newSpan.remove());
+      answerArea.appendChild(newSpan);
+    }
 
-function loadQuestion() {
-  const bank = document.getElementById("word-bank");
-  const box = document.getElementById("answer-box");
-  bank.innerHTML = '';
-  box.innerHTML = '';
-  wrongCount = 0;
-  
-  const q = questions[current];
-  shuffle(q).forEach(word => {
-    const el = document.createElement("div");
-    el.className = "word";
-    el.textContent = word;
-    el.draggable = true;
-    el.ondragstart = () => el.classList.add("dragging");
-    el.ondragend = () => el.classList.remove("dragging");
-    el.ondragover = e => e.preventDefault();
-    el.ondrop = () => {};
-    bank.appendChild(el);
-  });
-}
+    function loadQuestion() {
+      const current = questions[currentIndex];
+      createWordElements(shuffle(current), wordBank, true);
+      answerArea.innerHTML = "";
+      feedback.textContent = "";
+      cat.style.display = "none";
+      hint.textContent = "";
+      errorCount = 0;
+    }
 
-document.getElementById("answer-box").addEventListener("drop", e => {
-  e.preventDefault();
-  const dragging = document.querySelector(".dragging");
-  if (dragging && !Array.from(answerBox.children).includes(dragging)) {
-    answerBox.appendChild(dragging);
-  }
-  checkAnswer();
-});
+    function checkAnswer() {
+      const userAnswer = Array.from(answerArea.children).map(el => el.textContent);
+      const correct = questions[currentIndex];
+      if (userAnswer.length !== correct.length) {
+        feedback.textContent = "字數不正確，請檢查是否有遺漏。";
+        return;
+      }
+      if (userAnswer.every((word, idx) => word === correct[idx])) {
+        feedback.textContent = "答對了！";
+        correctSound.play();
+        answerArea.querySelectorAll(".word").forEach(el => el.classList.add("correct"));
+        cat.style.display = "block";
+      } else {
+        feedback.textContent = "答錯了，請再試一次。";
+        wrongSound.play();
+        answerArea.querySelectorAll(".word").forEach(el => el.classList.add("wrong"));
+        setTimeout(() => {
+          answerArea.querySelectorAll(".word").forEach(el => el.classList.remove("wrong"));
+        }, 800);
+        errorCount++;
+        if (errorCount >= 2) {
+          hint.innerHTML = `提示：<button onclick="revealAnswer()">顯示正確答案</button>`;
+        }
+      }
+    }
 
-function checkAnswer() {
-  const box = document.getElementById("answer-box");
-  const answer = questions[current];
-  const user = Array.from(box.children).map(el => el.textContent);
-  if (user.length !== answer.length) return;
+    function revealAnswer() {
+      const correct = questions[currentIndex];
+      answerArea.innerHTML = "";
+      createWordElements(correct, answerArea, false);
+      feedback.textContent = "這是正確答案：";
+    }
 
-  if (user.every((w, i) => w === answer[i])) {
-    document.getElementById("correct-sound").play();
-    box.classList.add("correct");
-    setTimeout(() => box.classList.remove("correct"), 500);
-    animateCats();
-  } else {
-    document.getElementById("wrong-sound").play();
-    wrongCount++;
-    if (wrongCount >= 2) {
-      alert("提示：正確答案是：\n" + answer.join(" "));
-    } else {
-      alert("不正確，請再試一次！");
-      // 回到字詞區讓玩家重新拖曳
+    function nextQuestion() {
+      currentIndex = (currentIndex + 1) % questions.length;
       loadQuestion();
     }
-  }
-}
 
-function nextQuestion() {
-  current = (current + 1) % questions.length;
-  loadQuestion();
-}
+    function restartGame() {
+      currentIndex = 0;
+      loadQuestion();
+    }
 
-function restartGame() {
-  current = 0;
-  loadQuestion();
-}
-
-function animateCats() {
-  const left = document.getElementById("cat-left");
-  const right = document.getElementById("cat-right");
-  left.style.display = right.style.display = "block";
-  left.classList.add("show-cat");
-  right.classList.add("show-cat");
-  setTimeout(() => {
-    left.style.display = right.style.display = "none";
-    left.classList.remove("show-cat");
-    right.classList.remove("show-cat");
-  }, 1200);
-}
-
-loadQuestion();
-</script>
+    // 初始化
+    loadQuestion();
+  </script>
 </body>
 </html>
