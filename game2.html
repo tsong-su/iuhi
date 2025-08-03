@@ -4,23 +4,35 @@
   <meta charset="UTF-8" />
   <title>字詞 suá 位講看覓</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      height: 100vh;
+    /* 重置瀏覽器預設 */
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
       background-color: #dcedc8;
+      font-family: sans-serif;
+    }
+
+    /* 容器置頂置中 */
+    body {
       display: flex;
-      justify-content: center;
-      align-items: flex-start;  /* 置頂 */
-      overflow: hidden;
-      position: relative;
       flex-direction: column;
-      padding-top: 20px; /* 頂部空間 */
+      align-items: center;  /* 水平置中 */
+      justify-content: flex-start; /* 垂直靠頂 */
+      padding-top: 20px; /* 距離頂部空間 */
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
 
     .container {
+      max-width: 480px;
+      width: 100%;
       text-align: center;
       z-index: 10;
+      padding: 0 15px;
     }
 
     h1 {
@@ -42,6 +54,7 @@
       background-color: #fff;
       border: 2px dashed #aaa;
       margin-bottom: 20px;
+      border-radius: 10px;
     }
 
     .word {
@@ -51,12 +64,15 @@
       cursor: grab;
       user-select: none;
       color: #000;
+      font-weight: 600;
+      user-select: none;
     }
 
     #result {
       margin-top: 20px;
       font-weight: bold;
-      font-size: 1.2em;
+      font-size: 1.3em;
+      min-height: 1.5em;
     }
 
     button {
@@ -64,6 +80,14 @@
       font-size: 16px;
       margin: 5px;
       cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background-color: #0288d1;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0277bd;
     }
 
     .bee {
@@ -76,6 +100,8 @@
       animation: fly 15s linear infinite;
       opacity: 0.8;
       z-index: 1;
+      top: 5%;
+      left: -70px;
     }
 
     @keyframes fly {
@@ -99,10 +125,12 @@
 
     .cat-left {
       background-image: url('https://cdn.pixabay.com/photo/2021/12/30/10/53/cat-6903446_1280.png');
+      left: 0;
     }
 
     .cat-right {
       background-image: url('https://cdn.pixabay.com/photo/2023/04/12/11/01/cat-7919394_1280.png');
+      right: 0;
     }
 
     @keyframes catLeftMove {
@@ -118,6 +146,7 @@
     }
 
     .back-btn {
+      display: inline-block;
       margin-top: 30px;
       padding: 10px 20px;
       background-color: #0288d1;
@@ -126,6 +155,10 @@
       text-decoration: none;
       font-size: 16px;
       z-index: 20;
+      transition: background-color 0.3s ease;
+    }
+    .back-btn:hover {
+      background-color: #0277bd;
     }
   </style>
 </head>
@@ -146,7 +179,6 @@
     <button onclick="loadNext()">後一條</button>
     <div id="result"></div>
 
-    <!-- 🔙 回到遊戲首頁按鈕 -->
     <a href="index.html" class="back-btn">🔙 回到遊戲首頁</a>
   </div>
 
