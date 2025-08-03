@@ -1,206 +1,120 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>字詞重組遊戲 - 完整功能版</title>
+  <meta charset="UTF-8">
+  <title>字詞重組遊戲</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Arial", sans-serif;
       background-color: #f3e8ff;
-      margin: 0;
-      padding: 20px;
       text-align: center;
-      position: relative;
-      overflow-x: hidden;
+      padding: 20px;
     }
 
     h1 {
-      color: #4b0082;
-      margin-bottom: 10px;
+      color: #5c3d99;
     }
 
-    #wrongCountDisplay {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: #ffe0e0;
-      padding: 10px 15px;
-      border-radius: 10px;
-      color: #900;
-      font-weight: bold;
-      font-size: 1.1em;
-      user-select: none;
-      z-index: 100;
-    }
-
-    #question {
-      font-size: 1.3em;
-      margin: 20px auto;
-      max-width: 600px;
-      font-weight: bold;
-      color: #333;
-    }
-
-    #wordBank, #answerArea {
-      margin: 10px auto;
-      width: 80%;
-      min-height: 80px;
-      border-radius: 10px;
+    #question-area, #answer-area {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
       justify-content: center;
-      align-items: center;
-      padding: 15px;
-      user-select: none;
-      box-sizing: border-box;
-    }
-
-    #wordBank {
-      background-color: #d9f0d9; /* 淡綠色 */
-      border: 2px solid #7cc47c;
-    }
-
-    #answerArea {
-      background-color: #e6d9ff; /* 淡紫色 */
-      border: 2px solid #9c6ccc;
-      min-height: 100px;
-      cursor: pointer;
+      margin: 20px auto;
+      min-height: 60px;
+      padding: 10px;
+      border: 2px dashed #ccc;
+      background-color: #fff;
+      border-radius: 10px;
     }
 
     .word {
-      background-color: #fff;
-      padding: 12px 20px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      cursor: move;
-      font-size: 1.1em;
+      background-color: #d1c4e9;
+      margin: 5px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      cursor: grab;
       user-select: none;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-      transition: box-shadow 0.3s ease;
-      min-width: 60px;
-      text-align: center;
-    }
-    .word.dragging {
-      animation: flicker 0.5s infinite;
-      opacity: 0.6;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: all 0.2s ease;
     }
 
-    @keyframes flicker {
-      0%, 100% { opacity: 0.6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
-      50% { opacity: 1; box-shadow: 0 6px 18px rgba(0,0,0,0.7); }
+    .word:active {
+      cursor: grabbing;
     }
 
-    #result {
-      font-size: 1.3em;
-      margin: 20px 0;
-      min-height: 1.4em;
-      font-weight: bold;
-      color: #444;
-      white-space: pre-wrap;
-    }
-    /* 答對綠色閃爍 */
-    #result.correct {
-      animation: greenFlash 1.2s ease-in-out 3;
-      color: green;
+    .flash {
+      animation: flash 0.3s ease-in-out;
     }
 
-    @keyframes greenFlash {
-      0%, 100% { color: green; text-shadow: 0 0 5px #6fdb6f; }
-      50% { color: #0a9f0a; text-shadow: 0 0 15px #00ff00; }
+    @keyframes flash {
+      0% { transform: scale(1); background-color: #ffc; }
+      50% { transform: scale(1.1); background-color: #ffd; }
+      100% { transform: scale(1); background-color: #fff; }
+    }
+
+    .correct-flash {
+      animation: correctFlash 0.5s ease-in-out;
+    }
+
+    @keyframes correctFlash {
+      0% { background-color: #c8e6c9; }
+      50% { background-color: #81c784; }
+      100% { background-color: #c8e6c9; }
+    }
+
+    #controls {
+      margin-top: 20px;
     }
 
     button {
-      margin: 10px 15px;
-      padding: 12px 30px;
-      font-size: 1em;
-      border: none;
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
       border-radius: 8px;
-      background-color: #4b0082;
+      border: none;
+      background-color: #9575cd;
       color: white;
       cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background-color: #37006a;
+      background-color: #7e57c2;
     }
 
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      font-size: 1.1em;
-      text-decoration: none;
-      color: #0077cc;
-      user-select: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* 貓咪動畫 */
-    .cat-left, .cat-right {
-      position: fixed;
-      bottom: 0;
-      width: 80px;
-      height: 80px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 9999;
+    #cat {
       display: none;
-      pointer-events: none;
-      user-select: none;
+      width: 100px;
+      margin: 20px auto;
     }
 
-    .cat-left {
-      background-image: url('https://i.imgur.com/MbJFdIb.png');
-      left: -100px;
+    #hint-button {
+      display: none;
     }
 
-    .cat-right {
-      background-image: url('https://i.imgur.com/Z8FtrTf.png');
-      right: -100px;
-    }
-
-    @keyframes catLeftMove {
-      0% { left: -100px; }
-      50% { left: 50%; transform: scaleX(1); }
-      100% { left: -100px; }
-    }
-
-    @keyframes catRightMove {
-      0% { right: -100px; }
-      50% { right: 50%; transform: scaleX(-1); }
-      100% { right: -100px; }
+    #error-count {
+      margin-top: 10px;
+      color: #d32f2f;
     }
   </style>
 </head>
 <body>
   <h1>字詞重組遊戲</h1>
-  <div id="wrongCountDisplay">錯誤次數：0</div>
-  <div id="question">請依序拖曳字詞排列：</div>
-  <div id="wordBank" aria-label="字詞欄"></div>
 
-  <div id="answerArea" aria-label="答案區" tabindex="0" title="拖曳字詞至此，或點擊答案區字詞刪除"></div>
+  <div id="question-area"></div>
+  <div id="answer-area"></div>
+  <div id="error-count"></div>
 
-  <div id="result" aria-live="polite"></div>
+  <img id="cat" src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Cat Animation" />
 
-  <div>
-    <button onclick="checkAnswer()">提交答案</button>
-    <button onclick="restartQuestion()">重新開始</button>
+  <div id="controls">
+    <button onclick="nextQuestion()">下一題</button>
+    <button onclick="restartGame()">重新開始</button>
+    <button id="hint-button" onclick="showCorrectAnswer()">提示正確答案</button>
+    <br>
+    <a href="index.html"><button>回到遊戲首頁</button></a>
   </div>
 
-  <a href="index.html">🔙 回到遊戲首頁</a>
-
-  <!-- 音效 -->
-  <audio id="sound-correct" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3" preload="auto"></audio>
-  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
-
-  <!-- 貓咪動畫元素 -->
-  <div class="cat-left"></div>
-  <div class="cat-right"></div>
+  <audio id="correct-sound" src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_cfe58f48f7.mp3?filename=success-1-6297.mp3"></audio>
+  <audio id="wrong-sound" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
 
   <script>
     const questions = [
@@ -214,212 +128,109 @@
       ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
     ];
 
-    let currentIndex = 0;
-    let wrongCount = 0;
+    let currentQuestion = 0;
+    let errorCount = 0;
 
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
+    const questionArea = document.getElementById("question-area");
+    const answerArea = document.getElementById("answer-area");
+    const cat = document.getElementById("cat");
+    const correctSound = document.getElementById("correct-sound");
+    const wrongSound = document.getElementById("wrong-sound");
+    const errorCountDiv = document.getElementById("error-count");
+    const hintButton = document.getElementById("hint-button");
 
     function loadQuestion() {
-      const wordBank = document.getElementById("wordBank");
-      const answerArea = document.getElementById("answerArea");
-      const result = document.getElementById("result");
-
-      wordBank.innerHTML = "";
+      errorCount = 0;
+      errorCountDiv.textContent = "";
+      hintButton.style.display = "none";
+      cat.style.display = "none";
+      questionArea.innerHTML = "";
       answerArea.innerHTML = "";
-      result.textContent = "";
-      result.classList.remove("correct");
 
-      const scrambled = shuffle([...questions[currentIndex]]);
-      document.getElementById("question").textContent = `請依序拖曳字詞排列：共 ${scrambled.length} 字詞`;
-
-      scrambled.forEach(word => {
+      const shuffled = [...questions[currentQuestion]].sort(() => Math.random() - 0.5);
+      shuffled.forEach(word => {
         const div = document.createElement("div");
         div.textContent = word;
         div.className = "word";
         div.draggable = true;
-
-        div.addEventListener("dragstart", e => {
-          div.classList.add("dragging");
-          e.dataTransfer.setData("text/plain", word);
-        });
-
-        div.addEventListener("dragend", () => div.classList.remove("dragging"));
-
-        wordBank.appendChild(div);
+        div.addEventListener("dragstart", dragStart);
+        questionArea.appendChild(div);
       });
 
-      updateWrongCount();
+      for (let i = 0; i < questions[currentQuestion].length; i++) {
+        const dropBox = document.createElement("div");
+        dropBox.className = "word";
+        dropBox.style.backgroundColor = "#eee";
+        dropBox.style.minWidth = "40px";
+        dropBox.style.minHeight = "30px";
+        dropBox.textContent = "";
+        dropBox.addEventListener("dragover", dragOver);
+        dropBox.addEventListener("drop", drop);
+        answerArea.appendChild(dropBox);
+      }
     }
 
-    // 答案區拖放事件
-    const answerArea = document.getElementById("answerArea");
-    answerArea.addEventListener("dragover", e => e.preventDefault());
-
-    answerArea.addEventListener("drop", e => {
-      e.preventDefault();
-      const word = e.dataTransfer.getData("text/plain");
-
-      // 防止重複放同一字詞
-      const existingWords = Array.from(answerArea.children).map(el => el.textContent);
-      if (existingWords.includes(word)) return;
-
-      const div = document.createElement("div");
-      div.textContent = word;
-      div.className = "word";
-      div.draggable = true;
-
-      // 點擊字詞刪除並放回字詞欄
-      div.addEventListener("click", () => {
-        div.remove();
-        addWordToBank(word);
-      });
-
-      div.addEventListener("dragstart", e => {
-        div.classList.add("dragging");
-        e.dataTransfer.setData("text/plain", word);
-      });
-
-      div.addEventListener("dragend", () => div.classList.remove("dragging"));
-
-      answerArea.appendChild(div);
-      removeWordFromBank(word);
-    });
-
-    // 字詞欄拖放，支援從答案區拖回字詞欄
-    const wordBank = document.getElementById("wordBank");
-    wordBank.addEventListener("dragover", e => e.preventDefault());
-
-    wordBank.addEventListener("drop", e => {
-      e.preventDefault();
-      const word = e.dataTransfer.getData("text/plain");
-
-      // 從答案區移除字詞
-      const answerWords = Array.from(answerArea.children);
-      for (const div of answerWords) {
-        if (div.textContent === word) {
-          div.remove();
-          break;
-        }
-      }
-      addWordToBank(word);
-    });
-
-    function addWordToBank(word) {
-      // 不重複添加
-      const bank = document.getElementById("wordBank");
-      const bankWords = Array.from(bank.children).map(el => el.textContent);
-      if (bankWords.includes(word)) return;
-
-      const div = document.createElement("div");
-      div.textContent = word;
-      div.className = "word";
-      div.draggable = true;
-
-      div.addEventListener("dragstart", e => {
-        div.classList.add("dragging");
-        e.dataTransfer.setData("text/plain", word);
-      });
-
-      div.addEventListener("dragend", () => div.classList.remove("dragging"));
-
-      bank.appendChild(div);
+    function dragStart(e) {
+      e.dataTransfer.setData("text", e.target.textContent);
+      e.target.classList.add("flash");
+      setTimeout(() => e.target.classList.remove("flash"), 300);
     }
 
-    function removeWordFromBank(word) {
-      const bank = document.getElementById("wordBank");
-      const bankWords = Array.from(bank.children);
-      for (const div of bankWords) {
-        if (div.textContent === word) {
-          div.remove();
-          break;
-        }
-      }
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const text = e.dataTransfer.getData("text");
+      e.target.textContent = text;
+      checkAnswer();
     }
 
     function checkAnswer() {
-      const userWords = Array.from(answerArea.children).map(div => div.textContent);
-      const correct = questions[currentIndex];
+      const filled = Array.from(answerArea.children).map(div => div.textContent);
+      if (filled.includes("")) return;
 
-      if (userWords.length !== correct.length) {
-        document.getElementById("result").textContent = "❌ 請將所有字詞拖曳完成再提交。";
-        return;
-      }
-
-      const isCorrect = userWords.every((word, i) => word === correct[i]);
-      const result = document.getElementById("result");
+      const correct = questions[currentQuestion];
+      const isCorrect = filled.every((word, i) => word === correct[i]);
 
       if (isCorrect) {
-        result.textContent = "✅ 答對了！";
-        result.classList.add("correct");
-        wrongCount = 0;
-        updateWrongCount();
-        playCorrectSound();
-        playCatAnimation();
-
-        // 下一題延遲
-        setTimeout(() => {
-          currentIndex = (currentIndex + 1) % questions.length;
-          loadQuestion();
-          result.classList.remove("correct");
-        }, 1800);
+        correctSound.play();
+        Array.from(answerArea.children).forEach(div => {
+          div.classList.add("correct-flash");
+          setTimeout(() => div.classList.remove("correct-flash"), 500);
+        });
+        cat.style.display = "block";
       } else {
-        wrongCount++;
-        updateWrongCount();
-        playWrongSound();
-        let msg = "❌ 答錯了，再試一次。";
-        if (wrongCount >= 2) {
-          msg += "\n💡 提示：是否需要看正確答案？→ " + correct.join(" ");
+        errorCount++;
+        wrongSound.play();
+        errorCountDiv.textContent = `答錯次數：${errorCount}`;
+        if (errorCount >= 2) {
+          hintButton.style.display = "inline-block";
         }
-        result.textContent = msg;
       }
     }
 
-    function updateWrongCount() {
-      document.getElementById("wrongCountDisplay").textContent = `錯誤次數：${wrongCount}`;
-    }
-
-    function restartQuestion() {
-      wrongCount = 0;
-      updateWrongCount();
+    function nextQuestion() {
+      currentQuestion = (currentQuestion + 1) % questions.length;
       loadQuestion();
     }
 
-    // 音效
-    const soundCorrect = document.getElementById("sound-correct");
-    const soundWrong = document.getElementById("sound-wrong");
-
-    function playCorrectSound() {
-      soundCorrect.currentTime = 0;
-      soundCorrect.play();
-    }
-    function playWrongSound() {
-      soundWrong.currentTime = 0;
-      soundWrong.play();
+    function restartGame() {
+      currentQuestion = 0;
+      loadQuestion();
     }
 
-    // 貓咪動畫
-    const catLeft = document.querySelector('.cat-left');
-    const catRight = document.querySelector('.cat-right');
-
-    function playCatAnimation() {
-      catLeft.style.display = 'block';
-      catRight.style.display = 'block';
-
-      catLeft.style.animation = 'catLeftMove 2s ease forwards';
-      catRight.style.animation = 'catRightMove 2s ease forwards';
-
-      // 結束後隱藏貓咪
-      setTimeout(() => {
-        catLeft.style.display = 'none';
-        catRight.style.display = 'none';
-        catLeft.style.animation = '';
-        catRight.style.animation = '';
-      }, 2100);
+    function showCorrectAnswer() {
+      const correct = questions[currentQuestion];
+      Array.from(answerArea.children).forEach((div, i) => {
+        div.textContent = correct[i];
+        div.classList.add("correct-flash");
+        setTimeout(() => div.classList.remove("correct-flash"), 500);
+      });
     }
 
-    loadQuestion();
+    window.onload = loadQuestion;
   </script>
 </body>
 </html>
