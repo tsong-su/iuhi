@@ -12,14 +12,17 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      position: relative;
       flex-direction: column; /* 讓內容垂直排列 */
+      /* overflow: hidden; 取消此行，讓頁面可滑動 */
+      overflow: auto;
+      position: relative;
     }
 
     .container {
       text-align: center;
       z-index: 10;
+      max-width: 600px;
+      width: 90%;
     }
 
     h1 {
@@ -41,6 +44,7 @@
       background-color: #fff;
       border: 2px dashed #aaa;
       margin-bottom: 20px;
+      border-radius: 8px;
     }
 
     .word {
@@ -50,12 +54,14 @@
       cursor: grab;
       user-select: none;
       color: #000;
+      user-select: none;
     }
 
     #result {
       margin-top: 20px;
       font-weight: bold;
       font-size: 1.2em;
+      min-height: 1.5em;
     }
 
     button {
@@ -63,6 +69,14 @@
       font-size: 16px;
       margin: 5px;
       cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background-color: #4caf50;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #388e3c;
     }
 
     .bee {
@@ -75,6 +89,8 @@
       animation: fly 15s linear infinite;
       opacity: 0.8;
       z-index: 1;
+      top: 5%;
+      left: -70px;
     }
 
     @keyframes fly {
@@ -116,16 +132,17 @@
       100% { right: -100px; }
     }
 
-    /* 新增底部回首頁按鈕容器 */
+    /* 底部回首頁按鈕 */
     .back-home {
-      margin-top: 40px;
-      z-index: 10;
-      text-align: center;
+      position: fixed;
+      bottom: 20px;
       width: 100%;
+      text-align: center;
+      z-index: 100;
     }
     .back-home a {
       display: inline-block;
-      padding: 10px 20px;
+      padding: 10px 25px;
       background-color: #007acc;
       color: white;
       text-decoration: none;
@@ -153,7 +170,6 @@
     <div id="result"></div>
   </div>
 
-  <!-- 底部回首頁按鈕 -->
   <div class="back-home">
     <a href="index.html">🔙 回到遊戲首頁</a>
   </div>
@@ -189,7 +205,7 @@
     }
 
     function loadNext() {
-      document.getElementById("sound-ready").play();  // 出題音效
+      document.getElementById("sound-ready")?.play?.();  // 出題音效 (有就播)
       resultDiv.textContent = "";
       wordsContainer.innerHTML = "";
       const sentence = sentences[Math.floor(Math.random() * sentences.length)];
@@ -208,7 +224,7 @@
       if (JSON.stringify(current) === JSON.stringify(currentAnswer)) {
         resultDiv.textContent = "✅ 著！有夠𠢕！";
         resultDiv.style.color = "green";
-        document.getElementById("sound-correct").play();
+        document.getElementById("sound-correct")?.play?.();
 
         // 出現貓咪動畫
         const catLeft = document.querySelector(".cat-left");
@@ -231,10 +247,11 @@
       } else {
         resultDiv.textContent = "❌ 毋著喔！閣試看覓！";
         resultDiv.style.color = "red";
-        document.getElementById("sound-wrong").play();
+        document.getElementById("sound-wrong")?.play?.();
       }
     }
 
+    // 首次載入題目
     loadNext();
   </script>
 </body>
