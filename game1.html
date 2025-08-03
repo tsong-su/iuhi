@@ -10,8 +10,8 @@
       font-family: "Noto Sans TC", sans-serif;
       background-color: #e6e0f8; /* 淺紫色背景 */
       display: flex;
-      justify-content: center; /* 水平置中 */
-      align-items: flex-start; /* 置頂 */
+      justify-content: center;
+      align-items: flex-start;
       padding-top: 20px;
       user-select: none;
       overflow-x: hidden;
@@ -153,7 +153,7 @@
       user-select: none;
       transition: background-color 0.3s ease;
       flex: 1;
-      min-width: 120px;
+      min-width: 100px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     button:hover {
@@ -192,6 +192,7 @@
     <div class="btn-container">
       <button id="check-btn">確認答案</button>
       <button id="restart-btn">重新開始</button>
+      <button id="next-btn">下一條</button>
     </div>
 
     <div class="back-home">
@@ -225,6 +226,7 @@
     const resultDiv = document.getElementById("result");
     const checkBtn = document.getElementById("check-btn");
     const restartBtn = document.getElementById("restart-btn");
+    const nextBtn = document.getElementById("next-btn");
 
     let currentQuestion = [];
     let currentAnswer = [];
@@ -242,30 +244,40 @@
       return arr.slice().sort(() => Math.random() - 0.5);
     }
 
-    function loadNext() {
-      wrongCount = 0;
-      resultDiv.textContent = "";
-      answerArea.innerHTML = "";
+    function populateOptions(words) {
       optionsDiv.innerHTML = "";
-
-      currentQuestion = questions[Math.floor(Math.random() * questions.length)];
-      currentAnswer = currentQuestion;
-
-      const shuffledOptions = shuffle(currentQuestion);
-
-      // 產生可拖曳選項（上方）
-      shuffledOptions.forEach(word => {
+      words.forEach(word => {
         const span = document.createElement("span");
         span.className = "option";
         span.textContent = word;
         span.draggable = true;
-
         span.addEventListener("dragstart", e => {
           e.dataTransfer.setData("text/plain", word);
         });
-
         optionsDiv.appendChild(span);
       });
+    }
+
+    function loadQuestion(words) {
+      currentQuestion = words;
+      currentAnswer = words;
+
+      answerArea.innerHTML = "";
+      resultDiv.textContent = "";
+      wrongCount = 0;
+
+      populateOptions(shuffle(words));
+    }
+
+    function restartCurrent() {
+      // 將答案區文字全部移回選項區
+      const answerWords = [...answerArea.children].map(span => span.textContent);
+      const allWords = [...answerWords, ...[...optionsDiv.children].map(span => span.textContent)];
+      // 重新洗牌放回選項區
+      populateOptions(shuffle(allWords));
+      answerArea.innerHTML = "";
+      resultDiv.textContent = "";
+      wrongCount = 0;
     }
 
     // 答案區允許放字詞，且字詞可拖回選項區
@@ -300,13 +312,13 @@
       // 點擊可移除字詞（移回選項區）
       answerSpan.addEventListener("click", () => {
         answerArea.removeChild(answerSpan);
-        optionsDiv.appendChild(answerSpan);
+        populateOptions(shuffle([...optionsDiv.children].map(s => s.textContent).concat(word)));
       });
 
       answerArea.appendChild(answerSpan);
     });
 
-    // 讓選項區也允許拖回字詞（從答案區拖回）
+    // 選項區允許拖回字詞（從答案區拖回）
     optionsDiv.addEventListener("dragover", e => e.preventDefault());
 
     optionsDiv.addEventListener("drop", e => {
@@ -380,11 +392,15 @@
     });
 
     restartBtn.addEventListener("click", () => {
-      loadNext();
+      restartCurrent();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      const newQuestion = questions[Math.floor(Math.random() * questions.length)];
+      loadQuestion(newQuestion);
     });
 
     function showAnswer() {
-      // 清空區域
       optionsDiv.innerHTML = "";
       answerArea.innerHTML = "";
       resultDiv.textContent = "";
@@ -397,7 +413,8 @@
       });
     }
 
-    loadNext();
+    // 初始載入一題
+    loadQuestion(questions[Math.floor(Math.random() * questions.length)]);
   </script>
 </body>
 </html>
