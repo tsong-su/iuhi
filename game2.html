@@ -1,38 +1,119 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>遊戲 2：字詞 suá 位講看覓</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #e8f5e9;
+      font-family: "Arial", sans-serif;
+      background-color: #e0f2f1;
+      padding: 20px;
       text-align: center;
-      padding: 50px;
     }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
     h1 {
-      color: #388e3c;
+      font-size: 24px;
+      color: #00796b;
     }
-    .btn-back {
-      display: inline-block;
-      margin-top: 50px;
-      padding: 10px 20px;
-      background-color: #007acc;
-      color: white;
-      text-decoration: none;
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: #ffecb3;
+      margin: 10px;
+      padding: 15px;
+      font-size: 18px;
       border-radius: 8px;
-      font-size: 1.2em;
+      cursor: move;
     }
-    .btn-back:hover {
-      background-color: #005099;
+
+    #drop-area {
+      border: 2px dashed #00796b;
+      padding: 20px;
+      margin-top: 20px;
+      min-height: 100px;
+      background: #f1f8e9;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #d32f2f;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: #0288d1;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h1>🐝 遊戲 2：字詞 suá 位講看覓</h1>
-  <p>這是你的第二個互動遊戲，可以加入聲音、圖片或其他互動元素。</p>
+  <div class="container">
+    <h1>🐝 遊戲 2：字詞 suá 位講看覓</h1>
+    <p>這是你的第二個互動遊戲，可以加入聲音、圖片或其他互動元素。</p>
 
-  <!-- 回首頁按鈕 -->
-  <a href="index.html" class="btn-back">🔙 回到遊戲首頁</a>
+    <ul id="sortable">
+      <li draggable="true">我</li>
+      <li draggable="true">是</li>
+      <li draggable="true">蜂</li>
+    </ul>
+
+    <div id="drop-area">把字詞依正確順序拖曳到這裡</div>
+
+    <div id="result"></div>
+
+    <!-- 回到首頁按鈕 -->
+    <a href="index.html" class="back-button">🔙 回到遊戲首頁</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>
+    const sortable = new Sortable(document.getElementById('sortable'), {
+      animation: 150
+    });
+
+    const dropArea = document.getElementById('drop-area');
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.background = '#dcedc8';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.background = '#f1f8e9';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.style.background = '#f1f8e9';
+
+      const items = document.querySelectorAll('#sortable li');
+      let resultText = "";
+      items.forEach(item => {
+        resultText += item.textContent + " ";
+      });
+
+      document.getElementById('result').textContent = "你組成的句子是：「" + resultText.trim() + "」";
+    });
+  </script>
 </body>
 </html>
+加入返回首頁按鈕
