@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>字詞重組遊戲 - 調整布局版</title>
+  <title>字詞重組遊戲 - 完整功能版</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,6 +10,8 @@
       margin: 0;
       padding: 20px;
       text-align: center;
+      position: relative;
+      overflow-x: hidden;
     }
 
     h1 {
@@ -80,8 +82,14 @@
       text-align: center;
     }
     .word.dragging {
-      opacity: 0.5;
+      animation: flicker 0.5s infinite;
+      opacity: 0.6;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 0.6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+      50% { opacity: 1; box-shadow: 0 6px 18px rgba(0,0,0,0.7); }
     }
 
     #result {
@@ -91,6 +99,16 @@
       font-weight: bold;
       color: #444;
       white-space: pre-wrap;
+    }
+    /* 答對綠色閃爍 */
+    #result.correct {
+      animation: greenFlash 1.2s ease-in-out 3;
+      color: green;
+    }
+
+    @keyframes greenFlash {
+      0%, 100% { color: green; text-shadow: 0 0 5px #6fdb6f; }
+      50% { color: #0a9f0a; text-shadow: 0 0 15px #00ff00; }
     }
 
     button {
@@ -121,6 +139,42 @@
     a:hover {
       text-decoration: underline;
     }
+
+    /* 貓咪動畫 */
+    .cat-left, .cat-right {
+      position: fixed;
+      bottom: 0;
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: 9999;
+      display: none;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .cat-left {
+      background-image: url('https://i.imgur.com/MbJFdIb.png');
+      left: -100px;
+    }
+
+    .cat-right {
+      background-image: url('https://i.imgur.com/Z8FtrTf.png');
+      right: -100px;
+    }
+
+    @keyframes catLeftMove {
+      0% { left: -100px; }
+      50% { left: 50%; transform: scaleX(1); }
+      100% { left: -100px; }
+    }
+
+    @keyframes catRightMove {
+      0% { right: -100px; }
+      50% { right: 50%; transform: scaleX(-1); }
+      100% { right: -100px; }
+    }
   </style>
 </head>
 <body>
@@ -139,6 +193,14 @@
   </div>
 
   <a href="index.html">🔙 回到遊戲首頁</a>
+
+  <!-- 音效 -->
+  <audio id="sound-correct" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3" preload="auto"></audio>
+  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
+
+  <!-- 貓咪動畫元素 -->
+  <div class="cat-left"></div>
+  <div class="cat-right"></div>
 
   <script>
     const questions = [
@@ -167,6 +229,7 @@
       wordBank.innerHTML = "";
       answerArea.innerHTML = "";
       result.textContent = "";
+      result.classList.remove("correct");
 
       const scrambled = shuffle([...questions[currentIndex]]);
       document.getElementById("question").textContent = `請依序拖曳字詞排列：共 ${scrambled.length} 字詞`;
@@ -190,14 +253,16 @@
       updateWrongCount();
     }
 
-    document.getElementById("answerArea").addEventListener("dragover", e => e.preventDefault());
+    // 答案區拖放事件
+    const answerArea = document.getElementById("answerArea");
+    answerArea.addEventListener("dragover", e => e.preventDefault());
 
-    document.getElementById("answerArea").addEventListener("drop", e => {
+    answerArea.addEventListener("drop", e => {
       e.preventDefault();
       const word = e.dataTransfer.getData("text/plain");
 
-      // 檢查答案區是否已有此字詞，若有則不重複添加
-      const existingWords = Array.from(document.getElementById("answerArea").children).map(el => el.textContent);
+      // 防止重複放同一字詞
+      const existingWords = Array.from(answerArea.children).map(el => el.textContent);
       if (existingWords.includes(word)) return;
 
       const div = document.createElement("div");
@@ -205,31 +270,30 @@
       div.className = "word";
       div.draggable = true;
 
-      // 點擊可移除字詞，並回到字詞欄
+      // 點擊字詞刪除並放回字詞欄
       div.addEventListener("click", () => {
         div.remove();
         addWordToBank(word);
       });
 
-      // 拖曳可移除字詞
       div.addEventListener("dragstart", e => {
         div.classList.add("dragging");
         e.dataTransfer.setData("text/plain", word);
       });
+
       div.addEventListener("dragend", () => div.classList.remove("dragging"));
 
-      document.getElementById("answerArea").appendChild(div);
-
-      // 移除字詞欄該字詞
+      answerArea.appendChild(div);
       removeWordFromBank(word);
     });
 
-    // 支援從答案區拖回字詞欄
-    document.getElementById("wordBank").addEventListener("dragover", e => e.preventDefault());
-    document.getElementById("wordBank").addEventListener("drop", e => {
+    // 字詞欄拖放，支援從答案區拖回字詞欄
+    const wordBank = document.getElementById("wordBank");
+    wordBank.addEventListener("dragover", e => e.preventDefault());
+
+    wordBank.addEventListener("drop", e => {
       e.preventDefault();
       const word = e.dataTransfer.getData("text/plain");
-      const answerArea = document.getElementById("answerArea");
 
       // 從答案區移除字詞
       const answerWords = Array.from(answerArea.children);
@@ -243,7 +307,7 @@
     });
 
     function addWordToBank(word) {
-      // 確保不重複添加
+      // 不重複添加
       const bank = document.getElementById("wordBank");
       const bankWords = Array.from(bank.children).map(el => el.textContent);
       if (bankWords.includes(word)) return;
@@ -257,6 +321,7 @@
         div.classList.add("dragging");
         e.dataTransfer.setData("text/plain", word);
       });
+
       div.addEventListener("dragend", () => div.classList.remove("dragging"));
 
       bank.appendChild(div);
@@ -274,7 +339,7 @@
     }
 
     function checkAnswer() {
-      const userWords = Array.from(document.getElementById("answerArea").children).map(div => div.textContent);
+      const userWords = Array.from(answerArea.children).map(div => div.textContent);
       const correct = questions[currentIndex];
 
       if (userWords.length !== correct.length) {
@@ -283,24 +348,31 @@
       }
 
       const isCorrect = userWords.every((word, i) => word === correct[i]);
+      const result = document.getElementById("result");
 
       if (isCorrect) {
-        document.getElementById("result").textContent = "✅ 答對了！";
+        result.textContent = "✅ 答對了！";
+        result.classList.add("correct");
         wrongCount = 0;
         updateWrongCount();
-        // 答對音效和動畫可加在這裡
+        playCorrectSound();
+        playCatAnimation();
+
+        // 下一題延遲
         setTimeout(() => {
           currentIndex = (currentIndex + 1) % questions.length;
           loadQuestion();
-        }, 1500);
+          result.classList.remove("correct");
+        }, 1800);
       } else {
         wrongCount++;
         updateWrongCount();
+        playWrongSound();
         let msg = "❌ 答錯了，再試一次。";
-        if (wrongCount >= 3) {
+        if (wrongCount >= 2) {
           msg += "\n💡 提示：是否需要看正確答案？→ " + correct.join(" ");
         }
-        document.getElementById("result").textContent = msg;
+        result.textContent = msg;
       }
     }
 
@@ -314,7 +386,39 @@
       loadQuestion();
     }
 
-    // 初始載入題目
+    // 音效
+    const soundCorrect = document.getElementById("sound-correct");
+    const soundWrong = document.getElementById("sound-wrong");
+
+    function playCorrectSound() {
+      soundCorrect.currentTime = 0;
+      soundCorrect.play();
+    }
+    function playWrongSound() {
+      soundWrong.currentTime = 0;
+      soundWrong.play();
+    }
+
+    // 貓咪動畫
+    const catLeft = document.querySelector('.cat-left');
+    const catRight = document.querySelector('.cat-right');
+
+    function playCatAnimation() {
+      catLeft.style.display = 'block';
+      catRight.style.display = 'block';
+
+      catLeft.style.animation = 'catLeftMove 2s ease forwards';
+      catRight.style.animation = 'catRightMove 2s ease forwards';
+
+      // 結束後隱藏貓咪
+      setTimeout(() => {
+        catLeft.style.display = 'none';
+        catRight.style.display = 'none';
+        catLeft.style.animation = '';
+        catRight.style.animation = '';
+      }, 2100);
+    }
+
     loadQuestion();
   </script>
 </body>
