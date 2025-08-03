@@ -7,74 +7,87 @@
     body {
       font-family: Arial, sans-serif;
       background-color: #f3e8ff;
-      text-align: center;
-      margin: 0;
       padding: 20px;
+      text-align: center;
     }
     h1 {
       color: #4b0082;
     }
     #question {
-      font-size: 1.5em;
       margin: 20px 0;
+      font-size: 1.2em;
     }
     #wordBank, #answerArea {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
-      gap: 10px;
-      margin: 15px auto;
+      justify-content: center;
       min-height: 60px;
+      margin: 15px auto;
+      padding: 10px;
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      background-color: #fff;
+      width: 80%;
     }
     .word {
-      background-color: #fff;
       padding: 10px 15px;
-      border: 2px solid #ccc;
+      margin: 5px;
+      background-color: #ffecb3;
       border-radius: 8px;
-      cursor: move;
+      cursor: grab;
+      font-size: 1.1em;
       user-select: none;
     }
     .word.dragging {
       opacity: 0.5;
+      animation: blink 0.5s linear infinite;
     }
-    #result {
-      font-size: 1.2em;
-      margin: 20px;
-    }
-    #wrongCountDisplay {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: #ffe0e0;
-      padding: 10px;
-      border-radius: 10px;
-      color: #900;
-      font-weight: bold;
+    #controls {
+      margin-top: 20px;
     }
     button {
-      margin: 10px;
-      padding: 10px 20px;
+      padding: 10px 15px;
+      margin: 5px;
       font-size: 1em;
+      background-color: #9370db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #0077cc;
+    button:hover {
+      background-color: #7a5bc2;
+    }
+
+    .correct-flash {
+      animation: correctFlash 0.8s ease-in-out;
+    }
+
+    @keyframes blink {
+      0% { background-color: #fff; }
+      50% { background-color: #ffecb3; }
+      100% { background-color: #fff; }
+    }
+
+    @keyframes correctFlash {
+      0% { background-color: #d4edda; }
+      50% { background-color: #c3e6cb; }
+      100% { background-color: transparent; }
     }
   </style>
 </head>
 <body>
   <h1>字詞重組遊戲</h1>
-  <div id="wrongCountDisplay">錯誤次數：0</div>
-  <div id="question"></div>
-  <div id="wordBank"></div>
-  <hr style="width:60%; margin: 20px auto;">
-  <div id="answerArea"></div>
-  <div id="result"></div>
-  <button onclick="checkAnswer()">提交答案</button>
-  <button onclick="restartQuestion()">重新開始</button>
-  <a href="index.html">🔙 回到遊戲首頁</a>
+  <div id="question">請將字詞拖曳到下方，組成正確句子</div>
+  <div id="wordBank" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+  <div id="answerArea" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+  <div id="controls">
+    <button onclick="checkAnswer()">確認答案</button>
+    <button onclick="nextQuestion()">下一題</button>
+    <button onclick="resetGame()">重新開始</button>
+    <button onclick="location.href='index.html'">回到遊戲首頁</button>
+  </div>
+  <p id="feedback"></p>
 
   <script>
     const questions = [
@@ -89,97 +102,90 @@
     ];
 
     let currentIndex = 0;
-    let wrongCount = 0;
-
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
 
     function loadQuestion() {
       const wordBank = document.getElementById("wordBank");
       const answerArea = document.getElementById("answerArea");
-      const result = document.getElementById("result");
-
+      const feedback = document.getElementById("feedback");
       wordBank.innerHTML = "";
       answerArea.innerHTML = "";
-      result.textContent = "";
+      feedback.textContent = "";
+      document.getElementById("answerArea").classList.remove("correct-flash");
 
-      const scrambled = shuffle([...questions[currentIndex]]);
-      document.getElementById("question").textContent = `請依序拖曳字詞排列：共 ${scrambled.length} 字詞`;
-
-      scrambled.forEach(word => {
-        const div = document.createElement("div");
-        div.textContent = word;
-        div.className = "word";
-        div.draggable = true;
-
-        div.addEventListener("dragstart", e => {
-          div.classList.add("dragging");
-          e.dataTransfer.setData("text/plain", word);
-        });
-
-        div.addEventListener("dragend", () => div.classList.remove("dragging"));
-
-        wordBank.appendChild(div);
+      const words = [...questions[currentIndex]];
+      shuffleArray(words);
+      words.forEach((word, index) => {
+        const span = document.createElement("span");
+        span.textContent = word;
+        span.className = "word";
+        span.draggable = true;
+        span.id = `word-${index}`;
+        span.addEventListener("dragstart", dragStart);
+        span.addEventListener("dragend", dragEnd);
+        wordBank.appendChild(span);
       });
     }
 
-    document.getElementById("answerArea").addEventListener("dragover", e => e.preventDefault());
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
 
-    document.getElementById("answerArea").addEventListener("drop", e => {
-      e.preventDefault();
-      const word = e.dataTransfer.getData("text/plain");
-      const div = document.createElement("div");
-      div.textContent = word;
-      div.className = "word";
-      div.draggable = true;
+    function allowDrop(event) {
+      event.preventDefault();
+    }
 
-      div.addEventListener("click", () => div.remove()); // 點擊可移除重放
+    function dragStart(event) {
+      event.dataTransfer.setData("text", event.target.id);
+      event.target.classList.add("dragging");
+    }
 
-      document.getElementById("answerArea").appendChild(div);
-    });
+    function dragEnd(event) {
+      event.target.classList.remove("dragging");
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const id = event.dataTransfer.getData("text");
+      const draggedElement = document.getElementById(id);
+      if (event.currentTarget.id === "answerArea" || event.currentTarget.id === "wordBank") {
+        event.currentTarget.appendChild(draggedElement);
+      }
+    }
 
     function checkAnswer() {
-      const userWords = Array.from(document.getElementById("answerArea").children).map(div => div.textContent);
-      const correct = questions[currentIndex];
-
-      if (userWords.length !== correct.length) {
-        document.getElementById("result").textContent = "❌ 請將所有字詞拖曳完成再提交。";
-        return;
-      }
-
-      const isCorrect = userWords.every((word, i) => word === correct[i]);
+      const answerArea = document.getElementById("answerArea");
+      const feedback = document.getElementById("feedback");
+      const userWords = Array.from(answerArea.children).map(span => span.textContent);
+      const correctWords = questions[currentIndex];
+      const isCorrect = userWords.join("") === correctWords.join("");
 
       if (isCorrect) {
-        document.getElementById("result").textContent = "✅ 答對了！");
-        wrongCount = 0;
-        updateWrongCount();
+        feedback.textContent = "✅ 恭喜答對了！";
+        feedback.style.color = "green";
+        answerArea.classList.add("correct-flash");
         setTimeout(() => {
-          currentIndex = (currentIndex + 1) % questions.length;
-          loadQuestion();
-        }, 1000);
+          answerArea.classList.remove("correct-flash");
+        }, 800);
       } else {
-        wrongCount++;
-        updateWrongCount();
-        document.getElementById("result").textContent = "❌ 答錯了，再試一次。可點擊答案區字詞刪除！";
-
-        if (wrongCount >= 2) {
-          document.getElementById("result").textContent += `\n💡 提示：是否需要看正確答案？→ ${correct.join(' ')}`;
-        }
+        feedback.textContent = "❌ 再試試看喔～";
+        feedback.style.color = "red";
       }
     }
 
-    function updateWrongCount() {
-      document.getElementById("wrongCountDisplay").textContent = `錯誤次數：${wrongCount}`;
-    }
-
-    function restartQuestion() {
-      wrongCount = 0;
-      updateWrongCount();
+    function nextQuestion() {
+      currentIndex = (currentIndex + 1) % questions.length;
       loadQuestion();
     }
 
-    loadQuestion();
+    function resetGame() {
+      currentIndex = 0;
+      loadQuestion();
+    }
+
+    window.onload = loadQuestion;
   </script>
 </body>
 </html>
