@@ -1,104 +1,69 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>字詞重組塌空</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: "Noto Sans TC", sans-serif;
+      background-color: #e0f2e9; /* 草綠色 */
       margin: 0;
-      height: 100vh;
-      background-color: #dcedc8; /* 清新綠色背景 */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column; /* 讓內容垂直排列 */
-      /* overflow: hidden; 取消此行，讓頁面可滑動 */
-      overflow: auto;
+      padding: 20px;
       position: relative;
-    }
-
-    .container {
-      text-align: center;
-      z-index: 10;
-      max-width: 600px;
-      width: 90%;
+      overflow-x: hidden;
     }
 
     h1 {
-      margin-bottom: 10px;
+      text-align: center;
+      color: #2e7d32;
     }
 
-    #instruction {
+    #question {
+      text-align: center;
+      font-size: 24px;
       margin-bottom: 20px;
-      font-size: 18px;
     }
 
-    #words {
+    #options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option {
+      padding: 10px 20px;
+      background-color: #aed581;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+    }
+
+    #answer-area {
+      min-height: 50px;
+      border: 2px dashed #81c784;
+      padding: 10px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       justify-content: center;
-      min-height: 50px;
-      padding: 10px;
-      background-color: #fff;
-      border: 2px dashed #aaa;
-      margin-bottom: 20px;
-      border-radius: 8px;
     }
 
-    .word {
-      background-color: #a5d6a7; /* 草綠色氣泡 */
-      padding: 10px 15px;
+    .dropzone {
+      padding: 10px 20px;
+      background-color: #fff;
       border-radius: 8px;
-      cursor: grab;
-      user-select: none;
-      color: #000;
-      user-select: none;
+      min-width: 80px;
+      text-align: center;
     }
 
     #result {
-      margin-top: 20px;
+      text-align: center;
+      font-size: 20px;
       font-weight: bold;
-      font-size: 1.2em;
-      min-height: 1.5em;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin: 5px;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
-      background-color: #4caf50;
-      color: white;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #388e3c;
-    }
-
-    .bee {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background-image: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2dqeGl3eW4yMm1jNzN2Y2N4YWM5MDVuOTRlY290ZDhteGxxemZsNCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/1OrzLUhqBIfiEOTKen/giphy.webp');
-      background-size: contain;
-      background-repeat: no-repeat;
-      animation: fly 15s linear infinite;
-      opacity: 0.8;
-      z-index: 1;
-      top: 5%;
-      left: -70px;
-    }
-
-    @keyframes fly {
-      0%   { top: 5%; left: -70px; transform: rotate(0deg); }
-      25%  { top: 20%; left: 30%; transform: rotate(15deg); }
-      50%  { top: 60%; left: 60%; transform: rotate(-10deg); }
-      75%  { top: 30%; left: 80%; transform: rotate(20deg); }
-      100% { top: 10%; left: 110%; transform: rotate(0deg); }
     }
 
     .cat-left, .cat-right {
@@ -109,40 +74,41 @@
       background-size: contain;
       background-repeat: no-repeat;
       z-index: 2;
-      display: none; /* 預設隱藏 */
+      display: none;
     }
 
     .cat-left {
-      background-image: url('https://cdn.pixabay.com/photo/2021/12/30/10/53/cat-6903446_1280.png');
+      background-image: url('https://i.imgur.com/MbJFdIb.png');
+      left: -100px;
     }
 
     .cat-right {
-      background-image: url('https://cdn.pixabay.com/photo/2023/04/12/11/01/cat-7919394_1280.png');
+      background-image: url('https://i.imgur.com/Z8FtrTf.png');
+      right: -100px;
     }
 
     @keyframes catLeftMove {
-      0%   { left: -100px; }
-      50%  { left: 100%; transform: scaleX(1); }
+      0% { left: -100px; }
+      50% { left: 50%; transform: scaleX(1); }
       100% { left: -100px; }
     }
 
     @keyframes catRightMove {
-      0%   { right: -100px; }
-      50%  { right: 100%; transform: scaleX(-1); }
+      0% { right: -100px; }
+      50% { right: 50%; transform: scaleX(-1); }
       100% { right: -100px; }
     }
 
-    /* 底部回首頁按鈕 */
+    /* 新增底部回首頁按鈕容器 */
     .back-home {
-      position: fixed;
-      bottom: 20px;
-      width: 100%;
+      margin-top: 40px;
       text-align: center;
-      z-index: 100;
+      width: 100%;
+      z-index: 10;
     }
     .back-home a {
       display: inline-block;
-      padding: 10px 25px;
+      padding: 10px 20px;
       background-color: #007acc;
       color: white;
       text-decoration: none;
@@ -157,26 +123,23 @@
   </style>
 </head>
 <body>
-  <div class="bee"></div>
+  <h1>字詞重組塌空</h1>
+  <div id="question">將正確詞語拖曳到框中</div>
+  <div id="options"></div>
+  <div id="answer-area"></div>
+  <div id="result"></div>
+
+  <!-- 貓咪動畫 -->
   <div class="cat-left"></div>
   <div class="cat-right"></div>
 
-  <div class="container">
-    <h1>字詞重組塌空</h1>
-    <div id="instruction">請共 tsia-ê 語詞 suá 位，tsâinn 做正確 ê 一句話，koh 講看覓：</div>
-    <div id="words"></div>
-    <button onclick="checkAnswer()">確認</button>
-    <button onclick="loadNext()">後一條</button>
-    <div id="result"></div>
-  </div>
+  <!-- 音效 -->
+  <audio id="sound-ready" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+  <audio id="sound-correct" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3"></audio>
+  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
 
-  <div class="back-home">
-    <a href="index.html">🔙 回到遊戲首頁</a>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
-    const sentences = [
+    const questions = [
       ["下課", "干焦", "十", "分", "鐘"],
       ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
       ["人", "講", "中指", "毋通", "烏白", "比"],
@@ -184,49 +147,73 @@
       ["今仔日", "的", "日頭", "真", "猛"],
       ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
       ["大水雨", "閣", "拄著", "滇流"],
-      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
+      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]    
     ];
 
+    let current = [];
     let currentAnswer = [];
-    const wordsContainer = document.getElementById("words");
-    const resultDiv = document.getElementById("result");
 
-    const sortable = new Sortable(wordsContainer, {
-      animation: 150
+    // 音效觸發解鎖（首次點擊）
+    document.addEventListener("click", function enableAudio() {
+      document.getElementById("sound-ready").play().catch(() => {});
+      document.getElementById("sound-correct").play().catch(() => {});
+      document.getElementById("sound-wrong").play().catch(() => {});
+      document.removeEventListener("click", enableAudio);
     });
 
-    function shuffle(array) {
-      const copy = [...array];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    }
-
     function loadNext() {
-      document.getElementById("sound-ready")?.play?.();  // 出題音效 (有就播)
+      const q = questions[Math.floor(Math.random() * questions.length)];
+      current = [...q].sort(() => Math.random() - 0.5);
+      currentAnswer = q;
+      document.getElementById("question").textContent = "請組合正確句子：";
+      const options = document.getElementById("options");
+      const answerArea = document.getElementById("answer-area");
+      const resultDiv = document.getElementById("result");
+      options.innerHTML = "";
+      answerArea.innerHTML = "";
       resultDiv.textContent = "";
-      wordsContainer.innerHTML = "";
-      const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-      currentAnswer = sentence;
-      const shuffled = shuffle(sentence);
-      for (let word of shuffled) {
-        const el = document.createElement("div");
-        el.className = "word";
-        el.textContent = word;
-        wordsContainer.appendChild(el);
-      }
+
+      current.forEach(word => {
+        const span = document.createElement("span");
+        span.textContent = word;
+        span.className = "option";
+        span.draggable = true;
+        span.addEventListener("dragstart", e => {
+          e.dataTransfer.setData("text/plain", word);
+        });
+        options.appendChild(span);
+      });
+
+      currentAnswer.forEach(() => {
+        const drop = document.createElement("div");
+        drop.className = "dropzone";
+        drop.addEventListener("dragover", e => e.preventDefault());
+        drop.addEventListener("drop", function(e) {
+          e.preventDefault();
+          const word = e.dataTransfer.getData("text/plain");
+          if (!drop.textContent) {
+            drop.textContent = word;
+          }
+        });
+        drop.addEventListener("click", function() {
+          drop.textContent = "";
+        });
+        answerArea.appendChild(drop);
+      });
+
+      document.getElementById("sound-ready").play();
     }
 
     function checkAnswer() {
-      const current = Array.from(wordsContainer.children).map(el => el.textContent);
-      if (JSON.stringify(current) === JSON.stringify(currentAnswer)) {
+      const userAnswer = Array.from(document.querySelectorAll(".dropzone")).map(d => d.textContent);
+      const resultDiv = document.getElementById("result");
+
+      if (JSON.stringify(userAnswer) === JSON.stringify(currentAnswer)) {
         resultDiv.textContent = "✅ 著！有夠𠢕！";
         resultDiv.style.color = "green";
-        document.getElementById("sound-correct")?.play?.();
+        document.getElementById("sound-correct").play();
 
-        // 出現貓咪動畫
+        // 顯示貓咪動畫
         const catLeft = document.querySelector(".cat-left");
         const catRight = document.querySelector(".cat-right");
 
@@ -245,14 +232,38 @@
           catRight.style.display = "none";
         }, 3000);
       } else {
-        resultDiv.textContent = "❌ 毋著喔！閣試看覓！";
+        resultDiv.textContent = "❌ 嘸啦，重來！";
         resultDiv.style.color = "red";
-        document.getElementById("sound-wrong")?.play?.();
+        document.getElementById("sound-wrong").play();
       }
     }
 
-    // 首次載入題目
     loadNext();
+
+    // 自動加入提交按鈕
+    const btn = document.createElement("button");
+    btn.textContent = "確認答案";
+    btn.style.display = "block";
+    btn.style.margin = "20px auto";
+    btn.style.padding = "10px 20px";
+    btn.onclick = checkAnswer;
+    document.body.appendChild(btn);
   </script>
+
+  <!-- 底部回首頁按鈕 -->
+  <div class="back-home" style="text-align:center; margin-top:40px;">
+    <a href="index.html" style="
+      display:inline-block;
+      padding:10px 20px;
+      background-color:#007acc;
+      color:white;
+      text-decoration:none;
+      border-radius:8px;
+      font-size:1.2em;
+      user-select:none;
+      transition:background-color 0.3s ease;
+    " onmouseover="this.style.backgroundColor='#005099'" onmouseout="this.style.backgroundColor='#007acc'">🔙 回到遊戲首頁</a>
+  </div>
+
 </body>
 </html>
