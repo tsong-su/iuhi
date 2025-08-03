@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>字詞重組遊戲</title>
   <style>
     body {
@@ -95,7 +96,7 @@
     <button onclick="nextQuestion()">下一題</button>
     <button onclick="restartGame()">重新開始</button>
     <button id="hint-button" onclick="showCorrectAnswer()">提示正確答案</button>
-    <br>
+    <br />
     <a href="index.html"><button>回到遊戲首頁</button></a>
   </div>
 
@@ -187,7 +188,7 @@
           setTimeout(() => div.classList.remove("correct-flash"), 500);
         });
         cat.style.display = "block";
-        document.getElementById('error-count').textContent = "著，有夠厲害！";
+        alert("著，有夠厲害！");
       } else {
         errorCount++;
         wrongSound.play();
@@ -195,7 +196,7 @@
         if (errorCount >= 2) {
           hintButton.style.display = "inline-block";
         }
-        document.getElementById('error-count').textContent = "毋著喔，閣試一擺";
+        alert("毋著喔，閣試一擺！");
       }
     }
 
