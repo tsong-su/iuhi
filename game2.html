@@ -14,6 +14,7 @@
       align-items: center;
       overflow: hidden;
       position: relative;
+      flex-direction: column;
     }
 
     .container {
@@ -115,15 +116,15 @@
       100% { right: -100px; }
     }
 
-    .back-button {
-      display: inline-block;
-      margin-top: 20px;
+    .back-btn {
+      margin-top: 30px;
       padding: 10px 20px;
       background-color: #0288d1;
       color: white;
       border-radius: 8px;
       text-decoration: none;
       font-size: 16px;
+      z-index: 20;
     }
   </style>
 </head>
@@ -143,7 +144,9 @@
     <button onclick="checkAnswer()">確認</button>
     <button onclick="loadNext()">後一條</button>
     <div id="result"></div>
-    <a href="index.html" class="back-button">🔙 回到遊戲首頁</a>
+
+    <!-- 🔙 回到遊戲首頁按鈕 -->
+    <a href="index.html" class="back-btn">🔙 回到遊戲首頁</a>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
