@@ -4,155 +4,194 @@
   <meta charset="UTF-8">
   <title>字詞重組遊戲</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f3e8ff; text-align: center; padding: 20px; overflow-x: hidden; }
-    h1 { color: #5c3d99; }
-    #question-area, #answer-area {
-      display: flex; flex-wrap: wrap; justify-content: center;
-      margin: 20px auto; min-height: 60px; padding: 10px;
-      border: 2px dashed #ccc; background: #fff; border-radius: 10px;
+    body {
+      background-color: #f3e6ff;
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #6a1b9a;
+    }
+    #question {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .words, .answer-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 10px;
+      min-height: 60px;
+      border: 2px dashed #999;
+      padding: 10px;
+      border-radius: 8px;
     }
     .word {
-      background: #d1c4e9; margin: 5px; padding: 10px 15px;
-      border-radius: 10px; cursor: grab; user-select: none;
+      background: #fff;
+      padding: 8px 12px;
+      margin: 5px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      cursor: grab;
+      user-select: none;
       transition: box-shadow 0.2s ease;
     }
     .word.dragging {
-      animation: flicker 0.5s infinite;
-      opacity: 0.6;
-      box-shadow: 0 0 12px #7b68ee;
+      box-shadow: 0 0 10px #00bcd4;
     }
-    @keyframes flicker {
-      0%,100% { opacity: 0.6; box-shadow: 0 0 12px #7b68ee; }
-      50% { opacity: 1; box-shadow: 0 0 20px #9370db; }
+    .answer-box.correct {
+      animation: flash-green 0.5s;
     }
-    #result { font-size: 1.3em; margin: 20px; min-height: 1.4em; white-space: pre-wrap; color: #444; }
-    .correct-flash { animation: correctFlash 0.8s ease-in-out 1; }
-    @keyframes correctFlash {
-      0%,100% { background: #c8e6c9; } 50% { background: #81c784; }
+    @keyframes flash-green {
+      0% { background-color: #c8e6c9; }
+      100% { background-color: transparent; }
     }
-    #controls { margin: 20px; }
-    button { margin: 5px; padding: 10px 20px; font-size: 16px;
-      border:none; border-radius: 8px; background: #9575cd; color:white; cursor:pointer; }
-    button:hover { background: #7e57c2; }
-    #wrongCount { margin-top: 10px; color: #d32f2f; font-weight:bold; }
-    #cat-left, #cat-right {
-      position: fixed; bottom:0; width:80px; height:80px; background-size:contain;
-      background-repeat:no-repeat; z-index:999;
-      display:none; pointer-events:none;
+    .controls {
+      margin-top: 15px;
     }
-    #cat-left { background-image:url('https://i.imgur.com/MbJFdIb.png'); left: -100px; }
-    #cat-right { background-image:url('https://i.imgur.com/Z8FtrTf.png'); right:-100px; }
-    @keyframes catLeftMove {0%{left:-100px;}50%{left:50%;}100%{left:-100px;}}
-    @keyframes catRightMove {0%{right:-100px;}50%{right:50%;}100%{right:-100px;}}
+    .cat {
+      position: absolute;
+      width: 80px;
+      bottom: 30px;
+      display: none;
+    }
+    #cat-left { left: -100px; }
+    #cat-right { right: -100px; }
+    .show-cat {
+      animation: slide-in 1s forwards;
+    }
+    @keyframes slide-in {
+      to { transform: translateX(120px); }
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      background-color: #9575cd;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <h1>字詞重組遊戲</h1>
-  <div id="wrongCount">錯誤次數：0</div>
-  <div id="question-area"></div>
-  <div id="answer-area"></div>
-  <div id="result"></div>
-  <div id="controls">
-    <button onclick="restartGame()">重新開始</button>
-  </div>
-  <a href="index.html"><button>回到遊戲首頁</button></a>
-  <audio id="sound-correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_65b1c0d12c.mp3"></audio>
-  <audio id="sound-wrong" src="https://cdn.pixabay.com/audio/2022/03/15/audio_e893b50e2f.mp3"></audio>
-  <div id="cat-left"></div>
-  <div id="cat-right"></div>
+
+<h1>字詞重組遊戲</h1>
+<div id="question">請拖曳正確的順序：</div>
+
+<div class="words" id="word-bank"></div>
+<div class="answer-box" id="answer-box" ondragover="event.preventDefault()"></div>
+
+<div class="controls">
+  <button onclick="nextQuestion()">下一題</button>
+  <button onclick="restartGame()">重新開始</button>
+</div>
+
+<img src="https://i.imgur.com/OB0y6MR.png" class="cat" id="cat-left">
+<img src="https://i.imgur.com/OB0y6MR.png" class="cat" id="cat-right" style="transform: scaleX(-1);">
+
+<audio id="correct-sound" src="https://www.soundjay.com/button/sounds/button-3.mp3"></audio>
+<audio id="wrong-sound" src="https://www.soundjay.com/button/sounds/button-10.mp3"></audio>
 
 <script>
 const questions = [
-  ["下課","干焦","十","分","鐘"],
-  ["華語","的","『蒟蒻』","台語","講做","粉鳥舅"],
-  ["人","講","中指","毋通","烏白","比"],
-  ["伊","毋是","彼款","會","食錢","的","人"],
-  ["今仔日","的","日頭","真","猛"],
-  ["這陣","當咧","出","大日虎","咱","上好","莫","出門","較袂","著痧"],
-  ["大水雨","閣","拄著","滇流"],
-  ["你","敢","有","需要","人","共","你","鬥相共"]
+  ["下課", "干焦", "十", "分", "鐘"],
+  ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"], 
+  ["人", "講", "中指", "毋通", "烏白", "比"],
+  ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
+  ["今仔日", "的", "日頭", "真", "猛"],
+  ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
+  ["大水雨", "閣", "拄著", "滇流"],
+  ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
 ];
-let idx = 0, wrong = 0;
-const qa = document.getElementById("question-area");
-const aa = document.getElementById("answer-area");
-const res = document.getElementById("result");
-const wc = document.getElementById("wrongCount");
-const sc = document.getElementById("sound-correct");
-const sw = document.getElementById("sound-wrong");
-const catL = document.getElementById("cat-left");
-const catR = document.getElementById("cat-right");
 
-function shuffle(a){return a.sort(()=>Math.random()-0.5)}
+let current = 0;
+let wrongCount = 0;
 
-function loadQ(){
-  wrong=0; wc.textContent=`錯誤次數：0`;
-  res.textContent=""; aa.innerHTML=""; qa.innerHTML=""; hideCats();
-  const arr = shuffle([...questions[idx]]);
-  arr.forEach(w=>{
-    const d=document.createElement("div");
-    d.textContent=w; d.className="word"; d.draggable=true;
-    d.addEventListener("dragstart",ds); qa.appendChild(d);
+function shuffle(arr) {
+  return arr.slice().sort(() => Math.random() - 0.5);
+}
+
+function loadQuestion() {
+  const bank = document.getElementById("word-bank");
+  const box = document.getElementById("answer-box");
+  bank.innerHTML = '';
+  box.innerHTML = '';
+  wrongCount = 0;
+  
+  const q = questions[current];
+  shuffle(q).forEach(word => {
+    const el = document.createElement("div");
+    el.className = "word";
+    el.textContent = word;
+    el.draggable = true;
+    el.ondragstart = () => el.classList.add("dragging");
+    el.ondragend = () => el.classList.remove("dragging");
+    el.ondragover = e => e.preventDefault();
+    el.ondrop = () => {};
+    bank.appendChild(el);
   });
-  for(let i=0;i<questions[idx].length;i++){
-    const box=document.createElement("div");
-    box.className="word"; box.style.background="#eee";
-    box.style.minWidth="40px"; box.style.minHeight="30px";
-    box.addEventListener("dragover",e=>e.preventDefault());
-    box.addEventListener("drop",drop);
-    aa.appendChild(box);
-  }
 }
 
-function ds(e){
-  e.dataTransfer.setData("text", e.target.textContent);
-  e.target.classList.add("dragging");
-}
-document.addEventListener("dragend", e=>{
-  if(e.target.classList) e.target.classList.remove("dragging");
+document.getElementById("answer-box").addEventListener("drop", e => {
+  e.preventDefault();
+  const dragging = document.querySelector(".dragging");
+  if (dragging && !Array.from(answerBox.children).includes(dragging)) {
+    answerBox.appendChild(dragging);
+  }
+  checkAnswer();
 });
 
-function drop(e){
-  e.preventDefault();
-  const txt=e.dataTransfer.getData("text");
-  e.target.textContent=txt;
-  check();
-}
+function checkAnswer() {
+  const box = document.getElementById("answer-box");
+  const answer = questions[current];
+  const user = Array.from(box.children).map(el => el.textContent);
+  if (user.length !== answer.length) return;
 
-function check(){
-  const user = Array.from(aa.children).map(d=>d.textContent);
-  if(user.includes("")) return;
-  const corr = questions[idx];
-  const ok=user.every((w,i)=>w===corr[i]);
-  if(ok){
-    sc.play(); aa.childNodes.forEach(d=>{d.classList.add("correct-flash");});
-    showCats();
-    setTimeout(()=>{idx=(idx+1)%questions.length; loadQ();},1500);
+  if (user.every((w, i) => w === answer[i])) {
+    document.getElementById("correct-sound").play();
+    box.classList.add("correct");
+    setTimeout(() => box.classList.remove("correct"), 500);
+    animateCats();
   } else {
-    wrong++; wc.textContent=`錯誤次數：${wrong}`; sw.play();
-    aa.childNodes.forEach(d=>{d.textContent="";});
-    if(wrong>=2){
-      res.textContent = '提示正確答案→ ' + corr.join(' ');
+    document.getElementById("wrong-sound").play();
+    wrongCount++;
+    if (wrongCount >= 2) {
+      alert("提示：正確答案是：\n" + answer.join(" "));
+    } else {
+      alert("不正確，請再試一次！");
+      // 回到字詞區讓玩家重新拖曳
+      loadQuestion();
     }
   }
 }
 
-function restartGame(){
-  idx=0; loadQ();
+function nextQuestion() {
+  current = (current + 1) % questions.length;
+  loadQuestion();
 }
 
-function showCats(){
-  catL.style.display=catR.style.display="block";
-  catL.style.animation="catLeftMove 2s ease forwards";
-  catR.style.animation="catRightMove 2s ease forwards";
-  setTimeout(hideCats, 2100);
+function restartGame() {
+  current = 0;
+  loadQuestion();
 }
 
-function hideCats(){
-  catL.style.display=catR.style.display="none";
-  catL.style.animation=catR.style.animation="";
+function animateCats() {
+  const left = document.getElementById("cat-left");
+  const right = document.getElementById("cat-right");
+  left.style.display = right.style.display = "block";
+  left.classList.add("show-cat");
+  right.classList.add("show-cat");
+  setTimeout(() => {
+    left.style.display = right.style.display = "none";
+    left.classList.remove("show-cat");
+    right.classList.remove("show-cat");
+  }, 1200);
 }
 
-window.onload=loadQ;
+loadQuestion();
 </script>
 </body>
 </html>
