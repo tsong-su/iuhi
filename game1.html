@@ -64,23 +64,10 @@
     button:hover {
       background-color: #7e57c2;
     }
-
-    /* 貓咪點頭動畫樣式 */
     #cat {
       display: none;
-      width: 100px;
+      width: 120px;
       margin: 20px auto;
-      transform-origin: center bottom;
-    }
-    .nod {
-      animation: catNod 0.8s ease-in-out 0s 2;
-    }
-    @keyframes catNod {
-      0% { transform: rotate(0deg); opacity: 1; }
-      25% { transform: rotate(15deg); }
-      50% { transform: rotate(-10deg); }
-      75% { transform: rotate(5deg); }
-      100% { transform: rotate(0deg); opacity: 0; }
     }
   </style>
 </head>
@@ -92,8 +79,7 @@
   <div id="answer-area"></div>
   <div id="message"></div>
 
-  <!-- 改用貓咪頭像圖片 -->
-  <img id="cat" src="https://cdn.pixabay.com/photo/2021/03/25/18/41/cat-6125480_1280.png" alt="Cat Nodding" />
+  <img id="cat" src="https://media1.tenor.com/m/C27Docdu5hkAAAAC/indeed-oui.gif" alt="Cat Animation" />
 
   <div id="controls">
     <button id="check-btn" onclick="checkAnswer()">確認答案</button>
@@ -103,7 +89,6 @@
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
-  <!-- 換成喵聲音效 -->
   <audio id="correct-sound" src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_7c01f0e7f7.mp3?filename=cat-meow-14536.mp3"></audio>
   <audio id="wrong-sound" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
 
@@ -133,7 +118,6 @@
       errorCount = 0;
       message.textContent = "";
       cat.style.display = "none";
-      cat.classList.remove("nod");
       questionArea.innerHTML = "";
       answerArea.innerHTML = "";
 
@@ -156,6 +140,9 @@
         dropBox.textContent = "";
         dropBox.addEventListener("dragover", dragOver);
         dropBox.addEventListener("drop", drop);
+        dropBox.addEventListener("click", () => {
+          dropBox.textContent = ""; // 點一下清除字
+        });
         answerArea.appendChild(dropBox);
       }
 
@@ -189,21 +176,8 @@
         message.textContent = "著，有夠厲害！";
         correctSound.currentTime = 0;
         correctSound.play().catch(()=>{});
-
-        // 顯示貓咪，加入點頭動畫
         cat.style.display = "block";
-        cat.classList.remove("nod");
-        void cat.offsetWidth;
-        cat.classList.add("nod");
-
         document.getElementById("check-btn").disabled = true;
-
-        // 動畫結束後移除顯示
-        cat.addEventListener("animationend", function onEnd() {
-          cat.style.display = "none";
-          cat.classList.remove("nod");
-          cat.removeEventListener("animationend", onEnd);
-        });
       } else {
         errorCount++;
         wrongSound.currentTime = 0;
