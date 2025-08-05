@@ -1,69 +1,192 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Lē-gio̍k的互動小遊戲</title>
-  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet" />
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Comic Neue', cursive;
-      background: linear-gradient(to right, #fff5f7, #f0f4ff);
+      background: linear-gradient(135deg, #fffbf2, #ffe6e6);
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      color: #a33a3a;
     }
     h1 {
       margin-top: 60px;
       font-size: 48px;
       color: #ff6f61;
       text-shadow: 2px 2px #ffd6d0;
+      text-align: center;
     }
     ul {
       list-style: none;
       padding: 0;
-      margin-top: 40px;
+      margin: 40px auto;
+      width: 90%;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      width: 80%;
-      max-width: 500px;
+      gap: 25px;
+      text-align: center;
     }
-    li a {
-      display: block;
+    li {
+      position: relative;
+    }
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       background-color: #fff;
       border: 3px dashed #ffb347;
       padding: 20px;
-      border-radius: 16px;
+      border-radius: 18px;
       font-size: 22px;
       text-decoration: none;
-      color: #ff6f00;
-      box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+      color: #d94f4f;
+      box-shadow: 4px 4px 15px rgba(255, 180, 71, 0.4);
       transition: all 0.3s ease;
+      cursor: pointer;
+      user-select: none;
     }
-    li a:hover {
-      background-color: #fff8e1;
-      transform: scale(1.05);
-      color: #d84315;
+    a:hover {
+      background-color: #fff3db;
+      transform: scale(1.08);
+      color: #b03a3a;
+      box-shadow: 6px 6px 20px rgba(255, 180, 71, 0.7);
+    }
+    /* Tooltip */
+    li[data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffb347;
+      color: #5a2e00;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      white-space: nowrap;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+      opacity: 1;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    li[data-tooltip]::after {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    /* Icons */
+    .icon {
+      width: 36px;
+      height: 36px;
+      user-select: none;
+      pointer-events: none;
+    }
+    /* 音樂控制區 */
+    #music-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ffb347;
+      padding: 10px 14px;
+      border-radius: 40px;
+      box-shadow: 2px 2px 10px rgba(255,180,71,0.7);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      color: #5a2e00;
+      transition: background-color 0.3s ease;
+      z-index: 100;
+    }
+    #music-controls:hover {
+      background-color: #ff9933;
+      color: #3a1e00;
+    }
+    #music-controls svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
     }
     footer {
       margin-top: auto;
       padding: 20px;
       font-size: 14px;
-      color: #aaa;
+      color: #a88;
+      text-align: center;
+      user-select: none;
     }
   </style>
 </head>
 <body>
   <h1>Lē-gio̍k的互動小遊戲</h1>
+
   <ul>
-    <li><a href="game1.html">字詞重組塌空</a></li>
-    <li><a href="game2.html">字詞 suá 位講看覓(蜂)</a></li>
+    <li data-tooltip="點擊開始字詞重組的挑戰！">
+      <a href="game1.html">
+        <img class="icon" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="Cat Icon" />
+        <span>字詞重組塌空</span>
+      </a>
+    </li>
+    <li data-tooltip="試試看字詞怎麼位講，看你能答對幾題！">
+      <a href="game2.html">
+        <img class="icon" src="https://cdn-icons-png.flaticon.com/512/616/616496.png" alt="Bee Icon" />
+        <span>字詞 suá 位講看覓(蜂)</span>
+      </a>
+    </li>
   </ul>
+
+  <!-- 背景音樂 -->
+  <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_774fe1377b.mp3?filename=happy-upbeat-pop-13607.mp3" loop></audio>
+
+  <!-- 音樂開關 -->
+  <div id="music-controls" title="點擊開關背景音樂" aria-label="背景音樂開關" role="button" tabindex="0">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+    音樂 開
+  </div>
+
   <footer>
     © 2025 Lē-gio̍k 創作小組
   </footer>
+
+  <script>
+    const music = document.getElementById('bg-music');
+    const musicControls = document.getElementById('music-controls');
+    let musicPlaying = false;
+
+    function updateMusicUI() {
+      musicControls.textContent = musicPlaying ? '🔈 音樂 關' : '🔇 音樂 開';
+      if (musicPlaying) {
+        music.play().catch(() => {});
+      } else {
+        music.pause();
+        music.currentTime = 0;
+      }
+    }
+
+    musicControls.addEventListener('click', () => {
+      musicPlaying = !musicPlaying;
+      updateMusicUI();
+    });
+
+    musicControls.addEventListener('keypress', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        musicPlaying = !musicPlaying;
+        updateMusicUI();
+      }
+    });
+
+    // 頁面載入時，音樂不自動播放，等待使用者操作
+    updateMusicUI();
+  </script>
 </body>
 </html>
