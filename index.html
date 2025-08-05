@@ -18,7 +18,6 @@
       background-color: #fffbe8;
       padding: 1em 0 0.5em 0;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      position: relative;
     }
 
     h1 {
@@ -28,8 +27,11 @@
 
     .icon {
       width: 48px;
+      height: 48px;
       vertical-align: middle;
       margin: 0 5px;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     .game-links {
@@ -76,19 +78,6 @@
       opacity: 1;
     }
 
-    #music-toggle {
-      position: absolute;
-      right: 1em;
-      top: 1em;
-      background: #ffecb3;
-      border: none;
-      padding: 0.6em 1em;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1em;
-      box-shadow: 1px 2px 4px rgba(0,0,0,0.2);
-    }
-
     footer {
       margin-top: 3em;
       font-size: 0.9em;
@@ -99,14 +88,11 @@
 <body>
   <header>
     <h1>
-      <img class="icon" src="https://cdn-icons-png.flaticon.com/512/2206/2206368.png" alt="Cat Icon" />
+      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="Tabby Cat Icon" />
       Lē-gio̍k的互動小遊戲
-      <img class="icon" src="https://cdn-icons-png.flaticon.com/512/2206/2206368.png" alt="Cat Icon" />
+      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="Tabby Cat Icon" />
     </h1>
-    <button id="music-toggle">🔈 音樂開關</button>
   </header>
-
-  <audio id="bg-music" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4ab2467b27.mp3" loop preload="auto"></audio>
 
   <main class="game-links">
     <a href="game1.html" title="點我開始玩第一款遊戲">字詞重組塌空</a>
@@ -116,27 +102,5 @@
   <footer>
     © 2025 Lē-gio̍k Studio｜歡迎互動學台語
   </footer>
-
-  <script>
-    const music = document.getElementById('bg-music');
-    const toggleBtn = document.getElementById('music-toggle');
-    let isPlaying = false;
-
-    toggleBtn.addEventListener('click', () => {
-      if (!isPlaying) {
-        music.play().then(() => {
-          toggleBtn.textContent = '🔇 關閉音樂';
-          isPlaying = true;
-        }).catch((e) => {
-          alert("⚠️ 音樂播放失敗，請檢查瀏覽器設定或重新載入。");
-          console.error("播放失敗：", e);
-        });
-      } else {
-        music.pause();
-        toggleBtn.textContent = '🔈 音樂開關';
-        isPlaying = false;
-      }
-    });
-  </script>
 </body>
 </html>
