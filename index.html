@@ -2,49 +2,68 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>遊戲首頁選單</title>
+  <title>Lē-gio̍k的互動小遊戲</title>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: "Arial", sans-serif;
-      background-color: #f3e8ff;
-      text-align: center;
-      padding: 50px;
+      margin: 0;
+      padding: 0;
+      font-family: 'Comic Neue', cursive;
+      background: linear-gradient(to right, #fff5f7, #f0f4ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
     h1 {
-      color: #5c3d99;
-      margin-bottom: 30px;
+      margin-top: 60px;
+      font-size: 48px;
+      color: #ff6f61;
+      text-shadow: 2px 2px #ffd6d0;
     }
     ul {
-      list-style-type: none;
+      list-style: none;
       padding: 0;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 80%;
+      max-width: 500px;
     }
-    li {
-      margin: 15px 0;
-    }
-    a {
+    li a {
+      display: block;
+      background-color: #fff;
+      border: 3px dashed #ffb347;
+      padding: 20px;
+      border-radius: 16px;
+      font-size: 22px;
       text-decoration: none;
-      font-size: 20px;
-      color: #6b4ca3;
-      padding: 10px 20px;
-      border: 2px solid #9575cd;
-      border-radius: 12px;
-      background-color: #ffffff;
+      color: #ff6f00;
+      box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
     }
-    a:hover {
-      background-color: #d1c4e9;
-      color: #4a2c79;
+    li a:hover {
+      background-color: #fff8e1;
+      transform: scale(1.05);
+      color: #d84315;
+    }
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      font-size: 14px;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
-  <h1>遊戲首頁選單</h1>
+  <h1>Lē-gio̍k的互動小遊戲</h1>
   <ul>
-    <li><a href="game.html">字詞重組塌空（舊版）</a></li>
-    <li><a href="game1.html">字詞重組塌空（新版有開始畫面）</a></li>
+    <li><a href="game1.html">字詞重組塌空</a></li>
     <li><a href="game2.html">字詞 suá 位講看覓(蜂)</a></li>
   </ul>
+  <footer>
+    © 2025 Lē-gio̍k 創作小組
+  </footer>
 </body>
 </html>
-
-
