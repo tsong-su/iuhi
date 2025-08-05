@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: "Arial", sans-serif;
-      background-color: #f3e8ff; /* 淺紫色 */
+      background-color: #f3e8ff;
       text-align: center;
       padding: 20px;
     }
@@ -42,14 +42,6 @@
     .word:active {
       cursor: grabbing;
     }
-    .correct-flash {
-      animation: correctFlash 0.5s ease-in-out;
-    }
-    @keyframes correctFlash {
-      0% { background-color: #c8e6c9; }
-      50% { background-color: #81c784; }
-      100% { background-color: #c8e6c9; }
-    }
     #message {
       margin-top: 15px;
       font-size: 18px;
@@ -73,21 +65,22 @@
       background-color: #7e57c2;
     }
 
-    /* 貓咪樣式與點頭動畫 (transform-origin 底部中心) */
+    /* 貓咪點頭動畫樣式 */
     #cat {
       display: none;
-      width: 120px;
+      width: 100px;
       margin: 20px auto;
-      transform-origin: center 80%;
-    }
-    @keyframes catNod {
-      0% { transform: rotate(0deg) translateY(0); }
-      30% { transform: rotate(18deg) translateY(2px); }
-      60% { transform: rotate(-8deg) translateY(-2px); }
-      100% { transform: rotate(0deg) translateY(0); }
+      transform-origin: center bottom;
     }
     .nod {
-      animation: catNod 0.8s ease-in-out 0s 3;
+      animation: catNod 0.8s ease-in-out 0s 2;
+    }
+    @keyframes catNod {
+      0% { transform: rotate(0deg); opacity: 1; }
+      25% { transform: rotate(15deg); }
+      50% { transform: rotate(-10deg); }
+      75% { transform: rotate(5deg); }
+      100% { transform: rotate(0deg); opacity: 0; }
     }
   </style>
 </head>
@@ -99,8 +92,8 @@
   <div id="answer-area"></div>
   <div id="message"></div>
 
-  <!-- 保留現有貓咪圖示，並以 CSS 動畫做點頭效果 -->
-  <img id="cat" src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="Cat Animation" />
+  <!-- 改用貓咪頭像圖片 -->
+  <img id="cat" src="https://cdn.pixabay.com/photo/2021/03/25/18/41/cat-6125480_1280.png" alt="Cat Nodding" />
 
   <div id="controls">
     <button id="check-btn" onclick="checkAnswer()">確認答案</button>
@@ -110,8 +103,8 @@
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
-  <!-- 正確與錯誤音效；若你想換成喵聲或其他音效，只要把 src 換成新檔案 URL -->
-  <audio id="correct-sound" src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_cfe58f48f7.mp3?filename=success-1-6297.mp3"></audio>
+  <!-- 換成喵聲音效 -->
+  <audio id="correct-sound" src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_7c01f0e7f7.mp3?filename=cat-meow-14536.mp3"></audio>
   <audio id="wrong-sound" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
 
   <script>
@@ -156,4 +149,115 @@
 
       for (let i = 0; i < questions[currentQuestion].length; i++) {
         const dropBox = document.createElement("div");
-        dropBox.c
+        dropBox.className = "word";
+        dropBox.style.backgroundColor = "#eee";
+        dropBox.style.minWidth = "40px";
+        dropBox.style.minHeight = "30px";
+        dropBox.textContent = "";
+        dropBox.addEventListener("dragover", dragOver);
+        dropBox.addEventListener("drop", drop);
+        answerArea.appendChild(dropBox);
+      }
+
+      document.getElementById("check-btn").disabled = false;
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData("text", e.target.textContent);
+    }
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const text = e.dataTransfer.getData("text");
+      e.target.textContent = text;
+    }
+
+    function checkAnswer() {
+      const filled = Array.from(answerArea.children).map(div => div.textContent);
+      if (filled.includes("")) {
+        message.textContent = "請將所有答案填滿喔！";
+        return;
+      }
+      const correct = questions[currentQuestion];
+      const isCorrect = filled.every((word, i) => word === correct[i]);
+
+      if (isCorrect) {
+        message.textContent = "著，有夠厲害！";
+        correctSound.currentTime = 0;
+        correctSound.play().catch(()=>{});
+
+        // 顯示貓咪，加入點頭動畫
+        cat.style.display = "block";
+        cat.classList.remove("nod");
+        void cat.offsetWidth;
+        cat.classList.add("nod");
+
+        document.getElementById("check-btn").disabled = true;
+
+        // 動畫結束後移除顯示
+        cat.addEventListener("animationend", function onEnd() {
+          cat.style.display = "none";
+          cat.classList.remove("nod");
+          cat.removeEventListener("animationend", onEnd);
+        });
+      } else {
+        errorCount++;
+        wrongSound.currentTime = 0;
+        wrongSound.play().catch(()=>{});
+        message.textContent = "毋著喔，閣試一擺！";
+        resetAnswerArea();
+        shuffleQuestionWords();
+      }
+    }
+
+    function resetAnswerArea() {
+      Array.from(answerArea.children).forEach(div => {
+        div.textContent = "";
+      });
+    }
+
+    function shuffleQuestionWords() {
+      const correct = questions[currentQuestion];
+      const shuffled = [...correct].sort(() => Math.random() - 0.5);
+      questionArea.innerHTML = "";
+      shuffled.forEach(word => {
+        const div = document.createElement("div");
+        div.textContent = word;
+        div.className = "word";
+        div.draggable = true;
+        div.addEventListener("dragstart", dragStart);
+        questionArea.appendChild(div);
+      });
+    }
+
+    function nextQuestion() {
+      currentQuestion = (currentQuestion + 1) % questions.length;
+      loadQuestion();
+    }
+
+    function restartGame() {
+      currentQuestion = Math.floor(Math.random() * questions.length);
+      loadQuestion();
+    }
+
+    function showCorrectAnswer() {
+      const correct = questions[currentQuestion];
+      Array.from(answerArea.children).forEach((div, i) => {
+        div.textContent = correct[i];
+      });
+      message.textContent = "";
+      document.getElementById("check-btn").disabled = true;
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    window.onload = loadQuestion;
+  </script>
+</body>
+</html>
