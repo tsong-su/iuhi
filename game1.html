@@ -2,173 +2,165 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>字詞重組塌空</title>
   <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #fffbe6;
-      margin: 0;
-      padding: 20px;
+      font-family: "Arial", sans-serif;
+      background-color: #f3e8ff;
       text-align: center;
+      padding: 20px;
     }
-
     h1 {
-      font-size: 2.5em;
-      margin-bottom: 0.2em;
+      color: #5c3d99;
+      margin-bottom: 6px;
     }
-
     #subtitle {
-      font-size: 1.2em;
-      margin-bottom: 1.5em;
-      color: #333;
+      color: #6b4ca3;
+      font-size: 18px;
+      margin-bottom: 20px;
     }
-
-    #question, #answer {
+    #question-area, #answer-area {
       display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px 0;
       flex-wrap: wrap;
-    }
-
-    .word {
-      background-color: #ffe4b5;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      border: 2px solid #d2691e;
-    }
-
-    .drop-zone {
-      width: 60px;
-      height: 40px;
-      background-color: #fff;
-      border: 2px dashed #d2691e;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: 1.2em;
-      color: #d2691e;
+      margin: 20px auto;
+      min-height: 60px;
+      padding: 10px;
+      border: 2px dashed #ccc;
+      background-color: #fff;
+      border-radius: 10px;
     }
-
+    .word {
+      background-color: #d1c4e9;
+      margin: 5px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    .word:active {
+      cursor: grabbing;
+    }
     #message {
-      font-size: 1.4em;
-      color: #006400;
-      margin: 20px;
+      margin-top: 15px;
+      font-size: 18px;
+      color: #d32f2f;
+      min-height: 24px;
     }
-
-    #cat {
-      width: 150px;
+    #controls {
       margin-top: 20px;
-      display: none;
     }
-
     button {
+      margin: 5px;
       padding: 10px 20px;
-      font-size: 1em;
-      background-color: #ffa07a;
+      font-size: 16px;
+      border-radius: 8px;
       border: none;
-      border-radius: 5px;
+      background-color: #9575cd;
+      color: white;
       cursor: pointer;
     }
-
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+    button:hover {
+      background-color: #7e57c2;
+    }
+    #cat {
+      display: none;
+      width: 120px;
+      margin: 20px auto 0 auto;
     }
   </style>
 </head>
 <body>
   <h1>字詞重組塌空</h1>
   <div id="subtitle">請kā正確的字詞suá 到下底格仔內</div>
-  <div id="question"></div>
-  <div id="answer"></div>
-  <button id="check-btn" onclick="checkAnswer()">確認</button>
+
+  <div id="question-area"></div>
+  <div id="answer-area"></div>
   <div id="message"></div>
+
   <img id="cat" src="https://media1.tenor.com/m/C27Docdu5hkAAAAC/indeed-oui.gif" alt="Cat Animation" />
+
+  <div id="controls">
+    <button id="check-btn" onclick="checkAnswer()">確認答案</button>
+    <button onclick="nextQuestion()">後一條</button>
+    <button onclick="restartGame()">重新開始</button>
+    <button onclick="showCorrectAnswer()">提示正確答案</button>
+    <button onclick="goHome()">回到遊戲首頁</button>
+  </div>
+
   <audio id="correct-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4a41c8367.mp3?filename=cat-meow-14536.mp3"></audio>
-  <audio id="wrong-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2021/09/06/audio_b285aa7e3a.mp3?filename=error-126627.mp3"></audio>
+  <audio id="wrong-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
 
   <script>
     const questions = [
-      ["我", "愛", "台灣"],
-      ["恁", "好", "嗎"],
-      ["欲", "食", "飯"]
+      ["下課", "干焦", "十", "分", "鐘"],
+      ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
+      ["人", "講", "中指", "毋通", "烏白", "比"],
+      ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
+      ["今仔日", "的", "日頭", "真", "猛"],
+      ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
+      ["大水雨", "閣", "拄著", "滇流"],
+      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
     ];
 
     let currentQuestion = 0;
     let errorCount = 0;
 
-    const questionArea = document.getElementById("question");
-    const answerArea = document.getElementById("answer");
+    const questionArea = document.getElementById("question-area");
+    const answerArea = document.getElementById("answer-area");
     const message = document.getElementById("message");
     const cat = document.getElementById("cat");
     const correctSound = document.getElementById("correct-sound");
     const wrongSound = document.getElementById("wrong-sound");
 
     function loadQuestion() {
-      questionArea.innerHTML = "";
-      answerArea.innerHTML = "";
+      errorCount = 0;
       message.textContent = "";
       cat.style.display = "none";
+      questionArea.innerHTML = "";
+      answerArea.innerHTML = "";
 
-      const words = [...questions[currentQuestion]];
-      shuffleArray(words);
-
-      words.forEach(word => {
+      const shuffled = [...questions[currentQuestion]].sort(() => Math.random() - 0.5);
+      shuffled.forEach(word => {
         const div = document.createElement("div");
-        div.className = "word";
         div.textContent = word;
+        div.className = "word";
         div.draggable = true;
         div.addEventListener("dragstart", dragStart);
         questionArea.appendChild(div);
       });
 
-      for (let i = 0; i < words.length; i++) {
-        const drop = document.createElement("div");
-        drop.className = "drop-zone";
-        drop.addEventListener("dragover", allowDrop);
-        drop.addEventListener("drop", dropWord);
-        drop.addEventListener("click", () => {
-          if (drop.textContent) {
-            const word = drop.textContent;
-            drop.textContent = "";
-            addWordBack(word);
-          }
+      for (let i = 0; i < questions[currentQuestion].length; i++) {
+        const dropBox = document.createElement("div");
+        dropBox.className = "word";
+        dropBox.style.backgroundColor = "#eee";
+        dropBox.style.minWidth = "40px";
+        dropBox.style.minHeight = "30px";
+        dropBox.textContent = "";
+        dropBox.addEventListener("dragover", dragOver);
+        dropBox.addEventListener("drop", drop);
+        dropBox.addEventListener("click", () => {
+          dropBox.textContent = ""; // 點一下清除文字
         });
-        answerArea.appendChild(drop);
+        answerArea.appendChild(dropBox);
       }
+
+      document.getElementById("check-btn").disabled = false;
     }
 
     function dragStart(e) {
       e.dataTransfer.setData("text", e.target.textContent);
-      e.target.classList.add("dragging");
     }
 
-    function allowDrop(e) {
+    function dragOver(e) {
       e.preventDefault();
     }
 
-    function dropWord(e) {
+    function drop(e) {
       e.preventDefault();
-      const data = e.dataTransfer.getData("text");
-      if (!e.target.textContent) {
-        e.target.textContent = data;
-        const dragged = document.querySelector(".dragging");
-        if (dragged) dragged.remove();
-      }
-    }
-
-    function addWordBack(word) {
-      const div = document.createElement("div");
-      div.className = "word";
-      div.textContent = word;
-      div.draggable = true;
-      div.addEventListener("dragstart", dragStart);
-      questionArea.appendChild(div);
+      const text = e.dataTransfer.getData("text");
+      e.target.textContent = text;
     }
 
     function checkAnswer() {
@@ -184,9 +176,7 @@
         message.textContent = "著，有夠厲害！";
         cat.style.display = "block";
         correctSound.currentTime = 0;
-        correctSound.play().catch((e) => {
-          console.warn("音效播放被阻擋：", e);
-        });
+        correctSound.play().catch(() => {});
         document.getElementById("check-btn").disabled = true;
       } else {
         errorCount++;
@@ -199,32 +189,46 @@
     }
 
     function resetAnswerArea() {
-      const filled = Array.from(answerArea.children).map(div => div.textContent);
-      filled.forEach(word => {
-        if (word) addWordBack(word);
+      Array.from(answerArea.children).forEach(div => {
+        div.textContent = "";
       });
-      Array.from(answerArea.children).forEach(div => div.textContent = "");
     }
 
     function shuffleQuestionWords() {
-      const words = Array.from(questionArea.children).map(div => div.textContent);
+      const correct = questions[currentQuestion];
+      const shuffled = [...correct].sort(() => Math.random() - 0.5);
       questionArea.innerHTML = "";
-      shuffleArray(words).forEach(word => {
+      shuffled.forEach(word => {
         const div = document.createElement("div");
-        div.className = "word";
         div.textContent = word;
+        div.className = "word";
         div.draggable = true;
         div.addEventListener("dragstart", dragStart);
         questionArea.appendChild(div);
       });
     }
 
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    function nextQuestion() {
+      currentQuestion = (currentQuestion + 1) % questions.length;
+      loadQuestion();
+    }
+
+    function restartGame() {
+      currentQuestion = 0;
+      loadQuestion();
+    }
+
+    function showCorrectAnswer() {
+      const correct = questions[currentQuestion];
+      Array.from(answerArea.children).forEach((div, i) => {
+        div.textContent = correct[i];
+      });
+      message.textContent = "";
+      document.getElementById("check-btn").disabled = true;
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
     }
 
     window.onload = loadQuestion;
