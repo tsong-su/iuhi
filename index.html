@@ -106,7 +106,7 @@
     <button id="music-toggle">🔈 音樂開關</button>
   </header>
 
-  <audio id="bg-music" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4ab2467b27.mp3" loop></audio>
+  <audio id="bg-music" src="https://cdn.pixabay.com/audio/2022/03/15/audio_4ab2467b27.mp3" loop preload="auto"></audio>
 
   <main class="game-links">
     <a href="game1.html" title="點我開始玩第一款遊戲">字詞重組塌空</a>
@@ -124,9 +124,13 @@
 
     toggleBtn.addEventListener('click', () => {
       if (!isPlaying) {
-        music.play();
-        toggleBtn.textContent = '🔇 關閉音樂';
-        isPlaying = true;
+        music.play().then(() => {
+          toggleBtn.textContent = '🔇 關閉音樂';
+          isPlaying = true;
+        }).catch((e) => {
+          alert("⚠️ 音樂播放失敗，請檢查瀏覽器設定或重新載入。");
+          console.error("播放失敗：", e);
+        });
       } else {
         music.pause();
         toggleBtn.textContent = '🔈 音樂開關';
