@@ -17,7 +17,10 @@
     #subtitle {
       color: #6b4ca3;
       font-size: 18px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+    #links {
+      margin-bottom: 10px;
     }
     #question-area, #answer-area {
       display: flex;
@@ -69,11 +72,21 @@
       width: 120px;
       margin: 20px auto 0 auto;
     }
+    .link-btn {
+      margin: 0 10px;
+      font-size: 14px;
+      color: #5c3d99;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <h1>字詞重組塌空</h1>
-  <div id="subtitle">請kā正確的字詞suá 到下底格仔內</div>
+  <div id="subtitle">請 kā 正確的字詞 suá 到下底格仔內</div>
+  <div id="links">
+    <button onclick="playAudio()">🔊 播音</button>
+    <a id="dict-link" class="link-btn" href="#" target="_blank">🔗 查教典</a>
+  </div>
 
   <div id="question-area"></div>
   <div id="answer-area"></div>
@@ -91,17 +104,46 @@
 
   <audio id="correct-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4a41c8367.mp3?filename=cat-meow-14536.mp3"></audio>
   <audio id="wrong-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
+  <audio id="sentence-audio" preload="auto"></audio>
 
   <script>
     const questions = [
-      ["下課", "干焦", "十", "分", "鐘"],
-      ["華語", "的", "『蒟蒻』", "台語", "講做", "粉鳥舅"],
-      ["人", "講", "中指", "毋通", "烏白", "比"],
-      ["伊", "毋是", "彼款", "會", "食錢", "的", "人"],
-      ["今仔日", "的", "日頭", "真", "猛"],
-      ["這陣", "當咧", "出", "大日虎", "咱", "上好", "莫", "出門", "較袂", "著痧"],
-      ["大水雨", "閣", "拄著", "滇流"],
-      ["你", "敢", "有", "需要", "人", "共", "你", "鬥相共"]
+      ["食甲", "半老老", "才", "開始", "學", "電腦"],
+      ["伊", "是", "一个", "做", "苦工", "的", "苦力"],
+      ["臺北", "橋跤", "有", "誠濟", "等欲", "做", "散工", "的"],
+      ["𪜶", "親情", "內底", "有", "一个", "大官虎", "，", "講話", "攏會", "硩", "死人"],
+      ["電影", "內底", "的", "抓耙仔", "攏", "無好尾"],
+      ["伊", "上班", "的時", "定定", "揣空縫", "走去", "外口", "摸飛"],
+      ["王議員", "去", "予人", "挲圓仔湯", "才", "無閣", "參選"],
+      ["規", "公司", "的", "代誌", "攏是", "伊", "咧", "摠頭"],
+      ["講著", "種花", "伊", "閣有", "二步七仔"],
+      ["這个", "囡仔", "真", "健丟", "，", "閣", "會曉", "拋麒麟"]
+    ];
+
+    const audios = [
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13963.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8424.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/359.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3244.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10549.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7265.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10521.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/101.mp3",
+      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6948.mp3"
+    ];
+
+    const dictLinks = [
+      "https://sutian.moe.edu.tw/und-hani/su/13963/",
+      "https://sutian.moe.edu.tw/und-hani/su/5457/",
+      "https://sutian.moe.edu.tw/und-hani/su/8424/",
+      "https://sutian.moe.edu.tw/und-hani/su/359/",
+      "https://sutian.moe.edu.tw/und-hani/su/3244/",
+      "https://sutian.moe.edu.tw/und-hani/su/10549/",
+      "https://sutian.moe.edu.tw/und-hani/su/7265/",
+      "https://sutian.moe.edu.tw/und-hani/su/10521/",
+      "https://sutian.moe.edu.tw/und-hani/su/101/",
+      "https://sutian.moe.edu.tw/und-hani/su/6948/"
     ];
 
     let currentQuestion = 0;
@@ -113,6 +155,8 @@
     const cat = document.getElementById("cat");
     const correctSound = document.getElementById("correct-sound");
     const wrongSound = document.getElementById("wrong-sound");
+    const sentenceAudio = document.getElementById("sentence-audio");
+    const dictLink = document.getElementById("dict-link");
 
     function loadQuestion() {
       errorCount = 0;
@@ -141,10 +185,14 @@
         dropBox.addEventListener("dragover", dragOver);
         dropBox.addEventListener("drop", drop);
         dropBox.addEventListener("click", () => {
-          dropBox.textContent = ""; // 點一下清除文字
+          dropBox.textContent = "";
         });
         answerArea.appendChild(dropBox);
       }
+
+      // 設定音檔與教典連結
+      sentenceAudio.src = audios[currentQuestion];
+      dictLink.href = dictLinks[currentQuestion];
 
       document.getElementById("check-btn").disabled = false;
     }
@@ -229,6 +277,10 @@
 
     function goHome() {
       window.location.href = "index.html";
+    }
+
+    function playAudio() {
+      sentenceAudio.play().catch(() => {});
     }
 
     window.onload = loadQuestion;
