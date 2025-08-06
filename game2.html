@@ -10,97 +10,129 @@
     body, html {
       margin: 0; padding: 0;
       height: 100%;
-      background-color: #ffecb3; /* 活潑有活力的淡黃色背景 */
+      background-color: #fffae3; /* 活潑亮色背景 */
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding: 20px 10px;
+      padding: 20px;
+      user-select: none;
     }
     h1 {
       margin-bottom: 0.5em;
-      color: #2e7d32; /* 綠色標題 */
+      color: #2e7d32; /* 綠色 */
+      text-align: center;
     }
     #instruction {
-      font-size: 1.2em;
-      margin-bottom: 15px;
-      color: #555;
+      font-size: 1.1em;
+      margin-bottom: 1em;
+      text-align: center;
     }
-    #words {
+    #words, #answer-area {
       display: flex;
-      flex-wrap: nowrap; /* 一行排列 */
       justify-content: center;
-      gap: 12px;
-      min-height: 60px;
-      background: #fff;
-      border: 3px dashed #81c784;
+      flex-wrap: nowrap; /* 一列排列 */
+      gap: 10px;
+      min-height: 50px;
+      padding: 10px;
+      background-color: #fff;
+      border: 2px dashed #8bc34a;
       border-radius: 12px;
-      padding: 10px 15px;
       margin-bottom: 20px;
       user-select: none;
-      overflow-x: auto;
     }
     .word {
       background-color: #aed581;
-      padding: 10px 16px;
-      border-radius: 10px;
+      padding: 10px 15px;
+      border-radius: 8px;
       cursor: grab;
       font-weight: 600;
-      white-space: nowrap;
-      color: #1b5e20;
+      color: #2e7d32;
       user-select: none;
+      white-space: nowrap;
+      min-width: 40px;
+      text-align: center;
     }
     button {
-      font-size: 1em;
       padding: 10px 20px;
-      margin: 5px 10px 5px 0;
-      border: none;
-      border-radius: 10px;
+      font-size: 16px;
+      margin: 5px 8px;
       cursor: pointer;
-      background-color: #4caf50;
+      border-radius: 8px;
+      border: none;
+      background-color: #558b2f;
       color: white;
       transition: background-color 0.3s ease;
+      user-select: none;
     }
     button:hover {
-      background-color: #388e3c;
+      background-color: #33691e;
     }
     #result {
+      margin-top: 10px;
       font-weight: bold;
       font-size: 1.3em;
-      margin-top: 15px;
       min-height: 1.5em;
+      color: #2e7d32;
+      text-align: center;
+      user-select: none;
     }
     #progress {
-      margin-top: 15px;
-      font-size: 1em;
-      color: #2e7d32;
+      width: 100%;
+      max-width: 480px;
+      height: 20px;
+      background-color: #c5e1a5;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      overflow: hidden;
     }
-    a.dict-link {
-      margin-left: 10px;
-      font-size: 0.9em;
-      color: #388e3c;
-      text-decoration: underline;
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #7cb342;
+      transition: width 0.3s ease;
     }
-    a.dict-link:hover {
-      color: #2e7d32;
+    .link-btn {
+      background-color: #4caf50;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: white;
+    }
+    .link-btn:hover {
+      background-color: #357a38;
     }
   </style>
 </head>
 <body>
+
   <h1>台語字詞排序遊戲</h1>
   <div id="instruction">請 kā tsia-ê 字詞排 hōo 好勢</div>
-  <div id="words"></div>
-  <div>
-    <button id="btn-confirm">確認</button>
-    <button id="btn-restart">重新開始</button>
-    <button id="btn-next">後一條</button>
-    <button id="btn-show-answer">提示正確答案</button>
-    <button id="btn-play-audio">播放語音</button>
-    <a id="dict-link" href="#" class="dict-link" target="_blank" rel="noopener noreferrer">看教典</a>
+
+  <div id="progress">
+    <div id="progress-bar"></div>
   </div>
+
+  <div id="words"></div>
+
+  <div style="text-align:center;">
+    <button id="checkBtn">確認</button>
+    <button id="restartBtn">重新開始</button>
+    <button id="nextBtn">後一條</button>
+    <button id="hintBtn">提示正確答案</button>
+    <button id="playAudioBtn">🔊 播音</button>
+  </div>
+
   <div id="result"></div>
-  <div id="progress"></div>
+
+  <a href="index.html" class="link-btn">回到遊戲首頁</a>
+  <a href="#" target="_blank" id="dictLink" class="link-btn" style="margin-left:8px;">看教典</a>
+
+  <audio id="audioPlayer" preload="auto"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script>
@@ -167,110 +199,129 @@
       }
     ];
 
-    const wordsContainer = document.getElementById('words');
-    const btnConfirm = document.getElementById('btn-confirm');
-    const btnRestart = document.getElementById('btn-restart');
-    const btnNext = document.getElementById('btn-next');
-    const btnShowAnswer = document.getElementById('btn-show-answer');
-    const btnPlayAudio = document.getElementById('btn-play-audio');
-    const resultDiv = document.getElementById('result');
-    const progressDiv = document.getElementById('progress');
-    const dictLink = document.getElementById('dict-link');
-
     let currentIndex = 0;
-    let sortable;
+    let currentAnswer = "";
+    const wordsContainer = document.getElementById('words');
+    const resultDiv = document.getElementById('result');
+    const progressBar = document.getElementById('progress-bar');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const dictLink = document.getElementById('dictLink');
 
-    function shuffleArray(arr) {
-      const array = arr.slice();
-      for(let i = array.length -1; i>0; i--){
-        const j = Math.floor(Math.random() * (i+1));
-        [array[i], array[j]] = [array[j], array[i]];
+    // 初始化拖曳功能
+    let sortable = null;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for(let i = copy.length -1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
       }
-      return array;
+      return copy;
     }
 
-    function loadQuestion(index){
+    function loadQuestion(index) {
       if(index < 0 || index >= questions.length) return;
+      currentIndex = index;
       const q = questions[index];
-      resultDiv.textContent = '';
-      dictLink.href = q.dict;
-      dictLink.textContent = '看教典';
+      currentAnswer = q.answer;
 
-      // 清空字詞
-      wordsContainer.innerHTML = '';
-
-      // 洗牌字詞放入
-      const shuffled = shuffleArray(q.words);
-      for(let w of shuffled){
+      // 清空並隨機排列字詞
+      wordsContainer.innerHTML = "";
+      let shuffledWords = shuffle(q.words);
+      shuffledWords.forEach(word => {
         const div = document.createElement('div');
         div.className = 'word';
-        div.textContent = w;
+        div.textContent = word;
         wordsContainer.appendChild(div);
-      }
+      });
 
-      // 初始化 Sortable
+      // 更新拖曳
       if(sortable) sortable.destroy();
       sortable = new Sortable(wordsContainer, {
         animation: 150,
         ghostClass: 'sortable-ghost',
+        forceFallback: true,
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag'
       });
 
-      // 更新進度
-      progressDiv.textContent = `第 ${index + 1} 題，共 ${questions.length} 題`;
+      // 清空訊息
+      resultDiv.textContent = "";
+      updateProgressBar();
+      // 設定教典連結
+      dictLink.href = q.dict;
+
+      // 自動播放音檔
+      playAudio();
     }
 
-    function checkAnswer(){
-      const q = questions[currentIndex];
-      const arranged = Array.from(wordsContainer.children).map(div => div.textContent).join('');
-      if(arranged === q.answer){
-        resultDiv.style.color = 'green';
-        resultDiv.textContent = '✅ 著！有夠𠢕！';
+    function updateProgressBar() {
+      const percent = ((currentIndex + 1) / questions.length) * 100;
+      progressBar.style.width = percent + '%';
+    }
+
+    function getUserAnswer() {
+      return Array.from(wordsContainer.children).map(div => div.textContent).join('');
+    }
+
+    function checkAnswer() {
+      const userAnswer = getUserAnswer();
+      if(userAnswer === currentAnswer) {
+        resultDiv.textContent = "✅ 著！有夠𠢕！";
+        resultDiv.style.color = "green";
       } else {
-        resultDiv.style.color = 'red';
-        resultDiv.textContent = '毋著喔，閣試一擺。';
+        resultDiv.textContent = "毋著喔，閣試一擺。";
+        resultDiv.style.color = "red";
       }
     }
 
-    function restartQuestion(){
+    function restart() {
       loadQuestion(currentIndex);
-      resultDiv.textContent = '';
     }
 
-    function nextQuestion(){
-      if(currentIndex < questions.length -1){
-        currentIndex++;
-        loadQuestion(currentIndex);
-      } else {
-        alert('已經是最後一題了');
-      }
+    function nextQuestion() {
+      let nextIdx = currentIndex + 1;
+      if(nextIdx >= questions.length) nextIdx = 0;
+      loadQuestion(nextIdx);
     }
 
-    function showAnswer(){
-      const q = questions[currentIndex];
-      wordsContainer.innerHTML = '';
-      for(let ch of q.answer){
+    function showAnswer() {
+      // 清空字詞區，顯示正確答案字詞（不隨機）
+      wordsContainer.innerHTML = "";
+      const correctWords = questions[currentIndex].words;
+      correctWords.forEach(word => {
         const div = document.createElement('div');
         div.className = 'word';
-        div.textContent = ch;
+        div.textContent = word;
         wordsContainer.appendChild(div);
-      }
-      resultDiv.style.color = 'blue';
-      resultDiv.textContent = '提示：正確答案';
+      });
+
+      if(sortable) sortable.destroy();
+      sortable = new Sortable(wordsContainer, {
+        animation: 150,
+        disabled: true
+      });
+
+      resultDiv.textContent = "正確答案已提示";
+      resultDiv.style.color = "#2e7d32";
     }
 
-    function playAudio(){
+    function playAudio() {
       const q = questions[currentIndex];
-      const audio = new Audio(q.audio);
-      audio.play();
+      audioPlayer.src = q.audio;
+      audioPlayer.play().catch(() => {});
     }
 
-    btnConfirm.addEventListener('click', checkAnswer);
-    btnRestart.addEventListener('click', restartQuestion);
-    btnNext.addEventListener('click', nextQuestion);
-    btnShowAnswer.addEventListener('click', showAnswer);
-    btnPlayAudio.addEventListener('click', playAudio);
+    // 按鈕事件綁定
+    document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+    document.getElementById('restartBtn').addEventListener('click', restart);
+    document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+    document.getElementById('hintBtn').addEventListener('click', showAnswer);
+    document.getElementById('playAudioBtn').addEventListener('click', playAudio);
 
-    loadQuestion(currentIndex);
+    // 頁面載入時初始題目
+    loadQuestion(0);
   </script>
+
 </body>
 </html>
