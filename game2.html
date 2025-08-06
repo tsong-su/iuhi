@@ -2,15 +2,17 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>台語句子排序遊戲 - 測試版</title>
+  <title>台語字詞排序遊戲 - 測試版</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: "Segoe UI", sans-serif;
       text-align: center;
-      background-color: #f2f2f2;
+      background: linear-gradient(to right, #FFF176, #81D4FA); /* 黃+藍漸層 */
+      color: #333;
     }
     h1 {
       margin-top: 20px;
+      font-size: 28px;
     }
     #word-bank, #answer-area {
       display: flex;
@@ -22,16 +24,16 @@
       background-color: #fff;
       border: 2px dashed #ccc;
       width: 80%;
+      border-radius: 8px;
     }
     .word {
       padding: 8px 12px;
       margin: 5px;
-      background-color: #d9edf7;
-      border: 1px solid #31708f;
-      border-radius: 4px;
+      background-color: #AED581;
+      border: 1px solid #558B2F;
+      border-radius: 6px;
       cursor: move;
       user-select: none;
-      text-align: center;
     }
     .controls {
       margin: 20px;
@@ -40,6 +42,14 @@
       margin: 5px;
       padding: 10px 15px;
       font-size: 16px;
+      border-radius: 5px;
+      background-color: #4FC3F7;
+      border: none;
+      cursor: pointer;
+      color: white;
+    }
+    button:hover {
+      background-color: #0288D1;
     }
     audio {
       margin-top: 10px;
@@ -48,9 +58,9 @@
 </head>
 <body>
 
-<h1>台語句子排序遊戲</h1>
+<h1>台語字詞排序遊戲</h1>
 
-<div id="question">請將下列詞語排列成正確句子：</div>
+<div id="question">請kā tsia-ê 字詞排hōo 好勢</div>
 
 <audio controls>
   <source src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/47/47743.mp3" type="audio/mp3">
@@ -130,7 +140,7 @@ function checkAnswer() {
   const answerArea = document.getElementById("answer-area");
   const words = Array.from(answerArea.getElementsByClassName("word")).map(w => w.textContent);
   const isCorrect = JSON.stringify(words) === JSON.stringify(correctAnswer);
-  document.getElementById("result").textContent = isCorrect ? "✅ 正確！" : "❌ 錯誤，請再試試。";
+  document.getElementById("result").textContent = isCorrect ? "✅ 正確！" : "❌ 毋著喔，閣試一擺。";
 }
 
 function showAnswer() {
