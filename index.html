@@ -23,6 +23,7 @@
     h1 {
       font-size: 2em;
       margin-bottom: 0.2em;
+      color: #2E7D32; /* 綠色標題字 */
     }
 
     .icon {
@@ -44,7 +45,6 @@
 
     .game-links a {
       text-decoration: none;
-      color: #222;
       background: #FFB74D;
       padding: 1em 2em;
       border-radius: 20px;
@@ -52,6 +52,15 @@
       box-shadow: 2px 4px 8px rgba(0,0,0,0.2);
       transition: all 0.3s ease;
       position: relative;
+    }
+
+    /* 🔸 針對不同連結設定不同文字顏色 */
+    .game1 {
+      color: #1565C0; /* 深藍色字 */
+    }
+
+    .game2 {
+      color: #D84315; /* 橘紅色字 */
     }
 
     .game-links a:hover {
@@ -83,24 +92,6 @@
       font-size: 0.9em;
       color: #777;
     }
-
-    /* 🔸 橘貓動畫區域 */
-    .cat {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      width: 100px;
-      z-index: 10;
-      animation: sway 2s ease-in-out infinite;
-    }
-
-    @keyframes sway {
-      0% { transform: rotate(0deg); }
-      25% { transform: rotate(2deg); }
-      50% { transform: rotate(0deg); }
-      75% { transform: rotate(-2deg); }
-      100% { transform: rotate(0deg); }
-    }
   </style>
 </head>
 <body>
@@ -113,15 +104,12 @@
   </header>
 
   <main class="game-links">
-    <a href="game1.html" title="點我開始玩第一款遊戲">字詞重組塌空</a>
-    <a href="game2.html" title="點我開始玩第二款遊戲">字詞 suá 位講看覓(蜂)</a>
+    <a href="game1.html" title="點我開始玩第一款遊戲" class="game1">字詞重組塌空</a>
+    <a href="game2.html" title="點我開始玩第二款遊戲" class="game2">字詞 suá 位講看覓(蜂)</a>
   </main>
 
   <footer>
     © 2025 Lē-gio̍k Studio｜歡迎互動學台語
   </footer>
-
-  <!-- 🐱 橘貓插圖 -->
-  <img class="cat" src="https://i.imgur.com/TTQdN4v.png" alt="橘貓" />
 </body>
 </html>
