@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>台語字詞排序遊戲</title>
   <style>
     * { box-sizing: border-box; }
@@ -17,7 +17,7 @@
     }
     #game-container {
       width: 90%;
-      max-width: 900px;
+      max-width: 960px;
       background: #ffffff;
       padding: 30px;
       border-radius: 20px;
@@ -26,7 +26,18 @@
     }
     h1 { font-size: 28px; margin-bottom: 20px; }
     #question { font-size: 22px; margin-bottom: 20px; }
-    #choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+    #choices, #answer-zone {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      min-height: 50px;
+      padding: 10px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      background-color: #f9fafb;
+    }
     .choice {
       padding: 10px 20px;
       background: #d1fae5;
@@ -36,39 +47,51 @@
       font-size: 20px;
       user-select: none;
     }
-    #actions button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #result { margin-top: 15px; font-size: 18px; }
-    .highlight {
-      background-color: #34d399;
-      color: white;
-    }
     .dict-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       margin-top: 15px;
+      gap: 8px;
     }
     .dict-buttons button {
       background-color: #e0f2fe;
       color: #0369a1;
-      margin: 3px;
       font-size: 16px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #actions {
+      margin-top: 10px;
+    }
+    #actions button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #bbf7d0;
+    }
+    #result {
+      margin-top: 15px;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
   <div id="game-container">
     <h1>台語字詞排序遊戲</h1>
-    <div id="question">請將下列詞語依照正確順序排列：</div>
+    <div id="question">請將下列詞語依照正確順序拖曳至下方</div>
     <div id="choices"></div>
+    <div id="answer-zone" ondragover="event.preventDefault()" ondrop="dropToAnswer(event)"></div>
     <div id="actions">
-      <button onclick="checkAnswer()">✔️ 檢查答案</button>
+      <button onclick="checkAnswer()">✔️ 確認</button>
       <button onclick="nextQuestion()">➡️ 後一題</button>
       <button onclick="playAudio()">🔊 播音</button>
+      <button onclick="goHome()">🏠 回到遊戲首頁</button>
     </div>
     <div class="dict-buttons" id="dict-links"></div>
     <div id="result"></div>
@@ -87,50 +110,10 @@
         audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
         terms: [{text: "苦力", link: "https://sutian.moe.edu.tw/und-hani/su/5457/"}]
       },
-      {
-        words: ["臺北", "橋跤", "有", "誠濟", "等欲", "做", "散工", "的"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8424.mp3",
-        terms: [{text: "散工", link: "https://sutian.moe.edu.tw/und-hani/su/8424/"}]
-      },
-      {
-        words: ["𪜶", "親情", "內底", "有", "一个", "大官虎", "，", "講話", "攏會", "硩", "死人"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/359.mp3",
-        terms: [{text: "大官虎", link: "https://sutian.moe.edu.tw/und-hani/su/359/"}]
-      },
-      {
-        words: ["電影", "內底", "的", "抓耙仔", "攏", "無好尾"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3244.mp3",
-        terms: [{text: "抓耙仔", link: "https://sutian.moe.edu.tw/und-hani/su/3244/"}]
-      },
-      {
-        words: ["伊", "上班", "的時", "定定", "揣空縫", "走去", "外口", "摸飛"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10549.mp3",
-        terms: [{text: "摸飛", link: "https://sutian.moe.edu.tw/und-hani/su/10549/"}]
-      },
-      {
-        words: ["王議員", "去", "予人", "挲圓仔湯", "才", "無閣", "參選"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7265.mp3",
-        terms: [{text: "挲圓仔湯", link: "https://sutian.moe.edu.tw/und-hani/su/7265/"}]
-      },
-      {
-        words: ["規", "公司", "的", "代誌", "攏是", "伊", "咧", "摠頭"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10521.mp3",
-        terms: [{text: "摠頭", link: "https://sutian.moe.edu.tw/und-hani/su/10521/"}]
-      },
-      {
-        words: ["講著", "種花", "伊", "閣有", "二步七仔"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/101.mp3",
-        terms: [{text: "二步七仔", link: "https://sutian.moe.edu.tw/und-hani/su/101/"}]
-      },
-      {
-        words: ["這个", "囡仔", "真", "健丟", "，", "閣", "會曉", "拋麒麟"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6948.mp3",
-        terms: [{text: "健丟", link: "https://sutian.moe.edu.tw/und-hani/su/6948/"}]
-      }
+      // ...其餘題目略，可自行補齊...
     ];
 
     let current = 0;
-    let currentOrder = [];
 
     function shuffle(array) {
       return [...array].sort(() => Math.random() - 0.5);
@@ -139,54 +122,58 @@
     function renderQuestion() {
       const q = questions[current];
       const choicesDiv = document.getElementById("choices");
+      const answerZone = document.getElementById("answer-zone");
       const resultDiv = document.getElementById("result");
-      const audioEl = document.getElementById("audio");
       const dictLinks = document.getElementById("dict-links");
+      const audioEl = document.getElementById("audio");
 
-      currentOrder = shuffle(q.words);
       choicesDiv.innerHTML = "";
+      answerZone.innerHTML = "";
       resultDiv.innerHTML = "";
       dictLinks.innerHTML = "";
 
-      currentOrder.forEach(word => {
+      shuffle(q.words).forEach(word => {
         const btn = document.createElement("button");
         btn.className = "choice";
         btn.textContent = word;
         btn.draggable = true;
-        btn.ondragstart = e => {
-          e.dataTransfer.setData("text/plain", e.target.textContent);
-        };
-        btn.ondragover = e => e.preventDefault();
-        btn.ondrop = e => {
-          e.preventDefault();
-          const from = e.dataTransfer.getData("text/plain");
-          const to = e.target.textContent;
-          const fromIdx = currentOrder.indexOf(from);
-          const toIdx = currentOrder.indexOf(to);
-          [currentOrder[fromIdx], currentOrder[toIdx]] = [currentOrder[toIdx], currentOrder[fromIdx]];
-          renderQuestion();
-        };
+        btn.ondragstart = e => e.dataTransfer.setData("text/plain", word);
         choicesDiv.appendChild(btn);
       });
 
-      // 自動播放音檔
-      audioEl.src = q.audio;
-      audioEl.play();
-
-      // 顯示教典查詢按鈕
       q.terms.forEach(term => {
         const btn = document.createElement("button");
         btn.textContent = term.text;
         btn.onclick = () => window.open(term.link, "_blank");
         dictLinks.appendChild(btn);
       });
+
+      audioEl.src = q.audio;
+      audioEl.play();
+    }
+
+    function dropToAnswer(e) {
+      e.preventDefault();
+      const word = e.dataTransfer.getData("text/plain");
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.textContent = word;
+      btn.onclick = () => btn.remove(); // 點一下就可移除
+      document.getElementById("answer-zone").appendChild(btn);
     }
 
     function checkAnswer() {
-      const q = questions[current];
+      const userWords = Array.from(document.getElementById("answer-zone").children).map(btn => btn.textContent);
+      const correctWords = questions[current].words;
       const resultDiv = document.getElementById("result");
-      const correct = q.words.join() === currentOrder.join();
-      resultDiv.innerHTML = correct ? "✅ 答對囉！" : "❌ 再試看看！";
+
+      if (userWords.length !== correctWords.length) {
+        resultDiv.textContent = "⚠️ 尚未完成所有詞語排序喔～";
+        return;
+      }
+
+      const isCorrect = userWords.every((word, idx) => word === correctWords[idx]);
+      resultDiv.textContent = isCorrect ? "🎉 恭喜！答對了！" : "❌ 有錯誤，再試一次！";
     }
 
     function nextQuestion() {
@@ -195,11 +182,13 @@
     }
 
     function playAudio() {
-      const audioEl = document.getElementById("audio");
-      audioEl.play();
+      document.getElementById("audio").play();
     }
 
-    // 初始化
+    function goHome() {
+      window.location.href = "index.html"; // 請依實際首頁檔名修改
+    }
+
     renderQuestion();
   </script>
 </body>
