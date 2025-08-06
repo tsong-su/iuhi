@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,87 +9,85 @@
     * {
       box-sizing: border-box;
     }
-    body, html {
+
+    body,
+    html {
       margin: 0;
       padding: 0;
       font-family: sans-serif;
-      background-color: #fef6ff;
+      background-color: #f9f5ff;
       color: #333;
     }
+
     .container {
       max-width: 1000px;
       margin: auto;
       padding: 20px;
       text-align: center;
     }
+
     h1 {
       color: #8e44ad;
     }
+
     .sentence-display {
       margin: 20px 0;
       font-size: 1.6em;
       font-weight: bold;
       color: #2c3e50;
-      background-color: #fff3cd;
+      background-color: #ffe9ec;
       padding: 15px;
-      border: 2px solid #ffdd57;
+      border: 2px solid #ffa4ba;
       border-radius: 12px;
       box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
     }
+
     .word-bank,
     .answer-area {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      min-height: 100px;
+      min-height: 80px;
       margin: 20px 0;
       padding: 10px;
-      background-color: #e3f2fd;
-      border: 2px dashed #64b5f6;
+      background-color: #fff0fb;
+      border: 2px dashed #d17bd3;
       border-radius: 10px;
     }
+
     .word {
-      background-color: #ffffff;
-      border: 2px solid #64b5f6;
+      background-color: #fbe2ff;
+      border: 2px solid #d17bd3;
       border-radius: 8px;
       padding: 10px 14px;
       margin: 8px;
       cursor: move;
       font-size: 1.2em;
     }
+
     button {
       margin: 10px;
       padding: 10px 20px;
       font-size: 1em;
-      background-color: #ba68c8;
+      background-color: #d17bd3;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
+
     button:hover {
-      background-color: #9c27b0;
+      background-color: #b04fb5;
     }
+
     .result {
       font-size: 1.5em;
       font-weight: bold;
       margin-top: 10px;
     }
-    #dictButton {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 6px 12px;
-      font-size: 1em;
-      background-color: #4db6ac;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    #dictButton:hover {
-      background-color: #00897b;
-    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>台語字詞排序遊戲</h1>
@@ -125,16 +124,92 @@
           word: "苦力",
           url: "https://sutian.moe.edu.tw/und-hani/su/5457/"
         }
-      }
+      },
+      {
+        words: ["臺北橋跤", "有", "誠濟", "等", "欲", "做", "散工", "的"],
+        answer: "臺北橋跤有誠濟等欲做散工的",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/54/54365.mp3",
+        dict: {
+          word: "散工",
+          url: "https://sutian.moe.edu.tw/und-hani/su/8424/"
+        }
+      },
+      {
+        words: ["𪜶", "親情", "內底", "有", "一个", "大官虎", "講話", "攏會", "硩死人"],
+        answer: "𪜶親情內底有一个大官虎，講話攏會硩死人",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/45/45983.mp3",
+        dict: {
+          word: "大官虎",
+          url: "https://sutian.moe.edu.tw/und-hani/su/359/"
+        }
+      },
+      {
+        words: ["電影", "內底", "的", "抓耙仔", "攏", "無", "好尾"],
+        answer: "電影內底的抓耙仔攏無好尾",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/48/48905.mp3",
+        dict: {
+          word: "抓耙仔",
+          url: "https://sutian.moe.edu.tw/und-hani/su/3244/"
+        }
+      },
+      {
+        words: ["伊", "上班", "的", "時", "定定", "揣空縫", "走去", "外口", "摸飛"],
+        answer: "伊上班的時定定揣空縫走去外口摸飛",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/56/56546.mp3",
+        dict: {
+          word: "摸飛",
+          url: "https://sutian.moe.edu.tw/und-hani/su/10549/"
+        }
+      },
+      {
+        words: ["王議員", "去", "予人", "挲圓仔湯", "才", "無閣", "參選"],
+        answer: "王議員去予人挲圓仔湯才無閣參選",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/53/53152.mp3",
+        dict: {
+          word: "挲圓仔湯",
+          url: "https://sutian.moe.edu.tw/und-hani/su/7265/"
+        }
+      },
+      {
+        words: ["規公司", "的", "代誌", "攏是", "伊", "咧", "摠頭"],
+        answer: "規公司的代誌攏是伊咧摠頭",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/56/56510.mp3",
+        dict: {
+          word: "摠頭",
+          url: "https://sutian.moe.edu.tw/und-hani/su/10521/"
+        }
+      },
+      {
+        words: ["講著", "種花", "伊", "閣有", "二步七仔"],
+        answer: "講著種花伊閣有二步七仔",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/45/45684.mp3",
+        dict: {
+          word: "二步七仔",
+          url: "https://sutian.moe.edu.tw/und-hani/su/101/"
+        }
+      },
+      {
+        words: ["這个囡仔", "真健丟", "閣會曉", "拋麒麟"],
+        answer: "這个囡仔真健丟，閣會曉拋麒麟",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/52/52809.mp3",
+        dict: {
+          word: "健丟",
+          url: "https://sutian.moe.edu.tw/und-hani/su/6948/"
+        }
+      },
     ];
 
     let current = 0;
 
     function renderQuestion() {
       const q = questions[current];
-      document.getElementById("wordBank").innerHTML = "";
-      document.getElementById("answerArea").innerHTML = "";
-      document.getElementById("sentenceDisplay").textContent = q.answer;
+      const wordBank = document.getElementById("wordBank");
+      const answerArea = document.getElementById("answerArea");
+      const sentenceDisplay = document.getElementById("sentenceDisplay");
+
+      wordBank.innerHTML = "";
+      answerArea.innerHTML = "";
+      sentenceDisplay.textContent = q.answer;
 
       const shuffled = [...q.words].sort(() => Math.random() - 0.5);
       for (let word of shuffled) {
@@ -143,10 +218,10 @@
         span.draggable = true;
         span.textContent = word;
         span.addEventListener("dragstart", dragStart);
-        document.getElementById("wordBank").appendChild(span);
+        wordBank.appendChild(span);
       }
 
-      document.getElementById("dictButton").textContent = "查「" + q.dict.word + "」";
+      document.getElementById("dictButton").textContent = q.dict.word;
       document.getElementById("dictButton").href = q.dict.url;
 
       setTimeout(playAudio, 200);
@@ -200,8 +275,8 @@
       location.href = "index.html";
     }
 
-    // 載入時顯示第一題
     window.onload = renderQuestion;
   </script>
 </body>
+
 </html>
