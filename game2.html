@@ -1,138 +1,151 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>台語句子排序遊戲</title>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <meta charset="UTF-8">
+  <title>台語句子排序遊戲 - 測試版</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
-      background-color: #f5f5dc;
-      padding: 20px;
+      background-color: #f2f2f2;
     }
-    h2 {
-      margin-top: 10px;
+    h1 {
+      margin-top: 20px;
     }
-    .sortable-container {
+    #word-bank, #answer-area {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      margin: 20px auto;
+      flex-wrap: wrap;
+      margin: 10px auto;
       padding: 10px;
-      border: 2px dashed #ccc;
-      border-radius: 10px;
-      background-color: #fff;
       min-height: 60px;
+      background-color: #fff;
+      border: 2px dashed #ccc;
+      width: 80%;
     }
     .word {
-      padding: 10px 15px;
+      padding: 8px 12px;
       margin: 5px;
-      background-color: #fffae6;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      background-color: #d9edf7;
+      border: 1px solid #31708f;
+      border-radius: 4px;
       cursor: move;
-      font-size: 20px;
+      user-select: none;
+      text-align: center;
+    }
+    .controls {
+      margin: 20px;
     }
     button {
-      margin: 10px 5px;
-      padding: 10px 20px;
+      margin: 5px;
+      padding: 10px 15px;
       font-size: 16px;
-      cursor: pointer;
-      border-radius: 8px;
     }
-    .audio-button {
-      background-color: #cce5ff;
-    }
-    .control-button {
-      background-color: #d5f5e3;
+    audio {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>台語句子排序遊戲</h1>
-  <div id="question-area">
-    <h2>請將下列詞語排序組成正確句子</h2>
-    <button class="audio-button" onclick="playAudio()">🔊 播放朗讀</button>
-    <button onclick="window.open(questions[0].dictionary)" class="control-button">📘 看教典</button>
-  </div>
-  
-  <div id="answer-area" class="sortable-container"></div>
-  
-  <div>
-    <button onclick="checkAnswer()" class="control-button">✅ 提示正確答案</button>
-    <button onclick="restart()" class="control-button">🔄 重新開始</button>
-    <button onclick="nextQuestion()" class="control-button">➡️ 後一條</button>
-    <button onclick="goHome()" class="control-button">🏠 回到遊戲首頁</button>
-  </div>
 
-  <script>
-    const questions = [
-      {
-        words: ["囡仔人", "有", "耳", "無", "喙", "。"],
-        answer: ["囡仔人", "有", "耳", "無", "喙", "。"],
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/47/47743.mp3",
-        dictionary: "https://sutian.moe.edu.tw/und-hani/su/2144/"
-      }
-    ];
+<h1>台語句子排序遊戲</h1>
 
-    let currentQuestionIndex = 0;
-    const answerArea = document.getElementById("answer-area");
+<div id="question">請將下列詞語排列成正確句子：</div>
 
-    function loadQuestion(index) {
-      answerArea.innerHTML = "";
-      const words = [...questions[index].words];
-      shuffle(words);
-      for (const word of words) {
-        const div = document.createElement("div");
-        div.className = "word";
-        div.textContent = word;
-        answerArea.appendChild(div);
-      }
+<audio controls>
+  <source src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/47/47743.mp3" type="audio/mp3">
+  您的瀏覽器不支援音訊播放。
+</audio>
+
+<div class="controls">
+  <button onclick="resetWords()">重新開始</button>
+  <button onclick="checkAnswer()">確認</button>
+  <button onclick="showAnswer()">提示正確答案</button>
+  <a href="https://sutian.moe.edu.tw/und-hani/su/2144/" target="_blank">
+    <button>看教典</button>
+  </a>
+</div>
+
+<div id="word-bank"></div>
+<div id="answer-area" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+
+<div id="result" style="font-size: 18px; margin-top: 20px;"></div>
+
+<script>
+const correctAnswer = ["囡仔人", "有", "耳", "無", "喙", "。"];
+let shuffled = [...correctAnswer].sort(() => Math.random() - 0.5);
+
+function createWordElement(word) {
+  const span = document.createElement("span");
+  span.textContent = word;
+  span.className = "word";
+  span.draggable = true;
+  span.ondragstart = drag;
+  return span;
+}
+
+function populateWords() {
+  const wordBank = document.getElementById("word-bank");
+  wordBank.innerHTML = "";
+  shuffled.forEach(word => {
+    wordBank.appendChild(createWordElement(word));
+  });
+
+  const answerArea = document.getElementById("answer-area");
+  answerArea.innerHTML = "";
+}
+
+function resetWords() {
+  shuffled = [...correctAnswer].sort(() => Math.random() - 0.5);
+  document.getElementById("result").textContent = "";
+  populateWords();
+}
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.textContent);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const text = ev.dataTransfer.getData("text");
+  const wordBank = document.getElementById("word-bank");
+  const answerArea = document.getElementById("answer-area");
+
+  const wordElems = wordBank.getElementsByClassName("word");
+  for (let i = 0; i < wordElems.length; i++) {
+    if (wordElems[i].textContent === text) {
+      const newElem = createWordElement(text);
+      answerArea.appendChild(newElem);
+      wordBank.removeChild(wordElems[i]);
+      break;
     }
+  }
+}
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
+function checkAnswer() {
+  const answerArea = document.getElementById("answer-area");
+  const words = Array.from(answerArea.getElementsByClassName("word")).map(w => w.textContent);
+  const isCorrect = JSON.stringify(words) === JSON.stringify(correctAnswer);
+  document.getElementById("result").textContent = isCorrect ? "✅ 正確！" : "❌ 錯誤，請再試試。";
+}
 
-    function playAudio() {
-      const audio = new Audio(questions[currentQuestionIndex].audio);
-      audio.play();
-    }
+function showAnswer() {
+  const answerArea = document.getElementById("answer-area");
+  const wordBank = document.getElementById("word-bank");
+  answerArea.innerHTML = "";
+  correctAnswer.forEach(word => {
+    answerArea.appendChild(createWordElement(word));
+  });
+  wordBank.innerHTML = "";
+  document.getElementById("result").textContent = "✅ 這是正確答案。";
+}
 
-    function checkAnswer() {
-      const items = [...answerArea.children].map(el => el.textContent);
-      const correct = questions[currentQuestionIndex].answer;
-      if (items.join("") === correct.join("")) {
-        alert("🎉 正確！");
-      } else {
-        alert("❌ 未排對，正確句子是：\n" + correct.join(""));
-      }
-    }
+window.onload = populateWords;
+</script>
 
-    function restart() {
-      loadQuestion(currentQuestionIndex);
-    }
-
-    function nextQuestion() {
-      alert("目前只有一題喔！");
-    }
-
-    function goHome() {
-      window.location.href = "index.html"; // 改成你首頁網址
-    }
-
-    // 啟用拖曳
-    new Sortable(answerArea, {
-      animation: 150
-    });
-
-    // 載入初始題目
-    loadQuestion(currentQuestionIndex);
-  </script>
 </body>
 </html>
