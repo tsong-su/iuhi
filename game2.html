@@ -4,16 +4,14 @@
   <meta charset="UTF-8" />
   <title>字詞 suá 位講看覓</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body, html {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       height: 100%;
       background-color: #dcedc8;
       font-family: sans-serif;
     }
+
     body {
       display: flex;
       flex-direction: column;
@@ -24,6 +22,7 @@
       overflow-x: hidden;
       position: relative;
     }
+
     .container {
       max-width: 480px;
       width: 100%;
@@ -32,43 +31,39 @@
       z-index: 10;
       padding: 0 15px;
     }
-    h1 {
-      margin-bottom: 10px;
-    }
-    #instruction {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
+
+    h1 { margin-bottom: 10px; }
+    #instruction { margin-bottom: 10px; font-size: 18px; }
+
     #words {
       display: flex;
-      flex-direction: row;
-      gap: 10px;
-      justify-content: center;
       flex-wrap: nowrap;
       overflow-x: auto;
+      gap: 10px;
+      justify-content: flex-start;
+      min-height: 50px;
       padding: 10px;
       background-color: #fff;
       border: 2px dashed #aaa;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       border-radius: 10px;
-      min-height: 60px;
     }
+
     .word {
       background-color: #a5d6a7;
       padding: 10px 15px;
       border-radius: 8px;
       cursor: grab;
       user-select: none;
+      color: #000;
       font-weight: 600;
+      white-space: nowrap;
     }
-    #result {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 1.3em;
-      min-height: 1.5em;
-    }
+
+    #result { margin: 10px 0; font-weight: bold; font-size: 1.3em; min-height: 1.5em; }
+
     button {
-      padding: 10px 20px;
+      padding: 10px 15px;
       font-size: 16px;
       margin: 5px;
       cursor: pointer;
@@ -78,84 +73,38 @@
       color: white;
       transition: background-color 0.3s ease;
     }
-    button:hover {
-      background-color: #0277bd;
-    }
 
-    .bee {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background-image: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2dqeGl3eW4yMm1jNzN2Y2N4YWM5MDVuOTRlY290ZDhteGxxemZsNCZlcD12MV9zdGlja2Vyc19zZWFyY2gmY3Q9cw/1OrzLUhqBIfiEOTKen/giphy.webp');
-      background-size: contain;
-      background-repeat: no-repeat;
-      animation: fly 15s linear infinite;
-      opacity: 0.8;
-      z-index: 1;
-      top: 5%;
-      left: -70px;
-    }
-
-    @keyframes fly {
-      0%   { top: 5%; left: -70px; transform: rotate(0deg); }
-      25%  { top: 20%; left: 30%; transform: rotate(15deg); }
-      50%  { top: 60%; left: 60%; transform: rotate(-10deg); }
-      75%  { top: 30%; left: 80%; transform: rotate(20deg); }
-      100% { top: 10%; left: 110%; transform: rotate(0deg); }
-    }
-
-    .cat-left, .cat-right {
-      position: absolute;
-      bottom: 0;
-      width: 80px;
-      height: 80px;
-      background-size: contain;
-      background-repeat: no-repeat;
-      z-index: 2;
-      display: none;
-    }
-    .cat-left {
-      background-image: url('https://cdn.pixabay.com/photo/2021/12/30/10/53/cat-6903446_1280.png');
-      left: 0;
-    }
-    .cat-right {
-      background-image: url('https://cdn.pixabay.com/photo/2023/04/12/11/01/cat-7919394_1280.png');
-      right: 0;
-    }
-
-    @keyframes catLeftMove {
-      0%   { left: -100px; }
-      50%  { left: 100%; transform: scaleX(1); }
-      100% { left: -100px; }
-    }
-
-    @keyframes catRightMove {
-      0%   { right: -100px; }
-      50%  { right: 100%; transform: scaleX(-1); }
-      100% { right: -100px; }
-    }
-
+    button:hover { background-color: #0277bd; }
     .back-btn {
       display: inline-block;
-      margin-top: 30px;
-      padding: 10px 20px;
+      margin-top: 20px;
       background-color: #0288d1;
       color: white;
-      border-radius: 8px;
       text-decoration: none;
       font-size: 16px;
-      z-index: 20;
-      transition: background-color 0.3s ease;
+      padding: 10px 20px;
+      border-radius: 8px;
     }
-    .back-btn:hover {
-      background-color: #0277bd;
+
+    .status-bar {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .sound-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ffc107;
+      color: black;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="bee"></div>
-  <div class="cat-left"></div>
-  <div class="cat-right"></div>
+  <div class="sound-toggle" onclick="toggleSound()">🔊 音效：開</div>
 
   <audio id="sound-ready" src="https://cdn.pixabay.com/audio/2022/03/15/audio_740d8d538b.mp3"></audio>
   <audio id="sound-correct" src="https://cdn.pixabay.com/audio/2022/03/15/audio_65b1c0d12c.mp3"></audio>
@@ -164,15 +113,18 @@
   <div class="container">
     <h1>字詞 suá 位講看覓</h1>
     <div id="instruction">請共 tsia-ê 語詞 suá 位，tsâinn 做正確 ê 一句話，koh 講看覓：</div>
+    <div class="status-bar">
+      ⏳ 倒數：<span id="timer">30</span> 秒 ｜ 🎯 分數：<span id="score">0</span> 分 ｜ 📘 答對 <span id="correct">0</span> / <span id="total">0</span>
+    </div>
     <div id="words"></div>
-    
+
     <button onclick="checkAnswer()">✅ 確認</button>
-    <button onclick="loadNext()">🔁 後一條</button>
-    <button onclick="loadNext()">🔄 重新開始</button>
+    <button onclick="loadNext()">➡️ 後一條</button>
+    <button onclick="restartGame()">🔁 重新開始</button>
     <button onclick="showAnswer()">💡 提示正確答案</button>
+    <button onclick="speakSentence()">🔊 朗讀</button>
 
     <div id="result"></div>
-
     <a href="index.html" class="back-btn">🔙 回到遊戲首頁</a>
   </div>
 
@@ -190,12 +142,21 @@
     ];
 
     let currentAnswer = [];
+    let timer;
+    let timeLeft = 30;
+    let score = 0;
+    let correctCount = 0;
+    let totalCount = 0;
+    let soundOn = true;
+
     const wordsContainer = document.getElementById("words");
     const resultDiv = document.getElementById("result");
+    const scoreSpan = document.getElementById("score");
+    const correctSpan = document.getElementById("correct");
+    const totalSpan = document.getElementById("total");
+    const timerSpan = document.getElementById("timer");
 
-    const sortable = new Sortable(wordsContainer, {
-      animation: 150
-    });
+    const sortable = new Sortable(wordsContainer, { animation: 150 });
 
     function shuffle(array) {
       const copy = [...array];
@@ -207,61 +168,85 @@
     }
 
     function loadNext() {
-      document.getElementById("sound-ready").play();
+      clearInterval(timer);
+      timeLeft = 30;
+      timerSpan.textContent = timeLeft;
+      timer = setInterval(() => {
+        timeLeft--;
+        timerSpan.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          resultDiv.textContent = "⏰ 時間到！";
+          resultDiv.style.color = "orange";
+          if (soundOn) document.getElementById("sound-wrong").play();
+        }
+      }, 1000);
+
+      if (soundOn) document.getElementById("sound-ready").play();
       resultDiv.textContent = "";
       wordsContainer.innerHTML = "";
       const sentence = sentences[Math.floor(Math.random() * sentences.length)];
       currentAnswer = sentence;
       const shuffled = shuffle(sentence);
-      for (let word of shuffled) {
+      shuffled.forEach(word => {
         const el = document.createElement("div");
         el.className = "word";
         el.textContent = word;
         wordsContainer.appendChild(el);
-      }
+      });
     }
 
     function checkAnswer() {
       const current = Array.from(wordsContainer.children).map(el => el.textContent);
+      totalCount++;
+      totalSpan.textContent = totalCount;
       if (JSON.stringify(current) === JSON.stringify(currentAnswer)) {
+        score += 10;
+        correctCount++;
         resultDiv.textContent = "✅ 著！有夠𠢕！";
         resultDiv.style.color = "green";
-        document.getElementById("sound-correct").play();
-
-        const catLeft = document.querySelector(".cat-left");
-        const catRight = document.querySelector(".cat-right");
-
-        catLeft.style.display = "block";
-        catRight.style.display = "block";
-        catLeft.style.animation = "none";
-        catRight.style.animation = "none";
-        void catLeft.offsetWidth;
-        void catRight.offsetWidth;
-
-        catLeft.style.animation = "catLeftMove 3s linear";
-        catRight.style.animation = "catRightMove 3s linear";
-
-        setTimeout(() => {
-          catLeft.style.display = "none";
-          catRight.style.display = "none";
-        }, 3000);
+        if (soundOn) document.getElementById("sound-correct").play();
       } else {
         resultDiv.textContent = "❌ 毋著喔！閣試看覓！";
         resultDiv.style.color = "red";
-        document.getElementById("sound-wrong").play();
+        if (soundOn) document.getElementById("sound-wrong").play();
       }
+      scoreSpan.textContent = score;
+      correctSpan.textContent = correctCount;
+      clearInterval(timer);
+    }
+
+    function restartGame() {
+      score = 0;
+      correctCount = 0;
+      totalCount = 0;
+      scoreSpan.textContent = score;
+      correctSpan.textContent = correctCount;
+      totalSpan.textContent = totalCount;
+      loadNext();
     }
 
     function showAnswer() {
       wordsContainer.innerHTML = "";
-      for (let word of currentAnswer) {
+      currentAnswer.forEach(word => {
         const el = document.createElement("div");
         el.className = "word";
         el.textContent = word;
         wordsContainer.appendChild(el);
-      }
-      resultDiv.textContent = "💡 提示正確答案";
-      resultDiv.style.color = "orange";
+      });
+      resultDiv.textContent = "✅ 正確答案已顯示";
+      resultDiv.style.color = "blue";
+    }
+
+    function speakSentence() {
+      const utterance = new SpeechSynthesisUtterance(currentAnswer.join(' '));
+      utterance.lang = 'zh-TW';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function toggleSound() {
+      soundOn = !soundOn;
+      document.querySelector(".sound-toggle").textContent = soundOn ? "🔊 音效：開" : "🔇 音效：關";
     }
 
     loadNext();
