@@ -4,29 +4,26 @@
   <meta charset="UTF-8" />
   <title>字詞 suá 位講看覓</title>
   <style>
-    /* 重置瀏覽器預設 */
     * {
       box-sizing: border-box;
     }
     body, html {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       height: 100%;
       background-color: #dcedc8;
       font-family: sans-serif;
     }
-
-    /* 容器置頂置中 */
     body {
       display: flex;
       flex-direction: column;
-      align-items: center;  /* 水平置中 */
-      justify-content: flex-start; /* 垂直靠頂 */
-      padding-top: 20px; /* 距離頂部空間 */
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 20px;
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
     }
-
     .container {
       max-width: 480px;
       width: 100%;
@@ -35,47 +32,41 @@
       z-index: 10;
       padding: 0 15px;
     }
-
     h1 {
       margin-bottom: 10px;
     }
-
     #instruction {
       margin-bottom: 20px;
       font-size: 18px;
     }
-
     #words {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: row;
       gap: 10px;
       justify-content: center;
-      min-height: 50px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       padding: 10px;
       background-color: #fff;
       border: 2px dashed #aaa;
       margin-bottom: 20px;
       border-radius: 10px;
+      min-height: 60px;
     }
-
     .word {
       background-color: #a5d6a7;
       padding: 10px 15px;
       border-radius: 8px;
       cursor: grab;
       user-select: none;
-      color: #000;
       font-weight: 600;
-      user-select: none;
     }
-
     #result {
       margin-top: 20px;
       font-weight: bold;
       font-size: 1.3em;
       min-height: 1.5em;
     }
-
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -123,12 +114,10 @@
       z-index: 2;
       display: none;
     }
-
     .cat-left {
       background-image: url('https://cdn.pixabay.com/photo/2021/12/30/10/53/cat-6903446_1280.png');
       left: 0;
     }
-
     .cat-right {
       background-image: url('https://cdn.pixabay.com/photo/2023/04/12/11/01/cat-7919394_1280.png');
       right: 0;
@@ -176,8 +165,12 @@
     <h1>字詞 suá 位講看覓</h1>
     <div id="instruction">請共 tsia-ê 語詞 suá 位，tsâinn 做正確 ê 一句話，koh 講看覓：</div>
     <div id="words"></div>
-    <button onclick="checkAnswer()">確認</button>
-    <button onclick="loadNext()">後一條</button>
+    
+    <button onclick="checkAnswer()">✅ 確認</button>
+    <button onclick="loadNext()">🔁 後一條</button>
+    <button onclick="loadNext()">🔄 重新開始</button>
+    <button onclick="showAnswer()">💡 提示正確答案</button>
+
     <div id="result"></div>
 
     <a href="index.html" class="back-btn">🔙 回到遊戲首頁</a>
@@ -259,8 +252,19 @@
       }
     }
 
+    function showAnswer() {
+      wordsContainer.innerHTML = "";
+      for (let word of currentAnswer) {
+        const el = document.createElement("div");
+        el.className = "word";
+        el.textContent = word;
+        wordsContainer.appendChild(el);
+      }
+      resultDiv.textContent = "💡 提示正確答案";
+      resultDiv.style.color = "orange";
+    }
+
     loadNext();
   </script>
 </body>
 </html>
-
