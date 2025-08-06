@@ -16,8 +16,8 @@
       align-items: center;
     }
     #game-container {
-      width: 90%;
-      max-width: 960px;
+      width: 95%;
+      max-width: 1000px;
       background: #ffffff;
       padding: 30px;
       border-radius: 20px;
@@ -25,21 +25,25 @@
       text-align: center;
     }
     h1 { font-size: 28px; margin-bottom: 20px; }
-    #question { font-size: 22px; margin-bottom: 20px; }
+    #question {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #444;
+    }
     #choices, #answer-zone {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
-      min-height: 50px;
-      padding: 10px;
+      gap: 15px;
+      min-height: 70px;
+      padding: 12px;
       border: 2px dashed #ccc;
       border-radius: 10px;
       margin-bottom: 20px;
       background-color: #f9fafb;
     }
     .choice {
-      padding: 10px 20px;
+      padding: 12px 18px;
       background: #d1fae5;
       border: none;
       border-radius: 10px;
@@ -84,7 +88,7 @@
 <body>
   <div id="game-container">
     <h1>台語字詞排序遊戲</h1>
-    <div id="question">請將下列詞語依照正確順序拖曳至下方</div>
+    <div id="question">請 kā tsia-ê 詞語 suá 到下底的格仔內</div>
     <div id="choices"></div>
     <div id="answer-zone" ondragover="event.preventDefault()" ondrop="dropToAnswer(event)"></div>
     <div id="actions">
@@ -95,7 +99,7 @@
     </div>
     <div class="dict-buttons" id="dict-links"></div>
     <div id="result"></div>
-    <audio id="audio" controls style="display:none;"></audio>
+    <audio id="audio" style="display:none;"></audio>
   </div>
 
   <script>
@@ -103,14 +107,14 @@
       {
         words: ["食甲", "半老老", "才", "開始", "學", "電腦"],
         audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13963.mp3",
-        terms: [{text: "半老老", link: "https://sutian.moe.edu.tw/und-hani/su/13963/"}]
+        terms: [{ text: "半老老", link: "https://sutian.moe.edu.tw/und-hani/su/13963/" }]
       },
       {
         words: ["伊", "是", "一个", "做", "苦工", "的", "苦力"],
         audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
-        terms: [{text: "苦力", link: "https://sutian.moe.edu.tw/und-hani/su/5457/"}]
-      },
-      // ...其餘題目略，可自行補齊...
+        terms: [{ text: "苦力", link: "https://sutian.moe.edu.tw/und-hani/su/5457/" }]
+      }
+      // 可繼續擴增題庫
     ];
 
     let current = 0;
@@ -149,7 +153,12 @@
       });
 
       audioEl.src = q.audio;
-      audioEl.play();
+      // 等待使用者第一次互動再觸發播放（避免瀏覽器禁止自動播放）
+      setTimeout(() => {
+        audioEl.play().catch(e => {
+          console.log("🔇 自動播放被瀏覽器阻擋，需手動點擊播放");
+        });
+      }, 300);
     }
 
     function dropToAnswer(e) {
@@ -158,7 +167,7 @@
       const btn = document.createElement("button");
       btn.className = "choice";
       btn.textContent = word;
-      btn.onclick = () => btn.remove(); // 點一下就可移除
+      btn.onclick = () => btn.remove();
       document.getElementById("answer-zone").appendChild(btn);
     }
 
@@ -186,8 +195,16 @@
     }
 
     function goHome() {
-      window.location.href = "index.html"; // 請依實際首頁檔名修改
+      window.location.href = "index.html";
     }
+
+    // 確保在使用者首次互動後能正確播放音檔
+    window.addEventListener("click", () => {
+      const audio = document.getElementById("audio");
+      if (audio.paused) {
+        audio.play().catch(() => {});
+      }
+    }, { once: true });
 
     renderQuestion();
   </script>
