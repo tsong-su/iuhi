@@ -1,278 +1,243 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>字詞重組塌空</title>
+  <title>台語字詞排序遊戲</title>
   <style>
-    body {
-      font-family: "Arial", sans-serif;
-      background-color: #f3e8ff;
-      text-align: center;
-      padding: 20px;
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+      background-color: #f0f8e0;
     }
     h1 {
-      color: #5c3d99;
-      margin-bottom: 6px;
+      background-color: #4caf50;
+      color: white;
+      margin: 0;
+      padding: 1rem;
+      text-align: center;
     }
-    #subtitle {
-      color: #6b4ca3;
-      font-size: 18px;
-      margin-bottom: 10px;
+    .container {
+      padding: 1rem;
     }
-    #links {
-      margin-bottom: 10px;
-    }
-    #question-area, #answer-area {
+    .word-bank, .answer-box {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
-      margin: 20px auto;
-      min-height: 60px;
-      padding: 10px;
-      border: 2px dashed #ccc;
-      background-color: #fff;
-      border-radius: 10px;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      min-height: 3rem;
     }
     .word {
-      background-color: #d1c4e9;
-      margin: 5px;
-      padding: 10px 15px;
-      border-radius: 10px;
+      background-color: #fff;
+      border: 2px solid #4caf50;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
       cursor: grab;
       user-select: none;
-      transition: all 0.2s ease;
     }
-    .word:active {
-      cursor: grabbing;
-    }
-    #message {
-      margin-top: 15px;
-      font-size: 18px;
-      color: #d32f2f;
-      min-height: 24px;
-    }
-    #controls {
-      margin-top: 20px;
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
     button {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 0.5rem;
       border: none;
-      background-color: #9575cd;
+      background-color: #4caf50;
       color: white;
       cursor: pointer;
     }
     button:hover {
-      background-color: #7e57c2;
+      background-color: #45a049;
     }
-    #cat {
-      display: none;
-      width: 120px;
-      margin: 20px auto 0 auto;
+    #feedback {
+      font-weight: bold;
+      margin-top: 1rem;
     }
-    .link-btn {
-      margin: 0 10px;
-      font-size: 14px;
-      color: #5c3d99;
-      text-decoration: none;
+    .highlight {
+      animation: blink 0.3s 2;
+    }
+    @keyframes blink {
+      0%, 100% { background-color: yellow; }
+      50% { background-color: white; }
+    }
+    .dict-links {
+      margin-top: 1rem;
+    }
+    .dict-links button {
+      background-color: #2196F3;
     }
   </style>
 </head>
 <body>
-  <h1>字詞重組塌空</h1>
-  <div id="subtitle">請 kā 正確的字詞 suá 到下底格仔內</div>
-  <div id="links">
-    <button onclick="playAudio()">🔊 播音</button>
-    <a id="dict-link" class="link-btn" href="#" target="_blank">🔗 查教典</a>
+  <h1>台語字詞排序遊戲</h1>
+  <div class="container">
+    <div id="sentenceBox">
+      <div class="word-bank" id="wordBank"></div>
+      <div class="answer-box" id="answerBox"></div>
+    </div>
+    <div class="buttons">
+      <button onclick="playAudio()">播音</button>
+      <button onclick="checkAnswer()">確認答案</button>
+      <button onclick="showHint()">提示正確答案</button>
+      <button onclick="nextQuestion()">後一題</button>
+      <button onclick="restartGame()">重新開始</button>
+      <button onclick="goHome()">回到遊戲首頁</button>
+    </div>
+    <div class="dict-links" id="dictLinks"></div>
+    <div id="feedback"></div>
+    <div id="score">分數：0</div>
   </div>
-
-  <div id="question-area"></div>
-  <div id="answer-area"></div>
-  <div id="message"></div>
-
-  <img id="cat" src="https://media1.tenor.com/m/C27Docdu5hkAAAAC/indeed-oui.gif" alt="Cat Animation" />
-
-  <div id="controls">
-    <button id="check-btn" onclick="checkAnswer()">確認答案</button>
-    <button onclick="nextQuestion()">後一條</button>
-    <button onclick="restartGame()">重新開始</button>
-    <button onclick="showCorrectAnswer()">提示正確答案</button>
-    <button onclick="goHome()">回到遊戲首頁</button>
-  </div>
-
-  <audio id="correct-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e4a41c8367.mp3?filename=cat-meow-14536.mp3"></audio>
-  <audio id="wrong-sound" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/10/22/audio_8866743873.mp3?filename=wrong-answer-129254.mp3"></audio>
-  <audio id="sentence-audio" preload="auto"></audio>
 
   <script>
     const questions = [
-      ["食甲", "半老老", "才", "開始", "學", "電腦"],
-      ["伊", "是", "一个", "做", "苦工", "的", "苦力"],
-      ["臺北", "橋跤", "有", "誠濟", "等欲", "做", "散工", "的"],
-      ["𪜶", "親情", "內底", "有", "一个", "大官虎", "，", "講話", "攏會", "硩", "死人"],
-      ["電影", "內底", "的", "抓耙仔", "攏", "無好尾"],
-      ["伊", "上班", "的時", "定定", "揣空縫", "走去", "外口", "摸飛"],
-      ["王議員", "去", "予人", "挲圓仔湯", "才", "無閣", "參選"],
-      ["規", "公司", "的", "代誌", "攏是", "伊", "咧", "摠頭"],
-      ["講著", "種花", "伊", "閣有", "二步七仔"],
-      ["這个", "囡仔", "真", "健丟", "，", "閣", "會曉", "拋麒麟"]
+      {
+        sentence: ["食甲", "半老老", "才", "開始", "學", "電腦"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13963.mp3",
+        dictWord: { text: "半老老", url: "https://sutian.moe.edu.tw/und-hani/su/13963/" }
+      },
+      {
+        sentence: ["伊", "是", "一个", "做", "苦工", "的", "苦力"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
+        dictWord: { text: "苦力", url: "https://sutian.moe.edu.tw/und-hani/su/5457/" }
+      },
+      {
+        sentence: ["臺北", "橋跤", "有", "誠濟", "等欲", "做", "散工", "的"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8424.mp3",
+        dictWord: { text: "散工", url: "https://sutian.moe.edu.tw/und-hani/su/8424/" }
+      },
+      {
+        sentence: ["𪜶", "親情", "內底", "有", "一个", "大官虎", "，", "講話", "攏會", "硩", "死人"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/359.mp3",
+        dictWord: { text: "大官虎", url: "https://sutian.moe.edu.tw/und-hani/su/359/" }
+      },
+      {
+        sentence: ["電影", "內底", "的", "抓耙仔", "攏", "無好尾"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3244.mp3",
+        dictWord: { text: "抓耙仔", url: "https://sutian.moe.edu.tw/und-hani/su/3244/" }
+      },
+      {
+        sentence: ["伊", "上班", "的時", "定定", "揣空縫", "走去", "外口", "摸飛"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10549.mp3",
+        dictWord: { text: "摸飛", url: "https://sutian.moe.edu.tw/und-hani/su/10549/" }
+      },
+      {
+        sentence: ["王議員", "去", "予人", "挲圓仔湯", "才", "無閣", "參選"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7265.mp3",
+        dictWord: { text: "挲圓仔湯", url: "https://sutian.moe.edu.tw/und-hani/su/7265/" }
+      },
+      {
+        sentence: ["規", "公司", "的", "代誌", "攏是", "伊", "咧", "摠頭"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10521.mp3",
+        dictWord: { text: "摠頭", url: "https://sutian.moe.edu.tw/und-hani/su/10521/" }
+      },
+      {
+        sentence: ["講著", "種花", "伊", "閣有", "二步七仔"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/101.mp3",
+        dictWord: { text: "二步七仔", url: "https://sutian.moe.edu.tw/und-hani/su/101/" }
+      },
+      {
+        sentence: ["這个", "囡仔", "真", "健丟", "，", "閣", "會曉", "拋麒麟"],
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6948.mp3",
+        dictWord: { text: "健丟", url: "https://sutian.moe.edu.tw/und-hani/su/6948/" }
+      }
     ];
 
-    const audios = [
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13963.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8424.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/359.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3244.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10549.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7265.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10521.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/101.mp3",
-      "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6948.mp3"
-    ];
-
-    const dictLinks = [
-      "https://sutian.moe.edu.tw/und-hani/su/13963/",
-      "https://sutian.moe.edu.tw/und-hani/su/5457/",
-      "https://sutian.moe.edu.tw/und-hani/su/8424/",
-      "https://sutian.moe.edu.tw/und-hani/su/359/",
-      "https://sutian.moe.edu.tw/und-hani/su/3244/",
-      "https://sutian.moe.edu.tw/und-hani/su/10549/",
-      "https://sutian.moe.edu.tw/und-hani/su/7265/",
-      "https://sutian.moe.edu.tw/und-hani/su/10521/",
-      "https://sutian.moe.edu.tw/und-hani/su/101/",
-      "https://sutian.moe.edu.tw/und-hani/su/6948/"
-    ];
-
-    let currentQuestion = 0;
-    let errorCount = 0;
-
-    const questionArea = document.getElementById("question-area");
-    const answerArea = document.getElementById("answer-area");
-    const message = document.getElementById("message");
-    const cat = document.getElementById("cat");
-    const correctSound = document.getElementById("correct-sound");
-    const wrongSound = document.getElementById("wrong-sound");
-    const sentenceAudio = document.getElementById("sentence-audio");
-    const dictLink = document.getElementById("dict-link");
+    let current = 0;
+    let score = 0;
+    let audio = new Audio();
 
     function loadQuestion() {
-      errorCount = 0;
-      message.textContent = "";
-      cat.style.display = "none";
-      questionArea.innerHTML = "";
-      answerArea.innerHTML = "";
+      const q = questions[current];
+      const shuffled = [...q.sentence].sort(() => Math.random() - 0.5);
+      const wordBank = document.getElementById("wordBank");
+      const answerBox = document.getElementById("answerBox");
+      const dictLinks = document.getElementById("dictLinks");
 
-      const shuffled = [...questions[currentQuestion]].sort(() => Math.random() - 0.5);
+      wordBank.innerHTML = "";
+      answerBox.innerHTML = "";
+      dictLinks.innerHTML = "";
+
       shuffled.forEach(word => {
-        const div = document.createElement("div");
-        div.textContent = word;
-        div.className = "word";
-        div.draggable = true;
-        div.addEventListener("dragstart", dragStart);
-        questionArea.appendChild(div);
+        const span = document.createElement("span");
+        span.className = "word";
+        span.textContent = word;
+        span.draggable = true;
+        span.addEventListener("dragstart", dragStart);
+        span.addEventListener("drop", drop);
+        span.addEventListener("dragover", dragOver);
+        wordBank.appendChild(span);
       });
 
-      for (let i = 0; i < questions[currentQuestion].length; i++) {
-        const dropBox = document.createElement("div");
-        dropBox.className = "word";
-        dropBox.style.backgroundColor = "#eee";
-        dropBox.style.minWidth = "40px";
-        dropBox.style.minHeight = "30px";
-        dropBox.textContent = "";
-        dropBox.addEventListener("dragover", dragOver);
-        dropBox.addEventListener("drop", drop);
-        dropBox.addEventListener("click", () => {
-          dropBox.textContent = "";
-        });
-        answerArea.appendChild(dropBox);
-      }
+      const dictBtn = document.createElement("button");
+      dictBtn.textContent = q.dictWord.text;
+      dictBtn.onclick = () => window.open(q.dictWord.url, "_blank");
+      dictLinks.appendChild(dictBtn);
 
-      // 設定音檔與教典連結
-      sentenceAudio.src = audios[currentQuestion];
-      dictLink.href = dictLinks[currentQuestion];
-
-      document.getElementById("check-btn").disabled = false;
+      playAudio(); // 自動播放句子
     }
 
     function dragStart(e) {
-      e.dataTransfer.setData("text", e.target.textContent);
+      e.dataTransfer.setData("text/plain", e.target.textContent);
+      e.target.classList.add("highlight");
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const text = e.dataTransfer.getData("text/plain");
+      const span = document.createElement("span");
+      span.className = "word";
+      span.textContent = text;
+      span.draggable = true;
+      span.addEventListener("dragstart", dragStart);
+      e.target.closest(".answer-box").appendChild(span);
     }
 
     function dragOver(e) {
       e.preventDefault();
     }
 
-    function drop(e) {
-      e.preventDefault();
-      const text = e.dataTransfer.getData("text");
-      e.target.textContent = text;
-    }
-
     function checkAnswer() {
-      const filled = Array.from(answerArea.children).map(div => div.textContent);
-      if (filled.includes("")) {
-        message.textContent = "請將所有答案填滿喔！";
-        return;
-      }
-      const correct = questions[currentQuestion];
-      const isCorrect = filled.every((word, i) => word === correct[i]);
-
-      if (isCorrect) {
-        message.textContent = "著，有夠厲害！";
-        cat.style.display = "block";
-        correctSound.currentTime = 0;
-        correctSound.play().catch(() => {});
-        document.getElementById("check-btn").disabled = true;
+      const answer = Array.from(document.getElementById("answerBox").children).map(el => el.textContent);
+      const correct = questions[current].sentence;
+      const feedback = document.getElementById("feedback");
+      if (answer.join("") === correct.join("")) {
+        feedback.textContent = "✅ 恭喜答對！";
+        score += 10;
+        document.getElementById("score").textContent = `分數：${score}`;
       } else {
-        errorCount++;
-        wrongSound.currentTime = 0;
-        wrongSound.play().catch(() => {});
-        message.textContent = "毋著喔，閣試一擺！";
-        resetAnswerArea();
-        shuffleQuestionWords();
+        feedback.textContent = "❌ 再試試看。";
       }
     }
 
-    function resetAnswerArea() {
-      Array.from(answerArea.children).forEach(div => {
-        div.textContent = "";
-      });
-    }
-
-    function shuffleQuestionWords() {
-      const correct = questions[currentQuestion];
-      const shuffled = [...correct].sort(() => Math.random() - 0.5);
-      questionArea.innerHTML = "";
-      shuffled.forEach(word => {
-        const div = document.createElement("div");
-        div.textContent = word;
-        div.className = "word";
-        div.draggable = true;
-        div.addEventListener("dragstart", dragStart);
-        questionArea.appendChild(div);
+    function showHint() {
+      const answerBox = document.getElementById("answerBox");
+      answerBox.innerHTML = "";
+      questions[current].sentence.forEach(word => {
+        const span = document.createElement("span");
+        span.className = "word";
+        span.textContent = word;
+        span.draggable = true;
+        span.addEventListener("dragstart", dragStart);
+        answerBox.appendChild(span);
       });
     }
 
     function nextQuestion() {
-      currentQuestion = (currentQuestion + 1) % questions.length;
+      current = (current + 1) % questions.length;
+      document.getElementById("feedback").textContent = "";
       loadQuestion();
     }
 
     function restartGame() {
-      currentQuestion = 0;
+      current = 0;
+      score = 0;
+      document.getElementById("score").textContent = `分數：${score}`;
       loadQuestion();
-    }
-
-    function showCorrectAnswer() {
-      const correct = questions[currentQuestion];
-      Array.from(answerArea.children).forEach((div, i) => {
-        div.textContent = correct[i];
-      });
-      message.textContent = "";
-      document.getElementById("check-btn").disabled = true;
     }
 
     function goHome() {
@@ -280,7 +245,9 @@
     }
 
     function playAudio() {
-      sentenceAudio.play().catch(() => {});
+      audio.pause();
+      audio.src = questions[current].audio;
+      audio.play();
     }
 
     window.onload = loadQuestion;
