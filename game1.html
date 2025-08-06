@@ -10,7 +10,7 @@
       padding: 0;
       height: 100%;
       font-family: "Noto Sans TC", sans-serif;
-      background-color: #f0fdf4;
+      background-color: #fffbe7;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -18,49 +18,57 @@
     #game-container {
       width: 95%;
       max-width: 1000px;
-      background: #ffffff;
+      background: #fff0e5;
       padding: 30px;
       border-radius: 20px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
       text-align: center;
     }
-    h1 { font-size: 28px; margin-bottom: 20px; }
-    #question {
-      font-size: 20px;
+    h1 {
+      font-size: 30px;
       margin-bottom: 20px;
-      color: #444;
+      color: #ff6f61;
+    }
+    #question {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #333;
     }
     #choices, #answer-zone {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      min-height: 70px;
-      padding: 12px;
+      gap: 18px;
+      min-height: 100px;
+      padding: 14px;
       border: 2px dashed #ccc;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      background-color: #f9fafb;
+      background-color: #fffdf5;
     }
     .choice {
-      padding: 12px 18px;
-      background: #d1fae5;
+      padding: 14px 20px;
+      background: #ffe066;
       border: none;
       border-radius: 10px;
       cursor: grab;
       font-size: 20px;
       user-select: none;
+      color: #333;
+    }
+    .choice:hover {
+      background-color: #ffd43b;
     }
     .dict-buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 15px;
+      margin-top: 10px;
       gap: 8px;
     }
     .dict-buttons button {
-      background-color: #e0f2fe;
-      color: #0369a1;
+      background-color: #e0f7ff;
+      color: #0277bd;
       font-size: 16px;
       padding: 6px 12px;
       border: none;
@@ -75,13 +83,18 @@
       padding: 10px 20px;
       font-size: 16px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      background-color: #bbf7d0;
+      background-color: #caffbf;
+      transition: background 0.2s;
+    }
+    #actions button:hover {
+      background-color: #b2f2bb;
     }
     #result {
       margin-top: 15px;
-      font-size: 18px;
+      font-size: 20px;
+      color: #e83e8c;
     }
   </style>
 </head>
@@ -93,7 +106,7 @@
     <div id="answer-zone" ondragover="event.preventDefault()" ondrop="dropToAnswer(event)"></div>
     <div id="actions">
       <button onclick="checkAnswer()">✔️ 確認</button>
-      <button onclick="nextQuestion()">➡️ 後一題</button>
+      <button onclick="nextQuestion()">➡️ 後一條</button>
       <button onclick="playAudio()">🔊 播音</button>
       <button onclick="goHome()">🏠 回到遊戲首頁</button>
     </div>
@@ -114,7 +127,6 @@
         audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5457.mp3",
         terms: [{ text: "苦力", link: "https://sutian.moe.edu.tw/und-hani/su/5457/" }]
       }
-      // 可繼續擴增題庫
     ];
 
     let current = 0;
@@ -153,10 +165,9 @@
       });
 
       audioEl.src = q.audio;
-      // 等待使用者第一次互動再觸發播放（避免瀏覽器禁止自動播放）
       setTimeout(() => {
         audioEl.play().catch(e => {
-          console.log("🔇 自動播放被瀏覽器阻擋，需手動點擊播放");
+          console.log("🔇 自動播放被阻擋");
         });
       }, 300);
     }
@@ -182,7 +193,7 @@
       }
 
       const isCorrect = userWords.every((word, idx) => word === correctWords[idx]);
-      resultDiv.textContent = isCorrect ? "🎉 恭喜！答對了！" : "❌ 有錯誤，再試一次！";
+      resultDiv.textContent = isCorrect ? "✨ 著！有夠𠢕！" : "❌ 毋著！閣試一擺！";
     }
 
     function nextQuestion() {
@@ -198,7 +209,6 @@
       window.location.href = "index.html";
     }
 
-    // 確保在使用者首次互動後能正確播放音檔
     window.addEventListener("click", () => {
       const audio = document.getElementById("audio");
       if (audio.paused) {
