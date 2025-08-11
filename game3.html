@@ -124,23 +124,6 @@
     user-select: none;
   }
 
-  /* 小貓咪動畫 */
-  #cuteCat {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 80px;
-    height: auto;
-    animation: jump 2s ease-in-out infinite;
-    cursor: default;
-    user-select: none;
-    z-index: 1000;
-  }
-  @keyframes jump {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-  }
-
   /* 星星容器 */
   #starContainer {
     position: fixed;
@@ -224,10 +207,9 @@
   <div class="star"></div>
   <div class="star"></div>
 </div>
-<img id="cuteCat" src="https://icons.iconarchive.com/icons/custom-icon-design/pretty-office-8/256/cat-icon.png" alt="可愛小貓咪" />
 
 <script>
-  // 題庫兩組（10題）
+  // 三組題庫（每組10題）
   const sets = [
     [
       { mandarin: "老鷹", taiwanese: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
@@ -252,6 +234,18 @@
       { mandarin: "貓頭鷹", taiwanese: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
       { mandarin: "白頭翁", taiwanese: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
       { mandarin: "臺灣藍鵲", taiwanese: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" },
+    ],
+    [
+      { mandarin: "公牛", taiwanese: "牛犅", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1263.mp3" },
+      { mandarin: "白鼻心", taiwanese: "果子猫", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4197.mp3" },
+      { mandarin: "石虎", taiwanese: "山貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/531.mp3" },
+      { mandarin: "小鴨子", taiwanese: "鴨咪仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12102.mp3" },
+      { mandarin: "綠綉眼", taiwanese: "青苔仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27536.mp3" },
+      { mandarin: "麻雀", taiwanese: "厝角鳥仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5822.mp3" },
+      { mandarin: "雨傘節", taiwanese: "簸箕甲", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12830.mp3" },
+      { mandarin: "眼鏡蛇", taiwanese: "飯匙銃", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9258.mp3" },
+      { mandarin: "壁虎", taiwanese: "蟮蟲仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12611.mp3" },
+      { mandarin: "蝌蚪", taiwanese: "肚胿仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3369.mp3" },
     ]
   ];
 
@@ -327,7 +321,6 @@
     if (matchedPairs.has(word)) return;
     if (selectedMandarin) {
       if (selectedMandarin === word) {
-        // 取消選取
         selectedMandarin = null;
         clearSelection();
       } else {
@@ -346,7 +339,6 @@
     if (matchedPairs.has(word)) return;
     if (selectedTaiwanese) {
       if (selectedTaiwanese === word) {
-        // 取消選取
         selectedTaiwanese = null;
         clearSelection();
       } else {
@@ -373,7 +365,6 @@
       if (pair) {
         matchedPairs.add(selectedMandarin);
         matchedPairs.add(selectedTaiwanese);
-        // 標記配對成功
         clearSelection();
         renderWords();
         playAudio(pair.audio);
@@ -385,7 +376,6 @@
           showCompletion();
         }
       } else {
-        // 不配對，稍等後取消選取
         setTimeout(() => {
           clearSelection();
           selectedMandarin = null;
