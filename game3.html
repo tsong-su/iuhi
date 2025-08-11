@@ -36,8 +36,9 @@
     justify-content: center;
     gap: 20px;
     margin-bottom: 25px;
+    flex-wrap: wrap;
   }
-  #btnRestart, #btnPrev, a#back-home {
+  #btnPrev, #btnNext, #btnRestart, a#back-home {
     background-color: #4caf50; /* 綠色統一 */
     color: white;
     border: none;
@@ -52,7 +53,7 @@
     text-decoration: none;
     user-select: none;
   }
-  #btnRestart:hover, #btnPrev:hover, a#back-home:hover {
+  #btnPrev:hover, #btnNext:hover, #btnRestart:hover, a#back-home:hover {
     background-color: #388e3c;
   }
   .container {
@@ -109,7 +110,7 @@
     border: 2px solid #dda0b9;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 1.6em; /* 字體加大 */
+    font-size: 1.6em;
     font-weight: 700;
     white-space: nowrap;
     transition: background 0.3s, border-color 0.3s, color 0.3s;
@@ -166,7 +167,7 @@
       flex-direction: column;
       gap: 15px;
     }
-    #btnRestart, #btnPrev, a#back-home {
+    #btnPrev, #btnNext, #btnRestart, a#back-home {
       width: 100%;
       max-width: 300px;
       margin: 0 auto;
@@ -181,6 +182,7 @@
 
 <div id="button-container">
   <button id="btnPrev">上一回</button>
+  <button id="btnNext">後一回</button>
   <button id="btnRestart">閣耍一擺</button>
   <a id="back-home" href="index.html">← 回到遊戲首頁</a>
 </div>
@@ -219,7 +221,7 @@ const allWordGroups = [
     { zh: "夜鷺", tw: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
     { zh: "五色鳥", tw: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
     { zh: "鴿子", tw: "粉鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6452.mp3" },
-    { zh: "八哥", tw: "鵁钞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
+    { zh: "八哥", tw: "鵁鴒", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
     { zh: "喜鵲", tw: "客鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4879.mp3" },
     { zh: "灰面鵟鷹", tw: "南路鷹", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4745.mp3" },
     { zh: "候鳥", tw: "過冬鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27326.mp3" },
@@ -244,6 +246,7 @@ const allWordGroups = [
 let currentGroupIndex = 0;
 let score = 0;
 let selected = { zh: null, tw: null };
+let isPlayingAudio = false; // 防止重複點擊播放干擾
 
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -254,7 +257,7 @@ function createWordElement(text, type, audioUrl) {
   div.className = "word";
   div.textContent = text;
   div.onclick = function() {
-    if (div.classList.contains("matched")) return;
+    if (div.classList.contains("matched") || isPlayingAudio) return;
     if (selected[type] === div) {
       div.classList.remove("selected");
       selected[type] = null;
@@ -279,10 +282,14 @@ function checkMatch() {
     selected.tw.classList.add("matched");
 
     const correctSound = document.getElementById("correctSound");
+    isPlayingAudio = true;
     correctSound.currentTime = 0;
     correctSound.play();
+
     correctSound.onended = () => {
-      playAudio(match.audio);
+      playAudio(match.audio, () => {
+        isPlayingAudio = false;
+      });
       correctSound.onended = null;
     };
 
@@ -301,8 +308,11 @@ function checkMatch() {
   selected.tw = null;
 }
 
-function playAudio(url) {
+function playAudio(url, callback) {
   const audio = new Audio(url);
+  audio.onended = () => {
+    if (callback) callback();
+  };
   audio.play();
 }
 
@@ -311,6 +321,7 @@ function initGame() {
   document.getElementById("score").textContent = `分數：${score}`;
   selected.zh = null;
   selected.tw = null;
+  isPlayingAudio = false;
 
   const group = allWordGroups[currentGroupIndex];
 
@@ -354,6 +365,11 @@ document.getElementById("btnRestart").onclick = () => {
 
 document.getElementById("btnPrev").onclick = () => {
   currentGroupIndex = (currentGroupIndex - 1 + allWordGroups.length) % allWordGroups.length;
+  initGame();
+};
+
+document.getElementById("btnNext").onclick = () => {
+  currentGroupIndex = (currentGroupIndex + 1) % allWordGroups.length;
   initGame();
 };
 
