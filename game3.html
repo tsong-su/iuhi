@@ -122,10 +122,20 @@
   #winMessage {
     display:none; 
     text-align:center; 
-    font-size:3em;
     font-weight:bold; 
     color:#d81b60; 
     margin-top:20px;
+    transition: all 0.4s ease;
+  }
+  #winMessage.show {
+    display: block;
+    font-size: 4em;
+    animation: scaleUp 1.2s ease forwards;
+  }
+  @keyframes scaleUp {
+    0% { transform: scale(1); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 1; }
   }
   #buttons {
     margin-top: 15px;
@@ -222,6 +232,7 @@ const words = [
 
 let score = 0;
 let selected = { zh: null, tw: null };
+let winSoundPlayed = false;
 
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -286,12 +297,16 @@ async function checkMatch() {
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
 
-    if (score === words.length) {
-      setTimeout(() => {
-        const winSound = document.getElementById("winSound");
-        document.getElementById("winMessage").style.display = "block";
-        winSound.play();
-      }, 300);
+    if (score === words.length && !winSoundPlayed) {
+      winSoundPlayed = true;
+      const winSound = document.getElementById("winSound");
+      const winMessage = document.getElementById("winMessage");
+      winMessage.classList.add("show");
+      try {
+        await playAudio(winSound);
+      } catch(e) {
+        console.warn("播放勝利音效錯誤:", e);
+      }
     }
   }
 
@@ -303,10 +318,12 @@ async function checkMatch() {
 
 function initGame() {
   score = 0;
+  winSoundPlayed = false;
   document.getElementById("score").textContent = `分數：${score}`;
   selected.zh = null;
   selected.tw = null;
-  document.getElementById("winMessage").style.display = "none";
+  const winMessage = document.getElementById("winMessage");
+  winMessage.classList.remove("show");
 
   const zhContainer = document.getElementById("mandarin-words");
   const twContainer = document.getElementById("taiwanese-words");
