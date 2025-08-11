@@ -6,7 +6,7 @@
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #f3f1d9; /* 淺草色 */
+    background-color: #f3f1d9;
     color: #6a0d4d;
     margin: 0;
     padding: 20px;
@@ -38,7 +38,7 @@
     flex-wrap: wrap;
   }
   #btnPrev, #btnNext, #btnRestart, a#back-home {
-    background-color: #4caf50; /* 綠色統一 */
+    background-color: #4caf50;
     color: white;
     border: none;
     padding: 8px 20px;
@@ -278,7 +278,7 @@ function checkMatch() {
   const match = group.find(w => w.zh === zhText && w.tw === twText);
 
   if (match) {
-    // 若已經配對過，不重複處理
+    // 已配對過的不再處理
     if (selected.zh.classList.contains("matched") || selected.tw.classList.contains("matched")) {
       clearSelection();
       return;
@@ -291,7 +291,6 @@ function checkMatch() {
     document.getElementById("score").textContent = `分數：${score}`;
 
     isPlayingAudio = true;
-    // 播放配對成功音效
     const correctSound = document.getElementById("correctSound");
     correctSound.currentTime = 0;
     correctSound.play();
@@ -308,8 +307,10 @@ function checkMatch() {
         alert("攏 tio̍h，有夠gâu的！");
       }, 300);
     }
-  } 
-  clearSelection();
+  } else {
+    // 錯誤配對不處理（你原先有刪除提示文字，我這邊就不提示）
+    clearSelection();
+  }
 }
 
 function clearSelection() {
@@ -370,6 +371,7 @@ function initGame() {
   });
 }
 
+// 按鈕事件
 document.getElementById("btnRestart").onclick = () => {
   initGame();
 };
