@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<title>華語 ⇄ 台語 詞配對遊戲</title>
+<style>
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    background-color: #f9f9f9;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 { color: #333; }
+  .container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .column {
+    margin: 0 20px;
+  }
+  .word {
+    background-color: #fff;
+    padding: 10px 15px;
+    margin: 8px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .word.selected {
+    background-color: #ffe58a;
+    border-color: #f90;
+  }
+  .word.matched {
+    background-color: #d4edda;
+    border-color: #28a745;
+    cursor: default;
+  }
+  #score {
+    font-size: 20px;
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+
+<h1>華語 ⇄ 台語 詞配對遊戲</h1>
+<div id="score">分數：0</div>
+<div class="container">
+  <div class="column" id="mandarin"></div>
+  <div class="column" id="taiwanese"></div>
+</div>
+
+<audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3"></audio>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7e0f2cc5d3.mp3"></audio>
+
+<script>
+const words = [
+  { zh: "老鷹", tw: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
+  { zh: "鸚鵡", tw: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
+  { zh: "穿山甲", tw: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
+  { zh: "蝙蝠", tw: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
+  { zh: "青蛙", tw: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
+  { zh: "蜥蜴", tw: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
+  { zh: "企鵝", tw: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
+  { zh: "黑面琵鷺", tw: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
+  { zh: "老鼠", tw: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
+  { zh: "松鼠", tw: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" }
+];
+
+let score = 0;
+let selected = { zh: null, tw: null };
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function createWordElement(text, type, audioUrl) {
+  const div = document.createElement("div");
+  div.className = "word";
+  div.textContent = text;
+  div.onclick = function() {
+    if (div.classList.contains("matched")) return;
+    if (selected[type] === div) {
+      div.classList.remove("selected");
+      selected[type] = null;
+      return;
+    }
+    if (selected[type]) selected[type].classList.remove("selected");
+    div.classList.add("selected");
+    selected[type] = div;
+    if (selected.zh && selected.tw) checkMatch();
+  };
+  div.dataset.audio = audioUrl || "";
+  return div;
+}
+
+function checkMatch() {
+  const zhText = selected.zh.textContent;
+  const twText = selected.tw.textContent;
+  const match = words.find(w => w.zh === zhText && w.tw === twText);
+  if (match) {
+    selected.zh.classList.add("matched");
+    selected.tw.classList.add("matched");
+    playAudio(match.audio);
+    document.getElementById("correctSound").play();
+    score++;
+    document.getElementById("score").textContent = `分數：${score}`;
+    if (score === words.length) {
+      setTimeout(() => {
+        document.getElementById("winSound").play();
+        alert("恭喜！全部完成！");
+      }, 300);
+    }
+  }
+  selected.zh.classList.remove("selected");
+  selected.tw.classList.remove("selected");
+  selected.zh = null;
+  selected.tw = null;
+}
+
+function playAudio(url) {
+  const audio = new Audio(url);
+  audio.play();
+}
+
+function initGame() {
+  const zhCol = document.getElementById("mandarin");
+  const twCol = document.getElementById("taiwanese");
+  zhCol.innerHTML = "";
+  twCol.innerHTML = "";
+
+  const zhList = shuffle([...words]);
+  const twList = shuffle([...words]);
+
+  zhList.forEach(w => zhCol.appendChild(createWordElement(w.zh, "zh")));
+  twList.forEach(w => {
+    const link = `https://sutian.moe.edu.tw/zh-hant/search/${encodeURIComponent(w.tw)}`;
+    const el = createWordElement(w.tw, "tw", w.audio);
+    el.onclick = function() {
+      if (!el.classList.contains("matched")) playAudio(w.audio);
+      if (selected.tw === el) {
+        el.classList.remove("selected");
+        selected.tw = null;
+        return;
+      }
+      if (selected.tw) selected.tw.classList.remove("selected");
+      el.classList.add("selected");
+      selected.tw = el;
+      if (selected.zh && selected.tw) checkMatch();
+    };
+    el.title = "查看教典詞條";
+    el.style.cursor = "pointer";
+    el.addEventListener("dblclick", () => window.open(link, "_blank"));
+    twCol.appendChild(el);
+  });
+}
+
+initGame();
+</script>
+
+</body>
+</html>
