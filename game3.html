@@ -241,6 +241,15 @@ function createWordElement(text, type, audioUrl) {
   return div;
 }
 
+function playAudio(audioElement) {
+  return new Promise((resolve, reject) => {
+    audioElement.currentTime = 0;
+    audioElement.play().then(() => {
+      audioElement.onended = () => resolve();
+    }).catch(reject);
+  });
+}
+
 function checkMatch() {
   const zhText = selected.zh.textContent;
   const twText = selected.tw.textContent;
@@ -249,18 +258,12 @@ function checkMatch() {
     selected.zh.classList.add("matched");
     selected.tw.classList.add("matched");
 
-    // 播放配對成功音效後播放台語音檔
     const correctSound = document.getElementById("correctSound");
-    correctSound.currentTime = 0;
-    correctSound.play();
+    const twAudio = new Audio(match.audio);
 
-    // 使用 addEventListener 防止重覆覆蓋
-    correctSound.onended = null; // 先移除之前的監聽器
-    correctSound.addEventListener('ended', function playTaiwaneseAudio() {
-      const twAudio = new Audio(match.audio);
+    playAudio(correctSound).then(() => playAudio(twAudio)).catch(() => {
+      // 如果播放失敗，直接播放台語音檔
       twAudio.play();
-      // 移除本次監聽避免多次觸發
-      correctSound.removeEventListener('ended', playTaiwaneseAudio);
     });
 
     score++;
