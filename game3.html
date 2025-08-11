@@ -23,7 +23,6 @@
     color: #914d6c;
     margin-bottom: 20px;
   }
-  /* 分數置中 */
   #score {
     font-size: 1.6em;
     font-weight: bold;
@@ -246,7 +245,7 @@ const allWordGroups = [
 let currentGroupIndex = 0;
 let score = 0;
 let selected = { zh: null, tw: null };
-let isPlayingAudio = false; // 防止重複點擊播放干擾
+let isPlayingAudio = false;
 
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -256,6 +255,7 @@ function createWordElement(text, type, audioUrl) {
   const div = document.createElement("div");
   div.className = "word";
   div.textContent = text;
+  div.dataset.audio = audioUrl || "";
   div.onclick = function() {
     if (div.classList.contains("matched") || isPlayingAudio) return;
     if (selected[type] === div) {
@@ -268,7 +268,6 @@ function createWordElement(text, type, audioUrl) {
     selected[type] = div;
     if (selected.zh && selected.tw) checkMatch();
   };
-  div.dataset.audio = audioUrl || "";
   return div;
 }
 
@@ -277,33 +276,45 @@ function checkMatch() {
   const twText = selected.tw.textContent;
   const group = allWordGroups[currentGroupIndex];
   const match = group.find(w => w.zh === zhText && w.tw === twText);
+
   if (match) {
+    // 若已經配對過，不重複處理
+    if (selected.zh.classList.contains("matched") || selected.tw.classList.contains("matched")) {
+      clearSelection();
+      return;
+    }
+
     selected.zh.classList.add("matched");
     selected.tw.classList.add("matched");
 
-    const correctSound = document.getElementById("correctSound");
+    score++;
+    document.getElementById("score").textContent = `分數：${score}`;
+
     isPlayingAudio = true;
+    // 播放配對成功音效
+    const correctSound = document.getElementById("correctSound");
     correctSound.currentTime = 0;
     correctSound.play();
-
     correctSound.onended = () => {
       playAudio(match.audio, () => {
         isPlayingAudio = false;
+        correctSound.onended = null;
       });
-      correctSound.onended = null;
     };
 
-    score++;
-    document.getElementById("score").textContent = `分數：${score}`;
     if (score === group.length) {
       setTimeout(() => {
         document.getElementById("winSound").play();
         alert("攏 tio̍h，有夠gâu的！");
       }, 300);
     }
-  }
-  selected.zh.classList.remove("selected");
-  selected.tw.classList.remove("selected");
+  } 
+  clearSelection();
+}
+
+function clearSelection() {
+  if (selected.zh) selected.zh.classList.remove("selected");
+  if (selected.tw) selected.tw.classList.remove("selected");
   selected.zh = null;
   selected.tw = null;
 }
