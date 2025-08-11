@@ -299,14 +299,16 @@ async function checkMatch() {
 
     if (score === words.length && !winSoundPlayed) {
       winSoundPlayed = true;
-      const winSound = document.getElementById("winSound");
       const winMessage = document.getElementById("winMessage");
       winMessage.classList.add("show");
-      try {
-        await playAudio(winSound);
-      } catch(e) {
-        console.warn("播放勝利音效錯誤:", e);
-      }
+
+      // 延遲播放勝利音效，避免瀏覽器阻擋
+      setTimeout(() => {
+        const winSound = document.getElementById("winSound");
+        winSound.play().catch(err => {
+          console.warn("勝利音效播放失敗:", err);
+        });
+      }, 300);
     }
   }
 
