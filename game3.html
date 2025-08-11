@@ -6,7 +6,7 @@
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #ffe4ec;
+    background-color: #F0F6D2;  /* 淺草色 */
     color: #6a0d4d;
     margin: 0;
     padding: 20px;
@@ -192,6 +192,23 @@
       font-size: 1.1em;
     }
   }
+
+  /* 小貓咪跳動動畫 */
+  #cuteCat {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 64px;
+    height: 64px;
+    animation: jump 2s ease-in-out infinite;
+    cursor: default;
+    user-select: none;
+    z-index: 9999;
+  }
+  @keyframes jump {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
 </style>
 </head>
 <body>
@@ -221,6 +238,9 @@
 </div>
 
 <audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3" preload="auto"></audio>
+
+<!-- 小貓咪動畫 -->
+<img id="cuteCat" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="可愛小貓咪" />
 
 <script>
 const sets = [
