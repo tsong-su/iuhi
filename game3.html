@@ -6,8 +6,8 @@
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #ffe4ec; /* 淡粉紅背景 */
-    color: #6a0d4d; /* 深粉紅字色 */
+    background-color: #ffe4ec;
+    color: #6a0d4d;
     margin: 0;
     padding: 20px;
   }
@@ -41,17 +41,23 @@
   .container {
     display: flex;
     justify-content: center;
-    gap: 50px;
-    flex-wrap: wrap;
+    gap: 40px;
+    flex-wrap: nowrap;
+    flex-direction: row;
   }
   .column {
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(168, 50, 98, 0.3);
-    min-width: 220px;
-    max-width: 280px;
+    min-width: 320px;
+    max-width: 320px;
     padding: 20px;
     user-select: none;
     box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    height: 420px; /* 固定高度，讓詞條上下排列 */
+    overflow-y: auto;
   }
   #mandarin {
     background: #ffd6e8;
@@ -59,19 +65,21 @@
     color: #6a0d4d;
   }
   #taiwanese {
-    background: #cde9f9;  /* 天空藍 */
+    background: #cde9f9;
     border: 2px solid #8ec4f9;
     color: #1a73e8;
   }
   .word {
     background-color: #fff0f6;
-    padding: 12px 18px;
-    margin: 10px 0;
+    padding: 10px 14px;
+    margin: 6px 10px;
     border: 2px solid #dda0b9;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.1em;
+    white-space: nowrap;
     transition: background 0.3s, border-color 0.3s, color 0.3s;
+    flex: 0 0 auto; /* 不斷行，自然寬度 */
   }
   #taiwanese .word {
     background-color: #e3f0ff;
@@ -118,7 +126,7 @@
   a#back-home:hover {
     background-color: #c2185b;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .container {
       flex-direction: column;
       align-items: center;
@@ -126,6 +134,12 @@
     }
     .column {
       max-width: 90vw;
+      height: auto;
+      flex-wrap: nowrap;
+    }
+    .word {
+      margin: 8px auto;
+      flex: none;
     }
   }
 </style>
