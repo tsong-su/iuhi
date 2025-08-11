@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8" />
-<title>華台語詞配對遊戲</title>
+<title>動物華台語詞配對遊戲</title>
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
@@ -78,11 +78,8 @@
     user-select: none;
     box-sizing: border-box;
     display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    height: 480px;
     flex-direction: column;
-    overflow-y: auto;
+    height: 480px;
   }
   #mandarin {
     background: #ffd6e8;
@@ -90,34 +87,41 @@
     color: #6a0d4d;
   }
   #taiwanese {
-    background: #b2e0ff; /* 活潑淡藍 */
+    background: #b2e0ff;
     border: 2px solid #8ec4f9;
     color: #1a73e8;
   }
   .column-header {
     font-size: 1.8em;
     font-weight: 900;
-    margin-bottom: 20px;
+    color: inherit;
     user-select: none;
     text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.2;
   }
-  #mandarin .column-header {
-    color: #6a0d4d;
-  }
-  #taiwanese .column-header {
-    color: #0d47a1;
+  .words-container {
+    flex-wrap: wrap;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-content: flex-start;
+    overflow-x: hidden;
   }
   .word {
     background-color: #fff0f6;
-    padding: 10px 14px;
-    margin: 6px 10px;
+    padding: 14px 20px;
     border: 2px solid #dda0b9;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 1.2em;
+    font-size: 1.5em;
+    font-weight: 700;
     white-space: nowrap;
     transition: background 0.3s, border-color 0.3s, color 0.3s;
-    flex: 0 0 auto;
+    color: #6a0d4d;
+    user-select: none;
   }
   #taiwanese .word {
     background-color: #e3f0ff;
@@ -139,13 +143,13 @@
     border-color: #ad1457;
     cursor: default;
     color: white;
-    font-weight: bold;
+    font-weight: 900;
   }
   #taiwanese .word.matched {
     background-color: #2196f3;
     border-color: #1565c0;
     color: white;
-    font-weight: bold;
+    font-weight: 900;
   }
   @media (max-width: 700px) {
     .container {
@@ -156,11 +160,14 @@
     .column {
       max-width: 90vw;
       height: auto;
-      flex-wrap: nowrap;
+    }
+    .words-container {
+      justify-content: center;
+      gap: 10px;
     }
     .word {
-      margin: 8px auto;
-      flex: none;
+      font-size: 1.4em;
+      padding: 12px 16px;
     }
   }
 </style>
@@ -170,17 +177,19 @@
 <a id="back-home" href="index.html">← 回到遊戲首頁</a>
 
 <h1>華台語詞配對遊戲</h1>
-<div id="subtitle">先 tshi̍h 華文，才 tshi̍h 台語，配對成功會有音檔喔！</div>
+<div id="subtitle">先 tshi̍h 華文，才 tshi̍h 台語。</div>
 
 <button id="btnRestart">閣耍一擺</button>
 <div id="score">分數：0</div>
 
 <div class="container">
   <div class="column" id="mandarin">
-    <div class="column-header">華文</div>
+    <div class="column-header">中文</div>
+    <div class="words-container" id="mandarin-words"></div>
   </div>
   <div class="column" id="taiwanese">
     <div class="column-header">台語</div>
+    <div class="words-container" id="taiwanese-words"></div>
   </div>
 </div>
 
@@ -269,16 +278,15 @@ function initGame() {
   selected.zh = null;
   selected.tw = null;
 
-  const zhCol = document.getElementById("mandarin");
-  const twCol = document.getElementById("taiwanese");
-  // 清除詞條但保留標題
-  zhCol.querySelectorAll(".word").forEach(w => w.remove());
-  twCol.querySelectorAll(".word").forEach(w => w.remove());
+  const zhContainer = document.getElementById("mandarin-words");
+  const twContainer = document.getElementById("taiwanese-words");
+  zhContainer.innerHTML = "";
+  twContainer.innerHTML = "";
 
   const zhList = shuffle([...words]);
   const twList = shuffle([...words]);
 
-  zhList.forEach(w => zhCol.appendChild(createWordElement(w.zh, "zh")));
+  zhList.forEach(w => zhContainer.appendChild(createWordElement(w.zh, "zh")));
   twList.forEach(w => {
     const link = `https://sutian.moe.edu.tw/zh-hant/search/${encodeURIComponent(w.tw)}`;
     const el = createWordElement(w.tw, "tw", w.audio);
@@ -297,7 +305,7 @@ function initGame() {
     el.title = "雙擊查看教典詞條";
     el.style.cursor = "pointer";
     el.addEventListener("dblclick", () => window.open(link, "_blank"));
-    twCol.appendChild(el);
+    twContainer.appendChild(el);
   });
 }
 
