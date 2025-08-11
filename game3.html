@@ -264,8 +264,6 @@
   const homeBtn = document.getElementById("homeBtn");
   const nextBtn = document.getElementById("nextBtn");
 
-  const successAudio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-
   function shuffleArray(array) {
     for (let i = array.length -1; i > 0; i--) {
       const j = Math.floor(Math.random()*(i+1));
@@ -366,22 +364,19 @@
         matchedPairs.add(selectedMandarin);
         matchedPairs.add(selectedTaiwanese);
         clearSelection();
-        renderWords();
         playAudio(pair.audio);
         updateScore();
-        selectedMandarin = null;
-        selectedTaiwanese = null;
-
-        if (matchedPairs.size / 2 === 10) {
+        renderWords();
+        if (matchedPairs.size / 2 === sets[currentSetIndex].length) {
           showCompletion();
         }
       } else {
         setTimeout(() => {
           clearSelection();
-          selectedMandarin = null;
-          selectedTaiwanese = null;
         }, 700);
       }
+      selectedMandarin = null;
+      selectedTaiwanese = null;
     }
   }
 
@@ -398,7 +393,7 @@
   function showCompletion() {
     completionMessage.textContent = "攏 tio̍h，有夠gâu的！";
     completionMessage.style.fontSize = "3.5em";
-    nextBtn.disabled = false;
+    nextBtn.disabled = currentSetIndex + 1 >= sets.length;
   }
 
   retryBtn.addEventListener("click", () => {
