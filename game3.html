@@ -168,8 +168,8 @@
 
 <div id="winMessage">攏 tio̍h，有夠𠢕的！</div>
 
-<audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3"></audio>
-<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7e0f2cc5d3.mp3"></audio>
+<audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3" preload="auto"></audio>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7e0f2cc5d3.mp3" preload="auto"></audio>
 
 <script>
 const words = [
@@ -253,8 +253,9 @@ async function checkMatch() {
 
     if (score === words.length) {
       setTimeout(() => {
-        document.getElementById("winSound").play();
+        const winSound = document.getElementById("winSound");
         document.getElementById("winMessage").style.display = "block";
+        winSound.play();
       }, 300);
     }
   }
