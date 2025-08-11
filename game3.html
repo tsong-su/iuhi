@@ -162,6 +162,12 @@
   #buttons button#homeBtn:hover {
     background-color: #1769aa;
   }
+  #buttons button#nextSetBtn {
+    background-color: #4caf50;
+  }
+  #buttons button#nextSetBtn:hover {
+    background-color: #357a38;
+  }
   @media (max-width: 700px) {
     .container {
       flex-direction: column;
@@ -191,7 +197,7 @@
 <body>
 
 <h1>華台動物語詞配對</h1>
-<div id="subtitle">先 tshi̍h 華文，才tshi̍h台語，配對成功會有台語聲音檔喔！</div>
+<div id="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
 
 <div id="score">分數：0</div>
 
@@ -206,30 +212,45 @@
   </div>
 </div>
 
-<div id="winMessage">攏 tio̍h，有夠𠢕的！</div>
+<div id="winMessage">攏 tio̍h，有夠gâu的！</div>
 
 <div id="buttons">
   <button id="retryBtn">閣耍一擺</button>
+  <button id="nextSetBtn">後一回</button>
   <button id="homeBtn" onclick="location.href='index.html'">回到遊戲首頁</button>
 </div>
 
 <audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3" preload="auto"></audio>
-<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7e0f2cc5d3.mp3" preload="auto"></audio>
 
 <script>
-const words = [
-  { zh: "老鷹", tw: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
-  { zh: "鸚鵡", tw: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
-  { zh: "穿山甲", tw: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
-  { zh: "蝙蝠", tw: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
-  { zh: "青蛙", tw: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
-  { zh: "蜥蜴", tw: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
-  { zh: "企鵝", tw: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
-  { zh: "黑面琵鷺", tw: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
-  { zh: "老鼠", tw: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
-  { zh: "松鼠", tw: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" }
+const sets = [
+  [
+    { zh: "老鷹", tw: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
+    { zh: "鸚鵡", tw: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
+    { zh: "穿山甲", tw: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
+    { zh: "蝙蝠", tw: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
+    { zh: "青蛙", tw: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
+    { zh: "蜥蜴", tw: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
+    { zh: "企鵝", tw: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
+    { zh: "黑面琵鷺", tw: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
+    { zh: "老鼠", tw: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
+    { zh: "松鼠", tw: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" }
+  ],
+  [
+    { zh: "夜鷺", tw: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
+    { zh: "五色鳥", tw: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
+    { zh: "鴿子", tw: "粉鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6452.mp3" },
+    { zh: "八哥", tw: "鵁鴒", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
+    { zh: "喜鵲", tw: "客鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4879.mp3" },
+    { zh: "灰面鵟鷹", tw: "南路鷹", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4745.mp3" },
+    { zh: "候鳥", tw: "過冬鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27326.mp3" },
+    { zh: "貓頭鷹", tw: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
+    { zh: "白頭翁", tw: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
+    { zh: "臺灣藍鵲", tw: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" }
+  ]
 ];
 
+let currentSetIndex = 0;
 let score = 0;
 let selected = { zh: null, tw: null };
 let winSoundPlayed = false;
@@ -261,7 +282,7 @@ function createWordElement(text, type, audioUrl) {
   return div;
 }
 
-function playAudio(audioElement) {
+async function playAudio(audioElement) {
   return new Promise((resolve) => {
     audioElement.currentTime = 0;
     const playPromise = audioElement.play();
@@ -278,7 +299,7 @@ function playAudio(audioElement) {
 async function checkMatch() {
   const zhText = selected.zh.textContent;
   const twText = selected.tw.textContent;
-  const match = words.find(w => w.zh === zhText && w.tw === twText);
+  const match = sets[currentSetIndex].find(w => w.zh === zhText && w.tw === twText);
 
   if (match) {
     selected.zh.classList.add("matched");
@@ -297,21 +318,10 @@ async function checkMatch() {
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
 
-    if (score === words.length && !winSoundPlayed) {
+    if (score === sets[currentSetIndex].length && !winSoundPlayed) {
       winSoundPlayed = true;
       const winMessage = document.getElementById("winMessage");
       winMessage.classList.add("show");
-
-      // 停止前面音效避免衝突
-      document.getElementById("correctSound").pause();
-      document.getElementById("correctSound").currentTime = 0;
-
-      // 延遲播放勝利音效
-      setTimeout(() => {
-        const winSound = document.getElementById("winSound");
-        winSound.currentTime = 0;
-        winSound.play().catch(e => console.warn("勝利音效無法播放:", e));
-      }, 800);
     }
   }
 
@@ -335,14 +345,22 @@ function initGame() {
   zhContainer.innerHTML = "";
   twContainer.innerHTML = "";
 
-  const zhList = shuffle([...words]);
-  const twList = shuffle([...words]);
+  const currentSet = sets[currentSetIndex];
+  const zhList = shuffle([...currentSet]);
+  const twList = shuffle([...currentSet]);
 
   zhList.forEach(w => zhContainer.appendChild(createWordElement(w.zh, "zh")));
   twList.forEach(w => twContainer.appendChild(createWordElement(w.tw, "tw", w.audio)));
 }
 
-document.getElementById("retryBtn").addEventListener("click", initGame);
+document.getElementById("retryBtn").addEventListener("click", () => {
+  initGame();
+});
+
+document.getElementById("nextSetBtn").addEventListener("click", () => {
+  currentSetIndex = (currentSetIndex + 1) % sets.length;
+  initGame();
+});
 
 initGame();
 </script>
