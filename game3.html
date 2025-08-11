@@ -23,7 +23,6 @@
     color: #914d6c;
     margin-bottom: 20px;
   }
-  /* 分數置中 */
   #score {
     font-size: 1.6em;
     font-weight: bold;
@@ -217,15 +216,18 @@ const words = [
 let score = 0;
 let selected = { zh: null, tw: null };
 
+// 打亂陣列函式
 function shuffle(array) {
   return array.sort(() => Math.random() - 0.5);
 }
 
+// 建立詞語元素
 function createWordElement(text, type, audioUrl) {
   const div = document.createElement("div");
   div.className = "word";
   div.textContent = text;
-  div.onclick = function() {
+  div.dataset.audio = audioUrl || "";
+  div.onclick = () => {
     if (div.classList.contains("matched")) return;
     if (selected[type] === div) {
       div.classList.remove("selected");
@@ -235,25 +237,37 @@ function createWordElement(text, type, audioUrl) {
     if (selected[type]) selected[type].classList.remove("selected");
     div.classList.add("selected");
     selected[type] = div;
-    if (selected.zh && selected.tw) checkMatch();
+
+    if (selected.zh && selected.tw) {
+      checkMatch();
+    }
   };
-  div.dataset.audio = audioUrl || "";
   return div;
 }
 
+// 播放 audio，回傳 Promise
 function playAudio(audioElement) {
   return new Promise((resolve, reject) => {
     audioElement.currentTime = 0;
-    audioElement.play().then(() => {
-      audioElement.onended = () => resolve();
-    }).catch(reject);
+    const playPromise = audioElement.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        audioElement.onended = () => resolve();
+      }).catch(err => {
+        // 播放失敗，直接 resolve
+        resolve();
+      });
+    } else {
+      resolve();
+    }
   });
 }
 
-function checkMatch() {
+async function checkMatch() {
   const zhText = selected.zh.textContent;
   const twText = selected.tw.textContent;
   const match = words.find(w => w.zh === zhText && w.tw === twText);
+
   if (match) {
     selected.zh.classList.add("matched");
     selected.tw.classList.add("matched");
@@ -261,10 +275,13 @@ function checkMatch() {
     const correctSound = document.getElementById("correctSound");
     const twAudio = new Audio(match.audio);
 
-    playAudio(correctSound).then(() => playAudio(twAudio)).catch(() => {
-      // 如果播放失敗，直接播放台語音檔
-      twAudio.play();
-    });
+    try {
+      await playAudio(correctSound);
+      await playAudio(twAudio);
+    } catch(e) {
+      // 播放錯誤不阻擋遊戲進行
+      console.warn("播放音效錯誤:", e);
+    }
 
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
@@ -275,12 +292,14 @@ function checkMatch() {
       }, 300);
     }
   }
+
   selected.zh.classList.remove("selected");
   selected.tw.classList.remove("selected");
   selected.zh = null;
   selected.tw = null;
 }
 
+// 初始化遊戲
 function initGame() {
   score = 0;
   document.getElementById("score").textContent = `分數：${score}`;
@@ -296,28 +315,10 @@ function initGame() {
   const twList = shuffle([...words]);
 
   zhList.forEach(w => zhContainer.appendChild(createWordElement(w.zh, "zh")));
-  twList.forEach(w => {
-    const link = `https://sutian.moe.edu.tw/zh-hant/search/${encodeURIComponent(w.tw)}`;
-    const el = createWordElement(w.tw, "tw", w.audio);
-    el.onclick = function() {
-      if (selected.tw === el) {
-        el.classList.remove("selected");
-        selected.tw = null;
-        return;
-      }
-      if (selected.tw) selected.tw.classList.remove("selected");
-      el.classList.add("selected");
-      selected.tw = el;
-      if (selected.zh && selected.tw) checkMatch();
-    };
-    el.title = "雙擊查看教典詞條";
-    el.style.cursor = "pointer";
-    el.addEventListener("dblclick", () => window.open(link, "_blank"));
-    twContainer.appendChild(el);
-  });
+  twList.forEach(w => twContainer.appendChild(createWordElement(w.tw, "tw", w.audio)));
 }
 
-document.getElementById("btnRestart").onclick = initGame;
+document.getElementById("btnRestart").addEventListener("click", initGame);
 
 initGame();
 </script>
