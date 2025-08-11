@@ -1,51 +1,98 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
-<title>華語 ⇄ 台語 詞配對遊戲</title>
+<meta charset="UTF-8" />
+<title>華台語詞配對遊戲</title>
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #f9f9f9;
+    background-color: #ffe4ec; /* 淡粉紅背景 */
     text-align: center;
     padding: 20px;
+    color: #6a0d4d; /* 深粉紅字色 */
+    margin: 0;
   }
-  h1 { color: #333; }
+  h1 {
+    color: #a83262;
+    margin-bottom: 0;
+  }
+  #subtitle {
+    font-size: 1em;
+    color: #8b3e66;
+    margin-top: 4px;
+    margin-bottom: 15px;
+    font-weight: 500;
+  }
+  #score {
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
   .container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    gap: 30px;
+    margin-top: 10px;
   }
   .column {
-    margin: 0 20px;
+    background: #ffd6e8;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(168, 50, 98, 0.3);
+    min-width: 180px;
+    user-select: none;
+    border: 2px solid #dda0b9;
+    box-sizing: border-box;
+  }
+  #taiwanese.column {
+    background: #e8d1e8;
+    border-color: #b186b1;
   }
   .word {
-    background-color: #fff;
+    background-color: #fff0f6;
     padding: 10px 15px;
-    margin: 8px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
+    margin: 8px 0;
+    border: 2px solid #dda0b9;
+    border-radius: 10px;
     cursor: pointer;
     transition: background 0.3s, border-color 0.3s;
   }
   .word.selected {
-    background-color: #ffe58a;
-    border-color: #f90;
+    background-color: #f8bbd0;
+    border-color: #e91e63;
   }
   .word.matched {
-    background-color: #d4edda;
-    border-color: #28a745;
+    background-color: #f48fb1;
+    border-color: #ad1457;
     cursor: default;
+    color: white;
+    font-weight: bold;
   }
-  #score {
-    font-size: 20px;
-    margin-top: 15px;
+  a#back-home {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: #e91e63;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 3px 7px rgba(233, 30, 99, 0.6);
+    transition: background-color 0.3s;
+    z-index: 100;
+  }
+  a#back-home:hover {
+    background-color: #c2185b;
   }
 </style>
 </head>
 <body>
 
-<h1>華語 ⇄ 台語 詞配對遊戲</h1>
+<a id="back-home" href="index.html">← 回到遊戲首頁</a>
+
+<h1>華台語詞配對遊戲</h1>
+<div id="subtitle">Tshi̍h 台語語詞會有音檔 thang 練習喔！</div>
 <div id="score">分數：0</div>
 <div class="container">
   <div class="column" id="mandarin"></div>
@@ -103,14 +150,21 @@ function checkMatch() {
   if (match) {
     selected.zh.classList.add("matched");
     selected.tw.classList.add("matched");
-    playAudio(match.audio);
-    document.getElementById("correctSound").play();
+
+    const correctSound = document.getElementById("correctSound");
+    correctSound.play();
+
+    // 播放成功提示音結束後播放台語音檔
+    correctSound.onended = () => {
+      playAudio(match.audio);
+    };
+
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
     if (score === words.length) {
       setTimeout(() => {
         document.getElementById("winSound").play();
-        alert("恭喜！全部完成！");
+        alert("攏 tio̍h，有夠𠢕的！");
       }, 300);
     }
   }
@@ -150,7 +204,7 @@ function initGame() {
       selected.tw = el;
       if (selected.zh && selected.tw) checkMatch();
     };
-    el.title = "查看教典詞條";
+    el.title = "雙擊查看教典詞條";
     el.style.cursor = "pointer";
     el.addEventListener("dblclick", () => window.open(link, "_blank"));
     twCol.appendChild(el);
