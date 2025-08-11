@@ -12,377 +12,421 @@
     padding: 20px;
   }
   h1 {
-    color: #a83262;
     text-align: center;
-    margin-bottom: 5px;
-  }
-  #subtitle {
-    text-align: center;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #914d6c;
-    margin-bottom: 10px;
-  }
-  #score {
-    font-size: 1.6em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 0.5em;
+    font-weight: 900;
     color: #6a0d4d;
   }
-  .container {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: nowrap;
-  }
-  .column {
-    border-radius: 15px;
-    box-shadow: 0 5px 10px rgba(168, 50, 98, 0.3);
-    min-width: 320px;
-    max-width: 350px;
-    background: #fff0f6;
-    padding: 20px;
-    user-select: none;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: auto;
-  }
-  #mandarin {
-    background: #ffd6e8;
-    border: 2px solid #dda0b9;
-    color: #6a0d4d;
-  }
-  #taiwanese {
-    background: #b2e0ff;
-    border: 2px solid #8ec4f9;
-    color: #1a73e8;
-  }
-  .column-header {
+  #gameTitle {
     font-size: 1.8em;
     font-weight: 900;
-    color: inherit;
+    margin-bottom: 0.2em;
+  }
+  #instructions {
+    text-align: center;
+    font-weight: 700;
+    color: #6a0d4d;
+    margin-bottom: 1.2em;
+  }
+  #score {
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.3em;
+    margin-bottom: 1em;
+    color: #6a0d4d;
+  }
+  #gameContainer {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .column {
+    background: #ffe4e1;
+    border-radius: 12px;
+    padding: 16px 12px 12px 12px;
+    width: 320px;
+    box-sizing: border-box;
+    box-shadow: 2px 2px 8px rgba(106, 13, 77, 0.2);
+  }
+  .column.right {
+    background: #a2d2f7; /* 天空藍 */
+  }
+  .column > .header {
+    font-size: 1.4em;
+    font-weight: 900;
+    color: #6a0d4d;
+    margin-bottom: 0.6em;
     user-select: none;
     text-align: center;
-    margin-bottom: 10px;
-    line-height: 1.2;
   }
-  .words-container {
-    flex-wrap: wrap;
-    flex-grow: 1;
+  .wordList {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
-    align-content: flex-start;
-    overflow-x: hidden;
-    max-height: none;
   }
   .word {
-    background-color: #fff0f6;
-    padding: 14px 18px;
-    border: 2px solid #dda0b9;
+    background-color: #fff;
+    border: 2px solid #6a0d4d;
     border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.3em;
-    font-weight: 700;
-    white-space: nowrap;
-    transition: background 0.3s, border-color 0.3s, color 0.3s;
+    padding: 10px 14px;
+    font-size: 1.25em;
+    font-weight: 900;
     color: #6a0d4d;
+    cursor: pointer;
     user-select: none;
-  }
-  #taiwanese .word {
-    background-color: #e3f0ff;
-    border-color: #8ec4f9;
-    color: #1a73e8;
+    min-width: 90px;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   .word.selected {
-    background-color: #f8bbd0;
-    border-color: #e91e63;
-    color: #660033;
-  }
-  #taiwanese .word.selected {
-    background-color: #90caf9;
-    border-color: #1a73e8;
-    color: #0d47a1;
+    background-color: #6a0d4d;
+    color: #fff;
   }
   .word.matched {
-    background-color: #f48fb1;
-    border-color: #ad1457;
+    background-color: #97d700;
+    color: #fff;
     cursor: default;
-    color: white;
-    font-weight: 900;
-  }
-  #taiwanese .word.matched {
-    background-color: #2196f3;
-    border-color: #1565c0;
-    color: white;
-    font-weight: 900;
-  }
-  #winMessage {
-    display:none; 
-    text-align:center; 
-    font-weight:bold; 
-    color:#d81b60; 
-    margin-top:20px;
-    transition: all 0.4s ease;
-  }
-  #winMessage.show {
-    display: block;
-    font-size: 4em;
-    animation: scaleUp 1.2s ease forwards;
-  }
-  @keyframes scaleUp {
-    0% { transform: scale(1); opacity: 0; }
-    50% { transform: scale(1.5); opacity: 1; }
-    100% { transform: scale(1.2); opacity: 1; }
   }
   #buttons {
-    margin-top: 15px;
     text-align: center;
+    margin-top: 10px;
+    margin-bottom: 1em;
   }
-  #buttons button {
-    font-size: 1em;
-    padding: 8px 20px;
-    margin: 0 10px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    background-color: #a83262;
+  button {
+    background-color: #6a0d4d;
     color: white;
     font-weight: 700;
+    font-size: 1em;
+    padding: 8px 16px;
+    margin: 0 12px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
     transition: background-color 0.3s ease;
   }
-  #buttons button:hover {
-    background-color: #7b244a;
+  button:hover:not(:disabled) {
+    background-color: #4a084d;
   }
-  #buttons button#homeBtn {
-    background-color: #2196f3;
+  button:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
-  #buttons button#homeBtn:hover {
-    background-color: #1769aa;
-  }
-  #buttons button#nextSetBtn {
-    background-color: #4caf50;
-  }
-  #buttons button#nextSetBtn:hover {
-    background-color: #357a38;
-  }
-  @media (max-width: 700px) {
-    .container {
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
-    }
-    .column {
-      max-width: 90vw;
-      height: auto;
-    }
-    .words-container {
-      justify-content: center;
-      gap: 10px;
-    }
-    .word {
-      font-size: 1.2em;
-      padding: 12px 16px;
-    }
-    #buttons button {
-      margin: 8px 10px;
-      padding: 10px 24px;
-      font-size: 1.1em;
-    }
+  #completionMessage {
+    text-align: center;
+    font-weight: 900;
+    font-size: 2.5em;
+    color: #1b4f72;
+    margin-top: 0.8em;
+    user-select: none;
   }
 
-  /* 小貓咪跳動動畫 */
+  /* 小貓咪動畫 */
   #cuteCat {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: auto;
     animation: jump 2s ease-in-out infinite;
     cursor: default;
     user-select: none;
-    z-index: 9999;
+    z-index: 1000;
   }
   @keyframes jump {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
   }
+
+  /* 星星容器 */
+  #starContainer {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 120px;
+    height: 120px;
+    pointer-events: none;
+    z-index: 999;
+  }
+  /* 星星樣式 */
+  .star {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: gold;
+    clip-path: polygon(
+      50% 0%, 61% 35%, 98% 35%, 
+      68% 57%, 79% 91%, 50% 70%, 
+      21% 91%, 32% 57%, 2% 35%, 
+      39% 35%
+    );
+    opacity: 0.8;
+    animation: twinkle 3s infinite ease-in-out;
+  }
+  .star:nth-child(2) {
+    width: 10px;
+    height: 10px;
+    top: 70px;
+    left: 10px;
+    animation-delay: 1s;
+  }
+  .star:nth-child(3) {
+    width: 8px;
+    height: 8px;
+    top: 30px;
+    left: 80px;
+    animation-delay: 0.5s;
+  }
+  .star:nth-child(4) {
+    width: 6px;
+    height: 6px;
+    top: 10px;
+    left: 40px;
+    animation-delay: 2s;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.8; transform: translateY(0); }
+    50% { opacity: 0.3; transform: translateY(-5px); }
+  }
 </style>
 </head>
 <body>
 
-<h1>華台動物語詞配對</h1>
-<div id="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+<h1 id="gameTitle">華台動物語詞配對</h1>
+<div id="instructions">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+<div id="score">分數：0 / 10</div>
 
-<div id="score">分數：0</div>
-
-<div class="container">
-  <div class="column" id="mandarin">
-    <div class="column-header">中文</div>
-    <div class="words-container" id="mandarin-words"></div>
+<div id="gameContainer">
+  <div class="column left">
+    <div class="header">中文</div>
+    <div id="mandarinList" class="wordList"></div>
   </div>
-  <div class="column" id="taiwanese">
-    <div class="column-header">台語</div>
-    <div class="words-container" id="taiwanese-words"></div>
+  <div class="column right">
+    <div class="header">台語</div>
+    <div id="taiwaneseList" class="wordList"></div>
   </div>
 </div>
-
-<div id="winMessage">攏 tio̍h，有夠gâu的！</div>
 
 <div id="buttons">
   <button id="retryBtn">閣耍一擺</button>
-  <button id="nextSetBtn">後一回</button>
-  <button id="homeBtn" onclick="location.href='index.html'">回到遊戲首頁</button>
+  <button id="homeBtn">回到遊戲首頁</button>
+  <button id="nextBtn" disabled>後一回</button>
 </div>
 
-<audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3" preload="auto"></audio>
+<div id="completionMessage"></div>
 
-<!-- 小貓咪動畫 -->
-<img id="cuteCat" src="https://cdn-icons-png.flaticon.com/512/616/616408.png" alt="可愛小貓咪" />
+<div id="starContainer">
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+</div>
+<img id="cuteCat" src="https://icons.iconarchive.com/icons/custom-icon-design/pretty-office-8/256/cat-icon.png" alt="可愛小貓咪" />
 
 <script>
-const sets = [
-  [
-    { zh: "老鷹", tw: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
-    { zh: "鸚鵡", tw: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
-    { zh: "穿山甲", tw: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
-    { zh: "蝙蝠", tw: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
-    { zh: "青蛙", tw: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
-    { zh: "蜥蜴", tw: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
-    { zh: "企鵝", tw: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
-    { zh: "黑面琵鷺", tw: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
-    { zh: "老鼠", tw: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
-    { zh: "松鼠", tw: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" }
-  ],
-  [
-    { zh: "夜鷺", tw: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
-    { zh: "五色鳥", tw: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
-    { zh: "鴿子", tw: "粉鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6452.mp3" },
-    { zh: "八哥", tw: "鵁鴒", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
-    { zh: "喜鵲", tw: "客鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4879.mp3" },
-    { zh: "灰面鵟鷹", tw: "南路鷹", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4745.mp3" },
-    { zh: "候鳥", tw: "過冬鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27326.mp3" },
-    { zh: "貓頭鷹", tw: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
-    { zh: "白頭翁", tw: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
-    { zh: "臺灣藍鵲", tw: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" }
-  ]
-];
+  // 題庫兩組（10題）
+  const sets = [
+    [
+      { mandarin: "老鷹", taiwanese: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
+      { mandarin: "鸚鵡", taiwanese: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
+      { mandarin: "穿山甲", taiwanese: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
+      { mandarin: "蝙蝠", taiwanese: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
+      { mandarin: "青蛙", taiwanese: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
+      { mandarin: "蜥蜴", taiwanese: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
+      { mandarin: "企鵝", taiwanese: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
+      { mandarin: "黑面琵鷺", taiwanese: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
+      { mandarin: "老鼠", taiwanese: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
+      { mandarin: "松鼠", taiwanese: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" },
+    ],
+    [
+      { mandarin: "夜鷺", taiwanese: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
+      { mandarin: "五色鳥", taiwanese: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
+      { mandarin: "鴿子", taiwanese: "粉鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6452.mp3" },
+      { mandarin: "八哥", taiwanese: "鵁鴒", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
+      { mandarin: "喜鵲", taiwanese: "客鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4879.mp3" },
+      { mandarin: "灰面鵟鷹", taiwanese: "南路鷹", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4745.mp3" },
+      { mandarin: "候鳥", taiwanese: "過冬鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27326.mp3" },
+      { mandarin: "貓頭鷹", taiwanese: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
+      { mandarin: "白頭翁", taiwanese: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
+      { mandarin: "臺灣藍鵲", taiwanese: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" },
+    ]
+  ];
 
-let currentSetIndex = 0;
-let score = 0;
-let selected = { zh: null, tw: null };
-let winSoundPlayed = false;
+  let currentSetIndex = 0;
+  let mandarinWords = [];
+  let taiwaneseWords = [];
+  let matchedPairs = new Set();
+  let selectedMandarin = null;
+  let selectedTaiwanese = null;
 
-function shuffle(array) {
-  return array.sort(() => Math.random() - 0.5);
-}
+  const mandarinList = document.getElementById("mandarinList");
+  const taiwaneseList = document.getElementById("taiwaneseList");
+  const scoreDisplay = document.getElementById("score");
+  const completionMessage = document.getElementById("completionMessage");
+  const retryBtn = document.getElementById("retryBtn");
+  const homeBtn = document.getElementById("homeBtn");
+  const nextBtn = document.getElementById("nextBtn");
 
-function createWordElement(text, type, audioUrl) {
-  const div = document.createElement("div");
-  div.className = "word";
-  div.textContent = text;
-  div.dataset.audio = audioUrl || "";
-  div.onclick = () => {
-    if (div.classList.contains("matched")) return;
-    if (selected[type] === div) {
-      div.classList.remove("selected");
-      selected[type] = null;
-      return;
-    }
-    if (selected[type]) selected[type].classList.remove("selected");
-    div.classList.add("selected");
-    selected[type] = div;
+  const successAudio = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
 
-    if (selected.zh && selected.tw) {
-      checkMatch();
-    }
-  };
-  return div;
-}
-
-async function playAudio(audioElement) {
-  return new Promise((resolve) => {
-    audioElement.currentTime = 0;
-    const playPromise = audioElement.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        audioElement.onended = () => resolve();
-      }).catch(() => resolve());
-    } else {
-      resolve();
-    }
-  });
-}
-
-async function checkMatch() {
-  const zhText = selected.zh.textContent;
-  const twText = selected.tw.textContent;
-  const match = sets[currentSetIndex].find(w => w.zh === zhText && w.tw === twText);
-
-  if (match) {
-    selected.zh.classList.add("matched");
-    selected.tw.classList.add("matched");
-
-    const correctSound = document.getElementById("correctSound");
-    const twAudio = new Audio(match.audio);
-
-    try {
-      await playAudio(correctSound);
-      await playAudio(twAudio);
-    } catch(e) {
-      console.warn("播放音效錯誤:", e);
-    }
-
-    score++;
-    document.getElementById("score").textContent = `分數：${score}`;
-
-    if (score === sets[currentSetIndex].length && !winSoundPlayed) {
-      winSoundPlayed = true;
-      const winMessage = document.getElementById("winMessage");
-      winMessage.classList.add("show");
+  function shuffleArray(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
   }
 
-  selected.zh.classList.remove("selected");
-  selected.tw.classList.remove("selected");
-  selected.zh = null;
-  selected.tw = null;
-}
+  function initGame(setIndex) {
+    currentSetIndex = setIndex;
+    matchedPairs.clear();
+    selectedMandarin = null;
+    selectedTaiwanese = null;
+    completionMessage.textContent = "";
+    completionMessage.style.fontSize = "2.5em";
+    nextBtn.disabled = true;
+    scoreDisplay.textContent = `分數：0 / 10`;
 
-function initGame() {
-  score = 0;
-  winSoundPlayed = false;
-  document.getElementById("score").textContent = `分數：${score}`;
-  selected.zh = null;
-  selected.tw = null;
-  const winMessage = document.getElementById("winMessage");
-  winMessage.classList.remove("show");
+    // 取得題目陣列的淺拷貝與打亂
+    const pairs = sets[currentSetIndex].map(obj => ({...obj}));
+    mandarinWords = pairs.map(p => p.mandarin);
+    taiwaneseWords = pairs.map(p => p.taiwanese);
 
-  const zhContainer = document.getElementById("mandarin-words");
-  const twContainer = document.getElementById("taiwanese-words");
-  zhContainer.innerHTML = "";
-  twContainer.innerHTML = "";
+    shuffleArray(mandarinWords);
+    shuffleArray(taiwaneseWords);
 
-  const currentSet = sets[currentSetIndex];
-  const zhList = shuffle([...currentSet]);
-  const twList = shuffle([...currentSet]);
+    renderWords();
+  }
 
-  zhList.forEach(w => zhContainer.appendChild(createWordElement(w.zh, "zh")));
-  twList.forEach(w => twContainer.appendChild(createWordElement(w.tw, "tw", w.audio)));
-}
+  function renderWords() {
+    mandarinList.innerHTML = "";
+    taiwaneseList.innerHTML = "";
 
-document.getElementById("retryBtn").addEventListener("click", () => {
-  initGame();
-});
+    mandarinWords.forEach(word => {
+      const div = document.createElement("div");
+      div.textContent = word;
+      div.classList.add("word");
+      if (matchedPairs.has(word)) div.classList.add("matched");
+      div.addEventListener("click", () => onMandarinClick(word, div));
+      mandarinList.appendChild(div);
+    });
 
-document.getElementById("nextSetBtn").addEventListener("click", () => {
-  currentSetIndex = (currentSetIndex + 1) % sets.length;
-  initGame();
-});
+    taiwaneseWords.forEach(word => {
+      const div = document.createElement("div");
+      div.textContent = word;
+      div.classList.add("word");
+      if (matchedPairs.has(word)) div.classList.add("matched");
+      div.addEventListener("click", () => onTaiwaneseClick(word, div));
+      taiwaneseList.appendChild(div);
+    });
+  }
 
-initGame();
+  function onMandarinClick(word, element) {
+    if (matchedPairs.has(word)) return;
+    if (selectedMandarin) {
+      if (selectedMandarin === word) {
+        // 取消選取
+        selectedMandarin = null;
+        clearSelection();
+      } else {
+        selectedMandarin = word;
+        clearSelection();
+        element.classList.add("selected");
+      }
+    } else {
+      selectedMandarin = word;
+      element.classList.add("selected");
+    }
+    tryMatch();
+  }
+
+  function onTaiwaneseClick(word, element) {
+    if (matchedPairs.has(word)) return;
+    if (selectedTaiwanese) {
+      if (selectedTaiwanese === word) {
+        // 取消選取
+        selectedTaiwanese = null;
+        clearSelection();
+      } else {
+        selectedTaiwanese = word;
+        clearSelection();
+        element.classList.add("selected");
+      }
+    } else {
+      selectedTaiwanese = word;
+      element.classList.add("selected");
+    }
+    tryMatch();
+  }
+
+  function clearSelection() {
+    document.querySelectorAll(".word.selected").forEach(el => {
+      el.classList.remove("selected");
+    });
+  }
+
+  function tryMatch() {
+    if (selectedMandarin && selectedTaiwanese) {
+      const pair = sets[currentSetIndex].find(p => p.mandarin === selectedMandarin && p.taiwanese === selectedTaiwanese);
+      if (pair) {
+        matchedPairs.add(selectedMandarin);
+        matchedPairs.add(selectedTaiwanese);
+        // 標記配對成功
+        clearSelection();
+        renderWords();
+        playAudio(pair.audio);
+        updateScore();
+        selectedMandarin = null;
+        selectedTaiwanese = null;
+
+        if (matchedPairs.size / 2 === 10) {
+          showCompletion();
+        }
+      } else {
+        // 不配對，稍等後取消選取
+        setTimeout(() => {
+          clearSelection();
+          selectedMandarin = null;
+          selectedTaiwanese = null;
+        }, 700);
+      }
+    }
+  }
+
+  function playAudio(url) {
+    if (!url) return;
+    const audio = new Audio(url);
+    audio.play().catch(() => {});
+  }
+
+  function updateScore() {
+    scoreDisplay.textContent = `分數：${matchedPairs.size / 2} / 10`;
+  }
+
+  function showCompletion() {
+    completionMessage.textContent = "攏 tio̍h，有夠gâu的！";
+    completionMessage.style.fontSize = "3.5em";
+    nextBtn.disabled = false;
+  }
+
+  retryBtn.addEventListener("click", () => {
+    initGame(currentSetIndex);
+  });
+
+  homeBtn.addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (currentSetIndex + 1 < sets.length) {
+      initGame(currentSetIndex + 1);
+    }
+  });
+
+  // 初始載入第一組
+  initGame(0);
 </script>
 
 </body>
