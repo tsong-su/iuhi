@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8" />
-<title>華台動物語詞配對遊戲</title>
+<title>華台動物語詞配對</title>
 <style>
   body {
     font-family: "Microsoft JhengHei", sans-serif;
@@ -23,8 +23,14 @@
     color: #914d6c;
     margin-bottom: 20px;
   }
-
-  /* 按鈕區域容器，讓按鈕並排，放在subtitle下方 */
+  /* 分數置中 */
+  #score {
+    font-size: 1.6em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #6a0d4d;
+  }
   #button-container {
     display: flex;
     justify-content: center;
@@ -66,7 +72,6 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    /* 移除固定高度避免捲軸 */
     height: auto;
   }
   #mandarin {
@@ -90,7 +95,6 @@
   }
   .words-container {
     flex-wrap: wrap;
-    /* overflow-y: auto; 捲軸移除 */
     flex-grow: 1;
     display: flex;
     gap: 12px;
@@ -105,7 +109,7 @@
     border: 2px solid #dda0b9;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 1.4em; /* 字體較小 */
+    font-size: 1.4em;
     font-weight: 700;
     white-space: nowrap;
     transition: background 0.3s, border-color 0.3s, color 0.3s;
@@ -172,7 +176,7 @@
 </head>
 <body>
 
-<h1>動物華台語詞配對遊戲</h1>
+<h1>華台動物語詞配對</h1>
 <div id="subtitle">先 tshi̍h 華文，才 tshi̍h 台語。</div>
 
 <div id="button-container">
@@ -291,7 +295,6 @@ function initGame() {
     const link = `https://sutian.moe.edu.tw/zh-hant/search/${encodeURIComponent(w.tw)}`;
     const el = createWordElement(w.tw, "tw", w.audio);
     el.onclick = function() {
-      if (!el.classList.contains("matched")) playAudio(w.audio);
       if (selected.tw === el) {
         el.classList.remove("selected");
         selected.tw = null;
