@@ -144,7 +144,7 @@
   #buttons button {
     font-size: 1em;
     padding: 8px 20px;
-    margin: 0 10px;
+    margin: 0 8px;
     border: none;
     border-radius: 12px;
     cursor: pointer;
@@ -156,10 +156,14 @@
   #buttons button:hover {
     background-color: #7b244a;
   }
-  #buttons button#homeBtn {
+  #buttons button#homeBtn,
+  #buttons button#retryBtn,
+  #buttons button#randomSetBtn {
     background-color: #2196f3;
   }
-  #buttons button#homeBtn:hover {
+  #buttons button#homeBtn:hover,
+  #buttons button#retryBtn:hover,
+  #buttons button#randomSetBtn:hover {
     background-color: #1769aa;
   }
   #buttons button#nextSetBtn {
@@ -187,7 +191,7 @@
       padding: 12px 16px;
     }
     #buttons button {
-      margin: 8px 10px;
+      margin: 8px 6px;
       padding: 10px 24px;
       font-size: 1.1em;
     }
@@ -217,6 +221,7 @@
 <div id="buttons">
   <button id="retryBtn">閣耍一擺</button>
   <button id="nextSetBtn">後一回</button>
+  <button id="randomSetBtn">頂一回</button>
   <button id="homeBtn" onclick="location.href='index.html'">回到遊戲首頁</button>
 </div>
 
@@ -224,6 +229,7 @@
 
 <script>
 const sets = [
+  // 第1回
   [
     { zh: "老鷹", tw: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
     { zh: "鸚鵡", tw: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
@@ -236,6 +242,7 @@ const sets = [
     { zh: "老鼠", tw: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
     { zh: "松鼠", tw: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" }
   ],
+  // 第2回
   [
     { zh: "夜鷺", tw: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
     { zh: "五色鳥", tw: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
@@ -247,10 +254,27 @@ const sets = [
     { zh: "貓頭鷹", tw: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
     { zh: "白頭翁", tw: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
     { zh: "臺灣藍鵲", tw: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" }
+  ],
+  // 第3回
+  [
+    { zh: "公牛", tw: "牛犅", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1263.mp3" },
+    { zh: "白鼻心", tw: "果子猫", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4197.mp3" },
+    { zh: "石虎", tw: "山貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/531.mp3" },
+    { zh: "小鴨子", tw: "鴨咪仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12102.mp3" },
+    { zh: "綠綉眼", tw: "青苔仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27536.mp3" },
+    { zh: "麻雀", tw: "厝角鳥仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5822.mp3" },
+    { zh: "雨傘節", tw: "簸箕甲", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12830.mp3" },
+    { zh: "眼鏡蛇", tw: "飯匙銃", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9258.mp3" },
+    { zh: "壁虎", tw: "蟮蟲仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12611.mp3" },
+    { zh: "蝌蚪", tw: "肚胿仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3369.mp3" }
   ]
 ];
 
+// 頂一回的題目來源是三回混合，使用此陣列裝混合所有詞語
+let randomSet = [];
+
 let currentSetIndex = 0;
+let isRandomSet = false; // 判斷是否為頂一回
 let score = 0;
 let selected = { zh: null, tw: null };
 let winSoundPlayed = false;
@@ -299,7 +323,15 @@ async function playAudio(audioElement) {
 async function checkMatch() {
   const zhText = selected.zh.textContent;
   const twText = selected.tw.textContent;
-  const match = sets[currentSetIndex].find(w => w.zh === zhText && w.tw === twText);
+  let match = null;
+
+  if (isRandomSet) {
+    // 頂一回，從 randomSet 找配對
+    match = randomSet.find(w => w.zh === zhText && w.tw === twText);
+  } else {
+    // 普通回合，從 sets[currentSetIndex] 找配對
+    match = sets[currentSetIndex].find(w => w.zh === zhText && w.tw === twText);
+  }
 
   if (match) {
     selected.zh.classList.add("matched");
@@ -318,7 +350,8 @@ async function checkMatch() {
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
 
-    if (score === sets[currentSetIndex].length && !winSoundPlayed) {
+    const totalWords = isRandomSet ? randomSet.length : sets[currentSetIndex].length;
+    if (score === totalWords && !winSoundPlayed) {
       winSoundPlayed = true;
       const winMessage = document.getElementById("winMessage");
       winMessage.classList.add("show");
@@ -345,12 +378,28 @@ function initGame() {
   zhContainer.innerHTML = "";
   twContainer.innerHTML = "";
 
-  const currentSet = sets[currentSetIndex];
-  const zhList = shuffle([...currentSet]);
-  const twList = shuffle([...currentSet]);
+  let currentWords = [];
+  if (isRandomSet) {
+    // 頂一回: 使用 randomSet（混合三回題）
+    currentWords = randomSet;
+  } else {
+    currentWords = sets[currentSetIndex];
+  }
+
+  const zhList = shuffle([...currentWords]);
+  const twList = shuffle([...currentWords]);
 
   zhList.forEach(w => zhContainer.appendChild(createWordElement(w.zh, "zh")));
   twList.forEach(w => twContainer.appendChild(createWordElement(w.tw, "tw", w.audio)));
+}
+
+// 頂一回按鈕功能：混合三回題目並開始遊戲
+function startRandomSet() {
+  isRandomSet = true;
+  // 將三回題目合併為一陣列
+  randomSet = [].concat(...sets);
+  randomSet = shuffle(randomSet);
+  initGame();
 }
 
 document.getElementById("retryBtn").addEventListener("click", () => {
@@ -358,10 +407,16 @@ document.getElementById("retryBtn").addEventListener("click", () => {
 });
 
 document.getElementById("nextSetBtn").addEventListener("click", () => {
+  isRandomSet = false;
   currentSetIndex = (currentSetIndex + 1) % sets.length;
   initGame();
 });
 
+document.getElementById("randomSetBtn").addEventListener("click", () => {
+  startRandomSet();
+});
+
+// 初始載入第1回
 initGame();
 </script>
 
