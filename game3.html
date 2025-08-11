@@ -302,13 +302,16 @@ async function checkMatch() {
       const winMessage = document.getElementById("winMessage");
       winMessage.classList.add("show");
 
-      // 延遲播放勝利音效，避免瀏覽器阻擋
+      // 停止前面音效避免衝突
+      document.getElementById("correctSound").pause();
+      document.getElementById("correctSound").currentTime = 0;
+
+      // 延遲播放勝利音效
       setTimeout(() => {
         const winSound = document.getElementById("winSound");
-        winSound.play().catch(err => {
-          console.warn("勝利音效播放失敗:", err);
-        });
-      }, 300);
+        winSound.currentTime = 0;
+        winSound.play().catch(e => console.warn("勝利音效無法播放:", e));
+      }, 800);
     }
   }
 
