@@ -38,6 +38,25 @@
   #btnRestart:hover {
     background-color: #c2185b;
   }
+
+  a#back-home {
+    display: block;
+    margin: 0 auto 30px auto;
+    width: max-content;
+    background-color: #e91e63;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 3px 7px rgba(233, 30, 99, 0.6);
+    transition: background-color 0.3s;
+    text-align: center;
+  }
+  a#back-home:hover {
+    background-color: #c2185b;
+  }
+
   .container {
     display: flex;
     justify-content: center;
@@ -56,8 +75,9 @@
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    height: 420px; /* 固定高度，讓詞條上下排列 */
+    height: 420px;
     overflow-y: auto;
+    flex-direction: column;
   }
   #mandarin {
     background: #ffd6e8;
@@ -65,10 +85,24 @@
     color: #6a0d4d;
   }
   #taiwanese {
-    background: #cde9f9;
+    background: #b2e0ff; /* 活潑淡藍 */
     border: 2px solid #8ec4f9;
     color: #1a73e8;
   }
+
+  .column-header {
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-bottom: 15px;
+    user-select: none;
+  }
+  #mandarin .column-header {
+    color: #6a0d4d;
+  }
+  #taiwanese .column-header {
+    color: #0d47a1;
+  }
+
   .word {
     background-color: #fff0f6;
     padding: 10px 14px;
@@ -79,7 +113,7 @@
     font-size: 1.1em;
     white-space: nowrap;
     transition: background 0.3s, border-color 0.3s, color 0.3s;
-    flex: 0 0 auto; /* 不斷行，自然寬度 */
+    flex: 0 0 auto;
   }
   #taiwanese .word {
     background-color: #e3f0ff;
@@ -109,23 +143,7 @@
     color: white;
     font-weight: bold;
   }
-  a#back-home {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    background-color: #e91e63;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-weight: bold;
-    text-decoration: none;
-    box-shadow: 0 3px 7px rgba(233, 30, 99, 0.6);
-    transition: background-color 0.3s;
-    z-index: 100;
-  }
-  a#back-home:hover {
-    background-color: #c2185b;
-  }
+
   @media (max-width: 700px) {
     .container {
       flex-direction: column;
@@ -153,8 +171,12 @@
 <div id="score">分數：0</div>
 
 <div class="container">
-  <div class="column" id="mandarin"></div>
-  <div class="column" id="taiwanese"></div>
+  <div class="column" id="mandarin">
+    <div class="column-header">華文</div>
+  </div>
+  <div class="column" id="taiwanese">
+    <div class="column-header">台灣台語</div>
+  </div>
 </div>
 
 <audio id="correctSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8a8ecf9b1f.mp3"></audio>
@@ -244,8 +266,9 @@ function initGame() {
 
   const zhCol = document.getElementById("mandarin");
   const twCol = document.getElementById("taiwanese");
-  zhCol.innerHTML = "";
-  twCol.innerHTML = "";
+  // 先清除所有詞條（但保留欄標題）
+  zhCol.querySelectorAll(".word").forEach(w => w.remove());
+  twCol.querySelectorAll(".word").forEach(w => w.remove());
 
   const zhList = shuffle([...words]);
   const twList = shuffle([...words]);
