@@ -7,64 +7,81 @@
   body {
     font-family: "Microsoft JhengHei", sans-serif;
     background-color: #ffe4ec; /* 淡粉紅背景 */
-    text-align: center;
-    padding: 20px;
     color: #6a0d4d; /* 深粉紅字色 */
     margin: 0;
+    padding: 20px;
   }
   h1 {
     color: #a83262;
-    margin-bottom: 0;
-  }
-  #subtitle {
-    font-size: 1em;
-    color: #8b3e66;
-    margin-top: 4px;
-    margin-bottom: 15px;
-    font-weight: 500;
+    text-align: center;
+    margin-bottom: 25px;
   }
   #score {
     font-size: 20px;
-    margin-bottom: 15px;
     font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
   }
   .container {
     display: flex;
     justify-content: center;
-    gap: 30px;
-    margin-top: 10px;
+    gap: 50px;
+    flex-wrap: wrap;
   }
   .column {
-    background: #ffd6e8;
-    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(168, 50, 98, 0.3);
-    min-width: 180px;
+    min-width: 220px;
+    max-width: 280px;
+    padding: 20px;
     user-select: none;
-    border: 2px solid #dda0b9;
     box-sizing: border-box;
   }
-  #taiwanese.column {
-    background: #e8d1e8;
-    border-color: #b186b1;
+  #mandarin {
+    background: #ffd6e8;
+    border: 2px solid #dda0b9;
+    color: #6a0d4d;
+  }
+  #taiwanese {
+    background: #cde9f9;  /* 天空藍 */
+    border: 2px solid #8ec4f9;
+    color: #1a73e8;
   }
   .word {
     background-color: #fff0f6;
-    padding: 10px 15px;
-    margin: 8px 0;
+    padding: 12px 18px;
+    margin: 10px 0;
     border: 2px solid #dda0b9;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.3s, border-color 0.3s;
+    font-size: 1.1em;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+  #taiwanese .word {
+    background-color: #e3f0ff;
+    border-color: #8ec4f9;
+    color: #1a73e8;
   }
   .word.selected {
     background-color: #f8bbd0;
     border-color: #e91e63;
+    color: #660033;
+  }
+  #taiwanese .word.selected {
+    background-color: #90caf9;
+    border-color: #1a73e8;
+    color: #0d47a1;
   }
   .word.matched {
     background-color: #f48fb1;
     border-color: #ad1457;
     cursor: default;
+    color: white;
+    font-weight: bold;
+  }
+  #taiwanese .word.matched {
+    background-color: #2196f3;
+    border-color: #1565c0;
     color: white;
     font-weight: bold;
   }
@@ -85,6 +102,16 @@
   a#back-home:hover {
     background-color: #c2185b;
   }
+  @media (max-width: 600px) {
+    .container {
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+    .column {
+      max-width: 90vw;
+    }
+  }
 </style>
 </head>
 <body>
@@ -92,8 +119,8 @@
 <a id="back-home" href="index.html">← 回到遊戲首頁</a>
 
 <h1>華台語詞配對遊戲</h1>
-<div id="subtitle">Tshi̍h 台語語詞會有音檔 thang 練習喔！</div>
 <div id="score">分數：0</div>
+
 <div class="container">
   <div class="column" id="mandarin"></div>
   <div class="column" id="taiwanese"></div>
@@ -154,7 +181,6 @@ function checkMatch() {
     const correctSound = document.getElementById("correctSound");
     correctSound.play();
 
-    // 播放成功提示音結束後播放台語音檔
     correctSound.onended = () => {
       playAudio(match.audio);
     };
@@ -164,7 +190,7 @@ function checkMatch() {
     if (score === words.length) {
       setTimeout(() => {
         document.getElementById("winSound").play();
-        alert("攏 tio̍h，有夠𠢕的！");
+        alert("恭喜！全部完成！\n攏 tio̍h，有夠𠢕的！");
       }, 300);
     }
   }
