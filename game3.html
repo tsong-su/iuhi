@@ -249,12 +249,19 @@ function checkMatch() {
     selected.zh.classList.add("matched");
     selected.tw.classList.add("matched");
 
+    // 播放配對成功音效後播放台語音檔
     const correctSound = document.getElementById("correctSound");
+    correctSound.currentTime = 0;
     correctSound.play();
 
-    correctSound.onended = () => {
-      playAudio(match.audio);
-    };
+    // 使用 addEventListener 防止重覆覆蓋
+    correctSound.onended = null; // 先移除之前的監聽器
+    correctSound.addEventListener('ended', function playTaiwaneseAudio() {
+      const twAudio = new Audio(match.audio);
+      twAudio.play();
+      // 移除本次監聽避免多次觸發
+      correctSound.removeEventListener('ended', playTaiwaneseAudio);
+    });
 
     score++;
     document.getElementById("score").textContent = `分數：${score}`;
@@ -269,11 +276,6 @@ function checkMatch() {
   selected.tw.classList.remove("selected");
   selected.zh = null;
   selected.tw = null;
-}
-
-function playAudio(url) {
-  const audio = new Audio(url);
-  audio.play();
 }
 
 function initGame() {
