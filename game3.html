@@ -14,13 +14,29 @@
   h1 {
     color: #a83262;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
   }
   #score {
     font-size: 20px;
     font-weight: bold;
     text-align: center;
     margin-bottom: 20px;
+  }
+  #btnRestart {
+    display: block;
+    margin: 0 auto 25px auto;
+    background-color: #e91e63;
+    color: white;
+    border: none;
+    padding: 10px 28px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    box-shadow: 0 3px 7px rgba(233, 30, 99, 0.7);
+    transition: background-color 0.3s;
+  }
+  #btnRestart:hover {
+    background-color: #c2185b;
   }
   .container {
     display: flex;
@@ -119,6 +135,7 @@
 <a id="back-home" href="index.html">← 回到遊戲首頁</a>
 
 <h1>華台語詞配對遊戲</h1>
+<button id="btnRestart">閣耍一擺</button>
 <div id="score">分數：0</div>
 
 <div class="container">
@@ -190,7 +207,7 @@ function checkMatch() {
     if (score === words.length) {
       setTimeout(() => {
         document.getElementById("winSound").play();
-        alert("恭喜！全部完成！\n攏 tio̍h，有夠𠢕的！");
+        alert("攏 tio̍h，有夠𠢕的！");
       }, 300);
     }
   }
@@ -206,6 +223,11 @@ function playAudio(url) {
 }
 
 function initGame() {
+  score = 0;
+  document.getElementById("score").textContent = `分數：${score}`;
+  selected.zh = null;
+  selected.tw = null;
+
   const zhCol = document.getElementById("mandarin");
   const twCol = document.getElementById("taiwanese");
   zhCol.innerHTML = "";
@@ -236,6 +258,8 @@ function initGame() {
     twCol.appendChild(el);
   });
 }
+
+document.getElementById("btnRestart").onclick = initGame;
 
 initGame();
 </script>
