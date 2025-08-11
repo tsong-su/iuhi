@@ -1,417 +1,209 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8" />
-<title>華台動物語詞配對</title>
-<style>
-  body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    background-color: #F0F6D2;  /* 淺草色 */
-    color: #6a0d4d;
-    margin: 0;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 0.5em;
-    font-weight: 900;
-    color: #6a0d4d;
-  }
-  #gameTitle {
-    font-size: 1.8em;
-    font-weight: 900;
-    margin-bottom: 0.2em;
-  }
-  #instructions {
-    text-align: center;
-    font-weight: 700;
-    color: #6a0d4d;
-    margin-bottom: 1.2em;
-  }
-  #score {
-    text-align: center;
-    font-weight: 900;
-    font-size: 1.3em;
-    margin-bottom: 1em;
-    color: #6a0d4d;
-  }
-  #gameContainer {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-  .column {
-    background: #ffe4e1;
-    border-radius: 12px;
-    padding: 16px 12px 12px 12px;
-    width: 320px;
-    box-sizing: border-box;
-    box-shadow: 2px 2px 8px rgba(106, 13, 77, 0.2);
-  }
-  .column.right {
-    background: #a2d2f7; /* 天空藍 */
-  }
-  .column > .header {
-    font-size: 1.4em;
-    font-weight: 900;
-    color: #6a0d4d;
-    margin-bottom: 0.6em;
-    user-select: none;
-    text-align: center;
-  }
-  .wordList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-  }
-  .word {
-    background-color: #fff;
-    border: 2px solid #6a0d4d;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 1.25em;
-    font-weight: 900;
-    color: #6a0d4d;
-    cursor: pointer;
-    user-select: none;
-    min-width: 90px;
-    text-align: center;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  .word.selected {
-    background-color: #6a0d4d;
-    color: #fff;
-  }
-  .word.matched {
-    background-color: #97d700;
-    color: #fff;
-    cursor: default;
-  }
-  #buttons {
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 1em;
-  }
-  button {
-    background-color: #6a0d4d;
-    color: white;
-    font-weight: 700;
-    font-size: 1em;
-    padding: 8px 16px;
-    margin: 0 12px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-  }
-  button:hover:not(:disabled) {
-    background-color: #4a084d;
-  }
-  button:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-  #completionMessage {
-    text-align: center;
-    font-weight: 900;
-    font-size: 2.5em;
-    color: #1b4f72;
-    margin-top: 0.8em;
-    user-select: none;
-  }
-
-  /* 星星容器 */
-  #starContainer {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    width: 120px;
-    height: 120px;
-    pointer-events: none;
-    z-index: 999;
-  }
-  /* 星星樣式 */
-  .star {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: gold;
-    clip-path: polygon(
-      50% 0%, 61% 35%, 98% 35%, 
-      68% 57%, 79% 91%, 50% 70%, 
-      21% 91%, 32% 57%, 2% 35%, 
-      39% 35%
-    );
-    opacity: 0.8;
-    animation: twinkle 3s infinite ease-in-out;
-  }
-  .star:nth-child(2) {
-    width: 10px;
-    height: 10px;
-    top: 70px;
-    left: 10px;
-    animation-delay: 1s;
-  }
-  .star:nth-child(3) {
-    width: 8px;
-    height: 8px;
-    top: 30px;
-    left: 80px;
-    animation-delay: 0.5s;
-  }
-  .star:nth-child(4) {
-    width: 6px;
-    height: 6px;
-    top: 10px;
-    left: 40px;
-    animation-delay: 2s;
-  }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.8; transform: translateY(0); }
-    50% { opacity: 0.3; transform: translateY(-5px); }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>台語字詞排序遊戲 - game3</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #333;
+    }
+    #sentence {
+      font-size: 1.5em;
+      margin: 20px;
+      text-align: center;
+    }
+    #word-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .word {
+      background-color: #fffacd;
+      padding: 10px 15px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      cursor: grab;
+      font-size: 1.2em;
+    }
+    .word.dragging {
+      opacity: 0.5;
+    }
+    #controls {
+      margin: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #result {
+      font-size: 1.2em;
+      margin: 10px;
+      font-weight: bold;
+    }
+    audio {
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
-<h1 id="gameTitle">華台動物語詞配對</h1>
-<div id="instructions">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
-<div id="score">分數：0 / 10</div>
-
-<div id="gameContainer">
-  <div class="column left">
-    <div class="header">中文</div>
-    <div id="mandarinList" class="wordList"></div>
-  </div>
-  <div class="column right">
-    <div class="header">台語</div>
-    <div id="taiwaneseList" class="wordList"></div>
-  </div>
+<h1>台語字詞排序遊戲</h1>
+<div id="sentence"></div>
+<div id="word-container"></div>
+<div id="controls">
+  <button id="check-btn">檢查答案</button>
+  <button id="next-btn">後一回</button>
+  <button id="restart-btn">閣耍一擺</button>
+  <button id="home-btn">回到遊戲首頁</button>
 </div>
-
-<div id="buttons">
-  <button id="retryBtn">閣耍一擺</button>
-  <button id="homeBtn">回到遊戲首頁</button>
-  <button id="nextBtn" disabled>後一回</button>
-</div>
-
-<div id="completionMessage"></div>
-
-<div id="starContainer">
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
-</div>
+<div id="result"></div>
+<div id="audio-container"></div>
 
 <script>
-  // 三組題庫（每組10題）
-  const sets = [
-    [
-      { mandarin: "老鷹", taiwanese: "鴟鴞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7881.mp3" },
-      { mandarin: "鸚鵡", taiwanese: "鸚哥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13421.mp3" },
-      { mandarin: "穿山甲", taiwanese: "鯪鯉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12938.mp3" },
-      { mandarin: "蝙蝠", taiwanese: "夜婆", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3792.mp3" },
-      { mandarin: "青蛙", taiwanese: "水雞", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1192.mp3" },
-      { mandarin: "蜥蜴", taiwanese: "杜定", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3234.mp3" },
-      { mandarin: "企鵝", taiwanese: "徛鵝", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7282.mp3" },
-      { mandarin: "黑面琵鷺", taiwanese: "烏面抐桮", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6270.mp3" },
-      { mandarin: "老鼠", taiwanese: "鳥鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3" },
-      { mandarin: "松鼠", taiwanese: "膨鼠", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11877.mp3" },
-    ],
-    [
-      { mandarin: "夜鷺", taiwanese: "暗光鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9585.mp3" },
-      { mandarin: "五色鳥", taiwanese: "花仔和尚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27448.mp3" },
-      { mandarin: "鴿子", taiwanese: "粉鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6452.mp3" },
-      { mandarin: "八哥", taiwanese: "鵁鴒", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12470.mp3" },
-      { mandarin: "喜鵲", taiwanese: "客鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4879.mp3" },
-      { mandarin: "灰面鵟鷹", taiwanese: "南路鷹", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4745.mp3" },
-      { mandarin: "候鳥", taiwanese: "過冬鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27326.mp3" },
-      { mandarin: "貓頭鷹", taiwanese: "貓頭鳥", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11943.mp3" },
-      { mandarin: "白頭翁", taiwanese: "白頭鵠仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2016.mp3" },
-      { mandarin: "臺灣藍鵲", taiwanese: "長尾山娘", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/RB/fx/295521.mp3" },
-    ],
-    [
-      { mandarin: "公牛", taiwanese: "牛犅", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1263.mp3" },
-      { mandarin: "白鼻心", taiwanese: "果子猫", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4197.mp3" },
-      { mandarin: "石虎", taiwanese: "山貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/531.mp3" },
-      { mandarin: "小鴨子", taiwanese: "鴨咪仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12102.mp3" },
-      { mandarin: "綠綉眼", taiwanese: "青苔仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27536.mp3" },
-      { mandarin: "麻雀", taiwanese: "厝角鳥仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5822.mp3" },
-      { mandarin: "雨傘節", taiwanese: "簸箕甲", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12830.mp3" },
-      { mandarin: "眼鏡蛇", taiwanese: "飯匙銃", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9258.mp3" },
-      { mandarin: "壁虎", taiwanese: "蟮蟲仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12611.mp3" },
-      { mandarin: "蝌蚪", taiwanese: "肚胿仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3369.mp3" },
-    ]
-  ];
+const questionSets = [
+  // 第一組題目
+  [
+    { word: "半老老", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4926.mp3" },
+    { word: "苦力", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9051.mp3" },
+    { word: "散工", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/365.mp3" },
+    { word: "大官虎", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1178.mp3" },
+    { word: "抓耙仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6348.mp3" },
+    { word: "摸飛", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6454.mp3" },
+    { word: "挲圓仔湯", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7877.mp3" },
+    { word: "摠頭", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7360.mp3" },
+    { word: "二步七仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2580.mp3" },
+    { word: "健丟", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5675.mp3" }
+  ],
+  // 第二組題目
+  [
+    { word: "電火球", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10469.mp3" },
+    { word: "烏貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6780.mp3" },
+    { word: "草蜢仔", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2471.mp3" },
+    { word: "花貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3142.mp3" },
+    { word: "金絲貓", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5226.mp3" },
+    { word: "紅目鰱", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3002.mp3" },
+    { word: "火燒魚", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2800.mp3" },
+    { word: "水牛", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9124.mp3" },
+    { word: "狗公", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4029.mp3" },
+    { word: "烏鴉", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6845.mp3" }
+  ],
+  // 第三組題目
+  [
+    { word: "公牛", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1263.mp3" },
+    { word: "白鼻心", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4197.mp3" },
+    { word: "石虎", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/531.mp3" },
+    { word: "小鴨子", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12102.mp3" },
+    { word: "綠綉眼", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/27/27536.mp3" },
+    { word: "麻雀", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5822.mp3" },
+    { word: "雨傘節", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12830.mp3" },
+    { word: "眼鏡蛇", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9258.mp3" },
+    { word: "壁虎", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12611.mp3" },
+    { word: "蝌蚪", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3369.mp3" }
+  ]
+];
 
-  let currentSetIndex = 0;
-  let mandarinWords = [];
-  let taiwaneseWords = [];
-  let matchedPairs = new Set();
-  let selectedMandarin = null;
-  let selectedTaiwanese = null;
+let currentSet = 0;
+let currentQuestion = 0;
 
-  const mandarinList = document.getElementById("mandarinList");
-  const taiwaneseList = document.getElementById("taiwaneseList");
-  const scoreDisplay = document.getElementById("score");
-  const completionMessage = document.getElementById("completionMessage");
-  const retryBtn = document.getElementById("retryBtn");
-  const homeBtn = document.getElementById("homeBtn");
-  const nextBtn = document.getElementById("nextBtn");
+function loadQuestion() {
+  const sentenceDiv = document.getElementById("sentence");
+  const container = document.getElementById("word-container");
+  const audioContainer = document.getElementById("audio-container");
+  const question = questionSets[currentSet][currentQuestion];
 
-  function shuffleArray(array) {
-    for (let i = array.length -1; i > 0; i--) {
-      const j = Math.floor(Math.random()*(i+1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
+  sentenceDiv.textContent = "請依順序排列台語詞語";
+  container.innerHTML = "";
+  audioContainer.innerHTML = `<audio controls autoplay src="${question.audio}"></audio>`;
+
+  const words = question.word.split("");
+  words.forEach(w => {
+    const div = document.createElement("div");
+    div.className = "word";
+    div.textContent = w;
+    div.draggable = true;
+    div.addEventListener("dragstart", () => div.classList.add("dragging"));
+    div.addEventListener("dragend", () => div.classList.remove("dragging"));
+    container.appendChild(div);
+  });
+}
+
+document.getElementById("check-btn").addEventListener("click", () => {
+  const container = document.getElementById("word-container");
+  const arranged = Array.from(container.children).map(el => el.textContent).join("");
+  const correct = questionSets[currentSet][currentQuestion].word;
+  document.getElementById("result").textContent = arranged === correct ? "✅ 正確！" : "❌ 再試試！";
+});
+
+document.getElementById("next-btn").addEventListener("click", () => {
+  currentQuestion++;
+  if (currentQuestion >= questionSets[currentSet].length) {
+    currentQuestion = 0;
+    currentSet = (currentSet + 1) % questionSets.length;
   }
+  loadQuestion();
+});
 
-  function initGame(setIndex) {
-    currentSetIndex = setIndex;
-    matchedPairs.clear();
-    selectedMandarin = null;
-    selectedTaiwanese = null;
-    completionMessage.textContent = "";
-    completionMessage.style.fontSize = "2.5em";
-    nextBtn.disabled = true;
-    scoreDisplay.textContent = `分數：0 / 10`;
+document.getElementById("restart-btn").addEventListener("click", () => {
+  currentSet = 0;
+  currentQuestion = 0;
+  loadQuestion();
+});
 
-    // 取得題目陣列的淺拷貝與打亂
-    const pairs = sets[currentSetIndex].map(obj => ({...obj}));
-    mandarinWords = pairs.map(p => p.mandarin);
-    taiwaneseWords = pairs.map(p => p.taiwanese);
+document.getElementById("home-btn").addEventListener("click", () => {
+  window.location.href = "index.html";
+});
 
-    shuffleArray(mandarinWords);
-    shuffleArray(taiwaneseWords);
-
-    renderWords();
+document.getElementById("word-container").addEventListener("dragover", e => {
+  e.preventDefault();
+  const afterElement = getDragAfterElement(document.getElementById("word-container"), e.clientX);
+  const dragging = document.querySelector(".dragging");
+  if (afterElement == null) {
+    document.getElementById("word-container").appendChild(dragging);
+  } else {
+    document.getElementById("word-container").insertBefore(dragging, afterElement);
   }
+});
 
-  function renderWords() {
-    mandarinList.innerHTML = "";
-    taiwaneseList.innerHTML = "";
-
-    mandarinWords.forEach(word => {
-      const div = document.createElement("div");
-      div.textContent = word;
-      div.classList.add("word");
-      if (matchedPairs.has(word)) div.classList.add("matched");
-      div.addEventListener("click", () => onMandarinClick(word, div));
-      mandarinList.appendChild(div);
-    });
-
-    taiwaneseWords.forEach(word => {
-      const div = document.createElement("div");
-      div.textContent = word;
-      div.classList.add("word");
-      if (matchedPairs.has(word)) div.classList.add("matched");
-      div.addEventListener("click", () => onTaiwaneseClick(word, div));
-      taiwaneseList.appendChild(div);
-    });
-  }
-
-  function onMandarinClick(word, element) {
-    if (matchedPairs.has(word)) return;
-    if (selectedMandarin) {
-      if (selectedMandarin === word) {
-        selectedMandarin = null;
-        clearSelection();
-      } else {
-        selectedMandarin = word;
-        clearSelection();
-        element.classList.add("selected");
-      }
+function getDragAfterElement(container, x) {
+  const draggableElements = [...container.querySelectorAll(".word:not(.dragging)")];
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = x - box.left - box.width / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
     } else {
-      selectedMandarin = word;
-      element.classList.add("selected");
+      return closest;
     }
-    tryMatch();
-  }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
 
-  function onTaiwaneseClick(word, element) {
-    if (matchedPairs.has(word)) return;
-    if (selectedTaiwanese) {
-      if (selectedTaiwanese === word) {
-        selectedTaiwanese = null;
-        clearSelection();
-      } else {
-        selectedTaiwanese = word;
-        clearSelection();
-        element.classList.add("selected");
-      }
-    } else {
-      selectedTaiwanese = word;
-      element.classList.add("selected");
-    }
-    tryMatch();
-  }
-
-  function clearSelection() {
-    document.querySelectorAll(".word.selected").forEach(el => {
-      el.classList.remove("selected");
-    });
-  }
-
-  function tryMatch() {
-    if (selectedMandarin && selectedTaiwanese) {
-      const pair = sets[currentSetIndex].find(p => p.mandarin === selectedMandarin && p.taiwanese === selectedTaiwanese);
-      if (pair) {
-        matchedPairs.add(selectedMandarin);
-        matchedPairs.add(selectedTaiwanese);
-        clearSelection();
-        playAudio(pair.audio);
-        updateScore();
-        renderWords();
-        if (matchedPairs.size / 2 === sets[currentSetIndex].length) {
-          showCompletion();
-        }
-      } else {
-        setTimeout(() => {
-          clearSelection();
-        }, 700);
-      }
-      selectedMandarin = null;
-      selectedTaiwanese = null;
-    }
-  }
-
-  function playAudio(url) {
-    if (!url) return;
-    const audio = new Audio(url);
-    audio.play().catch(() => {});
-  }
-
-  function updateScore() {
-    scoreDisplay.textContent = `分數：${matchedPairs.size / 2} / 10`;
-  }
-
-  function showCompletion() {
-    completionMessage.textContent = "攏 tio̍h，有夠gâu的！";
-    completionMessage.style.fontSize = "3.5em";
-    nextBtn.disabled = currentSetIndex + 1 >= sets.length;
-  }
-
-  retryBtn.addEventListener("click", () => {
-    initGame(currentSetIndex);
-  });
-
-  homeBtn.addEventListener("click", () => {
-    window.location.href = "index.html";
-  });
-
-  nextBtn.addEventListener("click", () => {
-    if (currentSetIndex + 1 < sets.length) {
-      initGame(currentSetIndex + 1);
-    }
-  });
-
-  // 初始載入第一組
-  initGame(0);
+loadQuestion();
 </script>
 
 </body>
