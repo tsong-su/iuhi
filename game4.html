@@ -6,10 +6,12 @@
   <style>
     body, html {
       margin: 0; padding: 0;
-      height: 100%;
-      display: flex; justify-content: center; align-items: center;
-      background: #f0f0f0;
       font-family: Arial, sans-serif;
+      height: 100%;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     #game-container {
       position: relative;
@@ -18,37 +20,53 @@
       background: url('game4_assets/north_map.jpg') no-repeat center center;
       background-size: contain;
       border: 2px solid #333;
-    }
-    .stamp {
-      width: 80px; height: 80px; margin: 10px; cursor: grab;
+      margin-top: 20px;
     }
     #stamps {
-      position: absolute; top: 10px; right: -120px;
-      display: flex; flex-direction: column;
+      position: absolute;
+      top: 10px;
+      right: -120px;
+      display: flex;
+      flex-direction: column;
+    }
+    .stamp {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      cursor: grab;
     }
     .dropzone {
-      position: absolute; width: 80px; height: 80px; border: 2px dashed transparent;
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed transparent;
     }
-    .dropzone.correct { border-color: green; }
+    .dropzone.correct {
+      border-color: green;
+    }
     #message {
-      position: absolute; top: 50%; left: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.9);
-      padding: 20px 40px; border: 2px solid #333;
-      font-size: 24px; display: none; text-align: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: red;
+      display: none;
     }
     #back-home {
-      position: absolute; bottom: 20px; left: 50%;
-      transform: translateX(-50%);
+      margin-top: 15px;
       padding: 10px 20px;
-      font-size: 1em;
-      border: none; border-radius: 10px;
-      background-color: #4fc3f7; color: white;
-      cursor: pointer;
+      background: #4fc3f7;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
+  <h2>臺灣北部地區郵票配對遊戲</h2>
   <div id="game-container">
     <div id="stamps">
       <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp" draggable="true">
@@ -79,13 +97,18 @@
     <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
     <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
 
-    <div id="message"></div>
-    <button id="back-home" onclick="location.href='index.html'">回到遊戲首頁</button>
+    <div id="message">有夠gâu</div>
   </div>
+
+  <a id="back-home" href="index.html">回到遊戲首頁</a>
+
+  <audio id="wrong-sound" src="game4_assets/wrong.mp3"></audio>
 
   <script>
     const stamps = document.querySelectorAll('.stamp');
     const dropzones = document.querySelectorAll('.dropzone');
+    const message = document.getElementById('message');
+    const wrongSound = document.getElementById('wrong-sound');
     let correctCount = 0;
 
     stamps.forEach(stamp => {
@@ -99,30 +122,25 @@
       zone.addEventListener('drop', e => {
         e.preventDefault();
         const stampId = e.dataTransfer.getData('text/plain');
-        const stamp = document.getElementById(stampId);
-
         if (stampId === zone.dataset.stamp) {
+          const stamp = document.getElementById(stampId);
           zone.appendChild(stamp);
           stamp.style.position = 'absolute';
           stamp.style.left = '0';
           stamp.style.top = '0';
           stamp.draggable = false;
           zone.classList.add('correct');
+          correctCount++;
 
-          // 播放正確音效
+          // 播放對應音效
           const audio = new Audio(`game4_assets/${stampId}.mp3`);
           audio.play();
 
-          correctCount++;
           if (correctCount === stamps.length) {
-            const message = document.getElementById('message');
-            message.innerText = "有夠gâu 🎉";
-            message.style.fontSize = "5em";
-            message.style.display = "block";
+            message.style.display = 'block';
           }
         } else {
-          const wrongAudio = new Audio('game4_assets/wrong.mp3');
-          wrongAudio.play();
+          wrongSound.play();
           alert("放錯位置囉！");
         }
       });
