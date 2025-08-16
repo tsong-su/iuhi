@@ -1,261 +1,188 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>台灣北部地區注音符號郵票配對遊戲</title>
   <style>
-    body, html {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f0f0f0;
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
     }
     #game-container {
       position: relative;
-      width: 90vw;
-      height: 90vh;
-      background: url('https://i.imgur.com/xxxxxxx.jpg') no-repeat center center;
-      background-size: contain;
-      border: 2px solid #333;
+      width: 100%;
+      height: 100vh;
+      background-image: url('https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/x5m7aorrY8G4WkAV');
+      background-size: cover;
+      background-position: center;
     }
     .stamp {
       width: 80px;
       height: 80px;
-      margin: 10px;
       cursor: grab;
-      transition: all 0.3s;
-    }
-    #stamps {
       position: absolute;
-      top: 10px;
-      right: -120px;
-      display: flex;
-      flex-direction: column;
     }
     .dropzone {
       position: absolute;
       width: 80px;
       height: 80px;
       border: 2px dashed transparent;
-      transition: border-color 0.3s;
     }
     .dropzone.correct {
       border-color: green;
     }
-    #hud {
+    #stamp-container {
       position: absolute;
-      top: 5px;
-      left: 5px;
-      background: rgba(255,255,255,0.8);
-      padding: 10px;
-      border: 1px solid #333;
-      font-size: 16px;
-    }
-    #message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.95);
-      padding: 20px 40px;
-      border: 2px solid #333;
-      font-size: 24px;
-      display: none;
-      z-index: 100;
-    }
-    #controls {
-      position: absolute;
-      bottom: 10px;
+      top: 10px;
       left: 10px;
+      z-index: 10;
     }
-    button {
-      margin-right: 10px;
-      padding: 5px 10px;
+    #stamp-container img {
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+      cursor: grab;
+    }
+    #scoreboard {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(255,255,255,0.7);
+      padding: 10px;
+      border-radius: 5px;
       font-size: 16px;
     }
-    .target-border {
-      border: 2px dashed red !important;
+    #reset-btn, #home-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
     }
+    #home-btn {
+      bottom: 70px;
+      background-color: #28a745;
+    }
+    #reset-btn:hover { background-color: #0056b3; }
+    #home-btn:hover { background-color: #1e7e34; }
   </style>
 </head>
 <body>
   <div id="game-container">
-    <div id="stamps">
-      <img src="https://i.imgur.com/1.jpg" id="stamp1" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/2.jpg" id="stamp2" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/3.jpg" id="stamp3" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/4.jpg" id="stamp4" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/5.jpg" id="stamp5" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/6.jpg" id="stamp6" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/7.jpg" id="stamp7" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/8.jpg" id="stamp8" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/9.jpg" id="stamp9" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/10.jpg" id="stamp10" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/11.jpg" id="stamp11" class="stamp" draggable="true">
-      <img src="https://i.imgur.com/12.jpg" id="stamp12" class="stamp" draggable="true">
+    <div id="stamp-container"></div>
+    <div id="scoreboard">
+      <p>已完成：<span id="completed-count">0</span>/12</p>
+      <p>剩餘時間：<span id="timer">05:00</span></p>
     </div>
-
-    <!-- Dropzones -->
-    <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
-    <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
-    <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
-    <div id="drop4" class="dropzone" style="left:30%; top:30%;" data-stamp="stamp4"></div>
-    <div id="drop5" class="dropzone" style="left:50%; top:35%;" data-stamp="stamp5"></div>
-    <div id="drop6" class="dropzone" style="left:70%; top:40%;" data-stamp="stamp6"></div>
-    <div id="drop7" class="dropzone" style="left:25%; top:50%;" data-stamp="stamp7"></div>
-    <div id="drop8" class="dropzone" style="left:45%; top:55%;" data-stamp="stamp8"></div>
-    <div id="drop9" class="dropzone" style="left:65%; top:60%;" data-stamp="stamp9"></div>
-    <div id="drop10" class="dropzone" style="left:35%; top:70%;" data-stamp="stamp10"></div>
-    <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
-    <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
-
-    <div id="hud">
-      分數: <span id="score">0</span> | 時間: <span id="timer">0</span>s | 完成: <span id="progress">0%</span>
-    </div>
-
-    <div id="controls">
-      <button id="restartBtn">重新開始</button>
-      <button id="showTargetBtn">顯示目標框</button>
-      <button id="homeBtn">回到遊戲首頁</button>
-    </div>
-
-    <div id="message">🎉 完成！</div>
+    <button id="reset-btn">重新開始</button>
+    <button id="home-btn" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
   </div>
 
-  <audio id="correctSound" src="correct.mp3"></audio>
-  <audio id="wrongSound" src="wrong.mp3"></audio>
-
   <script>
-    const stamps = document.querySelectorAll('.stamp');
-    const dropzones = document.querySelectorAll('.dropzone');
-    const scoreEl = document.getElementById('score');
-    const timerEl = document.getElementById('timer');
-    const progressEl = document.getElementById('progress');
-    const messageEl = document.getElementById('message');
-    const restartBtn = document.getElementById('restartBtn');
-    const showTargetBtn = document.getElementById('showTargetBtn');
-    const homeBtn = document.getElementById('homeBtn');
-    const correctSound = document.getElementById('correctSound');
-    const wrongSound = document.getElementById('wrongSound');
+    const stampsData = [
+      { id: 'stamp1', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmDnoWLRV' },
+      { id: 'stamp2', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/BJkrQAjjEoNOZEge' },
+      { id: 'stamp3', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mw2yZ6bl' },
+      { id: 'stamp4', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/Xb8YaL11EGMXQyn1' },
+      { id: 'stamp5', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/LNV1Q7ddRM1PZmq3' },
+      { id: 'stamp6', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/kxodWG11EjDJQgP7' },
+      { id: 'stamp7', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmqrrWLRV' },
+      { id: 'stamp8', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/L8KjW9PPeyjVZJbv' },
+      { id: 'stamp9', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mlNDZ3yyVGmyaznG' },
+      { id: 'stamp10', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/1xkVaqggmjjgZl0e' },
+      { id: 'stamp11', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mpXDZ6bl' },
+      { id: 'stamp12', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/MbejW177r9pyQNkG' }
+    ];
 
-    let score = 0;
-    let correctCount = 0;
-    let total = stamps.length;
-    let startTime = Date.now();
-    let timerInterval;
-    let targetShown = false;
+    const dropzonesData = [
+      { id: 'drop1', left: '18%', top: '12%', stampId: 'stamp1' },
+      { id: 'drop2', left: '38%', top: '15%', stampId: 'stamp2' },
+      { id: 'drop3', left: '58%', top: '18%', stampId: 'stamp3' },
+      { id: 'drop4', left: '28%', top: '32%', stampId: 'stamp4' },
+      { id: 'drop5', left: '48%', top: '36%', stampId: 'stamp5' },
+      { id: 'drop6', left: '68%', top: '40%', stampId: 'stamp6' },
+      { id: 'drop7', left: '22%', top: '52%', stampId: 'stamp7' },
+      { id: 'drop8', left: '42%', top: '56%', stampId: 'stamp8' },
+      { id: 'drop9', left: '62%', top: '60%', stampId: 'stamp9' },
+      { id: 'drop10', left: '32%', top: '72%', stampId: 'stamp10' },
+      { id: 'drop11', left: '52%', top: '76%', stampId: 'stamp11' },
+      { id: 'drop12', left: '72%', top: '80%', stampId: 'stamp12' }
+    ];
 
-    stamps.forEach(stamp => {
-      stamp.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('text/plain', e.target.id);
+    const stampContainer = document.getElementById('stamp-container');
+    const gameContainer = document.getElementById('game-container');
+    const completedCountElem = document.getElementById('completed-count');
+    let completedCount = 0;
+
+    function createStamps() {
+      stampContainer.innerHTML = '';
+      stampsData.forEach(stamp => {
+        const img = document.createElement('img');
+        img.src = stamp.src;
+        img.id = stamp.id;
+        img.className = 'stamp';
+        img.draggable = true;
+        img.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', e.target.id);
+        });
+        stampContainer.appendChild(img);
       });
-      stamp.dataset.originalLeft = stamp.offsetLeft;
-      stamp.dataset.originalTop = stamp.offsetTop;
-    });
-
-    dropzones.forEach(zone => {
-      zone.addEventListener('dragover', e => e.preventDefault());
-      zone.addEventListener('drop', e => {
-        e.preventDefault();
-        const stampId = e.dataTransfer.getData('text/plain');
-        const stamp = document.getElementById(stampId);
-        if (stampId === zone.dataset.stamp) {
-          zone.appendChild(stamp);
-          stamp.style.position = 'absolute';
-          stamp.style.left = '0';
-          stamp.style.top = '0';
-          stamp.draggable = false;
-          zone.classList.add('correct');
-          correctCount++;
-          score += 10;
-          correctSound.play();
-          updateHUD();
-          if (correctCount === total) showCompletion();
-        } else {
-          stamp.style.left = stamp.dataset.originalLeft + 'px';
-          stamp.style.top = stamp.dataset.originalTop + 'px';
-          wrongSound.play();
-          score = Math.max(0, score - 2);
-          updateHUD();
-        }
-      });
-    });
-
-    function updateHUD() {
-      scoreEl.textContent = score;
-      let percent = Math.round((correctCount / total) * 100);
-      progressEl.textContent = percent + '%';
     }
 
-    function showCompletion() {
-      clearInterval(timerInterval);
-      messageEl.style.display = 'block';
-      launchConfetti();
-    }
+    function createDropzones() {
+      dropzonesData.forEach(dz => {
+        const div = document.createElement('div');
+        div.id = dz.id;
+        div.className = 'dropzone';
+        div.style.left = dz.left;
+        div.style.top = dz.top;
+        div.dataset.stampId = dz.stampId;
 
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        let seconds = Math.floor((Date.now() - startTime)/1000);
-        timerEl.textContent = seconds;
-      }, 1000);
+        div.addEventListener('dragover', e => e.preventDefault());
+        div.addEventListener('drop', e => {
+          e.preventDefault();
+          const stampId = e.dataTransfer.getData('text/plain');
+          if (stampId === dz.stampId) {
+            const stamp = document.getElementById(stampId);
+            div.appendChild(stamp);
+            stamp.style.position = 'absolute';
+            stamp.style.left = '0';
+            stamp.style.top = '0';
+            stamp.draggable = false;
+            div.classList.add('correct');
+            completedCount++;
+            completedCountElem.textContent = completedCount;
+            if (completedCount === 12) alert('🎉 恭喜完成拼圖！');
+          } else {
+            alert('放錯位置囉！');
+          }
+        });
+        gameContainer.appendChild(div);
+      });
     }
 
     function resetGame() {
-      correctCount = 0;
-      score = 0;
-      startTime = Date.now();
-      stamps.forEach(stamp => {
-        document.getElementById('stamps').appendChild(stamp);
-        stamp.style.position = '';
-        stamp.style.left = '';
-        stamp.style.top = '';
-        stamp.draggable = true;
-      });
-      dropzones.forEach(zone => {
-        zone.classList.remove('correct', 'target-border');
-      });
-      targetShown = false;
-      messageEl.style.display = 'none';
-      updateHUD();
-      clearInterval(timerInterval);
-      startTimer();
+      completedCount = 0;
+      completedCountElem.textContent = completedCount;
+      const oldDropzones = document.querySelectorAll('.dropzone');
+      oldDropzones.forEach(d => d.remove());
+      createDropzones();
+      createStamps();
     }
 
-    function toggleTargets() {
-      targetShown = !targetShown;
-      dropzones.forEach(zone => {
-        if (targetShown) zone.classList.add('target-border');
-        else zone.classList.remove('target-border');
-      });
-    }
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
 
-    function launchConfetti() {
-      for(let i=0;i<100;i++){
-        const confetti = document.createElement('div');
-        confetti.textContent = '🎊';
-        confetti.style.position = 'absolute';
-        confetti.style.left = Math.random()*90 + '%';
-        confetti.style.top = '-10px';
-        confetti.style.fontSize = Math.random()*24 + 12 + 'px';
-        confetti.style.transition = 'top 2s linear';
-        document.getElementById('game-container').appendChild(confetti);
-        setTimeout(()=>{ confetti.style.top = '100%'; }, 10);
-        setTimeout(()=>{ confetti.remove(); }, 2100);
-      }
-    }
-
-    restartBtn.addEventListener('click', resetGame);
-    showTargetBtn.addEventListener('click', toggleTargets);
-    homeBtn.addEventListener('click', () => {
-      window.location.href = 'https://tsong-su.github.io/iuhi/index.html';
-    });
-
-    startTimer();
-    updateHUD();
+    // 初始化
+    resetGame();
   </script>
 </body>
 </html>
