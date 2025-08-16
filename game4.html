@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>臺灣北部地區郵票配對遊戲</title>
+  <title>台灣北部地區郵票配對遊戲</title>
   <style>
     body, html {
       margin: 0;
@@ -120,6 +120,7 @@
     <div id="controls">
       <button id="restartBtn">重新開始</button>
       <button id="showTargetBtn">顯示目標框</button>
+      <button id="homeBtn">回到遊戲首頁</button>
     </div>
 
     <div id="message">🎉 完成！</div>
@@ -138,6 +139,7 @@
     const messageEl = document.getElementById('message');
     const restartBtn = document.getElementById('restartBtn');
     const showTargetBtn = document.getElementById('showTargetBtn');
+    const homeBtn = document.getElementById('homeBtn');
     const correctSound = document.getElementById('correctSound');
     const wrongSound = document.getElementById('wrongSound');
 
@@ -148,7 +150,6 @@
     let timerInterval;
     let targetShown = false;
 
-    // 初始化拖曳
     stamps.forEach(stamp => {
       stamp.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', e.target.id);
@@ -176,7 +177,6 @@
           updateHUD();
           if (correctCount === total) showCompletion();
         } else {
-          // 放錯回原位
           stamp.style.left = stamp.dataset.originalLeft + 'px';
           stamp.style.top = stamp.dataset.originalTop + 'px';
           wrongSound.play();
@@ -234,9 +234,6 @@
       });
     }
 
-    restartBtn.addEventListener('click', resetGame);
-    showTargetBtn.addEventListener('click', toggleTargets);
-
     function launchConfetti() {
       for(let i=0;i<100;i++){
         const confetti = document.createElement('div');
@@ -252,7 +249,12 @@
       }
     }
 
-    // 啟動計時器
+    restartBtn.addEventListener('click', resetGame);
+    showTargetBtn.addEventListener('click', toggleTargets);
+    homeBtn.addEventListener('click', () => {
+      window.location.href = 'https://tsong-su.github.io/iuhi/index.html';
+    });
+
     startTimer();
     updateHUD();
   </script>
