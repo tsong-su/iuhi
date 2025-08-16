@@ -1,152 +1,131 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地區郵票配對遊戲</title>
   <style>
-    body {
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
+      display: flex; justify-content: center; align-items: center;
+      background: #f0f0f0;
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      text-align: center;
     }
-    h1 {
-      color: #333;
+    #game-container {
+      position: relative;
+      width: 90vw;
+      height: 90vh;
+      background: url('game4_assets/north_map.jpg') no-repeat center center;
+      background-size: contain;
+      border: 2px solid #333;
     }
-    #game-board {
-      display: grid;
-      grid-template-columns: repeat(4, 150px);
-      grid-gap: 10px;
-      justify-content: center;
-      margin-top: 20px;
+    .stamp {
+      width: 80px; height: 80px; margin: 10px; cursor: grab;
     }
-    .card {
-      width: 150px;
-      height: 150px;
-      background-color: #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 8px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    #stamps {
+      position: absolute; top: 10px; right: -120px;
+      display: flex; flex-direction: column;
     }
-    .card img {
-      max-width: 100%;
-      max-height: 100%;
-      display: none;
+    .dropzone {
+      position: absolute; width: 80px; height: 80px; border: 2px dashed transparent;
     }
-    .matched {
-      background-color: lightgreen;
-    }
+    .dropzone.correct { border-color: green; }
     #message {
-      font-size: 3em;
-      color: red;
-      margin-top: 20px;
-      display: none;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.9);
+      padding: 20px 40px; border: 2px solid #333;
+      font-size: 24px; display: none; text-align: center;
     }
-    .home-btn {
-      margin-top: 20px;
+    #back-home {
+      position: absolute; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
       padding: 10px 20px;
-      font-size: 18px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
+      font-size: 1em;
+      border: none; border-radius: 10px;
+      background-color: #4fc3f7; color: white;
       cursor: pointer;
-    }
-    .home-btn:hover {
-      background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區郵票配對遊戲</h1>
-  <div id="game-board"></div>
-  <div id="message">有夠 gâu！</div>
-  <button class="home-btn" onclick="location.href='index.html'">回到遊戲首頁</button>
+  <div id="game-container">
+    <div id="stamps">
+      <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp" draggable="true">
+      <img src="game4_assets/stamp2.jpg" id="stamp2" class="stamp" draggable="true">
+      <img src="game4_assets/stamp3.jpg" id="stamp3" class="stamp" draggable="true">
+      <img src="game4_assets/stamp4.jpg" id="stamp4" class="stamp" draggable="true">
+      <img src="game4_assets/stamp5.jpg" id="stamp5" class="stamp" draggable="true">
+      <img src="game4_assets/stamp6.jpg" id="stamp6" class="stamp" draggable="true">
+      <img src="game4_assets/stamp7.jpg" id="stamp7" class="stamp" draggable="true">
+      <img src="game4_assets/stamp8.jpg" id="stamp8" class="stamp" draggable="true">
+      <img src="game4_assets/stamp9.jpg" id="stamp9" class="stamp" draggable="true">
+      <img src="game4_assets/stamp10.jpg" id="stamp10" class="stamp" draggable="true">
+      <img src="game4_assets/stamp11.jpg" id="stamp11" class="stamp" draggable="true">
+      <img src="game4_assets/stamp12.jpg" id="stamp12" class="stamp" draggable="true">
+    </div>
 
-  <!-- 聲音檔 -->
-  <audio id="wrong" src="game4/wrong.mp3"></audio>
-  <audio id="sound1" src="game4/stamp1.mp3"></audio>
-  <audio id="sound2" src="game4/stamp2.mp3"></audio>
-  <audio id="sound3" src="game4/stamp3.mp3"></audio>
-  <audio id="sound4" src="game4/stamp4.mp3"></audio>
-  <audio id="sound5" src="game4/stamp5.mp3"></audio>
-  <audio id="sound6" src="game4/stamp6.mp3"></audio>
-  <audio id="sound7" src="game4/stamp7.mp3"></audio>
-  <audio id="sound8" src="game4/stamp8.mp3"></audio>
-  <audio id="sound9" src="game4/stamp9.mp3"></audio>
-  <audio id="sound10" src="game4/stamp10.mp3"></audio>
-  <audio id="sound11" src="game4/stamp11.mp3"></audio>
-  <audio id="sound12" src="game4/stamp12.mp3"></audio>
+    <!-- Dropzones -->
+    <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
+    <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
+    <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
+    <div id="drop4" class="dropzone" style="left:30%; top:30%;" data-stamp="stamp4"></div>
+    <div id="drop5" class="dropzone" style="left:50%; top:35%;" data-stamp="stamp5"></div>
+    <div id="drop6" class="dropzone" style="left:70%; top:40%;" data-stamp="stamp6"></div>
+    <div id="drop7" class="dropzone" style="left:25%; top:50%;" data-stamp="stamp7"></div>
+    <div id="drop8" class="dropzone" style="left:45%; top:55%;" data-stamp="stamp8"></div>
+    <div id="drop9" class="dropzone" style="left:65%; top:60%;" data-stamp="stamp9"></div>
+    <div id="drop10" class="dropzone" style="left:35%; top:70%;" data-stamp="stamp10"></div>
+    <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
+    <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
+
+    <div id="message"></div>
+    <button id="back-home" onclick="location.href='index.html'">回到遊戲首頁</button>
+  </div>
 
   <script>
-    const cards = [
-      { img: "game4/stamp1.jpg", sound: "sound1" },
-      { img: "game4/stamp2.jpg", sound: "sound2" },
-      { img: "game4/stamp3.jpg", sound: "sound3" },
-      { img: "game4/stamp4.jpg", sound: "sound4" },
-      { img: "game4/stamp5.jpg", sound: "sound5" },
-      { img: "game4/stamp6.jpg", sound: "sound6" },
-      { img: "game4/stamp7.jpg", sound: "sound7" },
-      { img: "game4/stamp8.jpg", sound: "sound8" },
-      { img: "game4/stamp9.jpg", sound: "sound9" },
-      { img: "game4/stamp10.jpg", sound: "sound10" },
-      { img: "game4/stamp11.jpg", sound: "sound11" },
-      { img: "game4/stamp12.jpg", sound: "sound12" },
-    ];
+    const stamps = document.querySelectorAll('.stamp');
+    const dropzones = document.querySelectorAll('.dropzone');
+    let correctCount = 0;
 
-    let gameCards = [...cards, ...cards];
-    gameCards.sort(() => 0.5 - Math.random());
+    stamps.forEach(stamp => {
+      stamp.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.id);
+      });
+    });
 
-    const board = document.getElementById("game-board");
-    let firstCard = null;
-    let lock = false;
-    let matchedCount = 0;
+    dropzones.forEach(zone => {
+      zone.addEventListener('dragover', e => e.preventDefault());
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        const stampId = e.dataTransfer.getData('text/plain');
+        const stamp = document.getElementById(stampId);
 
-    gameCards.forEach((card, index) => {
-      const div = document.createElement("div");
-      div.classList.add("card");
-      div.dataset.sound = card.sound;
+        if (stampId === zone.dataset.stamp) {
+          zone.appendChild(stamp);
+          stamp.style.position = 'absolute';
+          stamp.style.left = '0';
+          stamp.style.top = '0';
+          stamp.draggable = false;
+          zone.classList.add('correct');
 
-      const img = document.createElement("img");
-      img.src = card.img;
-      div.appendChild(img);
+          // 播放正確音效
+          const audio = new Audio(`game4_assets/${stampId}.mp3`);
+          audio.play();
 
-      div.addEventListener("click", () => {
-        if (lock || div.classList.contains("matched") || img.style.display === "block") return;
-
-        img.style.display = "block";
-        if (!firstCard) {
-          firstCard = div;
-        } else {
-          const firstImg = firstCard.querySelector("img");
-          if (firstImg.src === img.src) {
-            firstCard.classList.add("matched");
-            div.classList.add("matched");
-
-            document.getElementById(div.dataset.sound).play();
-
-            matchedCount++;
-            if (matchedCount === cards.length) {
-              document.getElementById("message").style.display = "block";
-            }
-
-            firstCard = null;
-          } else {
-            lock = true;
-            document.getElementById("wrong").play();
-            setTimeout(() => {
-              firstImg.style.display = "none";
-              img.style.display = "none";
-              firstCard = null;
-              lock = false;
-            }, 1000);
+          correctCount++;
+          if (correctCount === stamps.length) {
+            const message = document.getElementById('message');
+            message.innerText = "有夠gâu 🎉";
+            message.style.fontSize = "5em";
+            message.style.display = "block";
           }
+        } else {
+          const wrongAudio = new Audio('game4_assets/wrong.mp3');
+          wrongAudio.play();
+          alert("放錯位置囉！");
         }
       });
-
-      board.appendChild(div);
     });
   </script>
 </body>
