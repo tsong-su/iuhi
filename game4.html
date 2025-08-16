@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>北部地區郵票配對遊戲</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    #game-container {
+      position: relative;
+      width: 90vw;
+      height: 90vh;
+      background: url('北部地區.jpg') no-repeat center center;
+      background-size: contain;
+      border: 2px solid #333;
+    }
+    .stamp {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      cursor: grab;
+    }
+    #stamps {
+      position: absolute;
+      top: 10px;
+      right: -120px;
+      display: flex;
+      flex-direction: column;
+    }
+    .dropzone {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed transparent;
+    }
+    .dropzone.correct {
+      border-color: green;
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.9);
+      padding: 20px 40px;
+      border: 2px solid #333;
+      font-size: 24px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="stamps">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmDnoWLRV" id="stamp1" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/BJkrQAjjEoNOZEge" id="stamp2" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mw2yZ6bl" id="stamp3" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/Xb8YaL11EGMXQyn1" id="stamp4" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/LNV1Q7ddRM1PZmq3" id="stamp5" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/kxodWG11EjDJQgP7" id="stamp6" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmqrrWLRV" id="stamp7" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/L8KjW9PPeyjVZJbv" id="stamp8" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mlNDZ3yyVGmyaznG" id="stamp9" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/1xkVaqggmjjgZl0e" id="stamp10" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mpXDZ6bl" id="stamp11" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/MbejW177r9pyQNkG" id="stamp12" class="stamp" draggable="true">
+    </div>
+
+    <!-- Dropzones：需要依照答案圖設定位置 (left/top 百分比調整) -->
+    <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
+    <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
+    <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
+    <div id="drop4" class="dropzone" style="left:30%; top:30%;" data-stamp="stamp4"></div>
+    <div id="drop5" class="dropzone" style="left:50%; top:35%;" data-stamp="stamp5"></div>
+    <div id="drop6" class="dropzone" style="left:70%; top:40%;" data-stamp="stamp6"></div>
+    <div id="drop7" class="dropzone" style="left:25%; top:50%;" data-stamp="stamp7"></div>
+    <div id="drop8" class="dropzone" style="left:45%; top:55%;" data-stamp="stamp8"></div>
+    <div id="drop9" class="dropzone" style="left:65%; top:60%;" data-stamp="stamp9"></div>
+    <div id="drop10" class="dropzone" style="left:35%; top:70%;" data-stamp="stamp10"></div>
+    <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
+    <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
+
+    <div id="message">🎉 完成！</div>
+  </div>
+
+  <script>
+    const stamps = document.querySelectorAll('.stamp');
+    const dropzones = document.querySelectorAll('.dropzone');
+    let correctCount = 0;
+
+    stamps.forEach(stamp => {
+      stamp.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.id);
+      });
+    });
+
+    dropzones.forEach(zone => {
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+      });
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        const stampId = e.dataTransfer.getData('text/plain');
+        if (stampId === zone.dataset.stamp) {
+          const stamp = document.getElementById(stampId);
+          zone.appendChild(stamp);
+          stamp.style.position = 'absolute';
+          stamp.style.left = '0';
+          stamp.style.top = '0';
+          stamp.draggable = false;
+          zone.classList.add('correct');
+          correctCount++;
+          if (correctCount === stamps.length) {
+            document.getElementById('message').style.display = 'block';
+          }
+        } else {
+          alert("放錯位置囉！");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
