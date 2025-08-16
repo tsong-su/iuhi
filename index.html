@@ -1,132 +1,49 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lē-gio̍k的互動小遊戲</title>
+  <meta charset="UTF-8">
+  <title>遊戲首頁</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #FFF176; /* 活潑檸檬黃 */
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
       margin: 0;
       padding: 0;
-      text-align: center;
-      color: #333;
     }
-
-    header {
-      background-color: #FFECB3;
-      padding: 1em 0 0.5em 0;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
     h1 {
-      font-size: 2em;
-      margin-bottom: 0.2em;
-      color: #2E7D32; /* 綠色標題字 */
+      text-align: center;
+      margin-top: 40px;
     }
-
-    .icon {
-      width: 96px;
-      height: 96px;
-      vertical-align: middle;
-      margin: 0 5px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .game-links {
-      margin: 2em auto;
+    #game-list {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.5em;
-      max-width: 400px;
+      margin-top: 50px;
     }
-
-    .game-links a {
+    .game-item {
+      margin: 15px;
+      padding: 15px 25px;
+      font-size: 18px;
+      background: #87ceeb;
+      color: #fff;
+      border-radius: 8px;
       text-decoration: none;
-      padding: 1em 2em;
-      border-radius: 20px;
-      font-size: 1.4em;
-      box-shadow: 2px 4px 8px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      position: relative;
-      user-select: none;
-      font-weight: 700;
-      color: white;
-      display: block;
-      width: 220px;
+      width: 300px;
+      text-align: center;
+      transition: background 0.3s;
     }
-
-    .game-links a.game1 {
-      background: #ff6f61; /* 活潑珊瑚紅 */
-      box-shadow: 2px 4px 8px rgba(255, 111, 97, 0.7);
-      color: white;
-    }
-
-    .game-links a.game2 {
-      background: #fbc02d; /* 亮麗黃 */
-      box-shadow: 2px 4px 8px rgba(251, 192, 45, 0.7);
-      color: #4a4a4a;
-    }
-
-    .game-links a.game3 {
-      background: #4fc3f7; /* 天空藍 */
-      box-shadow: 2px 4px 8px rgba(79, 195, 247, 0.7);
-      color: #004e8a;
-    }
-
-    .game-links a:hover {
-      filter: brightness(0.85);
-      transform: scale(1.05);
-    }
-
-    .game-links a::after {
-      content: attr(title);
-      position: absolute;
-      bottom: -1.6em;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #FFE0B2;
-      padding: 4px 8px;
-      font-size: 0.75em;
-      border-radius: 6px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      color: #333;
-      white-space: nowrap;
-    }
-
-    .game-links a:hover::after {
-      opacity: 1;
-    }
-
-    footer {
-      margin-top: 3em;
-      font-size: 0.9em;
-      color: #777;
+    .game-item:hover {
+      background: #4682b4;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>
-      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="Tabby Cat Icon" />
-      Lē-gio̍k的互動小遊戲
-      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="Tabby Cat Icon" />
-    </h1>
-  </header>
-
-  <main class="game-links">
-    <a href="game1.html" title="點我開始玩第一款遊戲" class="game1">字詞重組塌空</a>
-    <a href="game2.html" title="點我開始玩第二款遊戲" class="game2">字詞 suá 位講看覓</a>
-    <a href="game3.html" title="點我開始玩第三款遊戲" class="game3">華台語詞配對遊戲</a>
-  </main>
-
-  <footer>
-    © 2025 Lē-gio̍k Studio｜歡迎互動學台語
-  </footer>
+  <h1>遊戲首頁</h1>
+  <div id="game-list">
+    <a class="game-item" href="game1.html">台語字詞排序遊戲</a>
+    <a class="game-item" href="game2.html">客語詞語配對遊戲</a>
+    <a class="game-item" href="game3.html">生肖郵票配對遊戲</a>
+    <a class="game-item" href="game4.html">台灣北部地區注音符號郵票配對遊戲</a>
+  </div>
 </body>
 </html>
