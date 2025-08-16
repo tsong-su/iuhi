@@ -1,49 +1,52 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>遊戲首頁</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f8ff;
       margin: 0;
       padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
-    h1 {
-      text-align: center;
-      margin-top: 40px;
-    }
-    #game-list {
+    #game-menu {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      margin-top: 50px;
-    }
-    .game-item {
-      margin: 15px;
-      padding: 15px 25px;
-      font-size: 18px;
-      background: #87ceeb;
-      color: #fff;
-      border-radius: 8px;
-      text-decoration: none;
-      width: 300px;
+      gap: 15px;
       text-align: center;
-      transition: background 0.3s;
     }
-    .game-item:hover {
-      background: #4682b4;
+    .game-btn {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      transition: 0.3s;
     }
+    .game-btn:hover {
+      opacity: 0.8;
+    }
+    /* 原有遊戲顏色 */
+    #game1 { background-color: #007bff; } 
+    #game2 { background-color: #28a745; }
+    #game3 { background-color: #ffc107; }
+    /* 新增第4個遊戲顏色區分 */
+    #game4 { background-color: #6f42c1; }
   </style>
 </head>
 <body>
-  <h1>遊戲首頁</h1>
-  <div id="game-list">
-    <a class="game-item" href="game1.html">台語字詞排序遊戲</a>
-    <a class="game-item" href="game2.html">客語詞語配對遊戲</a>
-    <a class="game-item" href="game3.html">生肖郵票配對遊戲</a>
-    <a class="game-item" href="game4.html">台灣北部地區注音符號郵票配對遊戲</a>
+  <div id="game-menu">
+    <button class="game-btn" id="game1" onclick="location.href='game1.html'">台語字詞排序遊戲</button>
+    <button class="game-btn" id="game2" onclick="location.href='game2.html'">客語配對遊戲</button>
+    <button class="game-btn" id="game3" onclick="location.href='game3.html'">生肖郵票配對遊戲</button>
+    <button class="game-btn" id="game4" onclick="location.href='game4.html'">台灣北部地區注音符號郵票配對遊戲</button>
   </div>
 </body>
 </html>
