@@ -1,188 +1,181 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>台灣北部地區注音符號郵票配對遊戲</title>
+  <title>臺灣北部地區郵票配對遊戲</title>
   <style>
-    body {
+    body, html {
       margin: 0;
       padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #f0f0f0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
     #game-container {
       position: relative;
-      width: 100%;
-      height: 100vh;
-      background-image: url('https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/x5m7aorrY8G4WkAV');
-      background-size: cover;
-      background-position: center;
+      width: 90vw;
+      height: 90vh;
+      background: url('北部地區.jpg') no-repeat center center;
+      background-size: contain;
+      border: 2px solid #333;
     }
+
     .stamp {
       width: 80px;
       height: 80px;
+      margin: 10px;
       cursor: grab;
-      position: absolute;
     }
+
+    #stamps {
+      position: absolute;
+      top: 10px;
+      right: -120px;
+      display: flex;
+      flex-direction: column;
+    }
+
     .dropzone {
       position: absolute;
       width: 80px;
       height: 80px;
       border: 2px dashed transparent;
     }
+
     .dropzone.correct {
       border-color: green;
     }
-    #stamp-container {
+
+    #message {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 10;
-    }
-    #stamp-container img {
-      width: 60px;
-      height: 60px;
-      margin: 5px;
-      cursor: grab;
-    }
-    #scoreboard {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(255,255,255,0.7);
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    #reset-btn, #home-btn {
-      position: absolute;
-      bottom: 20px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 5px;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.9);
+      padding: 20px 40px;
+      border: 2px solid #333;
+      font-size: 48px;
+      color: red;
+      display: none;
+      font-weight: bold;
+      text-align: center;
+      animation: pop 0.6s ease forwards;
     }
-    #home-btn {
-      bottom: 70px;
-      background-color: #28a745;
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      50% { transform: translate(-50%, -50%) scale(1.5); }
+      100% { transform: translate(-50%, -50%) scale(1); }
     }
-    #reset-btn:hover { background-color: #0056b3; }
-    #home-btn:hover { background-color: #1e7e34; }
+
+    #back-button {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      padding: 8px 16px;
+      background: #4fc3f7;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 2px 4px 6px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
   <div id="game-container">
-    <div id="stamp-container"></div>
-    <div id="scoreboard">
-      <p>已完成：<span id="completed-count">0</span>/12</p>
-      <p>剩餘時間：<span id="timer">05:00</span></p>
+    <div id="stamps">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/goElQyggDXeGW3yY" id="stamp1" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/v3w8ZwggbLX4ZN52" id="stamp2" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/KxJvag99n2xDZAg0" id="stamp3" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mDRxWBMM98V5Zjb1" id="stamp4" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/4b3zaM11z81ga2j7" id="stamp5" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/PVKBQO11JerrWj5x" id="stamp6" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/J24jalMM42jkQ0A1" id="stamp7" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/PR3NWxggdLXgZb0O" id="stamp8" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66jlVnZ6bl" id="stamp9" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/KxJvag99neEDZAg0" id="stamp10" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnRloBWLRV" id="stamp11" class="stamp" draggable="true">
+      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/4b3zaM11z749a2j7" id="stamp12" class="stamp" draggable="true">
     </div>
-    <button id="reset-btn">重新開始</button>
-    <button id="home-btn" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+
+    <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
+    <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
+    <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
+    <div id="drop4" class="dropzone" style="left:30%; top:30%;" data-stamp="stamp4"></div>
+    <div id="drop5" class="dropzone" style="left:50%; top:35%;" data-stamp="stamp5"></div>
+    <div id="drop6" class="dropzone" style="left:70%; top:40%;" data-stamp="stamp6"></div>
+    <div id="drop7" class="dropzone" style="left:25%; top:50%;" data-stamp="stamp7"></div>
+    <div id="drop8" class="dropzone" style="left:45%; top:55%;" data-stamp="stamp8"></div>
+    <div id="drop9" class="dropzone" style="left:65%; top:60%;" data-stamp="stamp9"></div>
+    <div id="drop10" class="dropzone" style="left:35%; top:70%;" data-stamp="stamp10"></div>
+    <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
+    <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
+
+    <div id="message">有夠gâu</div>
+
+    <a id="back-button" href="index.html">回到遊戲首頁</a>
   </div>
 
   <script>
-    const stampsData = [
-      { id: 'stamp1', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmDnoWLRV' },
-      { id: 'stamp2', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/BJkrQAjjEoNOZEge' },
-      { id: 'stamp3', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mw2yZ6bl' },
-      { id: 'stamp4', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/Xb8YaL11EGMXQyn1' },
-      { id: 'stamp5', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/LNV1Q7ddRM1PZmq3' },
-      { id: 'stamp6', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/kxodWG11EjDJQgP7' },
-      { id: 'stamp7', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmqrrWLRV' },
-      { id: 'stamp8', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/L8KjW9PPeyjVZJbv' },
-      { id: 'stamp9', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mlNDZ3yyVGmyaznG' },
-      { id: 'stamp10', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/1xkVaqggmjjgZl0e' },
-      { id: 'stamp11', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mpXDZ6bl' },
-      { id: 'stamp12', src: 'https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/MbejW177r9pyQNkG' }
-    ];
+    const stamps = document.querySelectorAll('.stamp');
+    const dropzones = document.querySelectorAll('.dropzone');
+    let correctCount = 0;
 
-    const dropzonesData = [
-      { id: 'drop1', left: '18%', top: '12%', stampId: 'stamp1' },
-      { id: 'drop2', left: '38%', top: '15%', stampId: 'stamp2' },
-      { id: 'drop3', left: '58%', top: '18%', stampId: 'stamp3' },
-      { id: 'drop4', left: '28%', top: '32%', stampId: 'stamp4' },
-      { id: 'drop5', left: '48%', top: '36%', stampId: 'stamp5' },
-      { id: 'drop6', left: '68%', top: '40%', stampId: 'stamp6' },
-      { id: 'drop7', left: '22%', top: '52%', stampId: 'stamp7' },
-      { id: 'drop8', left: '42%', top: '56%', stampId: 'stamp8' },
-      { id: 'drop9', left: '62%', top: '60%', stampId: 'stamp9' },
-      { id: 'drop10', left: '32%', top: '72%', stampId: 'stamp10' },
-      { id: 'drop11', left: '52%', top: '76%', stampId: 'stamp11' },
-      { id: 'drop12', left: '72%', top: '80%', stampId: 'stamp12' }
-    ];
+    const correctSounds = {
+      stamp1: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/goElQyggDXeGW3yY",
+      stamp2: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/v3w8ZwggbLX4ZN52",
+      stamp3: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/KxJvag99n2xDZAg0",
+      stamp4: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mDRxWBMM98V5Zjb1",
+      stamp5: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/4b3zaM11z81ga2j7",
+      stamp6: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/PVKBQO11JerrWj5x",
+      stamp7: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/J24jalMM42jkQ0A1",
+      stamp8: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/PR3NWxggdLXgZb0O",
+      stamp9: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66jlVnZ6bl",
+      stamp10: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/KxJvag99neEDZAg0",
+      stamp11: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnRloBWLRV",
+      stamp12: "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/4b3zaM11z749a2j7"
+    };
+    const wrongSound = "https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/PVKBQO11EDbrWj5x";
 
-    const stampContainer = document.getElementById('stamp-container');
-    const gameContainer = document.getElementById('game-container');
-    const completedCountElem = document.getElementById('completed-count');
-    let completedCount = 0;
-
-    function createStamps() {
-      stampContainer.innerHTML = '';
-      stampsData.forEach(stamp => {
-        const img = document.createElement('img');
-        img.src = stamp.src;
-        img.id = stamp.id;
-        img.className = 'stamp';
-        img.draggable = true;
-        img.addEventListener('dragstart', e => {
-          e.dataTransfer.setData('text/plain', e.target.id);
-        });
-        stampContainer.appendChild(img);
+    stamps.forEach(stamp => {
+      stamp.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.id);
       });
-    }
+    });
 
-    function createDropzones() {
-      dropzonesData.forEach(dz => {
-        const div = document.createElement('div');
-        div.id = dz.id;
-        div.className = 'dropzone';
-        div.style.left = dz.left;
-        div.style.top = dz.top;
-        div.dataset.stampId = dz.stampId;
+    dropzones.forEach(zone => {
+      zone.addEventListener('dragover', e => e.preventDefault());
 
-        div.addEventListener('dragover', e => e.preventDefault());
-        div.addEventListener('drop', e => {
-          e.preventDefault();
-          const stampId = e.dataTransfer.getData('text/plain');
-          if (stampId === dz.stampId) {
-            const stamp = document.getElementById(stampId);
-            div.appendChild(stamp);
-            stamp.style.position = 'absolute';
-            stamp.style.left = '0';
-            stamp.style.top = '0';
-            stamp.draggable = false;
-            div.classList.add('correct');
-            completedCount++;
-            completedCountElem.textContent = completedCount;
-            if (completedCount === 12) alert('🎉 恭喜完成拼圖！');
-          } else {
-            alert('放錯位置囉！');
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        const stampId = e.dataTransfer.getData('text/plain');
+        if (stampId === zone.dataset.stamp) {
+          const stamp = document.getElementById(stampId);
+          zone.appendChild(stamp);
+          stamp.style.position = 'absolute';
+          stamp.style.left = '0';
+          stamp.style.top = '0';
+          stamp.draggable = false;
+          zone.classList.add('correct');
+
+          // 播放正確音效
+          new Audio(correctSounds[stampId]).play();
+
+          correctCount++;
+          if (correctCount === stamps.length) {
+            document.getElementById('message').style.display = 'block';
           }
-        });
-        gameContainer.appendChild(div);
+        } else {
+          new Audio(wrongSound).play();
+          alert("放錯位置囉！");
+        }
       });
-    }
-
-    function resetGame() {
-      completedCount = 0;
-      completedCountElem.textContent = completedCount;
-      const oldDropzones = document.querySelectorAll('.dropzone');
-      oldDropzones.forEach(d => d.remove());
-      createDropzones();
-      createStamps();
-    }
-
-    document.getElementById('reset-btn').addEventListener('click', resetGame);
-
-    // 初始化
-    resetGame();
+    });
   </script>
 </body>
 </html>
