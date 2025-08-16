@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>北部地區郵票配對遊戲</title>
+  <title>臺灣北部地區郵票配對遊戲</title>
   <style>
     body, html {
       margin: 0;
@@ -27,6 +27,7 @@
       height: 80px;
       margin: 10px;
       cursor: grab;
+      transition: all 0.3s;
     }
     #stamps {
       position: absolute;
@@ -40,41 +41,65 @@
       width: 80px;
       height: 80px;
       border: 2px dashed transparent;
+      transition: border-color 0.3s;
     }
     .dropzone.correct {
       border-color: green;
+    }
+    #hud {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border: 1px solid #333;
+      font-size: 16px;
     }
     #message {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.95);
       padding: 20px 40px;
       border: 2px solid #333;
       font-size: 24px;
       display: none;
+      z-index: 100;
+    }
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      font-size: 16px;
+    }
+    .target-border {
+      border: 2px dashed red !important;
     }
   </style>
 </head>
 <body>
   <div id="game-container">
     <div id="stamps">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmDnoWLRV" id="stamp1" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/BJkrQAjjEoNOZEge" id="stamp2" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mw2yZ6bl" id="stamp3" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/Xb8YaL11EGMXQyn1" id="stamp4" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/LNV1Q7ddRM1PZmq3" id="stamp5" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/kxodWG11EjDJQgP7" id="stamp6" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/94PGWnnnmqrrWLRV" id="stamp7" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/L8KjW9PPeyjVZJbv" id="stamp8" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/mlNDZ3yyVGmyaznG" id="stamp9" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/1xkVaqggmjjgZl0e" id="stamp10" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/R7dXad66mpXDZ6bl" id="stamp11" class="stamp" draggable="true">
-      <img src="https://padlet.com/amber0958526275_1/padlet-cni285ctg1fqaapk/wish/MbejW177r9pyQNkG" id="stamp12" class="stamp" draggable="true">
+      <img src="images/安樂.jpg" id="stamp1" class="stamp" draggable="true">
+      <img src="images/石門.jpg" id="stamp2" class="stamp" draggable="true">
+      <img src="images/北投.jpg" id="stamp3" class="stamp" draggable="true">
+      <img src="images/三峽.jpg" id="stamp4" class="stamp" draggable="true">
+      <img src="images/觀音.jpg" id="stamp5" class="stamp" draggable="true">
+      <img src="images/新埔.jpg" id="stamp6" class="stamp" draggable="true">
+      <img src="images/峨嵋.jpg" id="stamp7" class="stamp" draggable="true">
+      <img src="images/後龍.jpg" id="stamp8" class="stamp" draggable="true">
+      <img src="images/卓蘭.jpg" id="stamp9" class="stamp" draggable="true">
+      <img src="images/頭份.jpg" id="stamp10" class="stamp" draggable="true">
+      <img src="images/文山.jpg" id="stamp11" class="stamp" draggable="true">
+      <img src="images/平溪.jpg" id="stamp12" class="stamp" draggable="true">
     </div>
 
-    <!-- Dropzones：需要依照答案圖設定位置 (left/top 百分比調整) -->
+    <!-- Dropzones -->
     <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
     <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
     <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
@@ -88,29 +113,57 @@
     <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
     <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
 
+    <div id="hud">
+      分數: <span id="score">0</span> | 時間: <span id="timer">0</span>s | 完成: <span id="progress">0%</span>
+    </div>
+
+    <div id="controls">
+      <button id="restartBtn">重新開始</button>
+      <button id="showTargetBtn">顯示目標框</button>
+    </div>
+
     <div id="message">🎉 完成！</div>
   </div>
+
+  <!-- 音效 -->
+  <audio id="correctSound" src="correct.mp3"></audio>
+  <audio id="wrongSound" src="wrong.mp3"></audio>
 
   <script>
     const stamps = document.querySelectorAll('.stamp');
     const dropzones = document.querySelectorAll('.dropzone');
-    let correctCount = 0;
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const progressEl = document.getElementById('progress');
+    const messageEl = document.getElementById('message');
+    const restartBtn = document.getElementById('restartBtn');
+    const showTargetBtn = document.getElementById('showTargetBtn');
+    const correctSound = document.getElementById('correctSound');
+    const wrongSound = document.getElementById('wrongSound');
 
+    let score = 0;
+    let correctCount = 0;
+    let total = stamps.length;
+    let startTime = Date.now();
+    let timerInterval;
+    let targetShown = false;
+
+    // 初始化拖曳
     stamps.forEach(stamp => {
       stamp.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', e.target.id);
       });
+      stamp.dataset.originalLeft = stamp.offsetLeft;
+      stamp.dataset.originalTop = stamp.offsetTop;
     });
 
     dropzones.forEach(zone => {
-      zone.addEventListener('dragover', e => {
-        e.preventDefault();
-      });
+      zone.addEventListener('dragover', e => e.preventDefault());
       zone.addEventListener('drop', e => {
         e.preventDefault();
         const stampId = e.dataTransfer.getData('text/plain');
+        const stamp = document.getElementById(stampId);
         if (stampId === zone.dataset.stamp) {
-          const stamp = document.getElementById(stampId);
           zone.appendChild(stamp);
           stamp.style.position = 'absolute';
           stamp.style.left = '0';
@@ -118,14 +171,90 @@
           stamp.draggable = false;
           zone.classList.add('correct');
           correctCount++;
-          if (correctCount === stamps.length) {
-            document.getElementById('message').style.display = 'block';
-          }
+          score += 10;
+          correctSound.play();
+          updateHUD();
+          if (correctCount === total) showCompletion();
         } else {
-          alert("放錯位置囉！");
+          // 放錯回原位
+          stamp.style.left = stamp.dataset.originalLeft + 'px';
+          stamp.style.top = stamp.dataset.originalTop + 'px';
+          wrongSound.play();
+          score = Math.max(0, score - 2);
+          updateHUD();
         }
       });
     });
+
+    function updateHUD() {
+      scoreEl.textContent = score;
+      let percent = Math.round((correctCount / total) * 100);
+      progressEl.textContent = percent + '%';
+    }
+
+    function showCompletion() {
+      clearInterval(timerInterval);
+      messageEl.style.display = 'block';
+      launchConfetti();
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        let seconds = Math.floor((Date.now() - startTime)/1000);
+        timerEl.textContent = seconds;
+      }, 1000);
+    }
+
+    function resetGame() {
+      correctCount = 0;
+      score = 0;
+      startTime = Date.now();
+      stamps.forEach(stamp => {
+        document.getElementById('stamps').appendChild(stamp);
+        stamp.style.position = '';
+        stamp.style.left = '';
+        stamp.style.top = '';
+        stamp.draggable = true;
+      });
+      dropzones.forEach(zone => {
+        zone.classList.remove('correct', 'target-border');
+      });
+      targetShown = false;
+      messageEl.style.display = 'none';
+      updateHUD();
+      clearInterval(timerInterval);
+      startTimer();
+    }
+
+    function toggleTargets() {
+      targetShown = !targetShown;
+      dropzones.forEach(zone => {
+        if (targetShown) zone.classList.add('target-border');
+        else zone.classList.remove('target-border');
+      });
+    }
+
+    restartBtn.addEventListener('click', resetGame);
+    showTargetBtn.addEventListener('click', toggleTargets);
+
+    function launchConfetti() {
+      for(let i=0;i<100;i++){
+        const confetti = document.createElement('div');
+        confetti.textContent = '🎊';
+        confetti.style.position = 'absolute';
+        confetti.style.left = Math.random()*90 + '%';
+        confetti.style.top = '-10px';
+        confetti.style.fontSize = Math.random()*24 + 12 + 'px';
+        confetti.style.transition = 'top 2s linear';
+        document.getElementById('game-container').appendChild(confetti);
+        setTimeout(()=>{ confetti.style.top = '100%'; }, 10);
+        setTimeout(()=>{ confetti.remove(); }, 2100);
+      }
+    }
+
+    // 啟動計時器
+    startTimer();
+    updateHUD();
   </script>
 </body>
 </html>
