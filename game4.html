@@ -18,7 +18,6 @@
     background: url('game4_assets/north_map.png') no-repeat center center;
     background-size: contain;
     height: 600px;
-    border: 2px solid #333;
   }
   .stamp {
     width: 80px;
@@ -76,19 +75,19 @@
   <div class="dropzone" style="left:20%; top:60%;" data-stamp="stamp11"></div>
   <div class="dropzone" style="left:40%; top:65%;" data-stamp="stamp12"></div>
 
-  <!-- 郵票圖片散布 -->
+  <!-- 郵票圖片散布，不遮住地圖 -->
   <img src="game4_assets/stamp1.jpg" class="stamp" id="stamp1" style="left:5%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp2.jpg" class="stamp" id="stamp2" style="left:15%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp3.jpg" class="stamp" id="stamp3" style="left:25%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp4.jpg" class="stamp" id="stamp4" style="left:35%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp5.jpg" class="stamp" id="stamp5" style="left:45%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp6.jpg" class="stamp" id="stamp6" style="left:55%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp7.jpg" class="stamp" id="stamp7" style="left:65%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp8.jpg" class="stamp" id="stamp8" style="left:75%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp9.jpg" class="stamp" id="stamp9" style="left:85%; top:80%;" draggable="true">
-  <img src="game4_assets/stamp10.jpg" class="stamp" id="stamp10" style="left:5%; top:90%;" draggable="true">
-  <img src="game4_assets/stamp11.jpg" class="stamp" id="stamp11" style="left:15%; top:90%;" draggable="true">
-  <img src="game4_assets/stamp12.jpg" class="stamp" id="stamp12" style="left:25%; top:90%;" draggable="true">
+  <img src="game4_assets/stamp2.jpg" class="stamp" id="stamp2" style="left:15%; top:75%;" draggable="true">
+  <img src="game4_assets/stamp3.jpg" class="stamp" id="stamp3" style="left:25%; top:78%;" draggable="true">
+  <img src="game4_assets/stamp4.jpg" class="stamp" id="stamp4" style="left:35%; top:82%;" draggable="true">
+  <img src="game4_assets/stamp5.jpg" class="stamp" id="stamp5" style="left:45%; top:77%;" draggable="true">
+  <img src="game4_assets/stamp6.jpg" class="stamp" id="stamp6" style="left:55%; top:81%;" draggable="true">
+  <img src="game4_assets/stamp7.jpg" class="stamp" id="stamp7" style="left:65%; top:79%;" draggable="true">
+  <img src="game4_assets/stamp8.jpg" class="stamp" id="stamp8" style="left:75%; top:83%;" draggable="true">
+  <img src="game4_assets/stamp9.jpg" class="stamp" id="stamp9" style="left:85%; top:76%;" draggable="true">
+  <img src="game4_assets/stamp10.jpg" class="stamp" id="stamp10" style="left:5%; top:88%;" draggable="true">
+  <img src="game4_assets/stamp11.jpg" class="stamp" id="stamp11" style="left:15%; top:91%;" draggable="true">
+  <img src="game4_assets/stamp12.jpg" class="stamp" id="stamp12" style="left:25%; top:89%;" draggable="true">
 
   <div id="success-message">有夠gâu</div>
 </div>
@@ -100,7 +99,6 @@ const stamps = document.querySelectorAll('.stamp');
 const dropzones = document.querySelectorAll('.dropzone');
 let correctCount = 0;
 
-// 郵票對應音效
 const stampSounds = {
   stamp1: 'game4_assets/stamp1.mp3',
   stamp2: 'game4_assets/stamp2.mp3',
@@ -129,16 +127,15 @@ dropzones.forEach(zone => {
     e.preventDefault();
     const stampId = e.dataTransfer.getData('text/plain');
     const stamp = document.getElementById(stampId);
-    if (stampId === zone.dataset.stamp) {
+    if(stampId === zone.dataset.stamp){
       zone.appendChild(stamp);
-      stamp.style.position = 'absolute';
       stamp.style.left = '0';
       stamp.style.top = '0';
       stamp.draggable = false;
       zone.classList.add('correct');
       correctCount++;
       new Audio(stampSounds[stampId]).play();
-      if (correctCount === stamps.length) {
+      if(correctCount === stamps.length){
         document.getElementById('success-message').style.display = 'block';
       }
     } else {
@@ -147,5 +144,6 @@ dropzones.forEach(zone => {
   });
 });
 </script>
+
 </body>
 </html>
