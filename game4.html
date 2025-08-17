@@ -2,13 +2,13 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>北部地區郵票拖曳遊戲</title>
+  <title>台灣北部地區郵票配對遊戲</title>
   <style>
     body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #fdfaf5; /* 淺米白 */
       margin: 0;
       padding: 0;
-      font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #fdfaf3; /* 淺米白 */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -19,119 +19,121 @@
     }
     .map-container {
       position: relative;
-      width: 800px;
+      width: 900px;
       height: 600px;
       background: url("game4_assets/north_map.jpg") no-repeat center/contain;
-      border: 2px solid #aaa;
-      margin-bottom: 20px;
+      border: 2px solid #ccc;
     }
     .dropzone {
       position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       border: 2px dashed transparent;
+    }
+    .dropzone.hovered {
+      border: 2px dashed #ff6600;
+      background-color: rgba(255, 165, 0, 0.2);
     }
     .stamp {
       position: absolute;
       width: 80px;
       cursor: grab;
-      transition: transform 0.2s;
     }
-    .stamp:active {
-      cursor: grabbing;
-      transform: scale(1.1);
-    }
-    button {
-      margin-top: 20px;
+    #home-btn {
+      margin: 20px;
       padding: 10px 20px;
       font-size: 16px;
       border: none;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 6px;
+      border-radius: 8px;
+      background-color: #ffcc66;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #45a049;
+    #home-btn:hover {
+      background-color: #ffb84d;
     }
   </style>
 </head>
 <body>
-  <h1>北部地區郵票拖曳遊戲</h1>
-
+  <h1>台灣北部地區郵票配對遊戲</h1>
   <div class="map-container" id="map">
-    <!-- 投放區 (示例座標，依實際地圖可調整) -->
-    <div class="dropzone" data-stamp="1" style="top:100px; left:200px;"></div>
-    <div class="dropzone" data-stamp="2" style="top:150px; left:400px;"></div>
-    <div class="dropzone" data-stamp="3" style="top:250px; left:600px;"></div>
-    <div class="dropzone" data-stamp="4" style="top:350px; left:500px;"></div>
-    <div class="dropzone" data-stamp="5" style="top:400px; left:300px;"></div>
-    <div class="dropzone" data-stamp="6" style="top:200px; left:100px;"></div>
-    <div class="dropzone" data-stamp="7" style="top:500px; left:200px;"></div>
-    <div class="dropzone" data-stamp="8" style="top:450px; left:600px;"></div>
-    <div class="dropzone" data-stamp="9" style="top:120px; left:550px;"></div>
-    <div class="dropzone" data-stamp="10" style="top:300px; left:150px;"></div>
-    <div class="dropzone" data-stamp="11" style="top:220px; left:700px;"></div>
-    <div class="dropzone" data-stamp="12" style="top:380px; left:650px;"></div>
-
-    <!-- 郵票 (隨機散佈在邊緣) -->
-    <img src="game4_assets/stamp1.jpg" class="stamp" data-stamp="1" style="top:10px; left:50px;">
-    <img src="game4_assets/stamp2.jpg" class="stamp" data-stamp="2" style="top:20px; left:750px;">
-    <img src="game4_assets/stamp3.jpg" class="stamp" data-stamp="3" style="top:500px; left:30px;">
-    <img src="game4_assets/stamp4.jpg" class="stamp" data-stamp="4" style="top:550px; left:720px;">
-    <img src="game4_assets/stamp5.jpg" class="stamp" data-stamp="5" style="top:50px; left:300px;">
-    <img src="game4_assets/stamp6.jpg" class="stamp" data-stamp="6" style="top:60px; left:600px;">
-    <img src="game4_assets/stamp7.jpg" class="stamp" data-stamp="7" style="top:520px; left:400px;">
-    <img src="game4_assets/stamp8.jpg" class="stamp" data-stamp="8" style="top:100px; left:700px;">
-    <img src="game4_assets/stamp9.jpg" class="stamp" data-stamp="9" style="top:450px; left:100px;">
-    <img src="game4_assets/stamp10.jpg" class="stamp" data-stamp="10" style="top:40px; left:450px;">
-    <img src="game4_assets/stamp11.jpg" class="stamp" data-stamp="11" style="top:300px; left:20px;">
-    <img src="game4_assets/stamp12.jpg" class="stamp" data-stamp="12" style="top:250px; left:760px;">
+    <!-- 12 個投放區 -->
+    <div class="dropzone" id="zone1" data-stamp="stamp1" style="top:100px; left:120px;"></div>
+    <div class="dropzone" id="zone2" data-stamp="stamp2" style="top:200px; left:250px;"></div>
+    <div class="dropzone" id="zone3" data-stamp="stamp3" style="top:150px; left:400px;"></div>
+    <div class="dropzone" id="zone4" data-stamp="stamp4" style="top:300px; left:500px;"></div>
+    <div class="dropzone" id="zone5" data-stamp="stamp5" style="top:350px; left:200px;"></div>
+    <div class="dropzone" id="zone6" data-stamp="stamp6" style="top:250px; left:700px;"></div>
+    <div class="dropzone" id="zone7" data-stamp="stamp7" style="top:100px; left:600px;"></div>
+    <div class="dropzone" id="zone8" data-stamp="stamp8" style="top:400px; left:350px;"></div>
+    <div class="dropzone" id="zone9" data-stamp="stamp9" style="top:450px; left:600px;"></div>
+    <div class="dropzone" id="zone10" data-stamp="stamp10" style="top:500px; left:150px;"></div>
+    <div class="dropzone" id="zone11" data-stamp="stamp11" style="top:200px; left:800px;"></div>
+    <div class="dropzone" id="zone12" data-stamp="stamp12" style="top:50px; left:300px;"></div>
+    
+    <!-- 12 張郵票（散布） -->
+    <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp" style="top:30px; left:20px;" draggable="true">
+    <img src="game4_assets/stamp2.jpg" id="stamp2" class="stamp" style="top:500px; left:50px;" draggable="true">
+    <img src="game4_assets/stamp3.jpg" id="stamp3" class="stamp" style="top:30px; left:750px;" draggable="true">
+    <img src="game4_assets/stamp4.jpg" id="stamp4" class="stamp" style="top:550px; left:820px;" draggable="true">
+    <img src="game4_assets/stamp5.jpg" id="stamp5" class="stamp" style="top:300px; left:20px;" draggable="true">
+    <img src="game4_assets/stamp6.jpg" id="stamp6" class="stamp" style="top:400px; left:850px;" draggable="true">
+    <img src="game4_assets/stamp7.jpg" id="stamp7" class="stamp" style="top:30px; left:500px;" draggable="true">
+    <img src="game4_assets/stamp8.jpg" id="stamp8" class="stamp" style="top:550px; left:400px;" draggable="true">
+    <img src="game4_assets/stamp9.jpg" id="stamp9" class="stamp" style="top:200px; left:850px;" draggable="true">
+    <img src="game4_assets/stamp10.jpg" id="stamp10" class="stamp" style="top:100px; left:50px;" draggable="true">
+    <img src="game4_assets/stamp11.jpg" id="stamp11" class="stamp" style="top:450px; left:250px;" draggable="true">
+    <img src="game4_assets/stamp12.jpg" id="stamp12" class="stamp" style="top:320px; left:700px;" draggable="true">
   </div>
 
-  <button onclick="location.href='index.html'">回到遊戲首頁</button>
+  <button id="home-btn" onclick="location.href='index.html'">回到遊戲首頁</button>
 
   <!-- 音效 -->
-  <audio id="wrongSound" src="game4_assets/wrong.mp3"></audio>
-  <audio id="stamp1Sound" src="game4_assets/stamp1.mp3"></audio>
-  <audio id="stamp2Sound" src="game4_assets/stamp2.mp3"></audio>
-  <audio id="stamp3Sound" src="game4_assets/stamp3.mp3"></audio>
-  <audio id="stamp4Sound" src="game4_assets/stamp4.mp3"></audio>
-  <audio id="stamp5Sound" src="game4_assets/stamp5.mp3"></audio>
-  <audio id="stamp6Sound" src="game4_assets/stamp6.mp3"></audio>
-  <audio id="stamp7Sound" src="game4_assets/stamp7.mp3"></audio>
-  <audio id="stamp8Sound" src="game4_assets/stamp8.mp3"></audio>
-  <audio id="stamp9Sound" src="game4_assets/stamp9.mp3"></audio>
-  <audio id="stamp10Sound" src="game4_assets/stamp10.mp3"></audio>
-  <audio id="stamp11Sound" src="game4_assets/stamp11.mp3"></audio>
-  <audio id="stamp12Sound" src="game4_assets/stamp12.mp3"></audio>
+  <audio id="wrong-sound" src="game4_assets/wrong.mp3"></audio>
+  <audio id="sound-stamp1" src="game4_assets/stamp1.mp3"></audio>
+  <audio id="sound-stamp2" src="game4_assets/stamp2.mp3"></audio>
+  <audio id="sound-stamp3" src="game4_assets/stamp3.mp3"></audio>
+  <audio id="sound-stamp4" src="game4_assets/stamp4.mp3"></audio>
+  <audio id="sound-stamp5" src="game4_assets/stamp5.mp3"></audio>
+  <audio id="sound-stamp6" src="game4_assets/stamp6.mp3"></audio>
+  <audio id="sound-stamp7" src="game4_assets/stamp7.mp3"></audio>
+  <audio id="sound-stamp8" src="game4_assets/stamp8.mp3"></audio>
+  <audio id="sound-stamp9" src="game4_assets/stamp9.mp3"></audio>
+  <audio id="sound-stamp10" src="game4_assets/stamp10.mp3"></audio>
+  <audio id="sound-stamp11" src="game4_assets/stamp11.mp3"></audio>
+  <audio id="sound-stamp12" src="game4_assets/stamp12.mp3"></audio>
 
   <script>
     const stamps = document.querySelectorAll('.stamp');
-    const dropzones = document.querySelectorAll('.dropzone');
-    const wrongSound = document.getElementById('wrongSound');
+    const zones = document.querySelectorAll('.dropzone');
+    const wrongSound = document.getElementById("wrong-sound");
 
     let dragged = null;
 
     stamps.forEach(stamp => {
-      stamp.addEventListener('dragstart', e => {
+      stamp.addEventListener("dragstart", e => {
         dragged = stamp;
+        setTimeout(() => stamp.style.display = "none", 0);
       });
-      stamp.setAttribute("draggable", true);
+      stamp.addEventListener("dragend", e => {
+        dragged.style.display = "block";
+        dragged = null;
+      });
     });
 
-    dropzones.forEach(zone => {
-      zone.addEventListener('dragover', e => {
+    zones.forEach(zone => {
+      zone.addEventListener("dragover", e => {
         e.preventDefault();
+        zone.classList.add("hovered");
       });
-      zone.addEventListener('drop', e => {
-        e.preventDefault();
-        if (dragged && dragged.dataset.stamp === zone.dataset.stamp) {
-          dragged.style.top = zone.style.top;
-          dragged.style.left = zone.style.left;
-          dragged.draggable = false;
-          // 播放對應音效
-          document.getElementById("stamp" + zone.dataset.stamp + "Sound").play();
+      zone.addEventListener("dragleave", e => {
+        zone.classList.remove("hovered");
+      });
+      zone.addEventListener("drop", e => {
+        zone.classList.remove("hovered");
+        if (dragged && dragged.id === zone.dataset.stamp) {
+          zone.appendChild(dragged);
+          dragged.style.position = "static";
+          document.getElementById("sound-" + dragged.id).play();
         } else {
           wrongSound.play();
         }
