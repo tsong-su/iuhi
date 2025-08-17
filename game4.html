@@ -6,7 +6,7 @@
   <style>
     body {
       margin: 0;
-      background: url("north_map.png") no-repeat center center;
+      background: url("game4_assets/north_map.png") no-repeat center center;
       background-size: contain;
       height: 100vh;
       overflow: hidden;
@@ -32,6 +32,7 @@
 
     // 郵票數量
     const totalStamps = 12;
+    let placedStamps = 0; // 已放置成功的數量
 
     // 正確答案座標 (依照 north_answer.png 對應)
     const answerPositions = [
@@ -52,7 +53,7 @@
     // 初始化郵票
     for (let i = 1; i <= totalStamps; i++) {
       const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i}.jpg`; // 修正路徑
+      img.src = `game4_assets/stamp${i}.jpg`; // 郵票圖片路徑
       img.classList.add("stamp");
       img.dataset.index = i - 1;
 
@@ -105,6 +106,14 @@
           stamp.style.top = (ans.y - stamp.offsetHeight / 2) + "px";
           playSound(`game4_assets/stamp${index + 1}.mp3`);
           stamp.style.pointerEvents = "none"; // 鎖定位置
+          placedStamps++;
+
+          // 檢查是否全部完成
+          if (placedStamps === totalStamps) {
+            setTimeout(() => {
+              alert("🎉 恭喜完成！所有郵票都放對了！");
+            }, 500);
+          }
         } else {
           // 錯誤，彈回原位
           stamp.style.left = startX + "px";
