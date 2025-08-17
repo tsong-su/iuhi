@@ -2,25 +2,33 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>測試版：北部地區郵票配對遊戲</title>
+  <title>臺灣北部地區郵票配對遊戲</title>
   <style>
-    body { 
-      background-color: #fdfaf0; /* 淺米白 */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
-      text-align: center;
+      background-color: #fefcf0; /* 淺米白 */
     }
     #game-container {
       position: relative;
-      width: 800px;
-      height: 600px;
-      margin: 20px auto;
+      width: 90vw;
+      height: 90vh;
+      margin: 0 auto;
       background: url('game4_assets/north_map.png') no-repeat center center;
       background-size: contain;
       border: 2px solid #333;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 10px;
     }
     .stamp {
       width: 80px;
       height: 80px;
+      margin: 5px;
       cursor: grab;
       position: absolute;
     }
@@ -34,57 +42,118 @@
       border-color: green;
     }
     #message {
-      margin-top: 20px;
-      font-size: 36px;
-      color: green;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      color: #ff5722;
       display: none;
+      font-weight: bold;
+      background: rgba(255,255,255,0.8);
+      padding: 20px 40px;
+      border-radius: 12px;
+      text-align: center;
     }
-    #back {
-      margin-top: 20px;
+    #back-btn {
+      display: block;
+      margin: 10px auto;
       padding: 10px 20px;
       font-size: 18px;
+      background: #4fc3f7;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+    #back-btn:hover {
+      filter: brightness(0.9);
     }
   </style>
 </head>
 <body>
-  <h1>測試版：北部地區郵票配對遊戲</h1>
   <div id="game-container">
-    <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp" draggable="true" style="left:20px; top:20px;">
-    <div id="drop1" class="dropzone" style="left:400px; top:200px;" data-stamp="stamp1"></div>
+    <!-- Dropzones -->
+    <div id="drop1" class="dropzone" style="left:20%; top:10%;" data-stamp="stamp1"></div>
+    <div id="drop2" class="dropzone" style="left:40%; top:15%;" data-stamp="stamp2"></div>
+    <div id="drop3" class="dropzone" style="left:60%; top:20%;" data-stamp="stamp3"></div>
+    <div id="drop4" class="dropzone" style="left:30%; top:30%;" data-stamp="stamp4"></div>
+    <div id="drop5" class="dropzone" style="left:50%; top:35%;" data-stamp="stamp5"></div>
+    <div id="drop6" class="dropzone" style="left:70%; top:40%;" data-stamp="stamp6"></div>
+    <div id="drop7" class="dropzone" style="left:25%; top:50%;" data-stamp="stamp7"></div>
+    <div id="drop8" class="dropzone" style="left:45%; top:55%;" data-stamp="stamp8"></div>
+    <div id="drop9" class="dropzone" style="left:65%; top:60%;" data-stamp="stamp9"></div>
+    <div id="drop10" class="dropzone" style="left:35%; top:70%;" data-stamp="stamp10"></div>
+    <div id="drop11" class="dropzone" style="left:55%; top:75%;" data-stamp="stamp11"></div>
+    <div id="drop12" class="dropzone" style="left:75%; top:80%;" data-stamp="stamp12"></div>
+
+    <!-- Stamps -->
+    <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp">
+    <img src="game4_assets/stamp2.jpg" id="stamp2" class="stamp">
+    <img src="game4_assets/stamp3.jpg" id="stamp3" class="stamp">
+    <img src="game4_assets/stamp4.jpg" id="stamp4" class="stamp">
+    <img src="game4_assets/stamp5.jpg" id="stamp5" class="stamp">
+    <img src="game4_assets/stamp6.jpg" id="stamp6" class="stamp">
+    <img src="game4_assets/stamp7.jpg" id="stamp7" class="stamp">
+    <img src="game4_assets/stamp8.jpg" id="stamp8" class="stamp">
+    <img src="game4_assets/stamp9.jpg" id="stamp9" class="stamp">
+    <img src="game4_assets/stamp10.jpg" id="stamp10" class="stamp">
+    <img src="game4_assets/stamp11.jpg" id="stamp11" class="stamp">
+    <img src="game4_assets/stamp12.jpg" id="stamp12" class="stamp">
+
+    <div id="message">有夠gâu!</div>
   </div>
-  <div id="message">🎉 成功！</div>
-  <button id="back" onclick="location.href='index.html'">回到遊戲首頁</button>
+
+  <a id="back-btn" href="index.html">回到遊戲首頁</a>
 
   <script>
-    const stamp = document.getElementById('stamp1');
-    const dropzone = document.getElementById('drop1');
-    const successAudio = new Audio('game4_assets/stamp1.mp3');
-    const wrongAudio = new Audio('game4_assets/wrong.mp3');
+    const stamps = document.querySelectorAll('.stamp');
+    const dropzones = document.querySelectorAll('.dropzone');
     const message = document.getElementById('message');
+    let correctCount = 0;
 
-    stamp.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', e.target.id);
+    // 打散郵票初始位置
+    stamps.forEach((stamp, i) => {
+      stamp.style.left = (5 + i*7) + '%';
+      stamp.style.top = (75 - i*3) + '%';
+      stamp.draggable = true;
     });
 
-    dropzone.addEventListener('dragover', e => {
-      e.preventDefault();
+    stamps.forEach(stamp => {
+      stamp.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', e.target.id);
+      });
     });
 
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      const id = e.dataTransfer.getData('text/plain');
-      if(id === dropzone.dataset.stamp){
-        dropzone.appendChild(stamp);
-        stamp.style.left = '0px';
-        stamp.style.top = '0px';
-        stamp.draggable = false;
-        dropzone.classList.add('correct');
-        message.style.display = 'block';
-        successAudio.play();
-      } else {
-        wrongAudio.play();
-        alert("放錯位置囉！");
-      }
+    dropzones.forEach(zone => {
+      zone.addEventListener('dragover', e => e.preventDefault());
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        const stampId = e.dataTransfer.getData('text/plain');
+        const stamp = document.getElementById(stampId);
+        if(stampId === zone.dataset.stamp){
+          zone.appendChild(stamp);
+          stamp.style.position = 'absolute';
+          stamp.style.left = '0';
+          stamp.style.top = '0';
+          stamp.draggable = false;
+          zone.classList.add('correct');
+          // 播放成功音效
+          const audio = new Audio(`game4_assets/${stampId}.mp3`);
+          audio.play();
+          correctCount++;
+          if(correctCount === stamps.length){
+            message.style.display = 'block';
+          }
+        } else {
+          // 播放錯誤音效
+          const wrongAudio = new Audio('game4_assets/wrong.mp3');
+          wrongAudio.play();
+          alert('放錯位置囉！');
+        }
+      });
     });
   </script>
 </body>
