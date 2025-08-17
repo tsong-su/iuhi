@@ -1,170 +1,49 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>臺灣北部地區郵票配對遊戲</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #fdfaf0; /* 淺米白底色 */
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-  #game-container {
-    position: relative;
-    width: 90vw;
-    max-width: 900px;
-    height: 80vh;
-    margin: 1em auto;
-    background: url('game4_assets/north_map.jpg') no-repeat center center;
-    background-size: contain;
-    border: 2px solid #333;
-  }
-  .stamp {
-    width: 80px;
-    height: 80px;
-    position: absolute;
-    cursor: grab;
-    z-index: 2;
-  }
-  .dropzone {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border: 2px dashed transparent;
-    z-index: 1;
-  }
-  .dropzone.correct {
-    border-color: green;
-  }
-  #success-message {
-    display: none;
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 4em;
-    color: red;
-    font-weight: bold;
-    z-index: 3;
-  }
-  #home-btn {
-    margin-top: 1em;
-    padding: 0.5em 2em;
-    font-size: 1.2em;
-    border-radius: 10px;
-    background-color: #4fc3f7;
-    color: white;
-    text-decoration: none;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>測試版 北部地區郵票</title>
+  <style>
+    body {
+      background-color: #fdfaf0; /* 淺米白 */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #game-container {
+      position: relative;
+      width: 800px;
+      height: 600px;
+      background: url('game4_assets/north_map.jpg') no-repeat center center;
+      background-size: contain;
+      border: 2px solid #333;
+    }
+    .stamp {
+      width: 60px;
+      height: 60px;
+      position: absolute;
+      cursor: grab;
+    }
+  </style>
 </head>
 <body>
-
-<h2>臺灣北部地區郵票配對遊戲</h2>
-<div id="game-container">
-  <div id="success-message">有夠gâu 🎉</div>
-</div>
-
-<a href="index.html" id="home-btn">回到遊戲首頁</a>
-
-<script>
-const container = document.getElementById('game-container');
-
-const stampsData = [
-  {id:'stamp1', img:'game4_assets/stamp1.jpg', audio:'game4_assets/stamp1.mp3'},
-  {id:'stamp2', img:'game4_assets/stamp2.jpg', audio:'game4_assets/stamp2.mp3'},
-  {id:'stamp3', img:'game4_assets/stamp3.jpg', audio:'game4_assets/stamp3.mp3'},
-  {id:'stamp4', img:'game4_assets/stamp4.jpg', audio:'game4_assets/stamp4.mp3'},
-  {id:'stamp5', img:'game4_assets/stamp5.jpg', audio:'game4_assets/stamp5.mp3'},
-  {id:'stamp6', img:'game4_assets/stamp6.jpg', audio:'game4_assets/stamp6.mp3'},
-  {id:'stamp7', img:'game4_assets/stamp7.jpg', audio:'game4_assets/stamp7.mp3'},
-  {id:'stamp8', img:'game4_assets/stamp8.jpg', audio:'game4_assets/stamp8.mp3'},
-  {id:'stamp9', img:'game4_assets/stamp9.jpg', audio:'game4_assets/stamp9.mp3'},
-  {id:'stamp10', img:'game4_assets/stamp10.jpg', audio:'game4_assets/stamp10.mp3'},
-  {id:'stamp11', img:'game4_assets/stamp11.jpg', audio:'game4_assets/stamp11.mp3'},
-  {id:'stamp12', img:'game4_assets/stamp12.jpg', audio:'game4_assets/stamp12.mp3'},
-];
-
-const wrongAudio = new Audio('game4_assets/wrong.mp3');
-
-const dropzonesData = [
-  {id:'drop1', left:'10%', top:'10%', stampId:'stamp1'},
-  {id:'drop2', left:'30%', top:'12%', stampId:'stamp2'},
-  {id:'drop3', left:'50%', top:'15%', stampId:'stamp3'},
-  {id:'drop4', left:'70%', top:'18%', stampId:'stamp4'},
-  {id:'drop5', left:'20%', top:'35%', stampId:'stamp5'},
-  {id:'drop6', left:'40%', top:'40%', stampId:'stamp6'},
-  {id:'drop7', left:'60%', top:'45%', stampId:'stamp7'},
-  {id:'drop8', left:'80%', top:'50%', stampId:'stamp8'},
-  {id:'drop9', left:'15%', top:'60%', stampId:'stamp9'},
-  {id:'drop10', left:'35%', top:'65%', stampId:'stamp10'},
-  {id:'drop11', left:'55%', top:'70%', stampId:'stamp11'},
-  {id:'drop12', left:'75%', top:'75%', stampId:'stamp12'},
-];
-
-// 建立 dropzones
-dropzonesData.forEach(dz=>{
-  const div = document.createElement('div');
-  div.className = 'dropzone';
-  div.id = dz.id;
-  div.style.left = dz.left;
-  div.style.top = dz.top;
-  div.dataset.stampId = dz.stampId;
-  container.appendChild(div);
-
-  div.addEventListener('dragover', e=>e.preventDefault());
-  div.addEventListener('drop', e=>{
-    e.preventDefault();
-    const stampId = e.dataTransfer.getData('text/plain');
-    const stampEl = document.getElementById(stampId);
-    if(stampId === div.dataset.stampId){
-      div.appendChild(stampEl);
-      stampEl.style.left='0';
-      stampEl.style.top='0';
-      stampEl.draggable = false;
-      div.classList.add('correct');
-      new Audio(stampsData.find(s=>s.id===stampId).audio).play();
-      checkAllCorrect();
-    } else {
-      wrongAudio.play();
-      stampEl.style.left = stampEl.dataset.origLeft;
-      stampEl.style.top = stampEl.dataset.origTop;
-    }
-  });
-});
-
-// 建立郵票
-stampsData.forEach((s,i)=>{
-  const img = document.createElement('img');
-  img.src = s.img;
-  img.id = s.id;
-  img.className = 'stamp';
-  img.draggable = true;
-  // 隨機打散位置
-  const left = 5 + Math.random()*75;
-  const top = 5 + Math.random()*60;
-  img.style.left = left+'%';
-  img.style.top = top+'%';
-  img.dataset.origLeft = left+'%';
-  img.dataset.origTop = top+'%';
-
-  img.addEventListener('dragstart', e=>{
-    e.dataTransfer.setData('text/plain', e.target.id);
-  });
-  container.appendChild(img);
-});
-
-function checkAllCorrect(){
-  const allCorrect = Array.from(document.querySelectorAll('.dropzone'))
-                         .every(dz=>dz.classList.contains('correct'));
-  if(allCorrect){
-    document.getElementById('success-message').style.display = 'block';
-  }
-}
-</script>
-
+  <div id="game-container">
+    <img src="game4_assets/stamp1.jpg" class="stamp" style="top:50px; left:50px;">
+    <img src="game4_assets/stamp2.jpg" class="stamp" style="top:100px; left:150px;">
+    <img src="game4_assets/stamp3.jpg" class="stamp" style="top:200px; left:80px;">
+    <img src="game4_assets/stamp4.jpg" class="stamp" style="top:150px; left:250px;">
+    <img src="game4_assets/stamp5.jpg" class="stamp" style="top:300px; left:100px;">
+    <img src="game4_assets/stamp6.jpg" class="stamp" style="top:350px; left:200px;">
+    <img src="game4_assets/stamp7.jpg" class="stamp" style="top:50px; left:300px;">
+    <img src="game4_assets/stamp8.jpg" class="stamp" style="top:250px; left:350px;">
+    <img src="game4_assets/stamp9.jpg" class="stamp" style="top:400px; left:150px;">
+    <img src="game4_assets/stamp10.jpg" class="stamp" style="top:450px; left:300px;">
+    <img src="game4_assets/stamp11.jpg" class="stamp" style="top:100px; left:400px;">
+    <img src="game4_assets/stamp12.jpg" class="stamp" style="top:350px; left:400px;">
+  </div>
 </body>
 </html>
