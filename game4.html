@@ -6,35 +6,88 @@
   <style>
     body {
       margin: 0;
-      background: url("game4_assets/north_map.png") no-repeat center center;
-      background-size: contain;
       height: 100vh;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
     }
     #game-area {
       position: relative;
+      width: 1760px;   /* 與 north_map.png 一致 */
+      height: 1415px;
+      background: url("game4_assets/north_map.png") no-repeat center center;
+      background-size: cover;
+    }
+    #answer-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      background: url("game4_assets/north_answer.png") no-repeat center center;
+      background-size: cover;
+      opacity: 0.4; /* 半透明 */
+      z-index: 0;
+    }
+    .slot {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed rgba(255,255,255,0.3);
+      z-index: 1;
     }
     .stamp {
       position: absolute;
       width: 80px;
       cursor: grab;
       user-select: none;
+      z-index: 2;
+    }
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.1);
+      font-size: 40px;
+      font-weight: bold;
+      color: gold;
+      opacity: 0;
+      z-index: 5;
+      transition: transform 2s ease-out, opacity 2s ease-out;
+    }
+    #back-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10;
+    }
+    #back-btn:hover {
+      background: #666;
     }
   </style>
 </head>
 <body>
-  <div id="game-area"></div>
+  <div id="game-area">
+    <div id="answer-layer"></div>
+    <div id="message">有夠gâu</div>
+    <button id="back-btn" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  </div>
 
   <script>
     const gameArea = document.getElementById("game-area");
-
-    // 郵票數量
     const totalStamps = 12;
-    let placedStamps = 0; // 已放置成功的數量
+    let placedStamps = 0;
 
-    // 正確答案座標 (依照 north_answer.png 對應)
+    // 正確答案座標 (與答案圖一致)
     const answerPositions = [
       {x: 880, y: 240},
       {x: 820, y: 200},
@@ -50,16 +103,28 @@
       {x: 650, y: 1090}
     ];
 
-    // 初始化郵票
+    // 建立空格
+    const slots = [];
+    for (let i = 0; i < totalStamps; i++) {
+      const slot = document.createElement("div");
+      slot.classList.add("slot");
+      slot.style.left = (answerPositions[i].x - 40) + "px";
+      slot.style.top = (answerPositions[i].y - 40) + "px";
+      slot.dataset.index = i;
+      gameArea.appendChild(slot);
+      slots.push(slot);
+    }
+
+    // 建立郵票
     for (let i = 1; i <= totalStamps; i++) {
       const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i}.jpg`; // 郵票圖片路徑
+      img.src = `game4_assets/stamp${i}.jpg`;
       img.classList.add("stamp");
       img.dataset.index = i - 1;
 
-      // 隨機散佈位置
-      img.style.left = (Math.random() * (window.innerWidth - 120)) + "px";
-      img.style.top = (Math.random() * (window.innerHeight - 150)) + "px";
+      // 隨機散佈
+      img.style.left = (Math.random() * (gameArea.clientWidth - 100)) + "px";
+      img.style.top = (Math.random() * (gameArea.clientHeight - 100)) + "px";
 
       gameArea.appendChild(img);
       makeDraggable(img);
@@ -90,32 +155,31 @@
         stamp.style.cursor = "grab";
 
         const index = parseInt(stamp.dataset.index);
-        const ans = answerPositions[index];
+        const slot = slots[index];
 
-        // 計算郵票中心點
         const centerX = stamp.offsetLeft + stamp.offsetWidth / 2;
         const centerY = stamp.offsetTop + stamp.offsetHeight / 2;
 
-        const dx = centerX - ans.x;
-        const dy = centerY - ans.y;
+        const slotX = slot.offsetLeft + slot.offsetWidth / 2;
+        const slotY = slot.offsetTop + slot.offsetHeight / 2;
+
+        const dx = centerX - slotX;
+        const dy = centerY - slotY;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 30) {
-          // 吸附成功
-          stamp.style.left = (ans.x - stamp.offsetWidth / 2) + "px";
-          stamp.style.top = (ans.y - stamp.offsetHeight / 2) + "px";
+          // 正確吸附
+          stamp.style.left = (slotX - stamp.offsetWidth / 2) + "px";
+          stamp.style.top = (slotY - stamp.offsetHeight / 2) + "px";
           playSound(`game4_assets/stamp${index + 1}.mp3`);
-          stamp.style.pointerEvents = "none"; // 鎖定位置
+          stamp.style.pointerEvents = "none";
           placedStamps++;
 
-          // 檢查是否全部完成
           if (placedStamps === totalStamps) {
-            setTimeout(() => {
-              alert("🎉 恭喜完成！所有郵票都放對了！");
-            }, 500);
+            showMessage();
           }
         } else {
-          // 錯誤，彈回原位
+          // 錯誤
           stamp.style.left = startX + "px";
           stamp.style.top = startY + "px";
           playSound(`game4_assets/wrong.mp3`);
@@ -126,6 +190,12 @@
     function playSound(src) {
       const audio = new Audio(src);
       audio.play();
+    }
+
+    function showMessage() {
+      const msg = document.getElementById("message");
+      msg.style.opacity = "1";
+      msg.style.transform = "translate(-50%, -50%) scale(2.5)";
     }
   </script>
 </body>
