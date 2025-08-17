@@ -2,76 +2,90 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>測試版：臺灣北部地區郵票配對遊戲</title>
+  <title>測試版：北部地區郵票配對遊戲</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
+    body { 
+      background-color: #fdfaf0; /* 淺米白 */
       font-family: Arial, sans-serif;
-      background-color: #fdfaf0; /* 淺米白背景 */
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      flex-direction: column;
+      text-align: center;
     }
-
     #game-container {
       position: relative;
-      width: 90vw;
-      max-width: 900px;
+      width: 800px;
       height: 600px;
       margin: 20px auto;
-      background-color: #f0f0f0;
-      background-image: url('game4_assets/north_map.png');
+      background: url('game4_assets/north_map.png') no-repeat center center;
       background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
       border: 2px solid #333;
     }
-
     .stamp {
       width: 80px;
       height: 80px;
+      cursor: grab;
       position: absolute;
-      object-fit: cover;
-      border: 1px solid #333;
-      border-radius: 8px;
     }
-
-    #back-home {
-      display: block;
-      margin: 20px auto;
+    .dropzone {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed transparent;
+    }
+    .dropzone.correct {
+      border-color: green;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 36px;
+      color: green;
+      display: none;
+    }
+    #back {
+      margin-top: 20px;
       padding: 10px 20px;
-      font-size: 1.2em;
-      background-color: #4fc3f7;
-      color: white;
-      text-decoration: none;
-      border-radius: 10px;
-      text-align: center;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
-
-  <h1 style="text-align:center; color:#2E7D32;">測試版：臺灣北部地區郵票配對遊戲</h1>
-
+  <h1>測試版：北部地區郵票配對遊戲</h1>
   <div id="game-container">
-    <img src="game4_assets/stamp1.jpg" class="stamp" style="top: 20px; left: 20px;">
-    <img src="game4_assets/stamp2.jpg" class="stamp" style="top: 20px; left: 120px;">
-    <img src="game4_assets/stamp3.jpg" class="stamp" style="top: 20px; left: 220px;">
-    <img src="game4_assets/stamp4.jpg" class="stamp" style="top: 120px; left: 20px;">
-    <img src="game4_assets/stamp5.jpg" class="stamp" style="top: 120px; left: 120px;">
-    <img src="game4_assets/stamp6.jpg" class="stamp" style="top: 120px; left: 220px;">
-    <img src="game4_assets/stamp7.jpg" class="stamp" style="top: 220px; left: 20px;">
-    <img src="game4_assets/stamp8.jpg" class="stamp" style="top: 220px; left: 120px;">
-    <img src="game4_assets/stamp9.jpg" class="stamp" style="top: 220px; left: 220px;">
-    <img src="game4_assets/stamp10.jpg" class="stamp" style="top: 320px; left: 20px;">
-    <img src="game4_assets/stamp11.jpg" class="stamp" style="top: 320px; left: 120px;">
-    <img src="game4_assets/stamp12.jpg" class="stamp" style="top: 320px; left: 220px;">
+    <img src="game4_assets/stamp1.jpg" id="stamp1" class="stamp" draggable="true" style="left:20px; top:20px;">
+    <div id="drop1" class="dropzone" style="left:400px; top:200px;" data-stamp="stamp1"></div>
   </div>
+  <div id="message">🎉 成功！</div>
+  <button id="back" onclick="location.href='index.html'">回到遊戲首頁</button>
 
-  <a id="back-home" href="index.html">回到遊戲首頁</a>
+  <script>
+    const stamp = document.getElementById('stamp1');
+    const dropzone = document.getElementById('drop1');
+    const successAudio = new Audio('game4_assets/stamp1.mp3');
+    const wrongAudio = new Audio('game4_assets/wrong.mp3');
+    const message = document.getElementById('message');
 
+    stamp.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', e.target.id);
+    });
+
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if(id === dropzone.dataset.stamp){
+        dropzone.appendChild(stamp);
+        stamp.style.left = '0px';
+        stamp.style.top = '0px';
+        stamp.draggable = false;
+        dropzone.classList.add('correct');
+        message.style.display = 'block';
+        successAudio.play();
+      } else {
+        wrongAudio.play();
+        alert("放錯位置囉！");
+      }
+    });
+  </script>
 </body>
 </html>
