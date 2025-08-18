@@ -48,7 +48,7 @@
 
     .target {
       position: absolute;
-      width: 5%;
+      width: 6%;   /* 紅框大小百分比 */
       aspect-ratio: 1 / 1;
       border: 3px dashed red;
       box-sizing: border-box;
@@ -57,7 +57,7 @@
 
     .stamp {
       position: absolute;
-      width: 5%;
+      width: 10%;   /* 郵票大小百分比 */
       aspect-ratio: 1 / 1;
       cursor: grab;
       z-index: 10;
@@ -153,8 +153,9 @@
 
       document.querySelectorAll(".target").forEach((div, i) => {
         const {x, y} = basePositions[i];
-        div.style.left = (offsetX + x * mapW - div.offsetWidth/2) + "px";
-        div.style.top  = (offsetY + y * mapH - div.offsetHeight/2) + "px";
+        const size = div.clientWidth;
+        div.style.left = (offsetX + x * mapW - size/2) + "px";
+        div.style.top  = (offsetY + y * mapH - size/2) + "px";
       });
     }
 
@@ -187,15 +188,16 @@
       const offsetX = (mapContainer.clientWidth - mapW) / 2;
       const offsetY = (mapContainer.clientHeight - mapH) / 2;
 
+      // 隨機放在地圖外圍（避免壓到紅框）
       let left, top;
       do {
-        left = offsetX + Math.random() * (mapW - stamp.offsetWidth);
-        top = offsetY + Math.random() * (mapH - stamp.offsetHeight);
+        left = offsetX + Math.random() * (mapW - stamp.clientWidth);
+        top  = offsetY + Math.random() * (mapH - stamp.clientHeight);
       } while (
-        left > offsetX + mapW*0.25 &&
-        left < offsetX + mapW*0.75 &&
-        top > offsetY + mapH*0.25 &&
-        top < offsetY + mapH*0.75
+        left > offsetX + mapW*0.3 &&
+        left < offsetX + mapW*0.7 &&
+        top  > offsetY + mapH*0.3 &&
+        top  < offsetY + mapH*0.7
       );
       stamp.style.left = left + "px";
       stamp.style.top = top + "px";
