@@ -100,8 +100,11 @@
         frame.className = "frame";
         frame.style.width = stampSizeVW + "vw";
         frame.style.height = stampSizeVW + "vw";
-        frame.style.left = (rect.left + pos.x * rect.width) + "px";
-        frame.style.top  = (rect.top  + pos.y * rect.height) + "px";
+
+        // 紅框往外微調 (x,y 各再外推一點)
+        frame.style.left = (rect.left + pos.x * rect.width + 15) + "px";
+        frame.style.top  = (rect.top  + pos.y * rect.height + 15) + "px";
+
         frame.dataset.index = i;
         container.appendChild(frame);
       });
@@ -112,9 +115,9 @@
         const stamp = document.createElement("img");
         stamp.src = `game4_assets/stamp${i+1}.jpg`;
         stamp.className = "stamp";
-        stamp.draggable = true;
         stamp.dataset.index = i;
         container.appendChild(stamp);
+        makeDraggable(stamp);
       }
       shuffleStamps();
     }
@@ -124,7 +127,7 @@
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
       const stampWidth = containerWidth * stampSizeVW / 100;
-      const stampHeight = stampWidth; // 假設正方形
+      const stampHeight = stampWidth;
 
       stamps.forEach(stamp => {
         let x = Math.random() * (containerWidth - stampWidth);
@@ -134,42 +137,64 @@
       });
     }
 
-    function enableDragAndDrop() {
-      let dragged = null;
+    function makeDraggable(stamp) {
+      let offsetX, offsetY, isDragging = false;
 
-      document.querySelectorAll(".stamp").forEach(stamp => {
-        stamp.addEventListener("dragstart", e => {
-          dragged = e.target;
-        });
+      stamp.addEventListener("mousedown", e => {
+        isDragging = true;
+        offsetX = e.clientX - stamp.offsetLeft;
+        offsetY = e.clientY - stamp.offsetTop;
+        stamp.style.zIndex = 10;
       });
 
-      document.querySelectorAll(".frame").forEach(frame => {
-        frame.addEventListener("dragover", e => e.preventDefault());
-        frame.addEventListener("drop", e => {
-          e.preventDefault();
-          if (dragged && dragged.dataset.index === frame.dataset.index) {
-            frame.style.border = "3px solid green";
-            dragged.style.left = frame.style.left;
-            dragged.style.top  = frame.style.top;
-            dragged.draggable = false; // 吸附後不可再拖曳
-            correctSound.currentTime = 0;
-            correctSound.play();
-          } else {
-            wrongSound.currentTime = 0;
-            wrongSound.play();
+      document.addEventListener("mousemove", e => {
+        if (!isDragging) return;
+        stamp.style.left = (e.clientX - offsetX) + "px";
+        stamp.style.top  = (e.clientY - offsetY) + "px";
+      });
+
+      document.addEventListener("mouseup", e => {
+        if (!isDragging) return;
+        isDragging = false;
+        stamp.style.zIndex = 5;
+
+        // 檢查是否放到正確紅框
+        const frames = document.querySelectorAll(".frame");
+        let matched = false;
+        frames.forEach(frame => {
+          const fRect = frame.getBoundingClientRect();
+          const sRect = stamp.getBoundingClientRect();
+          if (isOverlap(fRect, sRect)) {
+            if (stamp.dataset.index === frame.dataset.index) {
+              // 吸附到紅框中心
+              stamp.style.left = (frame.offsetLeft - stamp.offsetWidth/2 + frame.offsetWidth/2) + "px";
+              stamp.style.top  = (frame.offsetTop  - stamp.offsetHeight/2 + frame.offsetHeight/2) + "px";
+              stamp.style.pointerEvents = "none";
+              correctSound.currentTime = 0;
+              correctSound.play();
+            } else {
+              wrongSound.currentTime = 0;
+              wrongSound.play();
+            }
+            matched = true;
           }
         });
       });
     }
 
+    function isOverlap(r1, r2) {
+      return !(r2.left > r1.right || 
+               r2.right < r1.left || 
+               r2.top > r1.bottom || 
+               r2.bottom < r1.top);
+    }
+
     map.onload = () => {
       createFrames();
       createStamps();
-      enableDragAndDrop();
     };
 
     window.addEventListener("resize", () => {
-      // 視窗縮放時重建紅框，確保不位移
       document.querySelectorAll(".frame").forEach(f => f.remove());
       createFrames();
     });
