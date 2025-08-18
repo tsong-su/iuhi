@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>郵票配對遊戲</title>
@@ -7,63 +7,86 @@
     body {
       margin: 0;
       padding: 0;
+      background: #f9f9f9;
+      font-family: "Arial", sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      background: #f0f0f0;
-      overflow: hidden;
-      font-family: "Microsoft JhengHei", sans-serif;
+      height: 100vh;
     }
+
     header {
-      width: 100%;
-      padding: 12px;
-      background: #333;
-      color: #fff;
+      text-align: center;
+      padding: 15px;
+      background: #fff;
       font-size: 28px;
       font-weight: bold;
-      text-align: center;
     }
-    #home-link {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      color: #fff;
+
+    header a {
+      font-size: 22px;
+      margin-left: 20px;
+      color: #0077cc;
       text-decoration: none;
-      font-size: 20px;
     }
+
     #map-container {
       position: relative;
       flex: 1;
-      width: 100%;
-      max-height: calc(100vh - 70px);
       display: flex;
       justify-content: center;
       align-items: center;
+      background: #000;
       overflow: hidden;
     }
+
     #map {
-      max-width: 100%;
-      max-height: 100%;
-      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* 預設：桌機完整顯示 */
     }
-    .slot {
+
+    @media (max-width: 768px) {
+      #map {
+        object-fit: cover; /* 手機：填滿螢幕 */
+      }
+    }
+
+    .target {
       position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 10%;  /* 與郵票比例一致 */
+      aspect-ratio: 1 / 1;
       border: 3px dashed red;
       box-sizing: border-box;
       pointer-events: none;
     }
+
     .stamp {
       position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 10%;
+      aspect-ratio: 1 / 1;
       cursor: grab;
       z-index: 10;
     }
+
+    #controls {
+      text-align: center;
+      padding: 10px;
+      background: #fff;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #0077cc;
+      color: #fff;
+      cursor: pointer;
+    }
+
     #victory-message {
       position: absolute;
-      top: 50%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 48px;
@@ -71,161 +94,149 @@
       color: green;
       display: none;
     }
-    #controls {
-      margin: 10px;
-    }
-    #controls button {
-      font-size: 20px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
   <header>
-    <a id="home-link" href="index.html">🏠 回到遊戲首頁</a>
     郵票配對遊戲
+    <a href="index.html">回到遊戲首頁</a>
   </header>
+
   <div id="map-container">
     <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-    <div id="victory-message">有夠 gâu 🎉</div>
-  </div>
-  <div id="controls">
-    <button onclick="scatterStamps()">🔄 重排郵票</button>
+    <div id="victory-message">有夠 gâu！</div>
   </div>
 
-  <audio id="success-sound" src="game4_assets/success.mp3"></audio>
-  <audio id="error-sound" src="game4_assets/error.mp3"></audio>
-  <audio id="victory-sound" src="game4_assets/victory.mp3"></audio>
+  <div id="controls">
+    <button onclick="shuffleStamps()">🔄 重排郵票</button>
+  </div>
 
   <script>
     const basePositions = [
-      {x: 0.9953, y: 0.1551},
-      {x: 0.7589, y: 0.0012},
-      {x: 0.5749, y: 0.0249},
-      {x: 0.3782, y: 0.1872},
-      {x: 0.1291, y: 0.1264},
-      {x: 0.115,  y: 0.3242},
-      {x: 0.0077, y: 0.5255},
-      {x: 0.0435, y: 0.9668},
-      {x: 0.2479, y: 0.9922},
-      {x: 0.4791, y: 0.9043},
-      {x: 0.7372, y: 0.4916},
-      {x: 0.9173, y: 0.4409}
+      {"x":0.9953,"y":0.1551},
+      {"x":0.7589,"y":0.0012},
+      {"x":0.5749,"y":0.0249},
+      {"x":0.3782,"y":0.1872},
+      {"x":0.1291,"y":0.1264},
+      {"x":0.115,"y":0.3242},
+      {"x":0.0077,"y":0.5255},
+      {"x":0.0435,"y":0.9668},
+      {"x":0.2479,"y":0.9922},
+      {"x":0.4791,"y":0.9043},
+      {"x":0.7372,"y":0.4916},
+      {"x":0.9173,"y":0.4409}
     ];
 
-    const map = document.getElementById('map');
-    const mapContainer = document.getElementById('map-container');
-    const victoryMessage = document.getElementById('victory-message');
-    const successSound = document.getElementById('success-sound');
-    const errorSound = document.getElementById('error-sound');
-    const victorySound = document.getElementById('victory-sound');
+    const mapContainer = document.getElementById("map-container");
+    const victoryMsg = document.getElementById("victory-message");
+    const victorySound = new Audio("game4_assets/victory.mp3");
 
-    let slots = [];
     let stamps = [];
-    let matchedCount = 0;
 
-    function createSlots() {
-      slots.forEach(s => s.remove());
-      slots = [];
-
-      const rect = map.getBoundingClientRect();
-      const mapW = rect.width;
-      const mapH = rect.height;
-      const mapX = rect.left;
-      const mapY = rect.top;
-
+    function createTargets() {
       basePositions.forEach((pos, i) => {
-        const slot = document.createElement('div');
-        slot.className = 'slot';
-        slot.style.left = (mapX + pos.x * mapW - 40) + 'px';
-        slot.style.top = (mapY + pos.y * mapH - 40) + 'px';
-        slot.dataset.index = i;
-        document.body.appendChild(slot);
-        slots.push(slot);
+        const div = document.createElement("div");
+        div.className = "target";
+        div.dataset.index = i;
+        mapContainer.appendChild(div);
+      });
+      updateTargetPositions();
+    }
+
+    function updateTargetPositions() {
+      const containerW = mapContainer.clientWidth;
+      const containerH = mapContainer.clientHeight;
+      document.querySelectorAll(".target").forEach((div, i) => {
+        const {x, y} = basePositions[i];
+        div.style.left = (x * containerW - div.offsetWidth / 2) + "px";
+        div.style.top = (y * containerH - div.offsetHeight / 2) + "px";
       });
     }
 
-    function scatterStamps() {
+    function createStamps() {
       stamps.forEach(s => s.remove());
       stamps = [];
-
-      const containerRect = mapContainer.getBoundingClientRect();
-      const margin = 100;
-
       basePositions.forEach((pos, i) => {
-        const stamp = document.createElement('img');
-        stamp.src = `game4_assets/stamp${i+1}.png`;
-        stamp.className = 'stamp';
-        stamp.dataset.index = i;
+        const img = document.createElement("img");
+        img.src = `game4_assets/stamp${i+1}.png`;
+        img.className = "stamp";
+        img.draggable = true;
+        img.dataset.index = i;
+        mapContainer.appendChild(img);
+        stamps.push(img);
+      });
+      shuffleStamps();
+    }
 
+    function shuffleStamps() {
+      const containerW = mapContainer.clientWidth;
+      const containerH = mapContainer.clientHeight;
+      stamps.forEach(stamp => {
         let left, top;
         do {
-          left = containerRect.left + margin + Math.random() * (containerRect.width - 200);
-          top = containerRect.top + margin + Math.random() * (containerRect.height - 200);
-        } while (
-          slots.some(slot => {
-            const sRect = slot.getBoundingClientRect();
-            return !(left + 80 < sRect.left || left > sRect.right || top + 80 < sRect.top || top > sRect.bottom);
-          })
-        );
-
-        stamp.style.left = left + 'px';
-        stamp.style.top = top + 'px';
-
-        makeDraggable(stamp);
-        document.body.appendChild(stamp);
-        stamps.push(stamp);
+          left = Math.random() * (containerW - stamp.offsetWidth);
+          top = Math.random() * (containerH - stamp.offsetHeight);
+        } while (left > containerW*0.25 && left < containerW*0.75 && top > containerH*0.25 && top < containerH*0.75);
+        stamp.style.left = left + "px";
+        stamp.style.top = top + "px";
       });
     }
 
-    function makeDraggable(stamp) {
-      let offsetX, offsetY;
+    function initDragDrop() {
+      let dragged = null;
 
-      stamp.onmousedown = (e) => {
-        offsetX = e.clientX - stamp.offsetLeft;
-        offsetY = e.clientY - stamp.offsetTop;
-        document.onmousemove = (e) => {
-          stamp.style.left = (e.clientX - offsetX) + 'px';
-          stamp.style.top = (e.clientY - offsetY) + 'px';
-        };
-        document.onmouseup = () => {
-          document.onmousemove = null;
-          checkDrop(stamp);
-        };
-      };
-    }
-
-    function checkDrop(stamp) {
-      const sRect = stamp.getBoundingClientRect();
-      const slot = slots.find(slot => {
-        const rect = slot.getBoundingClientRect();
-        return !(sRect.right < rect.left || sRect.left > rect.right || sRect.bottom < rect.top || sRect.top > rect.bottom);
+      stamps.forEach(stamp => {
+        stamp.addEventListener("dragstart", e => {
+          dragged = stamp;
+        });
+        stamp.addEventListener("dragend", e => {
+          dragged = null;
+        });
       });
 
-      if (slot && slot.dataset.index === stamp.dataset.index) {
-        stamp.style.left = slot.style.left;
-        stamp.style.top = slot.style.top;
-        stamp.onmousedown = null;
-        successSound.play();
-        matchedCount++;
-        if (matchedCount === basePositions.length) {
-          victoryMessage.style.display = 'block';
-          victorySound.play();
+      mapContainer.addEventListener("dragover", e => {
+        e.preventDefault();
+      });
+
+      mapContainer.addEventListener("drop", e => {
+        if (!dragged) return;
+        const rect = mapContainer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const idx = dragged.dataset.index;
+        const target = document.querySelector(`.target[data-index='${idx}']`);
+        const tRect = target.getBoundingClientRect();
+        const within = x >= tRect.left - rect.left &&
+                       x <= tRect.right - rect.left &&
+                       y >= tRect.top - rect.top &&
+                       y <= tRect.bottom - rect.top;
+
+        if (within) {
+          dragged.style.left = (parseFloat(target.style.left)) + "px";
+          dragged.style.top = (parseFloat(target.style.top)) + "px";
+          dragged.draggable = false;
+          dragged.style.opacity = 0.7;
         }
-      } else {
-        errorSound.play();
+        checkWin();
+      });
+    }
+
+    function checkWin() {
+      if (stamps.every(s => !s.draggable)) {
+        victoryMsg.style.display = "block";
+        victorySound.play();
       }
     }
 
-    window.addEventListener('resize', () => {
-      createSlots();
+    window.addEventListener("resize", () => {
+      updateTargetPositions();
     });
 
-    map.onload = () => {
-      createSlots();
-      scatterStamps();
+    window.onload = () => {
+      createTargets();
+      createStamps();
+      initDragDrop();
     };
   </script>
 </body>
