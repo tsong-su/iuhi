@@ -50,7 +50,7 @@
     }
     .stamp {
       position: absolute;
-      width: 6vw; /* 郵票與紅框一致 */
+      width: 6vw;
       height: auto;
       cursor: grab;
       z-index: 5;
@@ -91,16 +91,17 @@
     const container = document.getElementById("game-container");
     const correctSound = document.getElementById("correct-sound");
     const wrongSound = document.getElementById("wrong-sound");
-    const stampSize = 6; // vw，與 .stamp 相同
+    const stampSizeVW = 6;
 
     function createFrames() {
+      const rect = map.getBoundingClientRect();
       basePositions.forEach((pos, i) => {
         const frame = document.createElement("div");
         frame.className = "frame";
-        frame.style.width = stampSize + "vw";
-        frame.style.height = stampSize + "vw";
-        frame.style.left = (pos.x * map.clientWidth + map.offsetLeft) + "px";
-        frame.style.top  = (pos.y * map.clientHeight + map.offsetTop) + "px";
+        frame.style.width = stampSizeVW + "vw";
+        frame.style.height = stampSizeVW + "vw";
+        frame.style.left = (rect.left + pos.x * rect.width) + "px";
+        frame.style.top  = (rect.top  + pos.y * rect.height) + "px";
         frame.dataset.index = i;
         container.appendChild(frame);
       });
@@ -122,17 +123,12 @@
       const stamps = document.querySelectorAll(".stamp");
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
+      const stampWidth = containerWidth * stampSizeVW / 100;
+      const stampHeight = stampWidth; // 假設正方形
 
       stamps.forEach(stamp => {
-        // 讓郵票分佈在右側或下方空白區
-        let x, y;
-        if (Math.random() > 0.5) { // 右側
-          x = map.offsetLeft + map.clientWidth + Math.random() * (containerWidth - map.clientWidth - 100);
-          y = 50 + Math.random() * (containerHeight - 150);
-        } else { // 下方
-          x = 50 + Math.random() * (containerWidth - 150);
-          y = map.offsetTop + map.clientHeight + Math.random() * (containerHeight - map.clientHeight - 100);
-        }
+        let x = Math.random() * (containerWidth - stampWidth);
+        let y = Math.random() * (containerHeight - stampHeight);
         stamp.style.left = x + "px";
         stamp.style.top  = y + "px";
       });
@@ -155,6 +151,7 @@
             frame.style.border = "3px solid green";
             dragged.style.left = frame.style.left;
             dragged.style.top  = frame.style.top;
+            dragged.draggable = false; // 吸附後不可再拖曳
             correctSound.currentTime = 0;
             correctSound.play();
           } else {
@@ -170,6 +167,12 @@
       createStamps();
       enableDragAndDrop();
     };
+
+    window.addEventListener("resize", () => {
+      // 視窗縮放時重建紅框，確保不位移
+      document.querySelectorAll(".frame").forEach(f => f.remove());
+      createFrames();
+    });
   </script>
 </body>
 </html>
