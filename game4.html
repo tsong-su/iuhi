@@ -12,8 +12,7 @@
     #game-container {
       position: relative;
       display: inline-block;
-      width: 90%; /* 地圖大小限制在畫面寬度 */
-      max-width: 1000px;
+      max-width: 100%;
     }
     #map {
       width: 100%;
@@ -32,9 +31,7 @@
       width: 80px;
       height: 80px;
       border: 3px dashed red;
-      background-color: rgba(255,255,255,0.3);
       pointer-events: none;
-      z-index: 5;
     }
     #success {
       position: absolute;
@@ -45,7 +42,6 @@
       font-weight: bold;
       color: red;
       display: none;
-      z-index: 20;
     }
     #home-btn {
       margin-top: 20px;
@@ -59,6 +55,27 @@
     #home-btn:hover {
       background-color: #0056b3;
     }
+    .marker {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+    }
+    #coords-btn {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 18px;
+      border-radius: 6px;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+    #coords-btn:hover {
+      background-color: #1e7e34;
+    }
   </style>
 </head>
 <body>
@@ -68,37 +85,74 @@
     <div id="success">有夠gâu！</div>
   </div>
   <br>
+  <button id="coords-btn">輸出 basePositions 陣列</button>
+  <br>
   <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
 
   <script>
     const container = document.getElementById("game-container");
     const map = document.getElementById("map");
     const success = document.getElementById("success");
+    const coordsBtn = document.getElementById("coords-btn");
 
-    // === 新基準大小 ===
-    const baseWidth = 1284;
-    const baseHeight = 970;
+    let clickedCoords = []; // 👉 儲存點過的座標
 
-    // 答案位置 (需依新圖調整座標！這裡先放大致範例)
+    // 👉 比例座標偵測器：點圖片時會跳出比例座標 + 畫紅點 + 存到清單
+    map.addEventListener("click", e => {
+      const rect = map.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+
+      alert(`比例座標 x:${x.toFixed(2)}, y:${y.toFixed(2)}`);
+
+      // 在點擊位置畫紅點
+      const marker = document.createElement("div");
+      marker.className = "marker";
+      marker.style.left = (x * map.width) + "px";
+      marker.style.top = (y * map.height) + "px";
+      container.appendChild(marker);
+
+      // 存入清單
+      clickedCoords.push({x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2))});
+    });
+
+    // 👉 按下按鈕輸出 basePositions 陣列
+    coordsBtn.addEventListener("click", () => {
+      if (clickedCoords.length === 0) {
+        alert("尚未點擊任何座標！");
+        return;
+      }
+      let list = "const basePositions = [\n";
+      clickedCoords.forEach((c, i) => {
+        list += `  {x:${c.x}, y:${c.y}}${i < clickedCoords.length - 1 ? "," : ""}\n`;
+      });
+      list += "];";
+      alert(list);
+      console.log("👉 複製以下陣列：\n" + list);
+    });
+
+    // 預設假資料（等你用比例座標取代）
     const basePositions = [
-      {x:200,y:250},{x:350,y:280},{x:500,y:220},
-      {x:650,y:400},{x:800,y:500},{x:950,y:320},
-      {x:1100,y:600},{x:1200,y:300},{x:1150,y:480},
-      {x:400,y:650},{x:700,y:750},{x:1000,y:820}
+      {x:0.20,y:0.30},{x:0.40,y:0.35},{x:0.60,y:0.28},
+      {x:0.80,y:0.50},{x:1.00,y:0.60},{x:0.70,y:0.40},
+      {x:0.30,y:0.70},{x:0.50,y:0.80},{x:0.90,y:0.20},
+      {x:0.60,y:0.70},{x:0.80,y:0.80},{x:0.40,y:0.90}
     ];
 
     let stampsPlaced = 0;
 
     map.onload = () => {
       const answerPositions = basePositions.map(p => ({
-        x: p.x, y: p.y
+        x: p.x * map.width,
+        y: p.y * map.height
       }));
 
       answerPositions.forEach((pos, i) => {
         // 建立格子
         const slot = document.createElement("div");
         slot.className = "slot";
-        slot.dataset.index = i;
+        slot.style.left = (pos.x - 40) + "px";
+        slot.style.top = (pos.y - 40) + "px";
         container.appendChild(slot);
 
         // 建立郵票
@@ -106,48 +160,29 @@
         stamp.src = `game4_assets/stamp${i+1}.jpg`;
         stamp.className = "stamp";
         stamp.dataset.index = i;
+
+        // 隨機散開郵票（避免重疊）
+        let randX, randY, overlap;
+        do {
+          randX = Math.random() * (map.width - 100);
+          randY = Math.random() * (map.height - 100);
+          overlap = [...document.querySelectorAll(".stamp")].some(s => {
+            const dx = parseInt(s.style.left) - randX;
+            const dy = parseInt(s.style.top) - randY;
+            return Math.sqrt(dx*dx + dy*dy) < 100;
+          });
+        } while (overlap);
+
+        stamp.style.left = randX + "px";
+        stamp.style.top = randY + "px";
         container.appendChild(stamp);
+
+        // 加入拖曳功能
+        dragElement(stamp, pos, i);
       });
 
-      // 調整位置（依照圖片實際大小縮放）
-      function positionElements() {
-        const rect = map.getBoundingClientRect();
-        const scaleX = rect.width / baseWidth;
-        const scaleY = rect.height / baseHeight;
-
-        document.querySelectorAll(".slot").forEach((slot, i) => {
-          const pos = basePositions[i];
-          slot.style.left = (pos.x * scaleX - 40) + "px";
-          slot.style.top = (pos.y * scaleY - 40) + "px";
-        });
-
-        // 隨機散落郵票，避免重疊
-        const stamps = document.querySelectorAll(".stamp");
-        const placed = [];
-        stamps.forEach((stamp, i) => {
-          let randX, randY, overlap;
-          const rect = map.getBoundingClientRect();
-          do {
-            randX = Math.random() * (rect.width - 100);
-            randY = Math.random() * (rect.height - 100);
-            overlap = placed.some(p => 
-              Math.abs(p.x - randX) < 90 && Math.abs(p.y - randY) < 90
-            );
-          } while(overlap);
-          placed.push({x: randX, y: randY});
-          stamp.style.left = randX + "px";
-          stamp.style.top = randY + "px";
-
-          // 加入拖曳
-          dragElement(stamp, basePositions[i], i, scaleX, scaleY);
-        });
-      }
-
-      window.addEventListener("resize", positionElements);
-      positionElements();
-
-      function dragElement(elmnt, correctPos, index, scaleX, scaleY) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0;
+      function dragElement(elmnt, correctPos, index) {
+        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
 
         elmnt.onmousedown = dragMouseDown;
 
@@ -155,6 +190,8 @@
           e.preventDefault();
           mouseX = e.clientX;
           mouseY = e.clientY;
+          originalX = elmnt.offsetLeft;
+          originalY = elmnt.offsetTop;
           document.onmouseup = closeDragElement;
           document.onmousemove = elementDrag;
         }
@@ -171,24 +208,16 @@
         function closeDragElement() {
           document.onmouseup = null;
           document.onmousemove = null;
-
-          const rect = map.getBoundingClientRect();
-          const scaleX = rect.width / baseWidth;
-          const scaleY = rect.height / baseHeight;
-
           const stampX = elmnt.offsetLeft + 40;
           const stampY = elmnt.offsetTop + 40;
 
-          const correctX = correctPos.x * scaleX;
-          const correctY = correctPos.y * scaleY;
-
-          const dx = stampX - correctX;
-          const dy = stampY - correctY;
+          const dx = stampX - correctPos.x;
+          const dy = stampY - correctPos.y;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 40){
-            elmnt.style.left = (correctX-40)+"px";
-            elmnt.style.top = (correctY-40)+"px";
+          if(dist < 30){
+            elmnt.style.left = (correctPos.x-40)+"px";
+            elmnt.style.top = (correctPos.y-40)+"px";
             elmnt.onmousedown = null;
             playSound(`game4_assets/stamp${index+1}.mp3`);
             stampsPlaced++;
@@ -196,6 +225,8 @@
               showSuccess();
             }
           }else{
+            elmnt.style.left = originalX+"px";
+            elmnt.style.top = originalY+"px";
             playSound("game4_assets/wrong.mp3");
           }
         }
@@ -208,6 +239,7 @@
 
       function showSuccess(){
         success.style.display = "block";
+        success.style.fontSize = "20px";
         let size = 20;
         const interval = setInterval(()=>{
           size += 5;
