@@ -10,6 +10,7 @@
       background-color: #f0f0f0;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
     }
     h1 {
       font-size: 2.5em;
@@ -19,12 +20,12 @@
     #game-container {
       position: relative;
       display: inline-block;
-      width: 100%;
-      max-width: 1284px; /* 限制在地圖原始寬度 */
+      width: 100vw;
+      overflow: hidden;
     }
     #map {
-      width: 100%;
-      height: auto;
+      width: 100vw;   /* 滿版寬度 */
+      height: auto;   /* 保持比例 */
       display: block;
     }
     .stamp {
@@ -38,7 +39,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 3px dashed red; /* 加粗紅色方框 */
+      border: 3px dashed red;
       pointer-events: none;
     }
     #success {
@@ -80,7 +81,7 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // ✅ 您提供的比例座標
+    // ✅ 比例座標
     const basePositions = [
       { "x": 0.9953, "y": 0.1551 },
       { "x": 0.7589, "y": 0.0012 },
@@ -97,116 +98,132 @@
     ];
 
     let stampsPlaced = 0;
+    let answerPositions = [];
 
-    map.onload = () => {
-      const mapWidth = map.width;
-      const mapHeight = map.height;
+    // ✅ 初始化位置
+    function updatePositions() {
+      const rect = map.getBoundingClientRect();
+      const mapWidth = rect.width;
+      const mapHeight = rect.height;
 
-      // ✅ 計算實際位置
-      const answerPositions = basePositions.map(p => ({
+      answerPositions = basePositions.map(p => ({
         x: p.x * mapWidth,
         y: p.y * mapHeight
       }));
 
+      document.querySelectorAll(".slot").forEach((slot, i) => {
+        slot.style.left = (answerPositions[i].x - 40) + "px";
+        slot.style.top = (answerPositions[i].y - 40) + "px";
+      });
+    }
+
+    map.onload = () => {
+      updatePositions();
+
+      // 建立 slot 與 stamp
       answerPositions.forEach((pos, i) => {
-        // 建立紅框 slot
         const slot = document.createElement("div");
         slot.className = "slot";
-        slot.style.left = (pos.x - 40) + "px";
-        slot.style.top = (pos.y - 40) + "px";
         container.appendChild(slot);
 
-        // 建立郵票
         const stamp = document.createElement("img");
         stamp.src = `game4_assets/stamp${i+1}.jpg`;
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // ✅ 隨機生成在地圖四周「外圍」
+        // ✅ 郵票放在地圖外圍
+        const rect = map.getBoundingClientRect();
+        const mapWidth = rect.width;
+        const mapHeight = rect.height;
         const side = Math.floor(Math.random()*4);
         let randX, randY;
-        if(side===0){ randX = Math.random()*mapWidth; randY = -120; } // 上方
-        if(side===1){ randX = mapWidth + 50; randY = Math.random()*mapHeight; } // 右側
-        if(side===2){ randX = Math.random()*mapWidth; randY = mapHeight + 50; } // 下方
-        if(side===3){ randX = -120; randY = Math.random()*mapHeight; } // 左側
+        if(side===0){ randX = Math.random()*mapWidth; randY = -120; }
+        if(side===1){ randX = mapWidth + 50; randY = Math.random()*mapHeight; }
+        if(side===2){ randX = Math.random()*mapWidth; randY = mapHeight + 50; }
+        if(side===3){ randX = -120; randY = Math.random()*mapHeight; }
 
         stamp.style.left = randX + "px";
         stamp.style.top = randY + "px";
         container.appendChild(stamp);
 
-        // 拖曳功能
-        dragElement(stamp, pos, i);
+        dragElement(stamp, i);
       });
 
-      function dragElement(elmnt, correctPos, index) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+      updatePositions();
+    };
 
-        elmnt.onmousedown = dragMouseDown;
+    // 視窗大小改變時，重新計算座標
+    window.addEventListener("resize", updatePositions);
 
-        function dragMouseDown(e) {
-          e.preventDefault();
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-          originalX = elmnt.offsetLeft;
-          originalY = elmnt.offsetTop;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
+    function dragElement(elmnt, index) {
+      let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
 
-        function elementDrag(e) {
-          offsetX = e.clientX - mouseX;
-          offsetY = e.clientY - mouseY;
-          elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
-          elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-        }
+      elmnt.onmousedown = dragMouseDown;
 
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-          const stampX = elmnt.offsetLeft + 40;
-          const stampY = elmnt.offsetTop + 40;
+      function dragMouseDown(e) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        originalX = elmnt.offsetLeft;
+        originalY = elmnt.offsetTop;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
 
-          const dx = stampX - correctPos.x;
-          const dy = stampY - correctPos.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
+      function elementDrag(e) {
+        offsetX = e.clientX - mouseX;
+        offsetY = e.clientY - mouseY;
+        elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
+        elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      }
 
-          if(dist < 30){
-            elmnt.style.left = (correctPos.x-40)+"px";
-            elmnt.style.top = (correctPos.y-40)+"px";
-            elmnt.onmousedown = null;
-            playSound(`game4_assets/stamp${index+1}.mp3`);
-            stampsPlaced++;
-            if(stampsPlaced===basePositions.length){
-              showSuccess();
-            }
-          }else{
-            elmnt.style.left = originalX+"px";
-            elmnt.style.top = originalY+"px";
-            playSound("game4_assets/wrong.mp3");
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+
+        const correctPos = answerPositions[index];
+        const stampX = elmnt.offsetLeft + 40;
+        const stampY = elmnt.offsetTop + 40;
+
+        const dx = stampX - correctPos.x;
+        const dy = stampY - correctPos.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 30){
+          elmnt.style.left = (correctPos.x-40)+"px";
+          elmnt.style.top = (correctPos.y-40)+"px";
+          elmnt.onmousedown = null;
+          playSound(`game4_assets/stamp${index+1}.mp3`);
+          stampsPlaced++;
+          if(stampsPlaced===basePositions.length){
+            showSuccess();
           }
+        }else{
+          elmnt.style.left = originalX+"px";
+          elmnt.style.top = originalY+"px";
+          playSound("game4_assets/wrong.mp3");
         }
       }
+    }
 
-      function playSound(src){
-        const audio = new Audio(src);
-        audio.play();
-      }
+    function playSound(src){
+      const audio = new Audio(src);
+      audio.play();
+    }
 
-      function showSuccess(){
-        success.style.display = "block";
-        success.style.fontSize = "20px";
-        let size = 20;
-        const interval = setInterval(()=>{
-          size += 5;
-          success.style.fontSize = size+"px";
-          if(size>=100){ clearInterval(interval); }
-        }, 200);
+    function showSuccess(){
+      success.style.display = "block";
+      success.style.fontSize = "20px";
+      let size = 20;
+      const interval = setInterval(()=>{
+        size += 5;
+        success.style.fontSize = size+"px";
+        if(size>=100){ clearInterval(interval); }
+      }, 200);
 
-        // ✅ 播放勝利音效
-        playSound("game4_assets/victory.mp3");
-      }
+      playSound("game4_assets/victory.mp3");
     }
   </script>
 </body>
