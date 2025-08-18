@@ -44,7 +44,7 @@
     }
     .red-box {
       position: absolute;
-      border: 3px dashed red; /* 改成紅色虛線框 */
+      border: 3px dashed red;
       pointer-events: none;
       box-sizing: border-box;
     }
@@ -88,6 +88,7 @@
       {x:0.0077,y:0.5255},{x:0.0435,y:0.9668},{x:0.2479,y:0.9922},
       {x:0.4791,y:0.9043},{x:0.7372,y:0.4916},{x:0.9173,y:0.4409}
     ];
+
     const stamps = [];
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
@@ -101,7 +102,7 @@
     function createRedBoxes() {
       document.querySelectorAll(".red-box").forEach(e=>e.remove());
       const mapRect = map.getBoundingClientRect();
-      const boxSize = mapRect.width * 0.08; // 紅框大小 = 郵票大小
+      const boxSize = mapRect.width * 0.10; // 10% 地圖寬度
       basePositions.forEach(pos=>{
         const box = document.createElement("div");
         box.className="red-box";
@@ -113,10 +114,8 @@
     }
 
     function createStamps() {
-      stamps.forEach(s=>s.remove());
-      stamps.length=0;
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.08; // 郵票大小
+      const size = mapRect.width * 0.10; // 郵票大小 = 10%
       for(let i=1;i<=12;i++){
         const img=document.createElement("img");
         img.src=`game4_assets/${i}.jpg`;
@@ -132,7 +131,7 @@
 
     function shuffleStamps(){
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.08;
+      const size = mapRect.width * 0.10;
       stamps.forEach(stamp=>{
         let x,y;
         do {
@@ -169,7 +168,7 @@
 
     function checkDrop(stamp){
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.08;
+      const size = mapRect.width * 0.10;
       const idx = parseInt(stamp.dataset.index);
       const targetX = mapRect.left + basePositions[idx].x*mapRect.width - size/2;
       const targetY = mapRect.top + basePositions[idx].y*mapRect.height - size/2;
@@ -195,7 +194,7 @@
 
     window.addEventListener("resize",()=>{
       createRedBoxes();
-      createStamps();
+      // 郵票只生成一次，不再重建，避免消失
     });
 
     map.onload=()=>{
