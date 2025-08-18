@@ -1,251 +1,65 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f9f9f9;
-      font-family: "Arial", sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+<style>
+  .target {
+    position: absolute;
+    width: 4.5%;   /* 紅框再縮小 */
+    aspect-ratio: 1 / 1;
+    border: 3px dashed red;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
 
-    header {
-      text-align: center;
-      padding: 15px;
-      background: #fff;
-      font-size: 28px;
-      font-weight: bold;
-    }
+  .stamp {
+    position: absolute;
+    width: 10%;   /* 郵票固定 10% */
+    aspect-ratio: 1 / 1;
+    cursor: grab;
+    z-index: 10;
+  }
+</style>
 
-    header a {
-      font-size: 22px;
-      margin-left: 20px;
-      color: #0077cc;
-      text-decoration: none;
-    }
+<script>
+  function createStamps() {
+    stamps.forEach(s => s.remove());
+    stamps = [];
 
-    #map-container {
-      position: relative;
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f9f9f9;
-      overflow: hidden;
-    }
+    basePositions.forEach((pos, i) => {
+      const img = document.createElement("img");
+      img.src = `game4_assets/stamp${i+1}.png`;   // ← 確認檔案是否存在
+      img.className = "stamp";
+      img.dataset.index = i;
+      img.draggable = true;
+      mapContainer.appendChild(img);
+      stamps.push(img);
 
-    #map {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      display: block;
-    }
+      // 不等 onload，直接隨機散落
+      shuffleStamp(img);
+    });
 
-    .target {
-      position: absolute;
-      width: 6%;   /* 紅框大小百分比 */
-      aspect-ratio: 1 / 1;
-      border: 3px dashed red;
-      box-sizing: border-box;
-      pointer-events: none;
-    }
+    initDragDrop();
+  }
 
-    .stamp {
-      position: absolute;
-      width: 10%;   /* 郵票大小百分比 */
-      aspect-ratio: 1 / 1;
-      cursor: grab;
-      z-index: 10;
-    }
+  function shuffleStamp(stamp) {
+    const mapW = map.clientWidth;
+    const mapH = map.clientHeight;
+    const offsetX = (mapContainer.clientWidth - mapW) / 2;
+    const offsetY = (mapContainer.clientHeight - mapH) / 2;
 
-    #controls {
-      text-align: center;
-      padding: 10px;
-      background: #fff;
-    }
+    let left, top;
+    let tries = 0;
 
-    button {
-      font-size: 20px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      background: #0077cc;
-      color: #fff;
-      cursor: pointer;
-    }
+    do {
+      left = offsetX + Math.random() * (mapW - mapW * 0.1);
+      top  = offsetY + Math.random() * (mapH - mapH * 0.1);
+      tries++;
+    } while (
+      left > offsetX + mapW*0.25 &&
+      left < offsetX + mapW*0.75 &&
+      top  > offsetY + mapH*0.25 &&
+      top  < offsetY + mapH*0.75 &&
+      tries < 50
+    );
 
-    #victory-message {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 48px;
-      font-weight: bold;
-      color: green;
-      display: none;
-      z-index: 20;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    臺灣北部地圖&注音符號郵票配對遊戲
-    <a href="index.html">回到遊戲首頁</a>
-  </header>
-
-  <div id="map-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-    <div id="victory-message">有夠 gâu！</div>
-  </div>
-
-  <div id="controls">
-    <button onclick="shuffleStamps()">🔄 重排郵票</button>
-  </div>
-
-  <script>
-    const basePositions = [
-      {"x":0.9953,"y":0.1551},
-      {"x":0.7589,"y":0.0012},
-      {"x":0.5749,"y":0.0249},
-      {"x":0.3782,"y":0.1872},
-      {"x":0.1291,"y":0.1264},
-      {"x":0.115,"y":0.3242},
-      {"x":0.0077,"y":0.5255},
-      {"x":0.0435,"y":0.9668},
-      {"x":0.2479,"y":0.9922},
-      {"x":0.4791,"y":0.9043},
-      {"x":0.7372,"y":0.4916},
-      {"x":0.9173,"y":0.4409}
-    ];
-
-    const map = document.getElementById("map");
-    const mapContainer = document.getElementById("map-container");
-    const victoryMsg = document.getElementById("victory-message");
-    const victorySound = new Audio("game4_assets/victory.mp3");
-
-    let stamps = [];
-
-    map.onload = () => {
-      createTargets();
-      createStamps();
-      updateTargetPositions();
-    };
-
-    function createTargets() {
-      basePositions.forEach((pos, i) => {
-        const div = document.createElement("div");
-        div.className = "target";
-        div.dataset.index = i;
-        mapContainer.appendChild(div);
-      });
-    }
-
-    function updateTargetPositions() {
-      const mapW = map.clientWidth;
-      const mapH = map.clientHeight;
-      const offsetX = (mapContainer.clientWidth - mapW) / 2;
-      const offsetY = (mapContainer.clientHeight - mapH) / 2;
-
-      document.querySelectorAll(".target").forEach((div, i) => {
-        const {x, y} = basePositions[i];
-        const size = div.clientWidth;
-        div.style.left = (offsetX + x * mapW - size/2) + "px";
-        div.style.top  = (offsetY + y * mapH - size/2) + "px";
-      });
-    }
-
-    function createStamps() {
-      stamps.forEach(s => s.remove());
-      stamps = [];
-      basePositions.forEach((pos, i) => {
-        const img = document.createElement("img");
-        img.src = `game4_assets/stamp${i+1}.png`;
-        img.className = "stamp";
-        img.dataset.index = i;
-        img.draggable = true;
-        mapContainer.appendChild(img);
-        stamps.push(img);
-
-        img.onload = () => {
-          shuffleStamp(img);
-        };
-      });
-      initDragDrop();
-    }
-
-    function shuffleStamps() {
-      stamps.forEach(stamp => shuffleStamp(stamp));
-    }
-
-    function shuffleStamp(stamp) {
-      const mapW = map.clientWidth;
-      const mapH = map.clientHeight;
-      const offsetX = (mapContainer.clientWidth - mapW) / 2;
-      const offsetY = (mapContainer.clientHeight - mapH) / 2;
-
-      // 隨機放在地圖外圍（避免壓到紅框）
-      let left, top;
-      do {
-        left = offsetX + Math.random() * (mapW - stamp.clientWidth);
-        top  = offsetY + Math.random() * (mapH - stamp.clientHeight);
-      } while (
-        left > offsetX + mapW*0.3 &&
-        left < offsetX + mapW*0.7 &&
-        top  > offsetY + mapH*0.3 &&
-        top  < offsetY + mapH*0.7
-      );
-      stamp.style.left = left + "px";
-      stamp.style.top = top + "px";
-    }
-
-    function initDragDrop() {
-      let dragged = null;
-
-      stamps.forEach(stamp => {
-        stamp.addEventListener("dragstart", e => {
-          dragged = stamp;
-        });
-        stamp.addEventListener("dragend", e => {
-          dragged = null;
-        });
-      });
-
-      mapContainer.addEventListener("dragover", e => {
-        e.preventDefault();
-      });
-
-      mapContainer.addEventListener("drop", e => {
-        if (!dragged) return;
-        const idx = dragged.dataset.index;
-        const target = document.querySelector(`.target[data-index='${idx}']`);
-        const tRect = target.getBoundingClientRect();
-
-        if (e.clientX >= tRect.left &&
-            e.clientX <= tRect.right &&
-            e.clientY >= tRect.top &&
-            e.clientY <= tRect.bottom) {
-          dragged.style.left = target.style.left;
-          dragged.style.top = target.style.top;
-          dragged.draggable = false;
-          dragged.style.opacity = 0.7;
-        }
-        checkWin();
-      });
-    }
-
-    function checkWin() {
-      if (stamps.every(s => !s.draggable)) {
-        victoryMsg.style.display = "block";
-        victorySound.play();
-      }
-    }
-
-    window.addEventListener("resize", updateTargetPositions);
-  </script>
-</body>
-</html>
+    stamp.style.left = left + "px";
+    stamp.style.top = top + "px";
+  }
+</script>
