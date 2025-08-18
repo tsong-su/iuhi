@@ -29,7 +29,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed rgba(0,0,0,0.4);
+      border: 2px dashed rgba(0,0,0,0.6);
       pointer-events: none;
     }
     #success {
@@ -70,9 +70,7 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 答案座標（原圖基準大小）
-    const baseWidth = 2000;
-    const baseHeight = 1600;
+    // 答案座標（依原始圖片大小）
     const basePositions = [
       {x:200,y:300},{x:400,y:350},{x:600,y:280},
       {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
@@ -83,13 +81,16 @@
     let stampsPlaced = 0;
 
     map.onload = () => {
-      const scaleX = map.width / baseWidth;
-      const scaleY = map.height / baseHeight;
+      const scaleX = map.width / map.naturalWidth;
+      const scaleY = map.height / map.naturalHeight;
 
       const answerPositions = basePositions.map(p => ({
         x: p.x * scaleX,
         y: p.y * scaleY
       }));
+
+      // 已經放置的郵票位置，避免重疊
+      const placedStamps = [];
 
       answerPositions.forEach((pos, i) => {
         // 建立小虛線框
@@ -105,25 +106,22 @@
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // 隨機位置分散在地圖四個象限
-        const region = i % 4; 
-        let randX, randY;
-        if(region===0){ // 左上
-          randX = Math.random()*(map.width/2 - 100);
-          randY = Math.random()*(map.height/2 - 100);
+        // 隨機位置（避免重疊）
+        let randX, randY, valid=false;
+        while(!valid){
+          randX = Math.random()*(map.width-100);
+          randY = Math.random()*(map.height-100);
+          valid = true;
+          for(const p of placedStamps){
+            const dx = randX - p.x;
+            const dy = randY - p.y;
+            if(Math.sqrt(dx*dx + dy*dy) < 100){ // 間隔至少100px
+              valid = false;
+              break;
+            }
+          }
         }
-        if(region===1){ // 右上
-          randX = map.width/2 + Math.random()*(map.width/2 - 100);
-          randY = Math.random()*(map.height/2 - 100);
-        }
-        if(region===2){ // 左下
-          randX = Math.random()*(map.width/2 - 100);
-          randY = map.height/2 + Math.random()*(map.height/2 - 100);
-        }
-        if(region===3){ // 右下
-          randX = map.width/2 + Math.random()*(map.width/2 - 100);
-          randY = map.height/2 + Math.random()*(map.height/2 - 100);
-        }
+        placedStamps.push({x:randX,y:randY});
 
         stamp.style.left = randX + "px";
         stamp.style.top = randY + "px";
