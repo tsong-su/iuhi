@@ -12,9 +12,10 @@
     #game-container {
       position: relative;
       display: inline-block;
+      max-width: 100%;
     }
     #map {
-      max-width: 100%;
+      width: 100%;
       height: auto;
       display: block;
     }
@@ -29,7 +30,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed red;
+      border: 2px dashed red; /* 紅色虛線框更明顯 */
       pointer-events: none;
     }
     #success {
@@ -54,47 +55,47 @@
     #home-btn:hover {
       background-color: #0056b3;
     }
-    #coords {
+    #coords-output {
       margin-top: 20px;
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 10px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
+      white-space: pre-wrap;
       text-align: left;
-      white-space: pre;
-      font-family: monospace;
+      display: inline-block;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-width: 90%;
     }
   </style>
 </head>
 <body>
   <h1>臺灣北部地區郵票配對遊戲</h1>
   <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png">
+    <!-- 圖片直接用 GitHub raw 連結 -->
+    <img id="map" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/north2_map.png">
     <div id="success">有夠gâu！</div>
   </div>
   <br>
   <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
 
-  <h2>📌 點擊地圖以記錄座標</h2>
-  <div id="coords">// 點擊地圖後，這裡會生成 basePositions 陣列</div>
+  <h3>已點選的座標（basePositions 陣列可直接複製回程式）</h3>
+  <pre id="coords-output">[]</pre>
 
   <script>
+    const container = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const coordsDiv = document.getElementById("coords");
-    let coords = [];
+    const success = document.getElementById("success");
+    const coordsOutput = document.getElementById("coords-output");
 
+    // 存放比例座標
+    const clickedCoords = [];
+
+    // 點擊地圖 → 取得比例座標
     map.addEventListener("click", e => {
       const rect = map.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
-      coords.push({x: Number(x.toFixed(3)), y: Number(y.toFixed(3))});
-
-      coordsDiv.textContent =
-        "const basePositions = [\n" +
-        coords.map(c => `  {x:${c.x}, y:${c.y}}`).join(",\n") +
-        "\n];";
+      clickedCoords.push({x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2))});
+      coordsOutput.textContent = "const basePositions = " + JSON.stringify(clickedCoords, null, 2) + ";";
     });
   </script>
 </body>
