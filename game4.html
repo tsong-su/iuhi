@@ -28,18 +28,18 @@
       max-width: 70%;
       max-height: 70%;
       object-fit: contain;
+      display: block;
     }
     .target {
       position: absolute;
       border: 3px dashed red;
       width: 6%;
-      height: 6%;
+      height: 6%;  /* 保持正方形 */
       box-sizing: border-box;
-      pointer-events: none;
     }
     .stamp {
       position: absolute;
-      width: 7%;
+      width: 6.5%; /* 比紅框稍大 */
       height: auto;
       cursor: grab;
       z-index: 10;
@@ -107,6 +107,7 @@
 
     const stampsContainer = document.getElementById('stamps');
     const targetsContainer = document.getElementById('targets');
+    const map = document.getElementById('map');
     const correctSound = document.getElementById('correctSound');
     const wrongSound = document.getElementById('wrongSound');
     const victorySound = document.getElementById('victorySound');
@@ -118,13 +119,16 @@
       targetsContainer.innerHTML = "";
       stampsContainer.innerHTML = "";
 
-      // 建立紅色虛線框
+      // 建立紅框，位置相對 map 大小計算
       basePositions.forEach((pos, i) => {
         const target = document.createElement('div');
         target.className = "target";
-        target.style.left = (pos.x * 70) + "%";
-        target.style.top = (pos.y * 70) + "%";
         target.dataset.index = i;
+
+        // 綁定 dragover & drop
+        target.addEventListener("dragover", e => e.preventDefault());
+        target.addEventListener("drop", dropStamp);
+
         targetsContainer.appendChild(target);
       });
 
@@ -141,6 +145,17 @@
       }
 
       shuffleStamps();
+      updateTargetPositions();
+    }
+
+    function updateTargetPositions() {
+      const mapRect = map.getBoundingClientRect();
+      const targets = document.querySelectorAll(".target");
+
+      targets.forEach((target, i) => {
+        target.style.left = (mapRect.left + basePositions[i].x * mapRect.width - target.offsetWidth/2) + "px";
+        target.style.top  = (mapRect.top  + basePositions[i].y * mapRect.height - target.offsetHeight/2) + "px";
+      });
     }
 
     function shuffleStamps() {
@@ -161,20 +176,17 @@
       e.dataTransfer.setData("text/plain", e.target.dataset.index);
     }
 
-    targetsContainer.addEventListener("dragover", e => e.preventDefault());
-
-    targetsContainer.addEventListener("drop", e => {
-      e.preventDefault();
+    function dropStamp(e) {
       const stampIndex = e.dataTransfer.getData("text/plain");
       const targetIndex = e.target.dataset.index;
 
       if (stampIndex === targetIndex) {
         const stamp = document.querySelector(`.stamp[data-index='${stampIndex}']`);
-        const target = document.querySelector(`.target[data-index='${targetIndex}']`);
-        stamp.style.left = target.style.left;
-        stamp.style.top = target.style.top;
+        stamp.style.left = e.target.style.left;
+        stamp.style.top = e.target.style.top;
         stamp.draggable = false;
         placedCount++;
+
         correctSound.src = `game4_assets/correct${parseInt(stampIndex) + 1}.mp3`;
         correctSound.play();
 
@@ -185,7 +197,9 @@
       } else {
         wrongSound.play();
       }
-    });
+    }
+
+    window.addEventListener("resize", updateTargetPositions);
 
     createGame();
   </script>
