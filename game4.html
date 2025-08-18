@@ -9,6 +9,7 @@
       text-align: center;
       background-color: #f0f0f0;
       margin: 0;
+      overflow-x: hidden;
     }
     h1 {
       font-size: 40px;
@@ -17,7 +18,7 @@
     #game-container {
       position: relative;
       width: 100%;
-      max-width: 1284px; /* north2_map 原始寬度 */
+      max-width: 100vw;
       margin: auto;
     }
     #map {
@@ -27,18 +28,19 @@
     }
     .stamp {
       position: absolute;
-      width: 7vw;   /* 依視窗寬度調整，與地圖成比例 */
+      width: 10vw;   /* 郵票大小 10% */
       height: auto;
-      max-width: 120px; /* 避免過大 */
+      max-width: 150px;
       cursor: grab;
       z-index: 10;
     }
     .slot {
       position: absolute;
-      border: 3px dashed red; /* 粗紅框，更明顯 */
+      border: 4px dashed red; /* 加粗，更明顯 */
       pointer-events: none;
       transform: translate(-50%, -50%);
-      width: 6%;   /* 與郵票大小成比例 */
+      width: 10vw;   /* 與郵票一致 */
+      max-width: 150px;
       aspect-ratio: 1 / 1;
     }
     #success {
@@ -97,6 +99,7 @@
     ];
 
     let stampsPlaced = 0;
+    let usedPositions = []; // 防止郵票重疊
 
     map.onload = () => {
       const mapWidth = map.clientWidth;
@@ -121,22 +124,36 @@
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // 隨機放在地圖區域外圍（四周空白處）
-        const margin = 150; // 與地圖的間距
-        const side = Math.floor(Math.random()*4);
-        let randX, randY;
-        if(side===0){ randX = Math.random()*mapWidth; randY = -margin; }
-        if(side===1){ randX = mapWidth+margin; randY = Math.random()*mapHeight; }
-        if(side===2){ randX = Math.random()*mapWidth; randY = mapHeight+margin; }
-        if(side===3){ randX = -margin; randY = Math.random()*mapHeight; }
-
-        stamp.style.left = randX + "px";
-        stamp.style.top = randY + "px";
+        // 隨機放置在地圖外圍，避免重疊
+        const posStamp = getRandomNonOverlappingPosition(mapWidth, mapHeight, 160);
+        stamp.style.left = posStamp.x + "px";
+        stamp.style.top = posStamp.y + "px";
         container.appendChild(stamp);
 
         // 加入拖曳功能
         dragElement(stamp, pos, i);
       });
+
+      function getRandomNonOverlappingPosition(mapW, mapH, margin) {
+        let x, y, overlap;
+        const maxTries = 50;
+        let tries = 0;
+        do {
+          const side = Math.floor(Math.random()*4);
+          if(side===0){ x = Math.random()*mapW; y = -margin; }
+          if(side===1){ x = mapW+margin; y = Math.random()*mapH; }
+          if(side===2){ x = Math.random()*mapW; y = mapH+margin; }
+          if(side===3){ x = -margin; y = Math.random()*mapH; }
+
+          overlap = usedPositions.some(p =>
+            Math.abs(p.x - x) < 120 && Math.abs(p.y - y) < 120
+          );
+          tries++;
+        } while(overlap && tries < maxTries);
+
+        usedPositions.push({x,y});
+        return {x,y};
+      }
 
       function dragElement(elmnt, correctPos, index) {
         let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
@@ -173,7 +190,7 @@
           const dy = stampCenterY - correctPos.y;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 40){ // 成功放置
+          if(dist < 50){ // 成功放置
             elmnt.style.left = (correctPos.x - elmnt.offsetWidth/2)+"px";
             elmnt.style.top = (correctPos.y - elmnt.offsetHeight/2)+"px";
             elmnt.onmousedown = null;
@@ -205,7 +222,7 @@
           if(size>=100){ clearInterval(interval); }
         }, 200);
 
-        playSound("game4_assets/victory.mp3"); // 勝利音效
+        playSound("game4_assets/victory.mp3");
       }
     }
   </script>
