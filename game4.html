@@ -12,10 +12,9 @@
     #game-container {
       position: relative;
       display: inline-block;
-      max-width: 100%;
     }
     #map {
-      width: 100%;
+      max-width: 100%;
       height: auto;
       display: block;
     }
@@ -30,7 +29,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 3px dashed red;
+      border: 2px dashed red;
       pointer-events: none;
     }
     #success {
@@ -55,199 +54,48 @@
     #home-btn:hover {
       background-color: #0056b3;
     }
-    .marker {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: red;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 20;
-    }
-    #coords-btn {
-      margin-top: 15px;
-      padding: 8px 16px;
-      font-size: 18px;
-      border-radius: 6px;
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-    }
-    #coords-btn:hover {
-      background-color: #1e7e34;
+    #coords {
+      margin-top: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+      white-space: pre;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
   <h1>臺灣北部地區郵票配對遊戲</h1>
   <div id="game-container">
-    <img id="map" src="game4_assets/north1_map.png">
+    <img id="map" src="game4_assets/north2_map.png">
     <div id="success">有夠gâu！</div>
   </div>
   <br>
-  <button id="coords-btn">輸出 basePositions 陣列</button>
-  <br>
   <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
 
+  <h2>📌 點擊地圖以記錄座標</h2>
+  <div id="coords">// 點擊地圖後，這裡會生成 basePositions 陣列</div>
+
   <script>
-    const container = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const success = document.getElementById("success");
-    const coordsBtn = document.getElementById("coords-btn");
+    const coordsDiv = document.getElementById("coords");
+    let coords = [];
 
-    let clickedCoords = []; // 👉 儲存點過的座標
-
-    // 👉 比例座標偵測器：點圖片時會跳出比例座標 + 畫紅點 + 存到清單
     map.addEventListener("click", e => {
       const rect = map.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
+      coords.push({x: Number(x.toFixed(3)), y: Number(y.toFixed(3))});
 
-      alert(`比例座標 x:${x.toFixed(2)}, y:${y.toFixed(2)}`);
-
-      // 在點擊位置畫紅點
-      const marker = document.createElement("div");
-      marker.className = "marker";
-      marker.style.left = (x * map.width) + "px";
-      marker.style.top = (y * map.height) + "px";
-      container.appendChild(marker);
-
-      // 存入清單
-      clickedCoords.push({x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2))});
+      coordsDiv.textContent =
+        "const basePositions = [\n" +
+        coords.map(c => `  {x:${c.x}, y:${c.y}}`).join(",\n") +
+        "\n];";
     });
-
-    // 👉 按下按鈕輸出 basePositions 陣列
-    coordsBtn.addEventListener("click", () => {
-      if (clickedCoords.length === 0) {
-        alert("尚未點擊任何座標！");
-        return;
-      }
-      let list = "const basePositions = [\n";
-      clickedCoords.forEach((c, i) => {
-        list += `  {x:${c.x}, y:${c.y}}${i < clickedCoords.length - 1 ? "," : ""}\n`;
-      });
-      list += "];";
-      alert(list);
-      console.log("👉 複製以下陣列：\n" + list);
-    });
-
-    // 預設假資料（等你用比例座標取代）
-    const basePositions = [
-      {x:0.20,y:0.30},{x:0.40,y:0.35},{x:0.60,y:0.28},
-      {x:0.80,y:0.50},{x:1.00,y:0.60},{x:0.70,y:0.40},
-      {x:0.30,y:0.70},{x:0.50,y:0.80},{x:0.90,y:0.20},
-      {x:0.60,y:0.70},{x:0.80,y:0.80},{x:0.40,y:0.90}
-    ];
-
-    let stampsPlaced = 0;
-
-    map.onload = () => {
-      const answerPositions = basePositions.map(p => ({
-        x: p.x * map.width,
-        y: p.y * map.height
-      }));
-
-      answerPositions.forEach((pos, i) => {
-        // 建立格子
-        const slot = document.createElement("div");
-        slot.className = "slot";
-        slot.style.left = (pos.x - 40) + "px";
-        slot.style.top = (pos.y - 40) + "px";
-        container.appendChild(slot);
-
-        // 建立郵票
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.dataset.index = i;
-
-        // 隨機散開郵票（避免重疊）
-        let randX, randY, overlap;
-        do {
-          randX = Math.random() * (map.width - 100);
-          randY = Math.random() * (map.height - 100);
-          overlap = [...document.querySelectorAll(".stamp")].some(s => {
-            const dx = parseInt(s.style.left) - randX;
-            const dy = parseInt(s.style.top) - randY;
-            return Math.sqrt(dx*dx + dy*dy) < 100;
-          });
-        } while (overlap);
-
-        stamp.style.left = randX + "px";
-        stamp.style.top = randY + "px";
-        container.appendChild(stamp);
-
-        // 加入拖曳功能
-        dragElement(stamp, pos, i);
-      });
-
-      function dragElement(elmnt, correctPos, index) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
-
-        elmnt.onmousedown = dragMouseDown;
-
-        function dragMouseDown(e) {
-          e.preventDefault();
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-          originalX = elmnt.offsetLeft;
-          originalY = elmnt.offsetTop;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          offsetX = e.clientX - mouseX;
-          offsetY = e.clientY - mouseY;
-          elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
-          elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-          const stampX = elmnt.offsetLeft + 40;
-          const stampY = elmnt.offsetTop + 40;
-
-          const dx = stampX - correctPos.x;
-          const dy = stampY - correctPos.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-
-          if(dist < 30){
-            elmnt.style.left = (correctPos.x-40)+"px";
-            elmnt.style.top = (correctPos.y-40)+"px";
-            elmnt.onmousedown = null;
-            playSound(`game4_assets/stamp${index+1}.mp3`);
-            stampsPlaced++;
-            if(stampsPlaced===12){
-              showSuccess();
-            }
-          }else{
-            elmnt.style.left = originalX+"px";
-            elmnt.style.top = originalY+"px";
-            playSound("game4_assets/wrong.mp3");
-          }
-        }
-      }
-
-      function playSound(src){
-        const audio = new Audio(src);
-        audio.play();
-      }
-
-      function showSuccess(){
-        success.style.display = "block";
-        success.style.fontSize = "20px";
-        let size = 20;
-        const interval = setInterval(()=>{
-          size += 5;
-          success.style.fontSize = size+"px";
-          if(size>=100){ clearInterval(interval); }
-        }, 200);
-      }
-    }
   </script>
 </body>
 </html>
