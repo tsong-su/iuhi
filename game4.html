@@ -39,7 +39,7 @@
 
     .slot {
       position: absolute;
-      border: 3px dashed red;
+      border: 4px dashed red;
       box-sizing: border-box;
       pointer-events: none;
     }
@@ -113,6 +113,7 @@
     const slotsContainer = document.getElementById("slots");
     const map = document.getElementById("map");
     const message = document.getElementById("message");
+    const mapContainer = document.getElementById("map-container");
 
     let correctCount = 0;
 
@@ -120,11 +121,9 @@
       slotsContainer.innerHTML = "";
       stampsContainer.innerHTML = "";
 
-      const mapRect = map.getBoundingClientRect();
-      const mapWidth = mapRect.width;
-      const mapHeight = mapRect.height;
-
-      const slotSize = mapWidth * 0.1; // 郵票 = 地圖寬度的 10%
+      const mapWidth = map.clientWidth;
+      const mapHeight = map.clientHeight;
+      const slotSize = mapWidth * 0.1; // 郵票與紅框 = 地圖寬度的 10%
 
       basePositions.forEach((pos, index) => {
         // 建立格子
@@ -132,8 +131,8 @@
         slot.className = "slot";
         slot.style.width = slotSize + "px";
         slot.style.height = slotSize + "px";
-        slot.style.left = (mapRect.left + pos.x * mapWidth - slotSize/2) + "px";
-        slot.style.top  = (mapRect.top  + pos.y * mapHeight - slotSize/2) + "px";
+        slot.style.left = (pos.x * mapWidth - slotSize/2) + "px";
+        slot.style.top  = (pos.y * mapHeight - slotSize/2) + "px";
         slot.dataset.index = index;
         slotsContainer.appendChild(slot);
 
@@ -144,11 +143,20 @@
         stamp.style.width = slotSize + "px";
         stamp.dataset.index = index;
 
-        // 隨機放在地圖下方區域
-        const offsetX = Math.random() * (mapWidth - slotSize);
-        const offsetY = mapHeight + 30 + Math.random() * 100;
-        stamp.style.left = (mapRect.left + offsetX) + "px";
-        stamp.style.top = (mapRect.top + offsetY) + "px";
+        // 隨機散落：不覆蓋格子，放在地圖範圍內
+        let randX, randY;
+        let overlap;
+        do {
+          randX = Math.random() * (mapWidth - slotSize);
+          randY = Math.random() * (mapHeight - slotSize);
+          overlap = basePositions.some(p => 
+            Math.abs(randX - p.x*mapWidth) < slotSize &&
+            Math.abs(randY - p.y*mapHeight) < slotSize
+          );
+        } while (overlap);
+
+        stamp.style.left = randX + "px";
+        stamp.style.top = randY + "px";
 
         stampsContainer.appendChild(stamp);
 
@@ -165,8 +173,8 @@
         offsetY = e.clientY - stamp.getBoundingClientRect().top;
 
         document.onmousemove = (e) => {
-          stamp.style.left = (e.clientX - offsetX) + "px";
-          stamp.style.top  = (e.clientY - offsetY) + "px";
+          stamp.style.left = (e.clientX - offsetX - mapContainer.offsetLeft) + "px";
+          stamp.style.top  = (e.clientY - offsetY - mapContainer.offsetTop) + "px";
         };
 
         document.onmouseup = (e) => {
@@ -187,10 +195,10 @@
 
       if (Math.abs(stampRect.left - slotRect.left) < slotSize/2 &&
           Math.abs(stampRect.top - slotRect.top) < slotSize/2) {
-        // 正確放置
-        stamp.style.left = slotRect.left + "px";
-        stamp.style.top  = slotRect.top + "px";
-        new Audio(`game4_assets/stamp${stamp.dataset.index*1+1}.mp3`).play();
+        // 正確
+        stamp.style.left = slot.style.left;
+        stamp.style.top  = slot.style.top;
+        new Audio(`game4_assets/stamp${Number(stamp.dataset.index)+1}.mp3`).play();
         stamp.onmousedown = null;
         correctCount++;
 
