@@ -7,6 +7,7 @@
     body {
       font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
+      margin: 0;
       background-color: #f0f0f0;
     }
     #game-container {
@@ -30,8 +31,9 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed red; /* 紅色虛線框更明顯 */
+      border: 2px dashed red;
       pointer-events: none;
+      z-index: 5;
     }
     #success {
       position: absolute;
@@ -42,6 +44,7 @@
       font-weight: bold;
       color: red;
       display: none;
+      z-index: 20;
     }
     #home-btn {
       margin-top: 20px;
@@ -56,29 +59,30 @@
       background-color: #0056b3;
     }
     #coords-output {
-      margin-top: 20px;
+      margin-top: 10px;
+      font-size: 14px;
       white-space: pre-wrap;
-      text-align: left;
-      display: inline-block;
       background: #fff;
-      padding: 10px;
       border: 1px solid #ccc;
+      padding: 10px;
       max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
 <body>
   <h1>臺灣北部地區郵票配對遊戲</h1>
   <div id="game-container">
-    <!-- 圖片直接用 GitHub raw 連結 -->
+    <!-- 用 raw.githubusercontent 連結確保圖片能載入 -->
     <img id="map" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/north2_map.png">
     <div id="success">有夠gâu！</div>
   </div>
   <br>
   <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
 
-  <h3>已點選的座標（basePositions 陣列可直接複製回程式）</h3>
-  <pre id="coords-output">[]</pre>
+  <!-- 輸出座標陣列 -->
+  <div id="coords-output"></div>
 
   <script>
     const container = document.getElementById("game-container");
@@ -86,16 +90,134 @@
     const success = document.getElementById("success");
     const coordsOutput = document.getElementById("coords-output");
 
-    // 存放比例座標
-    const clickedCoords = [];
+    // ✅ 原圖尺寸 (north2_map.png)
+    const baseWidth = 1284;
+    const baseHeight = 970;
 
-    // 點擊地圖 → 取得比例座標
-    map.addEventListener("click", e => {
+    // 預設 basePositions (先隨便放，之後可用座標偵測器覆蓋)
+    let basePositions = [
+      {x:0.2, y:0.3},{x:0.4, y:0.35},{x:0.6, y:0.28},
+      {x:0.8, y:0.5},{x:0.7, y:0.65},{x:0.55, y:0.75}
+    ];
+
+    let stampsPlaced = 0;
+
+    map.onload = () => {
+      renderGame();
+    };
+
+    function renderGame(){
+      const answerPositions = basePositions.map(p => ({
+        x: p.x * map.clientWidth,
+        y: p.y * map.clientHeight
+      }));
+
+      answerPositions.forEach((pos, i) => {
+        // 加入格子
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.style.left = (pos.x - 40) + "px";
+        slot.style.top = (pos.y - 40) + "px";
+        container.appendChild(slot);
+
+        // 加入郵票
+        const stamp = document.createElement("img");
+        stamp.src = `game4_assets/stamp${i+1}.jpg`;
+        stamp.className = "stamp";
+        stamp.dataset.index = i;
+
+        // 隨機初始位置（四周）
+        const padding = 120;
+        const side = Math.floor(Math.random()*4);
+        let randX, randY;
+        if(side===0){ randX = Math.random()*map.clientWidth; randY = -padding; }
+        if(side===1){ randX = map.clientWidth+padding; randY = Math.random()*map.clientHeight; }
+        if(side===2){ randX = Math.random()*map.clientWidth; randY = map.clientHeight+padding; }
+        if(side===3){ randX = -padding; randY = Math.random()*map.clientHeight; }
+
+        stamp.style.left = randX + "px";
+        stamp.style.top = randY + "px";
+        container.appendChild(stamp);
+
+        dragElement(stamp, pos, i);
+      });
+    }
+
+    function dragElement(elmnt, correctPos, index) {
+      let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        originalX = elmnt.offsetLeft;
+        originalY = elmnt.offsetTop;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        offsetX = e.clientX - mouseX;
+        offsetY = e.clientY - mouseY;
+        elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
+        elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        const stampX = elmnt.offsetLeft + 40;
+        const stampY = elmnt.offsetTop + 40;
+
+        const dx = stampX - correctPos.x;
+        const dy = stampY - correctPos.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 30){
+          elmnt.style.left = (correctPos.x-40)+"px";
+          elmnt.style.top = (correctPos.y-40)+"px";
+          elmnt.onmousedown = null;
+          playSound(`game4_assets/stamp${index+1}.mp3`);
+          stampsPlaced++;
+          if(stampsPlaced===basePositions.length){
+            showSuccess();
+          }
+        }else{
+          elmnt.style.left = originalX+"px";
+          elmnt.style.top = originalY+"px";
+          playSound("game4_assets/wrong.mp3");
+        }
+      }
+    }
+
+    function playSound(src){
+      const audio = new Audio(src);
+      audio.play();
+    }
+
+    function showSuccess(){
+      success.style.display = "block";
+      success.style.fontSize = "20px";
+      let size = 20;
+      const interval = setInterval(()=>{
+        size += 5;
+        success.style.fontSize = size+"px";
+        if(size>=100){ clearInterval(interval); }
+      }, 200);
+    }
+
+    // ✅ 內建比例座標偵測器
+    map.addEventListener("click", e=>{
       const rect = map.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
-      clickedCoords.push({x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2))});
-      coordsOutput.textContent = "const basePositions = " + JSON.stringify(clickedCoords, null, 2) + ";";
+      basePositions.push({x:parseFloat(x.toFixed(3)), y:parseFloat(y.toFixed(3))});
+      coordsOutput.textContent = 
+        "const basePositions = " + JSON.stringify(basePositions, null, 2) + ";";
     });
   </script>
 </body>
