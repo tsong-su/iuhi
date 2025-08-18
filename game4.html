@@ -8,20 +8,18 @@
       font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
       background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
     }
     #game-container {
       position: relative;
       display: inline-block;
-      overflow: hidden; /* 假裁切：避免顯示外部空白 */
-      width: 1360px;    /* 1760 - 左右各200 */
-      height: 1015px;   /* 1415 - 上下各200 */
+      width: 100%;
+      max-width: 1000px; /* 預設最大寬度 */
     }
     #map {
-      position: absolute;
-      top: -200px; /* 往上移，隱藏上邊空白 */
-      left: -200px; /* 往左移，隱藏左邊空白 */
-      width: 1760px;
-      height: 1415px;
+      width: 100%;
+      height: auto;
       display: block;
     }
     .stamp {
@@ -35,7 +33,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed rgba(0,0,0,0.6);
+      border: 2px dashed rgba(0,0,0,0.3);
       pointer-events: none;
     }
     #success {
@@ -47,6 +45,7 @@
       font-weight: bold;
       color: red;
       display: none;
+      z-index: 50;
     }
     #home-btn {
       margin-top: 20px;
@@ -56,6 +55,7 @@
       background-color: #007bff;
       color: white;
       text-decoration: none;
+      display: inline-block;
     }
     #home-btn:hover {
       background-color: #0056b3;
@@ -76,34 +76,47 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 原始座標（針對1760x1415的大圖，含空白）
+    // north_map.png 原圖大小
     const baseWidth = 1760;
     const baseHeight = 1415;
-    const offsetX = 200; // 假設左右各200px空白
-    const offsetY = 200; // 假設上下各200px空白
 
+    // 答案座標 (請根據實際圖修正)
     const basePositions = [
       {x:200,y:300},{x:400,y:350},{x:600,y:280},
       {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
-      {x:1400,y:700},{x:1600,y:300},{x:1800,y:500},
+      {x:1400,y:700},{x:1600,y:300},{x:1700,y:500},
       {x:600,y:800},{x:900,y:900},{x:1500,y:1000}
     ];
 
     let stampsPlaced = 0;
+    let stamps = [];
 
+    // 當地圖載入完成
     map.onload = () => {
-      const scaleX = (container.clientWidth) / (baseWidth - 2*offsetX);
-      const scaleY = (container.clientHeight) / (baseHeight - 2*offsetY);
+      initGame();
+      window.addEventListener("resize", resizeGame);
+    };
 
-      const answerPositions = basePositions.map(p => ({
-        x: (p.x - offsetX) * scaleX,
-        y: (p.y - offsetY) * scaleY
-      }));
+    function initGame() {
+      stampsPlaced = 0;
+      stamps = [];
 
-      // 紀錄已用的隨機位置，避免重疊
-      const usedPositions = [];
+      // 清掉舊元素
+      document.querySelectorAll(".slot, .stamp").forEach(el => el.remove());
 
-      answerPositions.forEach((pos, i) => {
+      resizeGame();
+    }
+
+    function resizeGame() {
+      const scaleX = map.clientWidth / baseWidth;
+      const scaleY = map.clientHeight / baseHeight;
+
+      // 清掉舊的格子
+      document.querySelectorAll(".slot").forEach(el => el.remove());
+
+      basePositions.forEach((p, i) => {
+        const pos = { x: p.x * scaleX, y: p.y * scaleY };
+
         // 建立格子
         const slot = document.createElement("div");
         slot.className = "slot";
@@ -111,104 +124,112 @@
         slot.style.top = (pos.y - 40) + "px";
         container.appendChild(slot);
 
-        // 建立郵票
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.dataset.index = i;
-
-        // 隨機分散（四區），且避免重疊
-        let randX, randY, valid = false, attempts = 0;
-        while(!valid && attempts < 1000){
-          attempts++;
-          const side = Math.floor(Math.random()*4);
-          if(side===0){ randX = Math.random()*container.clientWidth; randY = -100; }
-          if(side===1){ randX = container.clientWidth+50; randY = Math.random()*container.clientHeight; }
-          if(side===2){ randX = Math.random()*container.clientWidth; randY = container.clientHeight+50; }
-          if(side===3){ randX = -100; randY = Math.random()*container.clientHeight; }
-
-          valid = true;
-          for(let p of usedPositions){
-            const dx = randX - p.x;
-            const dy = randY - p.y;
-            if(Math.sqrt(dx*dx+dy*dy) < 120){ valid = false; break; }
-          }
+        // 如果第一次才建立郵票
+        if (!stamps[i]) {
+          const stamp = document.createElement("img");
+          stamp.src = `game4_assets/stamp${i+1}.jpg`;
+          stamp.className = "stamp";
+          stamp.dataset.index = i;
+          container.appendChild(stamp);
+          stamps[i] = { el: stamp, correct: pos };
+          dragElement(stamp, pos, i);
+        } else {
+          stamps[i].correct = pos;
         }
-        usedPositions.push({x:randX,y:randY});
-        stamp.style.left = randX + "px";
-        stamp.style.top = randY + "px";
-        container.appendChild(stamp);
-
-        // 加入拖曳
-        dragElement(stamp, pos, i);
       });
 
-      function dragElement(elmnt, correctPos, index) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+      scatterStamps(); // 每次縮放重新分散
+    }
 
-        elmnt.onmousedown = dragMouseDown;
-
-        function dragMouseDown(e) {
-          e.preventDefault();
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-          originalX = elmnt.offsetLeft;
-          originalY = elmnt.offsetTop;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          offsetX = e.clientX - mouseX;
-          offsetY = e.clientY - mouseY;
-          elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
-          elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-          const stampX = elmnt.offsetLeft + 40;
-          const stampY = elmnt.offsetTop + 40;
-
-          const dx = stampX - correctPos.x;
-          const dy = stampY - correctPos.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-
-          if(dist < 30){
-            elmnt.style.left = (correctPos.x-40)+"px";
-            elmnt.style.top = (correctPos.y-40)+"px";
-            elmnt.onmousedown = null;
-            playSound(`game4_assets/stamp${index+1}.mp3`);
-            stampsPlaced++;
-            if(stampsPlaced===12){
-              showSuccess();
+    // 郵票隨機分散（避免重疊）
+    function scatterStamps() {
+      const usedPositions = [];
+      stamps.forEach((s, i) => {
+        let randX, randY, valid = false;
+        while (!valid) {
+          randX = Math.random() * (map.clientWidth - 100);
+          randY = Math.random() * (map.clientHeight - 100);
+          valid = true;
+          for (let pos of usedPositions) {
+            const dx = randX - pos.x;
+            const dy = randY - pos.y;
+            if (Math.sqrt(dx*dx + dy*dy) < 120) {
+              valid = false;
+              break;
             }
-          }else{
-            elmnt.style.left = originalX+"px";
-            elmnt.style.top = originalY+"px";
-            playSound("game4_assets/wrong.mp3");
           }
         }
+        usedPositions.push({x: randX, y: randY});
+        s.el.style.left = randX + "px";
+        s.el.style.top = randY + "px";
+      });
+    }
+
+    // 拖曳功能
+    function dragElement(elmnt, correctPos, index) {
+      let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+
+      elmnt.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        originalX = elmnt.offsetLeft;
+        originalY = elmnt.offsetTop;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
       }
 
-      function playSound(src){
-        const audio = new Audio(src);
-        audio.play();
+      function elementDrag(e) {
+        offsetX = e.clientX - mouseX;
+        offsetY = e.clientY - mouseY;
+        elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
+        elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
+        mouseX = e.clientX;
+        mouseY = e.clientY;
       }
 
-      function showSuccess(){
-        success.style.display = "block";
-        success.style.fontSize = "20px";
-        let size = 20;
-        const interval = setInterval(()=>{
-          size += 5;
-          success.style.fontSize = size+"px";
-          if(size>=100){ clearInterval(interval); }
-        }, 200);
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        const stampX = elmnt.offsetLeft + 40;
+        const stampY = elmnt.offsetTop + 40;
+        const dx = stampX - stamps[index].correct.x;
+        const dy = stampY - stamps[index].correct.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if(dist < 30){
+          elmnt.style.left = (stamps[index].correct.x-40)+"px";
+          elmnt.style.top = (stamps[index].correct.y-40)+"px";
+          elmnt.onmousedown = null;
+          playSound(`game4_assets/stamp${index+1}.mp3`);
+          stampsPlaced++;
+          if(stampsPlaced===stamps.length){
+            showSuccess();
+          }
+        }else{
+          elmnt.style.left = originalX+"px";
+          elmnt.style.top = originalY+"px";
+          playSound("game4_assets/wrong.mp3");
+        }
       }
+    }
+
+    function playSound(src){
+      const audio = new Audio(src);
+      audio.play();
+    }
+
+    function showSuccess(){
+      success.style.display = "block";
+      success.style.fontSize = "20px";
+      let size = 20;
+      const interval = setInterval(()=>{
+        size += 5;
+        success.style.fontSize = size+"px";
+        if(size>=100){ clearInterval(interval); }
+      }, 200);
     }
   </script>
 </body>
