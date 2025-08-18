@@ -29,7 +29,7 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed rgba(0,0,0,0.2);
+      border: 2px dashed rgba(0,0,0,0.4);
       pointer-events: none;
     }
     #success {
@@ -70,7 +70,7 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 答案座標（假設原圖是 2000px 大小，這裡是大約估算的點）
+    // 答案座標（原圖基準大小）
     const baseWidth = 2000;
     const baseHeight = 1600;
     const basePositions = [
@@ -82,7 +82,6 @@
 
     let stampsPlaced = 0;
 
-    // 載入郵票與空格
     map.onload = () => {
       const scaleX = map.width / baseWidth;
       const scaleY = map.height / baseHeight;
@@ -93,35 +92,47 @@
       }));
 
       answerPositions.forEach((pos, i) => {
-        // 建立格子
+        // 建立小虛線框
         const slot = document.createElement("div");
         slot.className = "slot";
         slot.style.left = (pos.x - 40) + "px";
         slot.style.top = (pos.y - 40) + "px";
         container.appendChild(slot);
 
-        // 建立郵票（隨機放在地圖四周）
+        // 建立郵票
         const stamp = document.createElement("img");
         stamp.src = `game4_assets/stamp${i+1}.jpg`;
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // 隨機初始位置（四周）
-        const side = Math.floor(Math.random()*4);
+        // 隨機位置分散在地圖四個象限
+        const region = i % 4; 
         let randX, randY;
-        if(side===0){ randX = Math.random()*map.width; randY = -100; }
-        if(side===1){ randX = map.width+50; randY = Math.random()*map.height; }
-        if(side===2){ randX = Math.random()*map.width; randY = map.height+50; }
-        if(side===3){ randX = -100; randY = Math.random()*map.height; }
+        if(region===0){ // 左上
+          randX = Math.random()*(map.width/2 - 100);
+          randY = Math.random()*(map.height/2 - 100);
+        }
+        if(region===1){ // 右上
+          randX = map.width/2 + Math.random()*(map.width/2 - 100);
+          randY = Math.random()*(map.height/2 - 100);
+        }
+        if(region===2){ // 左下
+          randX = Math.random()*(map.width/2 - 100);
+          randY = map.height/2 + Math.random()*(map.height/2 - 100);
+        }
+        if(region===3){ // 右下
+          randX = map.width/2 + Math.random()*(map.width/2 - 100);
+          randY = map.height/2 + Math.random()*(map.height/2 - 100);
+        }
 
         stamp.style.left = randX + "px";
         stamp.style.top = randY + "px";
         container.appendChild(stamp);
 
-        // 加入拖曳
         dragElement(stamp, pos, i);
       });
 
+      // 拖曳功能
       function dragElement(elmnt, correctPos, index) {
         let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
 
@@ -156,13 +167,13 @@
           const dy = stampY - correctPos.y;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 30){
+          if(dist < 40){ // 容錯範圍
             elmnt.style.left = (correctPos.x-40)+"px";
             elmnt.style.top = (correctPos.y-40)+"px";
             elmnt.onmousedown = null;
             playSound(`game4_assets/stamp${index+1}.mp3`);
             stampsPlaced++;
-            if(stampsPlaced===12){
+            if(stampsPlaced===answerPositions.length){
               showSuccess();
             }
           }else{
