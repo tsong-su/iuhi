@@ -1,210 +1,563 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>臺灣北部地區郵票配對遊戲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
+    :root{
+      --slot-size: 80px;          /* 郵票與格子的邊長 */
+      --slot-radius: 8px;
+      --snap-radius: 30px;        /* 吸附半徑（中心點距離） */
+    }
+    * { box-sizing: border-box; }
+    html, body {
       margin: 0;
-      padding: 0;
+      height: 100%;
+      background: #f0f0f0;
+      font-family: "Microsoft JhengHei", system-ui, -apple-system, Segoe UI, Roboto, "PingFang TC", "Noto Sans TC", Arial, sans-serif;
     }
-    #game-container {
+
+    /* 版面：上方標題列 + 中間遊戲場 + 下方工具列/輸出 */
+    header {
+      padding: 10px 16px;
+      text-align: center;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    #board {
       position: relative;
-      display: inline-block;
-      width: 100%;
-      max-width: 100%;
+      width: 100vw;
+      height: calc(100vh - 190px); /* 預留下方工具區高度（可依需求微調） */
+      overflow: hidden;
+      background: #fafafa;
     }
+
+    /* 讓地圖「整張塞進視窗」：不超過可視寬高，維持比例 */
     #map {
+      position: absolute;
+      inset: 0;
+      margin: auto;
       max-width: 100%;
+      max-height: 100%;
+      width: auto;
       height: auto;
       display: block;
-      margin: 0 auto;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: auto;
+      z-index: 1;
     }
-    .stamp {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      cursor: grab;
-      z-index: 10;
-    }
+
     .slot {
       position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 2px dashed red;
+      width: var(--slot-size);
+      height: var(--slot-size);
+      border: 4px dashed red;   /* 加粗紅色虛線框 */
+      border-radius: var(--slot-radius);
       pointer-events: none;
-      z-index: 5;
+      z-index: 3;
+      opacity: 0.95;
+      background: rgba(255,0,0,0.03);
     }
+
+    .stamp {
+      position: absolute;
+      width: var(--slot-size);
+      height: var(--slot-size);
+      border-radius: var(--slot-radius);
+      cursor: grab;
+      z-index: 4;
+      user-select: none;
+      -webkit-user-drag: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      background: #fff;
+    }
+
+    .detect-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: red;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      pointer-events: none;
+      box-shadow: 0 0 0 3px rgba(255,0,0,0.25);
+    }
+
     #success {
       position: absolute;
-      top: 40%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 20px;
-      font-weight: bold;
-      color: red;
-      display: none;
-      z-index: 20;
-    }
-    #home-btn {
-      margin-top: 20px;
-      padding: 12px 24px;
+      top: 50%;
+      transform: translate(-50%,-50%);
       font-size: 22px;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
+      font-weight: 800;
+      color: #e11d48;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 14px;
+      border-radius: 10px;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
     }
-    #home-btn:hover {
-      background-color: #0056b3;
+
+    /* 工具列 */
+    #toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-top: 1px solid #e5e5e5;
+      background: #fff;
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      background: #2563eb;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(37,99,235,0.25);
+    }
+    .btn:hover { background: #1d4ed8; }
+    .btn.secondary {
+      background: #64748b;
+      box-shadow: 0 6px 14px rgba(100,116,139,0.25);
+    }
+    .btn.secondary:hover { background: #475569; }
+    a.btn { text-decoration: none; display: inline-block; }
+
+    /* 即時座標輸出區 */
+    #coordsPanel {
+      background: #fff;
+      border-top: 1px solid #e5e5e5;
+      padding: 10px 14px 16px;
+    }
+    #coordsTitle {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    #coordsOutput {
+      margin: 0;
+      padding: 10px;
+      background: #0a0a0a;
+      color: #d1fae5;
+      border-radius: 8px;
+      max-width: 1200px;
+      margin-inline: auto;
+      overflow: auto;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      min-height: 60px;
+    }
+
+    /* 小螢幕調整 */
+    @media (max-width: 640px){
+      header h1 { font-size: 18px; }
+      #board { height: calc(100vh - 220px); }
+      :root{ --slot-size: 70px; }
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區郵票配對遊戲</h1>
-  <div id="game-container">
-    <img id="map" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/north2_map.png">
-    <div id="success">有夠gâu！</div>
-  </div>
-  <br>
-  <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
+  <header>
+    <h1>臺灣北部地區郵票配對遊戲</h1>
+  </header>
+
+  <main id="board">
+    <!-- 建議使用本地檔案路徑；若在 GitHub Pages 測試，也可改成 raw URL -->
+    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
+    <div id="success">有夠 gâu！</div>
+  </main>
+
+  <section id="toolbar">
+    <a class="btn secondary" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
+    <button id="detectBtn" class="btn">座標偵測模式</button>
+    <button id="copyBtn" class="btn" style="display:none;">複製座標陣列</button>
+    <button id="resetBtn" class="btn secondary">重置郵票</button>
+  </section>
+
+  <section id="coordsPanel">
+    <p id="coordsTitle">偵測模式輸出（即時）：</p>
+    <pre id="coordsOutput">const basePositions = [];</pre>
+  </section>
 
   <script>
-    const container = document.getElementById("game-container");
-    const map = document.getElementById("map");
-    const success = document.getElementById("success");
+    // ====== 基本參數 ======
+    const ORIG_W = 1284;   // north2_map.png 原始寬
+    const ORIG_H = 970;    // north2_map.png 原始高
+    const SLOT_SIZE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slot-size'), 10) || 80;
+    const SNAP_R = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--snap-radius'), 10) || 30;
 
-    // 原圖大小
-    const baseWidth = 1284;
-    const baseHeight = 970;
+    const board = document.getElementById('board');
+    const map   = document.getElementById('map');
+    const successEl = document.getElementById('success');
 
-    // 基準座標 (之後可換成你量的比例)
-    const basePositions = [
-      {x:200,y:300},{x:400,y:350},{x:600,y:280},
-      {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
-      {x:1100,y:700},{x:900,y:300},{x:600,y:500},
-      {x:300,y:800},{x:700,y:900},{x:1200,y:800}
-    ];
+    const detectBtn = document.getElementById('detectBtn');
+    const copyBtn   = document.getElementById('copyBtn');
+    const resetBtn  = document.getElementById('resetBtn');
+    const coordsOutput = document.getElementById('coordsOutput');
+
+    // ====== 目標點（比例座標，0~1）======
+    // 先空陣列；請用偵測模式點選後，按「複製座標陣列」貼回來
+    let basePositions = [];
+
+    // 郵票數量將以 basePositions 長度為準；若你固定要 12 張，可自行調整
+    const stampImgs = i => `game4_assets/stamp${i+1}.jpg`;
+    const stampAud  = i => `game4_assets/stamp${i+1}.mp3`;
+    const wrongAud  = `game4_assets/wrong.mp3`;
 
     let stampsPlaced = 0;
+    let detectMode = false;
+    let detected = [];
+    let dotNodes = [];
+    let dragged; // 目前拖曳中的元素
 
-    // 畫面載入後建立遊戲
-    map.onload = () => {
-      initGame();
-      window.addEventListener("resize", () => {
-        resetGame();
-      });
-    };
-
-    function resetGame(){
-      document.querySelectorAll(".slot, .stamp").forEach(el=>el.remove());
-      stampsPlaced = 0;
-      initGame();
+    // ====== 工具：取得 map 與 board 的相對位置（用於準確對齊）======
+    function getRects() {
+      const imgRect = map.getBoundingClientRect();
+      const boardRect = board.getBoundingClientRect();
+      return {
+        imgRect,
+        boardRect,
+        // image 相對於 board 左上角的偏移
+        offsetX: imgRect.left - boardRect.left,
+        offsetY: imgRect.top  - boardRect.top
+      };
     }
 
-    function initGame(){
-      const scaleX = map.clientWidth / baseWidth;
-      const scaleY = map.clientHeight / baseHeight;
+    // ====== 建立或重繪格子與（必要時）重對齊已就位的郵票 ======
+    function drawSlotsAndRealign() {
+      // 清除舊 slot
+      document.querySelectorAll('.slot').forEach(n => n.remove());
 
-      const answerPositions = basePositions.map(p => ({
-        x: p.x * scaleX,
-        y: p.y * scaleY
-      }));
+      const { imgRect, offsetX, offsetY } = getRects();
 
-      answerPositions.forEach((pos, i) => {
-        // 建立紅色虛線框
-        const slot = document.createElement("div");
-        slot.className = "slot";
-        slot.style.left = (pos.x - 40) + "px";
-        slot.style.top = (pos.y - 40) + "px";
-        container.appendChild(slot);
+      basePositions.forEach((p, i) => {
+        const px = p.x * imgRect.width;
+        const py = p.y * imgRect.height;
 
-        // 建立郵票
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.dataset.index = i;
+        // 建立格子（中心對齊 px/py）
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.style.left = (offsetX + px - SLOT_SIZE/2) + 'px';
+        slot.style.top  = (offsetY + py - SLOT_SIZE/2) + 'px';
+        board.appendChild(slot);
 
-        // 隨機分散位置（避免重疊）
-        const randX = Math.random() * (map.clientWidth - 100);
-        const randY = Math.random() * (map.clientHeight - 100);
-        stamp.style.left = randX + "px";
-        stamp.style.top = randY + "px";
-        container.appendChild(stamp);
-
-        dragElement(stamp, pos, i);
-      });
-    }
-
-    function dragElement(elmnt, correctPos, index) {
-      let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
-
-      elmnt.onmousedown = dragMouseDown;
-
-      function dragMouseDown(e) {
-        e.preventDefault();
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        originalX = elmnt.offsetLeft;
-        originalY = elmnt.offsetTop;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-      }
-
-      function elementDrag(e) {
-        offsetX = e.clientX - mouseX;
-        offsetY = e.clientY - mouseY;
-        elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
-        elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      }
-
-      function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        const stampX = elmnt.offsetLeft + 40;
-        const stampY = elmnt.offsetTop + 40;
-
-        const dx = stampX - correctPos.x;
-        const dy = stampY - correctPos.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-
-        if(dist < 30){
-          elmnt.style.left = (correctPos.x-40)+"px";
-          elmnt.style.top = (correctPos.y-40)+"px";
-          elmnt.onmousedown = null;
-          playSound(`game4_assets/stamp${index+1}.mp3`);
-          stampsPlaced++;
-          if(stampsPlaced===basePositions.length){
-            showSuccess();
-          }
-        }else{
-          elmnt.style.left = originalX+"px";
-          elmnt.style.top = originalY+"px";
-          playSound("game4_assets/wrong.mp3");
+        // 若有已經就位（locked）的郵票，則重新對齊（因為視窗縮放時地圖大小改變）
+        const lockedStamp = document.querySelector(`.stamp[data-index="${i}"][data-locked="true"]`);
+        if (lockedStamp) {
+          lockedStamp.style.left = (offsetX + px - SLOT_SIZE/2) + 'px';
+          lockedStamp.style.top  = (offsetY + py - SLOT_SIZE/2) + 'px';
         }
+      });
+    }
+
+    // ====== 產生郵票（隨機分散在地圖四周，避免重疊）======
+    function spawnStamps() {
+      // 先移除舊郵票
+      document.querySelectorAll('.stamp').forEach(n => n.remove());
+
+      const { imgRect, boardRect, offsetX, offsetY } = getRects();
+
+      // 四個「外圍」帶狀區域（在地圖外，但仍在 board 內）
+      const bands = [];
+
+      const padding = 12; // 與邊界的小間距
+      const topBand = {
+        xMin: padding,
+        xMax: boardRect.width - padding - SLOT_SIZE,
+        yMin: padding,
+        yMax: Math.max(padding, offsetY - SLOT_SIZE - 10)
+      };
+      const bottomBand = {
+        xMin: padding,
+        xMax: boardRect.width - padding - SLOT_SIZE,
+        yMin: offsetY + imgRect.height + 10,
+        yMax: boardRect.height - padding - SLOT_SIZE
+      };
+      const leftBand = {
+        xMin: padding,
+        xMax: Math.max(padding, offsetX - SLOT_SIZE - 10),
+        yMin: padding,
+        yMax: boardRect.height - padding - SLOT_SIZE
+      };
+      const rightBand = {
+        xMin: offsetX + imgRect.width + 10,
+        xMax: boardRect.width - padding - SLOT_SIZE,
+        yMin: padding,
+        yMax: boardRect.height - padding - SLOT_SIZE
+      };
+
+      // 僅加入「有面積」的帶
+      [topBand, bottomBand, leftBand, rightBand].forEach(b => {
+        if (b.xMax > b.xMin + 20 && b.yMax > b.yMin + 20) bands.push(b);
+      });
+
+      // 已放置的位置，避免重疊（簡單距離檢查）
+      const placed = [];
+      const minGap = SLOT_SIZE * 0.9; // 中心距離最小
+
+      function nonOverlapPos() {
+        if (bands.length === 0) {
+          // 若沒有外圍空間，就退而求其次，放在整個 board 隨機
+          return {
+            x: Math.random() * (boardRect.width - SLOT_SIZE),
+            y: Math.random() * (boardRect.height - SLOT_SIZE)
+          };
+        }
+        let tries = 0;
+        while (tries < 200) {
+          const b = bands[Math.floor(Math.random()*bands.length)];
+          const x = b.xMin + Math.random() * (b.xMax - b.xMin);
+          const y = b.yMin + Math.random() * (b.yMax - b.yMin);
+          const cx = x + SLOT_SIZE/2;
+          const cy = y + SLOT_SIZE/2;
+
+          let ok = true;
+          for (const q of placed) {
+            const dx = cx - q.cx;
+            const dy = cy - q.cy;
+            if (Math.hypot(dx,dy) < minGap) { ok = false; break; }
+          }
+          if (ok) { placed.push({cx, cy}); return {x,y}; }
+          tries++;
+        }
+        // 萬一多次失敗，直接隨機
+        return {
+          x: Math.random() * (boardRect.width - SLOT_SIZE),
+          y: Math.random() * (boardRect.height - SLOT_SIZE)
+        };
+      }
+
+      // 依 basePositions 數量建立郵票
+      basePositions.forEach((_, i) => {
+        const stamp = document.createElement('img');
+        stamp.className = 'stamp';
+        stamp.draggable = false;
+        stamp.dataset.index = String(i);
+        stamp.dataset.locked = "false";
+        stamp.src = stampImgs(i);
+
+        const p = nonOverlapPos();
+        stamp.style.left = p.x + 'px';
+        stamp.style.top  = p.y + 'px';
+
+        board.appendChild(stamp);
+        enableDrag(stamp);
+      });
+    }
+
+    // ====== 拖曳邏輯（純 JS，滑鼠 / 觸控）======
+    function enableDrag(el) {
+      let startX=0, startY=0, originL=0, originT=0, dragging=false;
+
+      const onDown = (e) => {
+        const pt = getPoint(e);
+        dragging = true;
+        el.style.cursor = 'grabbing';
+        startX = pt.x; startY = pt.y;
+        originL = el.offsetLeft;
+        originT = el.offsetTop;
+        dragged = el;
+        // 改變層級
+        el.style.zIndex = 9;
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, {passive:false});
+        window.addEventListener('mouseup', onUp, {once:true});
+        window.addEventListener('touchend', onUp, {once:true});
+      };
+
+      const onMove = (e) => {
+        if (!dragging) return;
+        const pt = getPoint(e);
+        const dx = pt.x - startX;
+        const dy = pt.y - startY;
+        el.style.left = (originL + dx) + 'px';
+        el.style.top  = (originT + dy) + 'px';
+        e.preventDefault?.();
+      };
+
+      const onUp = () => {
+        dragging = false;
+        el.style.cursor = 'grab';
+        el.style.zIndex = 4;
+        dragged = null;
+
+        // 檢查是否靠近正確位置
+        const i = Number(el.dataset.index);
+        const { imgRect, offsetX, offsetY } = getRects();
+        const targetX = offsetX + basePositions[i].x * imgRect.width;
+        const targetY = offsetY + basePositions[i].y * imgRect.height;
+
+        const cx = el.offsetLeft + SLOT_SIZE/2;
+        const cy = el.offsetTop  + SLOT_SIZE/2;
+
+        const dist = Math.hypot(cx - targetX, cy - targetY);
+        if (dist <= SNAP_R) {
+          // 吸附
+          el.style.left = (targetX - SLOT_SIZE/2) + 'px';
+          el.style.top  = (targetY - SLOT_SIZE/2) + 'px';
+          el.dataset.locked = "true";
+          el.style.cursor = 'default';
+          el.onmousedown = null;
+          el.ontouchstart = null;
+          playAudio(stampAud(i));
+          stampsPlaced++;
+          if (stampsPlaced === basePositions.length && basePositions.length > 0) successAnim();
+        } else {
+          // 回原位
+          el.style.left = originL + 'px';
+          el.style.top  = originT + 'px';
+          playAudio(wrongAud);
+        }
+
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('touchmove', onMove);
+      };
+
+      el.addEventListener('mousedown', onDown);
+      el.addEventListener('touchstart', onDown, {passive:true});
+    }
+
+    function getPoint(e){
+      if (e.touches && e.touches[0]) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    // ====== 音效 ======
+    function playAudio(src){
+      const a = new Audio(src);
+      a.play().catch(()=>{ /* 靜音模式時忽略 */ });
+    }
+
+    // ====== 成功動畫 ======
+    function successAnim(){
+      successEl.style.display = 'block';
+      let size = 22;
+      const t = setInterval(()=>{
+        size += 6;
+        successEl.style.fontSize = size + 'px';
+        if (size >= 88) clearInterval(t);
+      }, 90);
+    }
+
+    // ====== 偵測模式：記錄比例座標 + 畫紅點 + 即時輸出 ======
+    function setDetectMode(on){
+      detectMode = on;
+      detected = [];
+      updateCoordsOutput();
+      copyBtn.style.display = on ? 'none' : (detected.length ? 'inline-block' : 'none');
+
+      // 清除舊紅點
+      dotNodes.forEach(n => n.remove());
+      dotNodes = [];
+
+      if (on) {
+        map.addEventListener('click', onMapClick);
+        detectBtn.textContent = '退出偵測模式';
+        coordsOutput.scrollIntoView({behavior:'smooth', block:'nearest'});
+        alert('偵測模式啟動：點擊地圖記錄位置（比例座標）。完成後再次按下「退出偵測模式」，再按「複製座標陣列」。');
+      } else {
+        map.removeEventListener('click', onMapClick);
+        detectBtn.textContent = '座標偵測模式';
+        copyBtn.style.display = 'inline-block';
       }
     }
 
-    function playSound(src){
-      const audio = new Audio(src);
-      audio.play();
+    function onMapClick(e){
+      const { imgRect, offsetX, offsetY } = getRects();
+      if (imgRect.width <= 0 || imgRect.height <= 0) return;
+
+      const x = (e.clientX - imgRect.left) / imgRect.width;
+      const y = (e.clientY - imgRect.top)  / imgRect.height;
+      const nx = +x.toFixed(4);
+      const ny = +y.toFixed(4);
+
+      // 存入比例座標
+      detected.push({x: nx, y: ny});
+      updateCoordsOutput();
+
+      // 畫紅點（要放在 board 座標系中）
+      const dot = document.createElement('div');
+      dot.className = 'detect-dot';
+      dot.style.left = (offsetX + nx * imgRect.width) + 'px';
+      dot.style.top  = (offsetY + ny * imgRect.height) + 'px';
+      board.appendChild(dot);
+      dotNodes.push(dot);
     }
 
-    function showSuccess(){
-      success.style.display = "block";
-      success.style.fontSize = "20px";
-      let size = 20;
-      const interval = setInterval(()=>{
-        size += 5;
-        success.style.fontSize = size+"px";
-        if(size>=100){ clearInterval(interval); }
-      }, 200);
+    function updateCoordsOutput(){
+      coordsOutput.textContent = 'const basePositions = ' + JSON.stringify(detected, null, 2) + ';';
     }
+
+    copyBtn.addEventListener('click', ()=>{
+      const text = coordsOutput.textContent;
+      navigator.clipboard.writeText(text).then(()=>{
+        alert('✅ 已複製座標陣列，可直接貼回程式！');
+      });
+    });
+
+    detectBtn.addEventListener('click', ()=> setDetectMode(!detectMode));
+
+    // ====== 控制：重置郵票（不清除 basePositions）======
+    resetBtn.addEventListener('click', ()=>{
+      stampsPlaced = 0;
+      document.querySelectorAll('.stamp').forEach(n => n.remove());
+      spawnStamps();
+      drawSlotsAndRealign();
+    });
+
+    // ====== 初始與重繪 ======
+    function renderAll(){
+      drawSlotsAndRealign();
+      // 只有當郵票不存在時才生成；避免每次 resize 都重生
+      if (document.querySelectorAll('.stamp').length === 0 && basePositions.length > 0) {
+        spawnStamps();
+      } else {
+        // 已存在的未鎖定郵票保持原位；已鎖定郵票在 drawSlotsAndRealign 會自動對齊
+        drawSlotsAndRealign();
+      }
+      // 偵測模式的紅點需重新對齊
+      realignDetectDots();
+    }
+
+    function realignDetectDots(){
+      if (!dotNodes.length) return;
+      const { imgRect, offsetX, offsetY } = getRects();
+      dotNodes.forEach((dot, i)=>{
+        const p = detected[i];
+        if (!p) return;
+        dot.style.left = (offsetX + p.x * imgRect.width) + 'px';
+        dot.style.top  = (offsetY + p.y * imgRect.height) + 'px';
+      });
+    }
+
+    // 圖片載入＆視窗尺寸改變時，重新繪製
+    map.addEventListener('load', renderAll);
+    window.addEventListener('resize', renderAll);
+
+    // 若你已有既定的座標，可在此直接指定（比例座標，0~1）
+    // 例如：
+    // basePositions = [{x:0.3123,y:0.2142}, ...]; renderAll();
+
+    // 預設顯示偵測輸出為空陣列
+    updateCoordsOutput();
   </script>
 </body>
 </html>
