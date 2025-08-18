@@ -98,29 +98,29 @@
     const message = document.getElementById("message");
 
     let placedCount = 0;
+    let stampSize = 0; // 郵票與紅框大小統一管理
 
     function createRedBoxes() {
       document.querySelectorAll(".red-box").forEach(e=>e.remove());
       const mapRect = map.getBoundingClientRect();
-      const boxSize = mapRect.width * 0.10; // 10% 地圖寬度
+      stampSize = mapRect.width * 0.12; // 統一設定：郵票 + 紅框大小 = 地圖寬度的 12%
       basePositions.forEach(pos=>{
         const box = document.createElement("div");
         box.className="red-box";
-        box.style.width = box.style.height = boxSize+"px";
-        box.style.left = (mapRect.left + pos.x * mapRect.width - boxSize/2)+"px";
-        box.style.top = (mapRect.top + pos.y * mapRect.height - boxSize/2)+"px";
+        box.style.width = box.style.height = stampSize+"px";
+        box.style.left = (mapRect.left + pos.x * mapRect.width - stampSize/2)+"px";
+        box.style.top = (mapRect.top + pos.y * mapRect.height - stampSize/2)+"px";
         gameContainer.appendChild(box);
       });
     }
 
     function createStamps() {
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.10; // 郵票大小 = 10%
       for(let i=1;i<=12;i++){
         const img=document.createElement("img");
         img.src=`game4_assets/${i}.jpg`;
         img.className="stamp";
-        img.style.width=img.style.height=size+"px";
+        img.style.width=img.style.height=stampSize+"px";
         img.dataset.index=i-1;
         gameContainer.appendChild(img);
         stamps.push(img);
@@ -130,16 +130,14 @@
     }
 
     function shuffleStamps(){
-      const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.10;
       stamps.forEach(stamp=>{
         let x,y;
         do {
-          x=Math.random()*(window.innerWidth-size);
-          y=Math.random()*(window.innerHeight-size);
+          x=Math.random()*(window.innerWidth-stampSize);
+          y=Math.random()*(window.innerHeight-stampSize);
         } while(
-          x>mapRect.left-size && x<mapRect.right &&
-          y>mapRect.top-size && y<mapRect.bottom
+          x>map.offsetLeft-stampSize && x<map.offsetLeft+map.width &&
+          y>map.offsetTop-stampSize && y<map.offsetTop+map.height
         );
         stamp.style.left=x+"px";
         stamp.style.top=y+"px";
@@ -159,7 +157,7 @@
         el.style.left=(e.pageX-offsetX)+"px";
         el.style.top=(e.pageY-offsetY)+"px";
       });
-      window.addEventListener("mouseup",e=>{
+      window.addEventListener("mouseup",()=>{
         if(!isDragging)return;
         isDragging=false;
         checkDrop(el);
@@ -168,13 +166,12 @@
 
     function checkDrop(stamp){
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.10;
       const idx = parseInt(stamp.dataset.index);
-      const targetX = mapRect.left + basePositions[idx].x*mapRect.width - size/2;
-      const targetY = mapRect.top + basePositions[idx].y*mapRect.height - size/2;
+      const targetX = mapRect.left + basePositions[idx].x*mapRect.width - stampSize/2;
+      const targetY = mapRect.top + basePositions[idx].y*mapRect.height - stampSize/2;
       const sx=parseFloat(stamp.style.left);
       const sy=parseFloat(stamp.style.top);
-      if(Math.abs(sx-targetX)<size*0.3 && Math.abs(sy-targetY)<size*0.3){
+      if(Math.abs(sx-targetX)<stampSize*0.3 && Math.abs(sy-targetY)<stampSize*0.3){
         stamp.style.left=targetX+"px";
         stamp.style.top=targetY+"px";
         correctSound.currentTime=0;
@@ -194,9 +191,13 @@
 
     window.addEventListener("resize",()=>{
       createRedBoxes();
-      // 郵票只生成一次，不再重建，避免消失
+      // 郵票位置大小更新
+      stamps.forEach(stamp=>{
+        stamp.style.width=stamp.style.height=stampSize+"px";
+      });
     });
 
+    // 確保等地圖完全載入後才建立框和郵票
     map.onload=()=>{
       createRedBoxes();
       createStamps();
