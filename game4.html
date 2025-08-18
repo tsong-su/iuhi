@@ -12,10 +12,16 @@
     #game-container {
       position: relative;
       display: inline-block;
+      overflow: hidden; /* 假裁切：避免顯示外部空白 */
+      width: 1360px;    /* 1760 - 左右各200 */
+      height: 1015px;   /* 1415 - 上下各200 */
     }
     #map {
-      width: 1000px;
-      height: auto;
+      position: absolute;
+      top: -200px; /* 往上移，隱藏上邊空白 */
+      left: -200px; /* 往左移，隱藏左邊空白 */
+      width: 1760px;
+      height: 1415px;
       display: block;
     }
     .stamp {
@@ -70,36 +76,35 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 原始圖片大小 (1760 × 1415)
+    // 原始座標（針對1760x1415的大圖，含空白）
     const baseWidth = 1760;
     const baseHeight = 1415;
+    const offsetX = 200; // 假設左右各200px空白
+    const offsetY = 200; // 假設上下各200px空白
 
-    // 答案座標 (以原始圖為基準)
     const basePositions = [
       {x:200,y:300},{x:400,y:350},{x:600,y:280},
       {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
-      {x:1400,y:700},{x:1600,y:300},{x:1700,y:500},
+      {x:1400,y:700},{x:1600,y:300},{x:1800,y:500},
       {x:600,y:800},{x:900,y:900},{x:1500,y:1000}
     ];
 
     let stampsPlaced = 0;
 
     map.onload = () => {
-      // 計算縮放比例
-      const scaleX = map.width / baseWidth;
-      const scaleY = map.height / baseHeight;
+      const scaleX = (container.clientWidth) / (baseWidth - 2*offsetX);
+      const scaleY = (container.clientHeight) / (baseHeight - 2*offsetY);
 
-      // 對應縮放後的座標
       const answerPositions = basePositions.map(p => ({
-        x: p.x * scaleX,
-        y: p.y * scaleY
+        x: (p.x - offsetX) * scaleX,
+        y: (p.y - offsetY) * scaleY
       }));
 
-      // 已放置的郵票位置，避免重疊
-      const placedStamps = [];
+      // 紀錄已用的隨機位置，避免重疊
+      const usedPositions = [];
 
       answerPositions.forEach((pos, i) => {
-        // 建立虛線框
+        // 建立格子
         const slot = document.createElement("div");
         slot.className = "slot";
         slot.style.left = (pos.x - 40) + "px";
@@ -112,36 +117,32 @@
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // ===== 郵票隨機分散，避免重疊 =====
-        let randX, randY, valid=false, attempts=0;
-        while(!valid && attempts<1000){
+        // 隨機分散（四區），且避免重疊
+        let randX, randY, valid = false, attempts = 0;
+        while(!valid && attempts < 1000){
           attempts++;
-          // 分四象限平均散落
-          const region = i % 4;
-          if(region===0){ randX = Math.random()*(map.width/2 - 100); randY = Math.random()*(map.height/2 - 100);}
-          if(region===1){ randX = map.width/2 + Math.random()*(map.width/2 - 100); randY = Math.random()*(map.height/2 - 100);}
-          if(region===2){ randX = Math.random()*(map.width/2 - 100); randY = map.height/2 + Math.random()*(map.height/2 - 100);}
-          if(region===3){ randX = map.width/2 + Math.random()*(map.width/2 - 100); randY = map.height/2 + Math.random()*(map.height/2 - 100);}
-          
-          // 檢查避免重疊
+          const side = Math.floor(Math.random()*4);
+          if(side===0){ randX = Math.random()*container.clientWidth; randY = -100; }
+          if(side===1){ randX = container.clientWidth+50; randY = Math.random()*container.clientHeight; }
+          if(side===2){ randX = Math.random()*container.clientWidth; randY = container.clientHeight+50; }
+          if(side===3){ randX = -100; randY = Math.random()*container.clientHeight; }
+
           valid = true;
-          for(const p of placedStamps){
+          for(let p of usedPositions){
             const dx = randX - p.x;
             const dy = randY - p.y;
-            if(Math.sqrt(dx*dx + dy*dy) < 100){ valid = false; break; }
+            if(Math.sqrt(dx*dx+dy*dy) < 120){ valid = false; break; }
           }
         }
-        placedStamps.push({x:randX,y:randY});
-
+        usedPositions.push({x:randX,y:randY});
         stamp.style.left = randX + "px";
         stamp.style.top = randY + "px";
         container.appendChild(stamp);
 
-        // 拖曳功能
+        // 加入拖曳
         dragElement(stamp, pos, i);
       });
 
-      // 拖曳功能
       function dragElement(elmnt, correctPos, index) {
         let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
 
@@ -176,13 +177,13 @@
           const dy = stampY - correctPos.y;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 40){
+          if(dist < 30){
             elmnt.style.left = (correctPos.x-40)+"px";
             elmnt.style.top = (correctPos.y-40)+"px";
             elmnt.onmousedown = null;
             playSound(`game4_assets/stamp${index+1}.mp3`);
             stampsPlaced++;
-            if(stampsPlaced===answerPositions.length){
+            if(stampsPlaced===12){
               showSuccess();
             }
           }else{
