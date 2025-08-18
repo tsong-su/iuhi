@@ -1,88 +1,99 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>臺灣北部地區郵票配對遊戲</title>
+  <title>Game4 郵票配對遊戲</title>
   <style>
     body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
       margin: 0;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
     }
-    h1 {
-      font-size: 40px;
-      margin: 20px 0;
+
+    header {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 10px;
     }
-    #game-container {
+
+    #map-container {
       position: relative;
-      width: 100%;
-      max-width: 100vw;
-      margin: auto;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
     }
+
     #map {
-      width: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
       height: auto;
       display: block;
     }
-    .stamp {
-      position: absolute;
-      width: 10vw;   /* 郵票大小 10% */
-      height: auto;
-      max-width: 150px;
-      cursor: grab;
-      z-index: 10;
-    }
+
     .slot {
       position: absolute;
-      border: 4px dashed red; /* 加粗，更明顯 */
+      border: 3px dashed red;
+      box-sizing: border-box;
       pointer-events: none;
-      transform: translate(-50%, -50%);
-      width: 10vw;   /* 與郵票一致 */
-      max-width: 150px;
-      aspect-ratio: 1 / 1;
     }
-    #success {
+
+    .stamp {
+      position: absolute;
+      cursor: grab;
+      z-index: 10;
+      transition: transform 0.2s;
+    }
+
+    .stamp:active {
+      cursor: grabbing;
+      transform: scale(1.1);
+    }
+
+    #controls {
+      text-align: center;
+      padding: 10px;
+    }
+
+    #message {
       position: absolute;
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 20px;
+      font-size: 4rem;
       font-weight: bold;
-      color: red;
+      color: green;
       display: none;
+      animation: zoomIn 1s ease-in-out forwards;
     }
-    #home-btn {
-      margin: 30px auto;
-      padding: 14px 28px;
-      font-size: 26px;
-      border-radius: 10px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      display: inline-block;
-    }
-    #home-btn:hover {
-      background-color: #0056b3;
+
+    @keyframes zoomIn {
+      from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區郵票配對遊戲</h1>
-  <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png">
-    <div id="success">有夠gâu！</div>
+  <header>📮 郵票配對遊戲</header>
+
+  <div id="map-container">
+    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
+    <div id="slots"></div>
+    <div id="stamps"></div>
+    <div id="message">有夠 gâu！</div>
   </div>
-  <br>
-  <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
+
+  <div id="controls">
+    <a href="index.html" style="font-size:1.5rem;">回到遊戲首頁</a>
+  </div>
 
   <script>
-    const container = document.getElementById("game-container");
-    const map = document.getElementById("map");
-    const success = document.getElementById("success");
-
-    // 比例座標 (相對於 north2_map.png 1284x970)
     const basePositions = [
       { "x": 0.9953, "y": 0.1551 },
       { "x": 0.7589, "y": 0.0012 },
@@ -98,133 +109,103 @@
       { "x": 0.9173, "y": 0.4409 }
     ];
 
-    let stampsPlaced = 0;
-    let usedPositions = []; // 防止郵票重疊
+    const stampsContainer = document.getElementById("stamps");
+    const slotsContainer = document.getElementById("slots");
+    const map = document.getElementById("map");
+    const message = document.getElementById("message");
 
-    map.onload = () => {
-      const mapWidth = map.clientWidth;
-      const mapHeight = map.clientHeight;
+    let correctCount = 0;
 
-      const answerPositions = basePositions.map(p => ({
-        x: p.x * mapWidth,
-        y: p.y * mapHeight
-      }));
+    function renderGame() {
+      slotsContainer.innerHTML = "";
+      stampsContainer.innerHTML = "";
 
-      answerPositions.forEach((pos, i) => {
-        // 建立紅框 slot
+      const mapRect = map.getBoundingClientRect();
+      const mapWidth = mapRect.width;
+      const mapHeight = mapRect.height;
+
+      const slotSize = mapWidth * 0.1; // 郵票 = 地圖寬度的 10%
+
+      basePositions.forEach((pos, index) => {
+        // 建立格子
         const slot = document.createElement("div");
         slot.className = "slot";
-        slot.style.left = pos.x + "px";
-        slot.style.top = pos.y + "px";
-        container.appendChild(slot);
+        slot.style.width = slotSize + "px";
+        slot.style.height = slotSize + "px";
+        slot.style.left = (mapRect.left + pos.x * mapWidth - slotSize/2) + "px";
+        slot.style.top  = (mapRect.top  + pos.y * mapHeight - slotSize/2) + "px";
+        slot.dataset.index = index;
+        slotsContainer.appendChild(slot);
 
         // 建立郵票
         const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
+        stamp.src = `game4_assets/stamp${index+1}.jpg`;
         stamp.className = "stamp";
-        stamp.dataset.index = i;
+        stamp.style.width = slotSize + "px";
+        stamp.dataset.index = index;
 
-        // 隨機放置在地圖外圍，避免重疊
-        const posStamp = getRandomNonOverlappingPosition(mapWidth, mapHeight, 160);
-        stamp.style.left = posStamp.x + "px";
-        stamp.style.top = posStamp.y + "px";
-        container.appendChild(stamp);
+        // 隨機放在地圖下方區域
+        const offsetX = Math.random() * (mapWidth - slotSize);
+        const offsetY = mapHeight + 30 + Math.random() * 100;
+        stamp.style.left = (mapRect.left + offsetX) + "px";
+        stamp.style.top = (mapRect.top + offsetY) + "px";
 
-        // 加入拖曳功能
-        dragElement(stamp, pos, i);
+        stampsContainer.appendChild(stamp);
+
+        makeDraggable(stamp, slotSize);
       });
+    }
 
-      function getRandomNonOverlappingPosition(mapW, mapH, margin) {
-        let x, y, overlap;
-        const maxTries = 50;
-        let tries = 0;
-        do {
-          const side = Math.floor(Math.random()*4);
-          if(side===0){ x = Math.random()*mapW; y = -margin; }
-          if(side===1){ x = mapW+margin; y = Math.random()*mapH; }
-          if(side===2){ x = Math.random()*mapW; y = mapH+margin; }
-          if(side===3){ x = -margin; y = Math.random()*mapH; }
+    function makeDraggable(stamp, slotSize) {
+      let offsetX, offsetY;
 
-          overlap = usedPositions.some(p =>
-            Math.abs(p.x - x) < 120 && Math.abs(p.y - y) < 120
-          );
-          tries++;
-        } while(overlap && tries < maxTries);
+      stamp.onmousedown = function(e) {
+        e.preventDefault();
+        offsetX = e.clientX - stamp.getBoundingClientRect().left;
+        offsetY = e.clientY - stamp.getBoundingClientRect().top;
 
-        usedPositions.push({x,y});
-        return {x,y};
-      }
+        document.onmousemove = (e) => {
+          stamp.style.left = (e.clientX - offsetX) + "px";
+          stamp.style.top  = (e.clientY - offsetY) + "px";
+        };
 
-      function dragElement(elmnt, correctPos, index) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
-
-        elmnt.onmousedown = dragMouseDown;
-
-        function dragMouseDown(e) {
-          e.preventDefault();
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-          originalX = elmnt.offsetLeft;
-          originalY = elmnt.offsetTop;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          offsetX = e.clientX - mouseX;
-          offsetY = e.clientY - mouseY;
-          elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
-          elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
+        document.onmouseup = (e) => {
           document.onmousemove = null;
+          document.onmouseup = null;
 
-          const stampCenterX = elmnt.offsetLeft + elmnt.offsetWidth/2;
-          const stampCenterY = elmnt.offsetTop + elmnt.offsetHeight/2;
+          checkDrop(stamp, slotSize);
+        };
+      };
+    }
 
-          const dx = stampCenterX - correctPos.x;
-          const dy = stampCenterY - correctPos.y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
+    function checkDrop(stamp, slotSize) {
+      const slot = [...document.querySelectorAll(".slot")]
+        .find(s => s.dataset.index === stamp.dataset.index);
 
-          if(dist < 50){ // 成功放置
-            elmnt.style.left = (correctPos.x - elmnt.offsetWidth/2)+"px";
-            elmnt.style.top = (correctPos.y - elmnt.offsetHeight/2)+"px";
-            elmnt.onmousedown = null;
-            playSound(`game4_assets/stamp${index+1}.mp3`);
-            stampsPlaced++;
-            if(stampsPlaced===12){
-              showSuccess();
-            }
-          }else{
-            elmnt.style.left = originalX+"px";
-            elmnt.style.top = originalY+"px";
-            playSound("game4_assets/wrong.mp3");
-          }
+      const stampRect = stamp.getBoundingClientRect();
+      const slotRect = slot.getBoundingClientRect();
+
+      if (Math.abs(stampRect.left - slotRect.left) < slotSize/2 &&
+          Math.abs(stampRect.top - slotRect.top) < slotSize/2) {
+        // 正確放置
+        stamp.style.left = slotRect.left + "px";
+        stamp.style.top  = slotRect.top + "px";
+        new Audio(`game4_assets/stamp${stamp.dataset.index*1+1}.mp3`).play();
+        stamp.onmousedown = null;
+        correctCount++;
+
+        if (correctCount === basePositions.length) {
+          message.style.display = "block";
+          new Audio("game4_assets/victory.mp3").play();
         }
-      }
-
-      function playSound(src){
-        const audio = new Audio(src);
-        audio.play();
-      }
-
-      function showSuccess(){
-        success.style.display = "block";
-        success.style.fontSize = "20px";
-        let size = 20;
-        const interval = setInterval(()=>{
-          size += 5;
-          success.style.fontSize = size+"px";
-          if(size>=100){ clearInterval(interval); }
-        }, 200);
-
-        playSound("game4_assets/victory.mp3");
+      } else {
+        // 錯誤
+        new Audio("game4_assets/wrong.mp3").play();
       }
     }
+
+    window.addEventListener("resize", renderGame);
+    window.addEventListener("load", renderGame);
   </script>
 </body>
 </html>
