@@ -12,6 +12,8 @@
     #game-container {
       position: relative;
       display: inline-block;
+      width: 90%; /* 地圖大小限制在畫面寬度 */
+      max-width: 1000px;
     }
     #map {
       width: 100%;
@@ -29,10 +31,10 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 3px dashed rgba(0,0,0,0.6);
-      background-color: rgba(255,255,255,0.2);
-      border-radius: 8px;
+      border: 3px dashed red;
+      background-color: rgba(255,255,255,0.3);
       pointer-events: none;
+      z-index: 5;
     }
     #success {
       position: absolute;
@@ -43,6 +45,7 @@
       font-weight: bold;
       color: red;
       display: none;
+      z-index: 20;
     }
     #home-btn {
       margin-top: 20px;
@@ -72,48 +75,30 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 基準位置：依 north1_map.png 原始尺寸標記 (需對應各縣市中心點)
+    // === 新基準大小 ===
+    const baseWidth = 1284;
+    const baseHeight = 970;
+
+    // 答案位置 (需依新圖調整座標！這裡先放大致範例)
     const basePositions = [
-      {x:200,y:300},{x:400,y:350},{x:600,y:280},
-      {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
-      {x:1400,y:700},{x:1600,y:300},{x:1700,y:500},
-      {x:600,y:800},{x:900,y:900},{x:1500,y:1000}
+      {x:200,y:250},{x:350,y:280},{x:500,y:220},
+      {x:650,y:400},{x:800,y:500},{x:950,y:320},
+      {x:1100,y:600},{x:1200,y:300},{x:1150,y:480},
+      {x:400,y:650},{x:700,y:750},{x:1000,y:820}
     ];
 
     let stampsPlaced = 0;
-    let placedPositions = []; // 防止郵票重疊
 
     map.onload = () => {
-      const naturalWidth = map.naturalWidth;
-      const naturalHeight = map.naturalHeight;
+      const answerPositions = basePositions.map(p => ({
+        x: p.x, y: p.y
+      }));
 
-      function getScaledPositions() {
-        const scaleX = map.width / naturalWidth;
-        const scaleY = map.height / naturalHeight;
-        return basePositions.map(p => ({
-          x: p.x * scaleX,
-          y: p.y * scaleY
-        }));
-      }
-
-      let answerPositions = getScaledPositions();
-
-      // 更新位置 (當視窗縮放時)
-      window.addEventListener("resize", () => {
-        answerPositions = getScaledPositions();
-        document.querySelectorAll(".slot").forEach((slot, i) => {
-          slot.style.left = (answerPositions[i].x - 40) + "px";
-          slot.style.top = (answerPositions[i].y - 40) + "px";
-        });
-      });
-
-      // 建立格子 & 郵票
       answerPositions.forEach((pos, i) => {
         // 建立格子
         const slot = document.createElement("div");
         slot.className = "slot";
-        slot.style.left = (pos.x - 40) + "px";
-        slot.style.top = (pos.y - 40) + "px";
+        slot.dataset.index = i;
         container.appendChild(slot);
 
         // 建立郵票
@@ -121,31 +106,48 @@
         stamp.src = `game4_assets/stamp${i+1}.jpg`;
         stamp.className = "stamp";
         stamp.dataset.index = i;
-
-        // 隨機散落位置（避免重疊）
-        let randX, randY, ok=false, tries=0;
-        while(!ok && tries<100){
-          randX = Math.random() * (map.width - 100) + 20;
-          randY = Math.random() * (map.height - 100) + 20;
-          ok = placedPositions.every(p=>{
-            const dx = p.x - randX;
-            const dy = p.y - randY;
-            return Math.sqrt(dx*dx + dy*dy) > 120;
-          });
-          tries++;
-        }
-        placedPositions.push({x:randX, y:randY});
-
-        stamp.style.left = randX + "px";
-        stamp.style.top = randY + "px";
         container.appendChild(stamp);
-
-        // 加入拖曳功能
-        dragElement(stamp, i);
       });
 
-      function dragElement(elmnt, index) {
-        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+      // 調整位置（依照圖片實際大小縮放）
+      function positionElements() {
+        const rect = map.getBoundingClientRect();
+        const scaleX = rect.width / baseWidth;
+        const scaleY = rect.height / baseHeight;
+
+        document.querySelectorAll(".slot").forEach((slot, i) => {
+          const pos = basePositions[i];
+          slot.style.left = (pos.x * scaleX - 40) + "px";
+          slot.style.top = (pos.y * scaleY - 40) + "px";
+        });
+
+        // 隨機散落郵票，避免重疊
+        const stamps = document.querySelectorAll(".stamp");
+        const placed = [];
+        stamps.forEach((stamp, i) => {
+          let randX, randY, overlap;
+          const rect = map.getBoundingClientRect();
+          do {
+            randX = Math.random() * (rect.width - 100);
+            randY = Math.random() * (rect.height - 100);
+            overlap = placed.some(p => 
+              Math.abs(p.x - randX) < 90 && Math.abs(p.y - randY) < 90
+            );
+          } while(overlap);
+          placed.push({x: randX, y: randY});
+          stamp.style.left = randX + "px";
+          stamp.style.top = randY + "px";
+
+          // 加入拖曳
+          dragElement(stamp, basePositions[i], i, scaleX, scaleY);
+        });
+      }
+
+      window.addEventListener("resize", positionElements);
+      positionElements();
+
+      function dragElement(elmnt, correctPos, index, scaleX, scaleY) {
+        let offsetX=0, offsetY=0, mouseX=0, mouseY=0;
 
         elmnt.onmousedown = dragMouseDown;
 
@@ -153,8 +155,6 @@
           e.preventDefault();
           mouseX = e.clientX;
           mouseY = e.clientY;
-          originalX = elmnt.offsetLeft;
-          originalY = elmnt.offsetTop;
           document.onmouseup = closeDragElement;
           document.onmousemove = elementDrag;
         }
@@ -171,17 +171,24 @@
         function closeDragElement() {
           document.onmouseup = null;
           document.onmousemove = null;
-          const answerPos = answerPositions[index];
+
+          const rect = map.getBoundingClientRect();
+          const scaleX = rect.width / baseWidth;
+          const scaleY = rect.height / baseHeight;
+
           const stampX = elmnt.offsetLeft + 40;
           const stampY = elmnt.offsetTop + 40;
 
-          const dx = stampX - answerPos.x;
-          const dy = stampY - answerPos.y;
+          const correctX = correctPos.x * scaleX;
+          const correctY = correctPos.y * scaleY;
+
+          const dx = stampX - correctX;
+          const dy = stampY - correctY;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 30){
-            elmnt.style.left = (answerPos.x-40)+"px";
-            elmnt.style.top = (answerPos.y-40)+"px";
+          if(dist < 40){
+            elmnt.style.left = (correctX-40)+"px";
+            elmnt.style.top = (correctY-40)+"px";
             elmnt.onmousedown = null;
             playSound(`game4_assets/stamp${index+1}.mp3`);
             stampsPlaced++;
@@ -189,8 +196,6 @@
               showSuccess();
             }
           }else{
-            elmnt.style.left = originalX+"px";
-            elmnt.style.top = originalY+"px";
             playSound("game4_assets/wrong.mp3");
           }
         }
@@ -203,7 +208,6 @@
 
       function showSuccess(){
         success.style.display = "block";
-        success.style.fontSize = "20px";
         let size = 20;
         const interval = setInterval(()=>{
           size += 5;
