@@ -1,220 +1,368 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
+    /* 版面：單一全螢幕容器，地圖完整可見（object-fit: contain） */
+    html, body {
       margin: 0;
-      padding: 0;
-      text-align: center;
+      height: 100%;
+      overflow: hidden; /* 保證不出現捲軸 */
       background: #f5f5f5;
-      font-family: Arial, sans-serif;
-      overflow: hidden; /* 🚀 防止捲軸出現 */
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
     }
-    h1 {
-      font-size: 28px;
-      margin: 10px;
-    }
-    #gameContainer {
+    #game {
       position: relative;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
       background: #f5f5f5;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
     #map {
+      position: absolute;
+      inset: 0;              /* top:0; right:0; bottom:0; left:0 */
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: contain;   /* << 關鍵：完整塞入視窗 */
+      pointer-events: none;  /* 避免抓到圖片本身，拖曳更順 */
       display: block;
     }
-    .frame {
+
+    /* HUD（浮在地圖上，不佔版面高度） */
+    #hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    #title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      white-space: nowrap;
+    }
+    #home {
+      font-size: 18px;
+      color: #0b63d1;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: #eaf3ff;
+    }
+    #home:hover { background: #d8e9ff; }
+    #shuffle {
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: #0b63d1;
+      color: #fff;
+      cursor: pointer;
+    }
+    #shuffle:hover { background: #094fa7; }
+
+    /* 紅色小虛線框（大小與郵票同步，由 JS 設 px 值） */
+    .slot {
       position: absolute;
       border: 3px dashed red;
-      pointer-events: none;
       box-sizing: border-box;
+      pointer-events: none;
+      z-index: 50;
     }
+
+    /* 郵票（大小由 JS 設 px 值；永遠相對容器定位） */
     .stamp {
       position: absolute;
       cursor: grab;
-      user-select: none;
-      z-index: 10;
+      z-index: 60;
+      touch-action: none; /* 避免手機瀏覽器把拖曳當作捲動 */
     }
-    #controls {
-      margin: 10px;
+    .stamp:active { cursor: grabbing; }
+
+    /* 勝利訊息 */
+    #victory {
       position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 20;
-      background: rgba(255,255,255,0.7);
-      padding: 5px 10px;
-      border-radius: 8px;
-    }
-    button {
-      font-size: 18px;
-      padding: 6px 12px;
-      margin: 2px;
-      cursor: pointer;
-    }
-    #message {
-      font-size: 26px;
-      color: green;
-      font-weight: bold;
-      margin-top: 10px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 56px;
+      font-weight: 900;
+      color: #1f9d55;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      display: none;
+      z-index: 1200;
+      white-space: nowrap;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
-  <div id="controls">
-    <a href="index.html">🏠 回到遊戲首頁</a>
-    <button onclick="shuffleStamps()">🔄 重排郵票</button>
+  <div id="game">
+    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖" />
+
+    <div id="hud">
+      <h1 id="title">臺灣北部地圖&注音符號郵票配對遊戲</h1>
+      <a id="home" href="index.html">🏠 回到遊戲首頁</a>
+      <button id="shuffle">🔄 重排郵票</button>
+    </div>
+
+    <div id="victory">有夠 gâu！</div>
   </div>
-  <div id="gameContainer">
-    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
-  </div>
-  <div id="message"></div>
 
   <script>
+    /* === 你提供的比例座標，嚴格使用，不變動位置 === */
     const basePositions = [
-      { "x": 0.9953, "y": 0.1551 },
-      { "x": 0.7589, "y": 0.0012 },
-      { "x": 0.5749, "y": 0.0249 },
-      { "x": 0.3782, "y": 0.1872 },
-      { "x": 0.1291, "y": 0.1264 },
-      { "x": 0.115, "y": 0.3242 },
-      { "x": 0.0077, "y": 0.5255 },
-      { "x": 0.0435, "y": 0.9668 },
-      { "x": 0.2479, "y": 0.9922 },
-      { "x": 0.4791, "y": 0.9043 },
-      { "x": 0.7372, "y": 0.4916 },
-      { "x": 0.9173, "y": 0.4409 }
+      {"x":0.9953,"y":0.1551},
+      {"x":0.7589,"y":0.0012},
+      {"x":0.5749,"y":0.0249},
+      {"x":0.3782,"y":0.1872},
+      {"x":0.1291,"y":0.1264},
+      {"x":0.115,"y":0.3242},
+      {"x":0.0077,"y":0.5255},
+      {"x":0.0435,"y":0.9668},
+      {"x":0.2479,"y":0.9922},
+      {"x":0.4791,"y":0.9043},
+      {"x":0.7372,"y":0.4916},
+      {"x":0.9173,"y":0.4409}
     ];
 
-    const container = document.getElementById("gameContainer");
-    const map = document.getElementById("map");
-    const message = document.getElementById("message");
+    /* === 主要節點 === */
+    const game = document.getElementById('game');
+    const map  = document.getElementById('map');
+    const victoryEl = document.getElementById('victory');
+    const shuffleBtn = document.getElementById('shuffle');
 
-    let frames = [];
-    let stamps = [];
+    /* === 音效（存在就播，不存在也不會報錯） === */
+    const sfx = {
+      correct: new Audio('game4_assets/correct.mp3'),
+      wrong:   new Audio('game4_assets/wrong.mp3'),
+      victory: new Audio('game4_assets/victory.mp3')
+    };
+    Object.values(sfx).forEach(a => a.addEventListener('error', () => {/* 靜音處理 */}));
+
+    /* === 狀態 === */
+    const slots = [];   // 紅框 DOM
+    const stamps = [];  // 郵票 DOM
     let placedCount = 0;
-    const total = basePositions.length;
 
-    const correctAudio = new Audio("game4_assets/correct.mp3");
-    const wrongAudio = new Audio("game4_assets/wrong.mp3");
-    const victoryAudio = new Audio("game4_assets/victory.mp3");
+    /* === 計算「圖片實際顯示區域」相對於容器的盒子 ===
+       object-fit: contain 的正確定位方式：
+       - 先用圖片原始比例與容器尺寸求 scale
+       - 得到顯示寬高 displayW/H
+       - 再算左右/上下 letterbox 的 offsetX/offsetY
+       - 所有紅框/郵票定位都用這個盒子的座標系
+    ===================================================== */
+    function getDisplayBox() {
+      const cw = game.clientWidth;
+      const ch = game.clientHeight;
+      const natW = map.naturalWidth || 1284; // 退避值，避免極端情況
+      const natH = map.naturalHeight || 970;
 
-    function initGame() {
-      frames.forEach(f => f.remove());
-      stamps.forEach(s => s.remove());
-      frames = [];
-      stamps = [];
-      placedCount = 0;
-      message.textContent = "";
+      const scale = Math.min(cw / natW, ch / natH);
+      const displayW = natW * scale;
+      const displayH = natH * scale;
+      const offsetX = (cw - displayW) / 2;
+      const offsetY = (ch - displayH) / 2;
 
-      const mapRect = map.getBoundingClientRect();
-      const mapW = mapRect.width;
-      const mapH = mapRect.height;
-      const frameSize = mapW * 0.06;
+      return { displayW, displayH, offsetX, offsetY, scale };
+    }
+
+    /* === 建立紅框 === */
+    function buildSlots() {
+      // 先清空舊的
+      slots.splice(0, slots.length).forEach(el => el.remove());
+
+      const { displayW, displayH, offsetX, offsetY } = getDisplayBox();
+      const size = displayW * 0.06; // 固定 6% 地圖寬度
 
       basePositions.forEach((pos, i) => {
-        // 紅框
-        const frame = document.createElement("div");
-        frame.className = "frame";
-        frame.style.width = frameSize + "px";
-        frame.style.height = frameSize + "px";
-        frame.style.left = (mapRect.left + pos.x * mapW - frameSize / 2) + "px";
-        frame.style.top = (mapRect.top + pos.y * mapH - frameSize / 2) + "px";
-        container.appendChild(frame);
-        frames.push(frame);
-
-        // 郵票
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.style.width = frameSize + "px";
-        stamp.dataset.index = i;
-        container.appendChild(stamp);
-        stamps.push(stamp);
-      });
-
-      shuffleStamps();
-    }
-
-    // 郵票隨機散落
-    function shuffleStamps() {
-      const mapRect = map.getBoundingClientRect();
-      const mapW = mapRect.width;
-      const mapH = mapRect.height;
-      const frameSize = mapW * 0.06;
-
-      stamps.forEach(stamp => {
-        let x, y;
-        const margin = 60;
-
-        if (Math.random() > 0.5) {
-          x = Math.random() * (mapW - frameSize - margin) + mapRect.left;
-          y = Math.random() > 0.5 ? mapRect.top + margin : mapRect.bottom - frameSize - margin;
-        } else {
-          x = Math.random() > 0.5 ? mapRect.left + margin : mapRect.right - frameSize - margin;
-          y = Math.random() * (mapH - frameSize - margin) + mapRect.top;
-        }
-
-        stamp.style.left = x + "px";
-        stamp.style.top = y + "px";
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.style.width  = size + 'px';
+        slot.style.height = size + 'px';
+        // 以顯示盒子的座標為基準定位（不再用視窗座標）
+        slot.style.left = (offsetX + pos.x * displayW - size / 2) + 'px';
+        slot.style.top  = (offsetY + pos.y * displayH - size / 2) + 'px';
+        game.appendChild(slot);
+        slots.push(slot);
       });
     }
 
-    // 拖曳
-    let dragTarget = null, offsetX = 0, offsetY = 0;
-    document.addEventListener("mousedown", e => {
-      if (e.target.classList.contains("stamp")) {
-        dragTarget = e.target;
-        const rect = dragTarget.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-      }
-    });
-    document.addEventListener("mousemove", e => {
-      if (dragTarget) {
-        dragTarget.style.left = (e.clientX - offsetX) + "px";
-        dragTarget.style.top = (e.clientY - offsetY) + "px";
-      }
-    });
-    document.addEventListener("mouseup", e => {
-      if (dragTarget) {
-        checkDrop(dragTarget);
-        dragTarget = null;
-      }
-    });
+    /* === 建立郵票 === */
+    function buildStamps() {
+      stamps.splice(0, stamps.length).forEach(el => el.remove());
 
-    // 檢查配對
+      const { displayW } = getDisplayBox();
+      const size = displayW * 0.06;
+
+      basePositions.forEach((pos, i) => {
+        const img = document.createElement('img');
+        img.className = 'stamp';
+        img.src = `game4_assets/stamp${i+1}.jpg`; // ← 依你的檔案為 .jpg
+        img.style.width = size + 'px';
+        img.dataset.index = i;
+        game.appendChild(img);
+        stamps.push(img);
+      });
+
+      // 初始隨機散落（避免重疊、散在四周）
+      scatterStamps();
+      // 啟用拖曳
+      enableDragging();
+    }
+
+    /* === 四周散落 + 避免重疊 === */
+    function scatterStamps() {
+      const { displayW, displayH, offsetX, offsetY } = getDisplayBox();
+      const size = displayW * 0.06;
+      const band = size + 12;      // 四周帶
+      const minGap = size * 0.6;   // 最小間距，避免重疊太多
+      const placed = [];
+
+      function farEnough(x, y) {
+        return placed.every(p => {
+          const dx = p.x - x, dy = p.y - y;
+          return (dx*dx + dy*dy) >= (minGap*minGap);
+        });
+      }
+
+      stamps.forEach(st => {
+        let x, y, tries = 0;
+        do {
+          // 隨機選一個邊帶：上/下/左/右
+          const edge = Math.floor(Math.random()*4);
+          if (edge === 0) { // 上
+            x = offsetX + Math.random()*(displayW - size);
+            y = offsetY + 6; // 微留白
+          } else if (edge === 1) { // 下
+            x = offsetX + Math.random()*(displayW - size);
+            y = offsetY + displayH - size - 6;
+          } else if (edge === 2) { // 左
+            x = offsetX + 6;
+            y = offsetY + Math.random()*(displayH - size);
+          } else { // 右
+            x = offsetX + displayW - size - 6;
+            y = offsetY + Math.random()*(displayH - size);
+          }
+          tries++;
+          if (tries > 80) break; // 保底避免死循環
+        } while (!farEnough(x, y));
+
+        placed.push({x, y});
+        st.style.left = x + 'px';
+        st.style.top  = y + 'px';
+        st.style.pointerEvents = 'auto';
+      });
+    }
+
+    /* === 拖曳（以容器座標為基準，滑鼠/手指同步） === */
+    function enableDragging() {
+      let dragging = null;
+      let grabDX = 0, grabDY = 0;
+
+      function toLocal(clientX, clientY) {
+        const r = game.getBoundingClientRect();
+        return { x: clientX - r.left, y: clientY - r.top };
+      }
+
+      function onPointerDown(e) {
+        const t = e.target;
+        if (!t.classList.contains('stamp')) return;
+        dragging = t;
+        dragging.setPointerCapture?.(e.pointerId);
+        const rect = dragging.getBoundingClientRect();
+        const gameRect = game.getBoundingClientRect();
+        grabDX = e.clientX - rect.left;
+        grabDY = e.clientY - rect.top;
+        e.preventDefault();
+      }
+
+      function onPointerMove(e) {
+        if (!dragging) return;
+        const gameRect = game.getBoundingClientRect();
+        const x = e.clientX - gameRect.left - grabDX;
+        const y = e.clientY - gameRect.top  - grabDY;
+        dragging.style.left = x + 'px';
+        dragging.style.top  = y + 'px';
+      }
+
+      function onPointerUp(e) {
+        if (!dragging) return;
+        checkDrop(dragging);
+        dragging.releasePointerCapture?.(e.pointerId);
+        dragging = null;
+      }
+
+      // 綁定在 game 容器上（支援滑鼠 + 觸控）
+      game.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    /* === 配對檢查 === */
     function checkDrop(stamp) {
-      const idx = parseInt(stamp.dataset.index);
-      const frame = frames[idx];
-      const fRect = frame.getBoundingClientRect();
-      const sRect = stamp.getBoundingClientRect();
-      const frameSize = fRect.width;
+      const idx = Number(stamp.dataset.index);
+      const slot = slots[idx];
+      const slotRect = slot.getBoundingClientRect();
+      const stampRect = stamp.getBoundingClientRect();
 
-      if (Math.abs(fRect.left - sRect.left) < frameSize/3 &&
-          Math.abs(fRect.top - sRect.top) < frameSize/3) {
-        stamp.style.left = frame.style.left;
-        stamp.style.top = frame.style.top;
-        stamp.style.pointerEvents = "none";
-        correctAudio.play();
+      const size = slotRect.width; // 與郵票一致
+      const hit =
+        Math.abs((slotRect.left) - (stampRect.left)) < size / 3 &&
+        Math.abs((slotRect.top ) - (stampRect.top )) < size / 3;
+
+      if (hit) {
+        // 對齊到紅框
+        stamp.style.left = slot.style.left;
+        stamp.style.top  = slot.style.top;
+        stamp.style.pointerEvents = 'none';
         placedCount++;
-        if (placedCount === total) {
-          message.textContent = "🎉 有夠gâu！";
-          victoryAudio.play();
+        sfx.correct.play().catch(()=>{});
+        if (placedCount === basePositions.length) {
+          victoryEl.style.display = 'block';
+          sfx.victory.play().catch(()=>{});
         }
       } else {
-        wrongAudio.play();
+        sfx.wrong.play().catch(()=>{});
       }
     }
 
-    window.addEventListener("resize", initGame);
-    window.addEventListener("load", initGame);
+    /* === 視窗尺寸變化時：重算顯示盒子、重建紅框與郵票大小與位置 ===
+       （已放下的郵票不保留座標，直接依目前版面重計並重新散落，
+        這樣可以避免任何縮放造成的位移錯覺。） */
+    function layoutAll() {
+      placedCount = 0;
+      victoryEl.style.display = 'none';
+      buildSlots();
+      buildStamps();
+    }
+
+    /* === 事件 === */
+    shuffleBtn.addEventListener('click', scatterStamps);
+
+    // 等圖片真的載入後再進行版面計算（naturalWidth/Height 才可靠）
+    function start() {
+      if (map.naturalWidth && map.naturalHeight) {
+        layoutAll();
+      } else {
+        map.addEventListener('load', layoutAll, { once: true });
+      }
+    }
+
+    window.addEventListener('resize', layoutAll);
+    window.addEventListener('orientationchange', layoutAll);
+    start();
   </script>
 </body>
 </html>
