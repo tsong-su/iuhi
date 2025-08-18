@@ -8,27 +8,28 @@
       margin: 0;
       padding: 0;
       font-family: "Microsoft JhengHei", sans-serif;
-      background: url("game4_assets/north_map.png") no-repeat center center;
-      background-size: contain;
-      height: 100vh;
-      overflow: hidden;
+      background-color: #f0f0f0;
     }
     #gameContainer {
       position: relative;
       width: 100%;
-      height: 100%;
+      max-width: 1000px; /* 地圖最大寬度 */
+      margin: auto;
+    }
+    #map {
+      width: 100%;
+      display: block;
     }
     .stamp {
       position: absolute;
-      width: 100px;
-      height: 100px;
+      width: 8%;  /* 相對比例縮放 */
       cursor: grab;
     }
     .slot {
       position: absolute;
-      width: 100px;
-      height: 100px;
-      border: 2px dashed transparent; /* 不顯示邊框 */
+      width: 8%;
+      aspect-ratio: 1/1;
+      border: 2px dashed transparent;
     }
     #message {
       position: absolute;
@@ -40,16 +41,15 @@
       display: none;
       font-weight: bold;
       animation: grow 2s forwards;
+      pointer-events: none;
     }
     @keyframes grow {
       from { font-size: 20px; opacity: 0.5; }
       to { font-size: 120px; opacity: 1; }
     }
     #homeButton {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      display: block;
+      margin: 20px auto;
       padding: 12px 24px;
       font-size: 22px;
       font-weight: bold;
@@ -61,85 +61,82 @@
   </style>
 </head>
 <body>
-  <div id="gameContainer"></div>
-  <div id="message">有夠 gâu！</div>
+  <div id="gameContainer">
+    <img id="map" src="game4_assets/north_map.png" alt="地圖">
+    <div id="message">有夠 gâu！</div>
+  </div>
   <button id="homeButton" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
 
   <script>
     const container = document.getElementById("gameContainer");
 
-    // 大約估算的 12 個格子座標 (1760x1415 尺寸為基準)
+    // 📍 改用百分比 (相對於地圖)
     const answerPositions = [
-      {x:200, y:200}, {x:400, y:250}, {x:600, y:220},
-      {x:800, y:300}, {x:1000, y:350}, {x:1200, y:320},
-      {x:1400, y:400}, {x:300, y:600}, {x:500, y:650},
-      {x:700, y:700}, {x:900, y:750}, {x:1100, y:800}
+      {x:10, y:10}, {x:25, y:12}, {x:40, y:15},
+      {x:55, y:20}, {x:70, y:22}, {x:80, y:25},
+      {x:90, y:28}, {x:15, y:40}, {x:30, y:42},
+      {x:45, y:50}, {x:60, y:55}, {x:75, y:60}
     ];
 
     const stamps = [];
-    const slots = [];
+    let correctCount = 0;
 
-    // 建立格子
     answerPositions.forEach((pos, index) => {
+      // slot
       const slot = document.createElement("div");
       slot.className = "slot";
-      slot.style.left = pos.x + "px";
-      slot.style.top = pos.y + "px";
+      slot.style.left = pos.x + "%";
+      slot.style.top = pos.y + "%";
       container.appendChild(slot);
-      slots.push(slot);
-    });
 
-    // 隨機散佈郵票
-    answerPositions.forEach((pos, index) => {
+      // stamp
       const stamp = document.createElement("img");
       stamp.src = `game4_assets/stamp${index+1}.jpg`;
       stamp.className = "stamp";
-      stamp.style.left = (50 + (index%6)*120) + "px";
-      stamp.style.top = (900 + Math.floor(index/6)*120) + "px";
+      stamp.style.left = (5 + (index%6)*12) + "%";
+      stamp.style.top = (70 + Math.floor(index/6)*15) + "%";
       stamp.dataset.index = index;
       container.appendChild(stamp);
-      stamps.push(stamp);
 
       makeDraggable(stamp, pos, index);
     });
-
-    let correctCount = 0;
 
     function makeDraggable(stamp, targetPos, index) {
       let offsetX, offsetY, originalX, originalY;
 
       stamp.onmousedown = function(e) {
+        e.preventDefault();
+        const rect = container.getBoundingClientRect();
+        const mapW = rect.width, mapH = rect.height;
+
         offsetX = e.clientX - stamp.offsetLeft;
         offsetY = e.clientY - stamp.offsetTop;
         originalX = stamp.offsetLeft;
         originalY = stamp.offsetTop;
 
         document.onmousemove = function(e) {
-          stamp.style.left = (e.clientX - offsetX) + "px";
-          stamp.style.top = (e.clientY - offsetY) + "px";
+          stamp.style.left = (e.clientX - rect.left - offsetX) + "px";
+          stamp.style.top = (e.clientY - rect.top - offsetY) + "px";
         };
 
         document.onmouseup = function(e) {
           document.onmousemove = null;
           document.onmouseup = null;
 
-          const dx = stamp.offsetLeft - targetPos.x;
-          const dy = stamp.offsetTop - targetPos.y;
+          const dx = stamp.offsetLeft - targetPos.x/100 * mapW;
+          const dy = stamp.offsetTop - targetPos.y/100 * mapH;
           const distance = Math.sqrt(dx*dx + dy*dy);
 
-          if (distance <= 30) {
-            // 吸附到正確位置
-            stamp.style.left = targetPos.x + "px";
-            stamp.style.top = targetPos.y + "px";
+          if (distance <= 40) {
+            stamp.style.left = (targetPos.x/100 * mapW) + "px";
+            stamp.style.top = (targetPos.y/100 * mapH) + "px";
             stamp.onmousedown = null;
             new Audio(`game4_assets/stamp${index+1}.mp3`).play();
             correctCount++;
-
             if (correctCount === 12) {
               document.getElementById("message").style.display = "block";
             }
           } else {
-            // 錯誤 -> 彈回原位
             stamp.style.left = originalX + "px";
             stamp.style.top = originalY + "px";
             new Audio("game4_assets/wrong.mp3").play();
