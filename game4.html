@@ -44,7 +44,7 @@
     }
     .red-box {
       position: absolute;
-      border: 3px solid red;
+      border: 3px dashed red; /* 改成紅色虛線框 */
       pointer-events: none;
       box-sizing: border-box;
     }
@@ -101,7 +101,7 @@
     function createRedBoxes() {
       document.querySelectorAll(".red-box").forEach(e=>e.remove());
       const mapRect = map.getBoundingClientRect();
-      const boxSize = mapRect.width * 0.08;
+      const boxSize = mapRect.width * 0.08; // 紅框大小 = 郵票大小
       basePositions.forEach(pos=>{
         const box = document.createElement("div");
         box.className="red-box";
@@ -116,7 +116,7 @@
       stamps.forEach(s=>s.remove());
       stamps.length=0;
       const mapRect = map.getBoundingClientRect();
-      const size = mapRect.width * 0.08;
+      const size = mapRect.width * 0.08; // 郵票大小
       for(let i=1;i<=12;i++){
         const img=document.createElement("img");
         img.src=`game4_assets/${i}.jpg`;
