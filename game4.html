@@ -42,12 +42,12 @@
     #map {
       width: 100%;
       height: 100%;
-      object-fit: contain; /* ✅ 塞進畫面 */
+      object-fit: contain;
     }
 
     .target {
       position: absolute;
-      width: 6%;  /* ✅ 縮小一點 */
+      width: 5%;  /* ✅ 再縮小一點 */
       aspect-ratio: 1 / 1;
       border: 3px dashed red;
       box-sizing: border-box;
@@ -56,11 +56,10 @@
 
     .stamp {
       position: absolute;
-      width: 6%;  /* ✅ 與紅框一致 */
+      width: 5%; /* ✅ 和紅框一致 */
       aspect-ratio: 1 / 1;
       cursor: grab;
       z-index: 10;
-      display: none; /* ✅ 初始不顯示，等圖片載入 */
     }
 
     #controls {
@@ -122,11 +121,18 @@
       {"x":0.9173,"y":0.4409}
     ];
 
+    const map = document.getElementById("map");
     const mapContainer = document.getElementById("map-container");
     const victoryMsg = document.getElementById("victory-message");
     const victorySound = new Audio("game4_assets/victory.mp3");
 
     let stamps = [];
+
+    map.onload = () => {
+      createTargets();
+      createStamps();
+      updateTargetPositions();
+    };
 
     function createTargets() {
       basePositions.forEach((pos, i) => {
@@ -135,16 +141,14 @@
         div.dataset.index = i;
         mapContainer.appendChild(div);
       });
-      updateTargetPositions();
     }
 
     function updateTargetPositions() {
-      const containerW = mapContainer.clientWidth;
-      const containerH = mapContainer.clientHeight;
+      const mapRect = map.getBoundingClientRect();
       document.querySelectorAll(".target").forEach((div, i) => {
         const {x, y} = basePositions[i];
-        div.style.left = (x * containerW - div.offsetWidth / 2) + "px";
-        div.style.top = (y * containerH - div.offsetHeight / 2) + "px";
+        div.style.left = (mapRect.left + x * mapRect.width - div.offsetWidth/2) + "px";
+        div.style.top = (mapRect.top + y * mapRect.height - div.offsetHeight/2) + "px";
       });
     }
 
@@ -156,16 +160,14 @@
         img.src = `game4_assets/stamp${i+1}.png`;
         img.className = "stamp";
         img.dataset.index = i;
-
-        img.onload = () => {
-          img.style.display = "block"; // ✅ 確保載入後才出現
-          shuffleStamp(img);
-        };
-
+        img.draggable = true;
         mapContainer.appendChild(img);
         stamps.push(img);
-      });
 
+        img.onload = () => {
+          shuffleStamp(img);
+        };
+      });
       initDragDrop();
     }
 
@@ -174,13 +176,17 @@
     }
 
     function shuffleStamp(stamp) {
-      const containerW = mapContainer.clientWidth;
-      const containerH = mapContainer.clientHeight;
+      const mapRect = map.getBoundingClientRect();
       let left, top;
       do {
-        left = Math.random() * (containerW - stamp.offsetWidth);
-        top = Math.random() * (containerH - stamp.offsetHeight);
-      } while (left > containerW*0.25 && left < containerW*0.75 && top > containerH*0.25 && top < containerH*0.75);
+        left = mapRect.left + Math.random() * (mapRect.width - stamp.offsetWidth);
+        top = mapRect.top + Math.random() * (mapRect.height - stamp.offsetHeight);
+      } while (
+        left > mapRect.left + mapRect.width*0.25 &&
+        left < mapRect.left + mapRect.width*0.75 &&
+        top > mapRect.top + mapRect.height*0.25 &&
+        top < mapRect.top + mapRect.height*0.75
+      );
       stamp.style.left = left + "px";
       stamp.style.top = top + "px";
     }
@@ -203,21 +209,16 @@
 
       mapContainer.addEventListener("drop", e => {
         if (!dragged) return;
-        const rect = mapContainer.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
         const idx = dragged.dataset.index;
         const target = document.querySelector(`.target[data-index='${idx}']`);
         const tRect = target.getBoundingClientRect();
-        const within = x >= tRect.left - rect.left &&
-                       x <= tRect.right - rect.left &&
-                       y >= tRect.top - rect.top &&
-                       y <= tRect.bottom - rect.top;
 
-        if (within) {
-          dragged.style.left = (parseFloat(target.style.left)) + "px";
-          dragged.style.top = (parseFloat(target.style.top)) + "px";
+        if (e.clientX >= tRect.left &&
+            e.clientX <= tRect.right &&
+            e.clientY >= tRect.top &&
+            e.clientY <= tRect.bottom) {
+          dragged.style.left = target.style.left;
+          dragged.style.top = target.style.top;
           dragged.draggable = false;
           dragged.style.opacity = 0.7;
         }
@@ -232,14 +233,7 @@
       }
     }
 
-    window.addEventListener("resize", () => {
-      updateTargetPositions();
-    });
-
-    window.onload = () => {
-      createTargets();
-      createStamps();
-    };
+    window.addEventListener("resize", updateTargetPositions);
   </script>
 </body>
 </html>
