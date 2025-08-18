@@ -22,7 +22,7 @@
       height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: flex-start; /* ✅ 避免地圖下移 */
+      align-items: flex-start;
     }
     #map {
       max-width: 70%;
@@ -34,12 +34,12 @@
       position: absolute;
       border: 3px dashed red;
       width: 6%;
-      aspect-ratio: 1 / 1; /* ✅ 保證正方形 */
+      aspect-ratio: 1 / 1;
       box-sizing: border-box;
     }
     .stamp {
       position: absolute;
-      width: 5.8%; /* ✅ 微調小一些 */
+      width: 6%;  /* ✅ 和紅框一致 */
       height: auto;
       cursor: grab;
       z-index: 10;
@@ -85,7 +85,6 @@
     <div id="message">有夠 gâu！</div>
   </div>
 
-  <audio id="correctSound"></audio>
   <audio id="wrongSound" src="game4_assets/wrong.mp3"></audio>
   <audio id="victorySound" src="game4_assets/victory.mp3"></audio>
 
@@ -108,7 +107,6 @@
     const stampsContainer = document.getElementById('stamps');
     const targetsContainer = document.getElementById('targets');
     const map = document.getElementById('map');
-    const correctSound = document.getElementById('correctSound');
     const wrongSound = document.getElementById('wrongSound');
     const victorySound = document.getElementById('victorySound');
     const message = document.getElementById('message');
@@ -167,9 +165,26 @@
       const cW = container.clientWidth;
       const cH = container.clientHeight;
 
+      const positions = [];
+
       stamps.forEach(stamp => {
-        const randX = Math.random() * (cW - stamp.clientWidth);
-        const randY = Math.random() * (cH - stamp.clientHeight);
+        let valid = false, randX, randY;
+        while (!valid) {
+          randX = Math.random() * (cW - stamp.clientWidth * 1.2);
+          randY = Math.random() * (cH - stamp.clientHeight * 1.2);
+
+          valid = true;
+          for (let pos of positions) {
+            const dx = pos.x - randX;
+            const dy = pos.y - randY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < stamp.clientWidth * 1.2) { // 保持間距
+              valid = false;
+              break;
+            }
+          }
+        }
+        positions.push({x: randX, y: randY});
         stamp.style.left = randX + "px";
         stamp.style.top = randY + "px";
       });
@@ -190,8 +205,7 @@
         stamp.draggable = false;
         placedCount++;
 
-        correctSound.src = `game4_assets/correct${parseInt(stampIndex) + 1}.mp3`;
-        correctSound.load();  // ✅ 確保每次能播放
+        const correctSound = new Audio(`game4_assets/correct${parseInt(stampIndex) + 1}.mp3`);
         correctSound.play();
 
         if (placedCount === basePositions.length) {
