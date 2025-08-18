@@ -1,65 +1,148 @@
-<style>
-  .target {
-    position: absolute;
-    width: 4.5%;   /* 紅框再縮小 */
-    aspect-ratio: 1 / 1;
-    border: 3px dashed red;
-    box-sizing: border-box;
-    pointer-events: none;
-  }
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+    }
 
-  .stamp {
-    position: absolute;
-    width: 10%;   /* 郵票固定 10% */
-    aspect-ratio: 1 / 1;
-    cursor: grab;
-    z-index: 10;
-  }
-</style>
+    h1 {
+      font-size: 28px;
+      margin: 10px 0;
+    }
 
-<script>
-  function createStamps() {
-    stamps.forEach(s => s.remove());
-    stamps = [];
+    #mapContainer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #fff;
+    }
 
-    basePositions.forEach((pos, i) => {
-      const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i+1}.png`;   // ← 確認檔案是否存在
-      img.className = "stamp";
-      img.dataset.index = i;
-      img.draggable = true;
-      mapContainer.appendChild(img);
-      stamps.push(img);
+    #map {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
 
-      // 不等 onload，直接隨機散落
-      shuffleStamp(img);
+    .target {
+      position: absolute;
+      width: 4.5%;
+      aspect-ratio: 1 / 1;
+      border: 3px dashed red;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .stamp {
+      position: absolute;
+      width: 10%;
+      aspect-ratio: 1 / 1;
+      cursor: grab;
+      z-index: 10;
+    }
+
+    #shuffleBtn {
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
+  <button id="shuffleBtn">🔄 重排郵票</button>
+  <div id="mapContainer">
+    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
+  </div>
+
+  <script>
+    const basePositions = [
+      {"x":0.9953,"y":0.1551},
+      {"x":0.7589,"y":0.0012},
+      {"x":0.5749,"y":0.0249},
+      {"x":0.3782,"y":0.1872},
+      {"x":0.1291,"y":0.1264},
+      {"x":0.115,"y":0.3242},
+      {"x":0.0077,"y":0.5255},
+      {"x":0.0435,"y":0.9668},
+      {"x":0.2479,"y":0.9922},
+      {"x":0.4791,"y":0.9043},
+      {"x":0.7372,"y":0.4916},
+      {"x":0.9173,"y":0.4409}
+    ];
+
+    const mapContainer = document.getElementById("mapContainer");
+    const map = document.getElementById("map");
+    let stamps = [];
+
+    // 初始化紅框
+    function createTargets() {
+      basePositions.forEach(pos => {
+        const div = document.createElement("div");
+        div.className = "target";
+        div.style.left = (pos.x * 100) + "%";
+        div.style.top  = (pos.y * 100) + "%";
+        div.style.transform = "translate(-50%, -50%)";
+        mapContainer.appendChild(div);
+      });
+    }
+
+    // 初始化郵票
+    function createStamps() {
+      stamps.forEach(s => s.remove());
+      stamps = [];
+
+      basePositions.forEach((pos, i) => {
+        const img = document.createElement("img");
+        img.src = `game4_assets/stamp${i+1}.png`;
+        img.className = "stamp";
+        img.dataset.index = i;
+
+        img.onerror = () => {
+          console.warn(`⚠ 郵票圖檔缺失: stamp${i+1}.png`);
+          img.style.background = "yellow";
+          img.style.border = "2px solid black";
+        };
+
+        mapContainer.appendChild(img);
+        stamps.push(img);
+        shuffleStamp(img);
+      });
+    }
+
+    // 隨機散落郵票
+    function shuffleStamp(stamp) {
+      const mapW = map.clientWidth;
+      const mapH = map.clientHeight;
+      const offsetX = (mapContainer.clientWidth - mapW) / 2;
+      const offsetY = (mapContainer.clientHeight - mapH) / 2;
+
+      let left, top, tries = 0;
+      do {
+        left = offsetX + Math.random() * mapW * 0.9;
+        top  = offsetY + Math.random() * mapH * 0.9;
+        tries++;
+      } while (tries < 50 && left > offsetX+mapW*0.2 && left < offsetX+mapW*0.8 && top > offsetY+mapH*0.2 && top < offsetY+mapH*0.8);
+
+      stamp.style.left = left + "px";
+      stamp.style.top = top + "px";
+    }
+
+    document.getElementById("shuffleBtn").addEventListener("click", () => {
+      stamps.forEach(s => shuffleStamp(s));
     });
 
-    initDragDrop();
-  }
-
-  function shuffleStamp(stamp) {
-    const mapW = map.clientWidth;
-    const mapH = map.clientHeight;
-    const offsetX = (mapContainer.clientWidth - mapW) / 2;
-    const offsetY = (mapContainer.clientHeight - mapH) / 2;
-
-    let left, top;
-    let tries = 0;
-
-    do {
-      left = offsetX + Math.random() * (mapW - mapW * 0.1);
-      top  = offsetY + Math.random() * (mapH - mapH * 0.1);
-      tries++;
-    } while (
-      left > offsetX + mapW*0.25 &&
-      left < offsetX + mapW*0.75 &&
-      top  > offsetY + mapH*0.25 &&
-      top  < offsetY + mapH*0.75 &&
-      tries < 50
-    );
-
-    stamp.style.left = left + "px";
-    stamp.style.top = top + "px";
-  }
-</script>
+    createTargets();
+    createStamps();
+  </script>
+</body>
+</html>
