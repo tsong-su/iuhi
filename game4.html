@@ -22,7 +22,7 @@
       height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start; /* ✅ 避免地圖下移 */
     }
     #map {
       max-width: 70%;
@@ -34,12 +34,12 @@
       position: absolute;
       border: 3px dashed red;
       width: 6%;
-      height: 6%;  /* 保持正方形 */
+      aspect-ratio: 1 / 1; /* ✅ 保證正方形 */
       box-sizing: border-box;
     }
     .stamp {
       position: absolute;
-      width: 6.5%; /* 比紅框稍大 */
+      width: 5.8%; /* ✅ 微調小一些 */
       height: auto;
       cursor: grab;
       z-index: 10;
@@ -118,21 +118,21 @@
     function createGame() {
       targetsContainer.innerHTML = "";
       stampsContainer.innerHTML = "";
+      placedCount = 0;
 
-      // 建立紅框，位置相對 map 大小計算
+      // 紅框
       basePositions.forEach((pos, i) => {
         const target = document.createElement('div');
         target.className = "target";
         target.dataset.index = i;
 
-        // 綁定 dragover & drop
         target.addEventListener("dragover", e => e.preventDefault());
         target.addEventListener("drop", dropStamp);
 
         targetsContainer.appendChild(target);
       });
 
-      // 建立郵票
+      // 郵票
       for (let i = 1; i <= 12; i++) {
         const stamp = document.createElement('img');
         stamp.src = `game4_assets/stamp${i}.jpg`;
@@ -153,8 +153,11 @@
       const targets = document.querySelectorAll(".target");
 
       targets.forEach((target, i) => {
-        target.style.left = (mapRect.left + basePositions[i].x * mapRect.width - target.offsetWidth/2) + "px";
-        target.style.top  = (mapRect.top  + basePositions[i].y * mapRect.height - target.offsetHeight/2) + "px";
+        const x = mapRect.left + basePositions[i].x * mapRect.width;
+        const y = mapRect.top  + basePositions[i].y * mapRect.height;
+
+        target.style.left = (x - target.offsetWidth / 2) + "px";
+        target.style.top  = (y - target.offsetHeight / 2) + "px";
       });
     }
 
@@ -188,6 +191,7 @@
         placedCount++;
 
         correctSound.src = `game4_assets/correct${parseInt(stampIndex) + 1}.mp3`;
+        correctSound.load();  // ✅ 確保每次能播放
         correctSound.play();
 
         if (placedCount === basePositions.length) {
