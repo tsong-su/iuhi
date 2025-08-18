@@ -6,224 +6,220 @@
   <style>
     body {
       margin: 0;
-      text-align: center;
-      background: #fff;
+      padding: 0;
+      background: #f0f0f0;
+      overflow: hidden;
     }
-
-    h1 {
-      font-size: 28px;
-      margin: 10px 0;
-      color: #333;
-    }
-
     #game-container {
       position: relative;
       width: 100vw;
-      height: 80vh;
-      overflow: hidden;
-      margin: auto;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-
     #map {
-      max-height: 70%;
       max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
       display: block;
-      margin: auto;
     }
-
     .frame {
       position: absolute;
       border: 3px dashed red;
-      transform: translate(-50%, -50%);
       pointer-events: none;
+      box-sizing: border-box;
     }
-
     .stamp {
       position: absolute;
       cursor: grab;
-      user-select: none;
       z-index: 10;
+      transition: transform 0.2s;
     }
-
-    #buttons {
+    .stamp:active {
+      cursor: grabbing;
+      transform: scale(1.1);
+    }
+    #ui {
       position: absolute;
       top: 10px;
       left: 10px;
       display: flex;
-      flex-direction: column;
       gap: 10px;
       z-index: 20;
     }
-
-    #size-buttons {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      z-index: 20;
+    #ui button {
+      padding: 5px 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #1976d2;
+      color: white;
+      cursor: pointer;
     }
-
-    #victory-message {
-      display: none;
-      font-size: 36px;
-      color: red;
+    #ui button:hover {
+      background: #0d47a1;
+    }
+    #message {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: red;
+      display: none;
       z-index: 30;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
   <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-
-    <div id="buttons">
-      <button onclick="shuffleStamps()">🔄 重排郵票</button>
-      <button onclick="location.reload()">🏠 回到遊戲首頁</button>
+    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
+    <div id="frames"></div>
+    <div id="stamps"></div>
+    <div id="ui">
+      <button onclick="reshuffleStamps()">🔄 重排郵票</button>
+      <button onclick="goHome()">🏠 回到遊戲首頁</button>
     </div>
-
-    <div id="size-buttons">
-      <button onclick="resizeStamps(1.1)">➕ 放大郵票</button>
-      <button onclick="resizeStamps(0.9)">➖ 縮小郵票</button>
-    </div>
-
-    <div id="victory-message">🎉 有夠 gâu 🎉</div>
+    <div id="message">有夠gâu！</div>
   </div>
 
-  <audio id="success-sound" src="game4_assets/victory.mp3"></audio>
-  <audio id="error-sound" src="game4_assets/error.mp3"></audio>
-
   <script>
-    const basePositions = [
-      {x: 0.92, y: 0.18}, {x: 0.76, y: 0.05}, {x: 0.58, y: 0.08},
-      {x: 0.36, y: 0.20}, {x: 0.15, y: 0.15}, {x: 0.12, y: 0.35},
-      {x: 0.05, y: 0.55}, {x: 0.08, y: 0.90}, {x: 0.28, y: 0.95},
-      {x: 0.50, y: 0.85}, {x: 0.72, y: 0.50}, {x: 0.90, y: 0.45}
+    const frameData = [
+      {id:1, x:20, y:15}, {id:2, x:35, y:18}, {id:3, x:50, y:22},
+      {id:4, x:65, y:25}, {id:5, x:75, y:40}, {id:6, x:60, y:50},
+      {id:7, x:45, y:55}, {id:8, x:30, y:60}, {id:9, x:20, y:70},
+      {id:10, x:40, y:75}, {id:11, x:55, y:80}, {id:12, x:70, y:85}
     ];
-
-    const container = document.getElementById("game-container");
+    const framesContainer = document.getElementById("frames");
+    const stampsContainer = document.getElementById("stamps");
     const map = document.getElementById("map");
-    const successSound = document.getElementById("success-sound");
-    const errorSound = document.getElementById("error-sound");
-    const victoryMessage = document.getElementById("victory-message");
+    const message = document.getElementById("message");
+    const frameSizePercent = 8; // 框與郵票大小 (相對於地圖)
 
     let stamps = [];
-    let placedCount = 0;
-    let frameScale = 0.08; // 預設比例
+    let correctCount = 0;
 
-    function createFramesAndStamps() {
-      stamps = [];
-      placedCount = 0;
-      container.querySelectorAll(".frame, .stamp").forEach(el => el.remove());
-
-      const containerRect = container.getBoundingClientRect();
-      const frameSize = containerRect.width * frameScale;
-
-      basePositions.forEach((pos, i) => {
-        const frame = document.createElement("div");
-        frame.className = "frame";
-        frame.style.width = `${frameSize}px`;
-        frame.style.height = `${frameSize}px`;
-        frame.style.left = `${pos.x * containerRect.width}px`;
-        frame.style.top = `${pos.y * containerRect.height}px`;
-        container.appendChild(frame);
-
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${i+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.style.width = `${frameSize}px`;
-        stamp.style.height = `${frameSize}px`;
-        container.appendChild(stamp);
-
-        stamps.push({el: stamp, frame: frame, original: {x:0,y:0}});
+    // 建立紅框
+    function createFrames() {
+      frameData.forEach(fd => {
+        const f = document.createElement("div");
+        f.className = "frame";
+        f.dataset.id = fd.id;
+        framesContainer.appendChild(f);
       });
-
-      shuffleStamps();
+      updateFrames();
     }
 
-    function shuffleStamps() {
-      const containerRect = container.getBoundingClientRect();
-      const frameSize = containerRect.width * frameScale;
+    // 根據地圖大小更新紅框
+    function updateFrames() {
       const mapRect = map.getBoundingClientRect();
-
-      stamps.forEach(({el, original}) => {
-        let x, y;
-        if (Math.random() > 0.5) {
-          x = Math.random() * (mapRect.left - frameSize - 10);
-        } else {
-          x = mapRect.right + Math.random() * (containerRect.width - mapRect.right - frameSize - 10);
-        }
-        y = mapRect.top + Math.random() * (mapRect.height - frameSize);
-
-        x -= containerRect.left;
-        y -= containerRect.top;
-
-        el.style.left = `${x}px`;
-        el.style.top = `${y}px`;
-        original.x = x;
-        original.y = y;
-
-        enableDrag(el, original);
+      frameData.forEach((fd, i) => {
+        const f = framesContainer.children[i];
+        const size = mapRect.width * (frameSizePercent/100);
+        f.style.width = size + "px";
+        f.style.height = size + "px";
+        f.style.left = (mapRect.left + (fd.x/100)*mapRect.width - size/2) + "px";
+        f.style.top = (mapRect.top + (fd.y/100)*mapRect.height - size/2) + "px";
       });
     }
 
-    function enableDrag(stamp, original) {
-      let offsetX, offsetY;
-      const obj = stamps.find(s => s.el === stamp);
+    // 建立郵票
+    function createStamps() {
+      for(let i=1;i<=12;i++){
+        const s = document.createElement("img");
+        s.src = `game4_assets/stamp${i}.jpg`;
+        s.className = "stamp";
+        s.dataset.id = i;
+        s.draggable = true;
+        s.style.width = (map.width * (frameSizePercent/100)) + "px";
+        stampsContainer.appendChild(s);
+        stamps.push(s);
 
-      stamp.onmousedown = function(e) {
-        e.preventDefault();
-        offsetX = e.clientX - stamp.offsetLeft;
-        offsetY = e.clientY - stamp.offsetTop;
+        s.addEventListener("dragstart", dragStart);
+        s.addEventListener("dragend", dragEnd);
+      }
+      reshuffleStamps();
+    }
 
-        document.onmousemove = function(e) {
-          stamp.style.left = `${e.clientX - offsetX}px`;
-          stamp.style.top = `${e.clientY - offsetY}px`;
-        };
+    // 隨機散佈郵票
+    function reshuffleStamps() {
+      const mapRect = map.getBoundingClientRect();
+      stamps.forEach(s=>{
+        const size = mapRect.width * (frameSizePercent/100);
+        s.style.width = size+"px";
+        s.style.height = "auto";
+        const x = Math.random()*(window.innerWidth-size);
+        const y = Math.random()*(window.innerHeight-size-100)+100;
+        s.style.left = x+"px";
+        s.style.top = y+"px";
+      });
+    }
 
-        document.onmouseup = function() {
-          document.onmousemove = null;
-          document.onmouseup = null;
-
-          const frameRect = obj.frame.getBoundingClientRect();
-          const stampRect = stamp.getBoundingClientRect();
-
-          if (!(stampRect.right < frameRect.left ||
-                stampRect.left > frameRect.right ||
-                stampRect.bottom < frameRect.top ||
-                stampRect.top > frameRect.bottom)) {
-            successSound.play();
-            stamp.style.left = obj.frame.style.left;
-            stamp.style.top = obj.frame.style.top;
-            stamp.style.pointerEvents = "none";
-            placedCount++;
-            if (placedCount === stamps.length) {
-              victoryMessage.style.display = "block";
-            }
-          } else {
-            errorSound.play();
-            stamp.style.left = `${original.x}px`;
-            stamp.style.top = `${original.y}px`;
+    // 拖曳
+    let draggedStamp=null, startX=0, startY=0;
+    function dragStart(e){
+      draggedStamp=e.target;
+      startX=parseInt(draggedStamp.style.left);
+      startY=parseInt(draggedStamp.style.top);
+    }
+    function dragEnd(e){
+      if(!draggedStamp)return;
+      let dropped=false;
+      const frames=document.querySelectorAll(".frame");
+      frames.forEach(f=>{
+        const r=f.getBoundingClientRect();
+        const s=draggedStamp.getBoundingClientRect();
+        if(!(s.right<r.left||s.left>r.right||s.bottom<r.top||s.top>r.bottom)){
+          if(f.dataset.id===draggedStamp.dataset.id){
+            // 正確
+            draggedStamp.style.left=r.left+"px";
+            draggedStamp.style.top=r.top+"px";
+            playSound(`game4_assets/stamp${draggedStamp.dataset.id}.mp3`);
+            draggedStamp.draggable=false;
+            draggedStamp.style.zIndex=5;
+            correctCount++;
+            if(correctCount===12) gameWin();
+          }else{
+            // 錯誤
+            playSound("game4_assets/wrong.mp3");
+            draggedStamp.style.left=startX+"px";
+            draggedStamp.style.top=startY+"px";
           }
-        };
-      };
+          dropped=true;
+        }
+      });
+      if(!dropped){
+        draggedStamp.style.left=startX+"px";
+        draggedStamp.style.top=startY+"px";
+      }
+      draggedStamp=null;
     }
 
-    function resizeStamps(factor) {
-      frameScale *= factor;
-      createFramesAndStamps();
+    function playSound(file){
+      const a=new Audio(file);
+      a.play();
     }
 
-    // 初始建立
-    createFramesAndStamps();
+    function gameWin(){
+      message.style.display="block";
+      playSound("game4_assets/victory.mp3");
+    }
 
-    // 視窗縮放時自動更新
-    window.addEventListener("resize", createFramesAndStamps);
+    function goHome(){
+      window.location.href="index.html";
+    }
+
+    window.addEventListener("resize", ()=>{
+      updateFrames();
+      reshuffleStamps();
+    });
+
+    window.onload=()=>{
+      createFrames();
+      createStamps();
+    };
   </script>
 </body>
 </html>
