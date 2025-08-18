@@ -70,30 +70,36 @@
     const map = document.getElementById("map");
     const success = document.getElementById("success");
 
-    // 答案座標（依原始圖片大小）
+    // 原始圖片大小 (1760 × 1415)
+    const baseWidth = 1760;
+    const baseHeight = 1415;
+
+    // 答案座標 (以原始圖為基準)
     const basePositions = [
       {x:200,y:300},{x:400,y:350},{x:600,y:280},
       {x:800,y:500},{x:1000,y:600},{x:1200,y:400},
-      {x:1400,y:700},{x:1600,y:300},{x:1800,y:500},
+      {x:1400,y:700},{x:1600,y:300},{x:1700,y:500},
       {x:600,y:800},{x:900,y:900},{x:1500,y:1000}
     ];
 
     let stampsPlaced = 0;
 
     map.onload = () => {
-      const scaleX = map.width / map.naturalWidth;
-      const scaleY = map.height / map.naturalHeight;
+      // 計算縮放比例
+      const scaleX = map.width / baseWidth;
+      const scaleY = map.height / baseHeight;
 
+      // 對應縮放後的座標
       const answerPositions = basePositions.map(p => ({
         x: p.x * scaleX,
         y: p.y * scaleY
       }));
 
-      // 已經放置的郵票位置，避免重疊
+      // 已放置的郵票位置，避免重疊
       const placedStamps = [];
 
       answerPositions.forEach((pos, i) => {
-        // 建立小虛線框
+        // 建立虛線框
         const slot = document.createElement("div");
         slot.className = "slot";
         slot.style.left = (pos.x - 40) + "px";
@@ -106,19 +112,23 @@
         stamp.className = "stamp";
         stamp.dataset.index = i;
 
-        // 隨機位置（避免重疊）
-        let randX, randY, valid=false;
-        while(!valid){
-          randX = Math.random()*(map.width-100);
-          randY = Math.random()*(map.height-100);
+        // ===== 郵票隨機分散，避免重疊 =====
+        let randX, randY, valid=false, attempts=0;
+        while(!valid && attempts<1000){
+          attempts++;
+          // 分四象限平均散落
+          const region = i % 4;
+          if(region===0){ randX = Math.random()*(map.width/2 - 100); randY = Math.random()*(map.height/2 - 100);}
+          if(region===1){ randX = map.width/2 + Math.random()*(map.width/2 - 100); randY = Math.random()*(map.height/2 - 100);}
+          if(region===2){ randX = Math.random()*(map.width/2 - 100); randY = map.height/2 + Math.random()*(map.height/2 - 100);}
+          if(region===3){ randX = map.width/2 + Math.random()*(map.width/2 - 100); randY = map.height/2 + Math.random()*(map.height/2 - 100);}
+          
+          // 檢查避免重疊
           valid = true;
           for(const p of placedStamps){
             const dx = randX - p.x;
             const dy = randY - p.y;
-            if(Math.sqrt(dx*dx + dy*dy) < 100){ // 間隔至少100px
-              valid = false;
-              break;
-            }
+            if(Math.sqrt(dx*dx + dy*dy) < 100){ valid = false; break; }
           }
         }
         placedStamps.push({x:randX,y:randY});
@@ -127,6 +137,7 @@
         stamp.style.top = randY + "px";
         container.appendChild(stamp);
 
+        // 拖曳功能
         dragElement(stamp, pos, i);
       });
 
@@ -165,7 +176,7 @@
           const dy = stampY - correctPos.y;
           const dist = Math.sqrt(dx*dx + dy*dy);
 
-          if(dist < 40){ // 容錯範圍
+          if(dist < 40){
             elmnt.style.left = (correctPos.x-40)+"px";
             elmnt.style.top = (correctPos.y-40)+"px";
             elmnt.onmousedown = null;
