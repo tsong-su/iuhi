@@ -40,14 +40,15 @@
     }
 
     #map {
-      width: 100%;
-      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
+      display: block;
     }
 
     .target {
       position: absolute;
-      width: 5%;  /* ✅ 再縮小一點 */
+      width: 5%;
       aspect-ratio: 1 / 1;
       border: 3px dashed red;
       box-sizing: border-box;
@@ -56,7 +57,7 @@
 
     .stamp {
       position: absolute;
-      width: 5%; /* ✅ 和紅框一致 */
+      width: 5%;
       aspect-ratio: 1 / 1;
       cursor: grab;
       z-index: 10;
@@ -87,6 +88,7 @@
       font-weight: bold;
       color: green;
       display: none;
+      z-index: 20;
     }
   </style>
 </head>
@@ -144,11 +146,15 @@
     }
 
     function updateTargetPositions() {
-      const mapRect = map.getBoundingClientRect();
+      const mapW = map.clientWidth;
+      const mapH = map.clientHeight;
+      const offsetX = (mapContainer.clientWidth - mapW) / 2;
+      const offsetY = (mapContainer.clientHeight - mapH) / 2;
+
       document.querySelectorAll(".target").forEach((div, i) => {
         const {x, y} = basePositions[i];
-        div.style.left = (mapRect.left + x * mapRect.width - div.offsetWidth/2) + "px";
-        div.style.top = (mapRect.top + y * mapRect.height - div.offsetHeight/2) + "px";
+        div.style.left = (offsetX + x * mapW - div.offsetWidth/2) + "px";
+        div.style.top  = (offsetY + y * mapH - div.offsetHeight/2) + "px";
       });
     }
 
@@ -176,16 +182,20 @@
     }
 
     function shuffleStamp(stamp) {
-      const mapRect = map.getBoundingClientRect();
+      const mapW = map.clientWidth;
+      const mapH = map.clientHeight;
+      const offsetX = (mapContainer.clientWidth - mapW) / 2;
+      const offsetY = (mapContainer.clientHeight - mapH) / 2;
+
       let left, top;
       do {
-        left = mapRect.left + Math.random() * (mapRect.width - stamp.offsetWidth);
-        top = mapRect.top + Math.random() * (mapRect.height - stamp.offsetHeight);
+        left = offsetX + Math.random() * (mapW - stamp.offsetWidth);
+        top = offsetY + Math.random() * (mapH - stamp.offsetHeight);
       } while (
-        left > mapRect.left + mapRect.width*0.25 &&
-        left < mapRect.left + mapRect.width*0.75 &&
-        top > mapRect.top + mapRect.height*0.25 &&
-        top < mapRect.top + mapRect.height*0.75
+        left > offsetX + mapW*0.25 &&
+        left < offsetX + mapW*0.75 &&
+        top > offsetY + mapH*0.25 &&
+        top < offsetY + mapH*0.75
       );
       stamp.style.left = left + "px";
       stamp.style.top = top + "px";
