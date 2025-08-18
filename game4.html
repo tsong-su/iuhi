@@ -1,65 +1,71 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
-      background: #f0f0f0;
-      font-family: "Microsoft JhengHei", sans-serif;
+      font-family: Arial, sans-serif;
+      background-color: #fff;
       overflow: hidden;
     }
-    #top-bar {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      gap: 10px;
-      z-index: 1000;
+    header {
+      text-align: center;
+      font-size: 24px;
+      margin: 10px;
+      font-weight: bold;
     }
-    #top-bar button {
-      padding: 8px 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: #1976d2;
-      color: white;
-      cursor: pointer;
-    }
-    #game-container {
+    #gameContainer {
       position: relative;
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
     }
     #map {
-      max-height: 70vh;
-      max-width: 100vw;
+      max-width: 70%;
+      max-height: 70%;
       object-fit: contain;
-      display: block;
     }
-    .red-box {
+    .target {
       position: absolute;
       border: 3px dashed red;
-      pointer-events: none;
+      width: 6%;
+      height: 6%;
       box-sizing: border-box;
+      pointer-events: none;
     }
     .stamp {
       position: absolute;
+      width: 7%;
+      height: auto;
       cursor: grab;
-      user-select: none;
-      z-index: 500;
+      z-index: 10;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 6px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
     }
     #message {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 48px;
+      font-size: 36px;
       font-weight: bold;
       color: green;
       display: none;
@@ -67,141 +73,121 @@
   </style>
 </head>
 <body>
-  <div id="top-bar">
+  <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
+  <div id="controls">
     <button onclick="shuffleStamps()">🔄 重排郵票</button>
     <button onclick="location.href='index.html'">🏠 回到遊戲首頁</button>
   </div>
-
-  <div id="game-container">
+  <div id="gameContainer">
     <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-    <div id="message">有夠gâu！</div>
+    <div id="targets"></div>
+    <div id="stamps"></div>
+    <div id="message">有夠 gâu！</div>
   </div>
 
-  <audio id="correctSound" src="game4_assets/correct.mp3"></audio>
+  <audio id="correctSound"></audio>
   <audio id="wrongSound" src="game4_assets/wrong.mp3"></audio>
   <audio id="victorySound" src="game4_assets/victory.mp3"></audio>
 
   <script>
     const basePositions = [
-      {x:0.9953,y:0.1551},{x:0.7589,y:0.0012},{x:0.5749,y:0.0249},
-      {x:0.3782,y:0.1872},{x:0.1291,y:0.1264},{x:0.115,y:0.3242},
-      {x:0.0077,y:0.5255},{x:0.0435,y:0.9668},{x:0.2479,y:0.9922},
-      {x:0.4791,y:0.9043},{x:0.7372,y:0.4916},{x:0.9173,y:0.4409}
+      {x: 0.9953, y: 0.1551},
+      {x: 0.7589, y: 0.0012},
+      {x: 0.5749, y: 0.0249},
+      {x: 0.3782, y: 0.1872},
+      {x: 0.1291, y: 0.1264},
+      {x: 0.115,  y: 0.3242},
+      {x: 0.0077, y: 0.5255},
+      {x: 0.0435, y: 0.9668},
+      {x: 0.2479, y: 0.9922},
+      {x: 0.4791, y: 0.9043},
+      {x: 0.7372, y: 0.4916},
+      {x: 0.9173, y: 0.4409}
     ];
 
-    const stamps = [];
-    const gameContainer = document.getElementById("game-container");
-    const map = document.getElementById("map");
-    const correctSound = document.getElementById("correctSound");
-    const wrongSound = document.getElementById("wrongSound");
-    const victorySound = document.getElementById("victorySound");
-    const message = document.getElementById("message");
+    const stampsContainer = document.getElementById('stamps');
+    const targetsContainer = document.getElementById('targets');
+    const correctSound = document.getElementById('correctSound');
+    const wrongSound = document.getElementById('wrongSound');
+    const victorySound = document.getElementById('victorySound');
+    const message = document.getElementById('message');
 
     let placedCount = 0;
-    let stampSize = 0; // 郵票與紅框大小統一管理
 
-    function createRedBoxes() {
-      document.querySelectorAll(".red-box").forEach(e=>e.remove());
-      const mapRect = map.getBoundingClientRect();
-      stampSize = mapRect.width * 0.12; // 統一設定：郵票 + 紅框大小 = 地圖寬度的 12%
-      basePositions.forEach(pos=>{
-        const box = document.createElement("div");
-        box.className="red-box";
-        box.style.width = box.style.height = stampSize+"px";
-        box.style.left = (mapRect.left + pos.x * mapRect.width - stampSize/2)+"px";
-        box.style.top = (mapRect.top + pos.y * mapRect.height - stampSize/2)+"px";
-        gameContainer.appendChild(box);
+    function createGame() {
+      targetsContainer.innerHTML = "";
+      stampsContainer.innerHTML = "";
+
+      // 建立紅色虛線框
+      basePositions.forEach((pos, i) => {
+        const target = document.createElement('div');
+        target.className = "target";
+        target.style.left = (pos.x * 70) + "%";
+        target.style.top = (pos.y * 70) + "%";
+        target.dataset.index = i;
+        targetsContainer.appendChild(target);
       });
-    }
 
-    function createStamps() {
-      const mapRect = map.getBoundingClientRect();
-      for(let i=1;i<=12;i++){
-        const img=document.createElement("img");
-        img.src=`game4_assets/${i}.jpg`;
-        img.className="stamp";
-        img.style.width=img.style.height=stampSize+"px";
-        img.dataset.index=i-1;
-        gameContainer.appendChild(img);
-        stamps.push(img);
-        makeDraggable(img);
+      // 建立郵票
+      for (let i = 1; i <= 12; i++) {
+        const stamp = document.createElement('img');
+        stamp.src = `game4_assets/stamp${i}.jpg`;
+        stamp.className = "stamp";
+        stamp.draggable = true;
+        stamp.dataset.index = i - 1;
+
+        stamp.addEventListener("dragstart", dragStart);
+        stampsContainer.appendChild(stamp);
       }
+
       shuffleStamps();
     }
 
-    function shuffleStamps(){
-      stamps.forEach(stamp=>{
-        let x,y;
-        do {
-          x=Math.random()*(window.innerWidth-stampSize);
-          y=Math.random()*(window.innerHeight-stampSize);
-        } while(
-          x>map.offsetLeft-stampSize && x<map.offsetLeft+map.width &&
-          y>map.offsetTop-stampSize && y<map.offsetTop+map.height
-        );
-        stamp.style.left=x+"px";
-        stamp.style.top=y+"px";
+    function shuffleStamps() {
+      const stamps = document.querySelectorAll(".stamp");
+      const container = document.getElementById("gameContainer");
+      const cW = container.clientWidth;
+      const cH = container.clientHeight;
+
+      stamps.forEach(stamp => {
+        const randX = Math.random() * (cW - stamp.clientWidth);
+        const randY = Math.random() * (cH - stamp.clientHeight);
+        stamp.style.left = randX + "px";
+        stamp.style.top = randY + "px";
       });
     }
 
-    function makeDraggable(el){
-      let offsetX,offsetY,isDragging=false;
-      el.addEventListener("mousedown",e=>{
-        isDragging=true;
-        offsetX=e.offsetX;
-        offsetY=e.offsetY;
-        el.style.zIndex=1000;
-      });
-      window.addEventListener("mousemove",e=>{
-        if(!isDragging)return;
-        el.style.left=(e.pageX-offsetX)+"px";
-        el.style.top=(e.pageY-offsetY)+"px";
-      });
-      window.addEventListener("mouseup",()=>{
-        if(!isDragging)return;
-        isDragging=false;
-        checkDrop(el);
-      });
+    function dragStart(e) {
+      e.dataTransfer.setData("text/plain", e.target.dataset.index);
     }
 
-    function checkDrop(stamp){
-      const mapRect = map.getBoundingClientRect();
-      const idx = parseInt(stamp.dataset.index);
-      const targetX = mapRect.left + basePositions[idx].x*mapRect.width - stampSize/2;
-      const targetY = mapRect.top + basePositions[idx].y*mapRect.height - stampSize/2;
-      const sx=parseFloat(stamp.style.left);
-      const sy=parseFloat(stamp.style.top);
-      if(Math.abs(sx-targetX)<stampSize*0.3 && Math.abs(sy-targetY)<stampSize*0.3){
-        stamp.style.left=targetX+"px";
-        stamp.style.top=targetY+"px";
-        correctSound.currentTime=0;
-        correctSound.play();
-        stamp.style.pointerEvents="none";
+    targetsContainer.addEventListener("dragover", e => e.preventDefault());
+
+    targetsContainer.addEventListener("drop", e => {
+      e.preventDefault();
+      const stampIndex = e.dataTransfer.getData("text/plain");
+      const targetIndex = e.target.dataset.index;
+
+      if (stampIndex === targetIndex) {
+        const stamp = document.querySelector(`.stamp[data-index='${stampIndex}']`);
+        const target = document.querySelector(`.target[data-index='${targetIndex}']`);
+        stamp.style.left = target.style.left;
+        stamp.style.top = target.style.top;
+        stamp.draggable = false;
         placedCount++;
-        if(placedCount===12){
-          message.style.display="block";
-          victorySound.currentTime=0;
+        correctSound.src = `game4_assets/correct${parseInt(stampIndex) + 1}.mp3`;
+        correctSound.play();
+
+        if (placedCount === basePositions.length) {
+          message.style.display = "block";
           victorySound.play();
         }
-      }else{
-        wrongSound.currentTime=0;
+      } else {
         wrongSound.play();
       }
-    }
-
-    window.addEventListener("resize",()=>{
-      createRedBoxes();
-      // 郵票位置大小更新
-      stamps.forEach(stamp=>{
-        stamp.style.width=stamp.style.height=stampSize+"px";
-      });
     });
 
-    // 確保等地圖完全載入後才建立框和郵票
-    map.onload=()=>{
-      createRedBoxes();
-      createStamps();
-    };
+    createGame();
   </script>
 </body>
 </html>
