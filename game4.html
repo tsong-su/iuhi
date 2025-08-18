@@ -1,75 +1,59 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
   <style>
-    body, html {
+    body {
       margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-    }
-
-    #gameContainer {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: #f0f0f0;
+      font-family: "Microsoft JhengHei", sans-serif;
       overflow: hidden;
     }
-
-    #map {
-      max-height: 70vh; /* 地圖縮放固定70%高度 */
-      max-width: 100%;
-      object-fit: contain;
-      display: block;
-    }
-
-    #mapContainer {
-      position: relative;
-      display: inline-block;
-    }
-
-    .box {
-      position: absolute;
-      border: 3px dashed red;
-      pointer-events: none;
-    }
-
-    .stamp {
-      position: absolute;
-      cursor: grab;
-      user-select: none;
-      z-index: 10;
-    }
-
-    #controls {
+    #top-bar {
       position: absolute;
       top: 10px;
       left: 10px;
       display: flex;
-      flex-direction: column;
       gap: 10px;
-      z-index: 20;
+      z-index: 1000;
     }
-
-    #controls button {
-      font-size: 18px;
+    #top-bar button {
       padding: 8px 12px;
-      border: none;
+      font-size: 16px;
       border-radius: 8px;
-      background-color: #007bff;
+      border: none;
+      background: #1976d2;
       color: white;
       cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
-
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #map {
+      max-height: 70vh;
+      max-width: 100vw;
+      object-fit: contain;
+      display: block;
+    }
+    .red-box {
+      position: absolute;
+      border: 3px solid red;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+    .stamp {
+      position: absolute;
+      cursor: grab;
+      user-select: none;
+      z-index: 500;
+    }
     #message {
       position: absolute;
       top: 50%;
@@ -79,171 +63,145 @@
       font-weight: bold;
       color: green;
       display: none;
-      z-index: 30;
     }
   </style>
 </head>
 <body>
-  <div id="controls">
-    <button onclick="rearrangeStamps()">🔄 重排郵票</button>
+  <div id="top-bar">
+    <button onclick="shuffleStamps()">🔄 重排郵票</button>
     <button onclick="location.href='index.html'">🏠 回到遊戲首頁</button>
   </div>
 
-  <div id="gameContainer">
-    <div id="mapContainer">
-      <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-    </div>
+  <div id="game-container">
+    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
     <div id="message">有夠gâu！</div>
   </div>
 
+  <audio id="correctSound" src="game4_assets/correct.mp3"></audio>
+  <audio id="wrongSound" src="game4_assets/wrong.mp3"></audio>
+  <audio id="victorySound" src="game4_assets/victory.mp3"></audio>
+
   <script>
     const basePositions = [
-      { "x": 0.9953, "y": 0.1551 },
-      { "x": 0.7589, "y": 0.0012 },
-      { "x": 0.5749, "y": 0.0249 },
-      { "x": 0.3782, "y": 0.1872 },
-      { "x": 0.1291, "y": 0.1264 },
-      { "x": 0.115,  "y": 0.3242 },
-      { "x": 0.0077, "y": 0.5255 },
-      { "x": 0.0435, "y": 0.9668 },
-      { "x": 0.2479, "y": 0.9922 },
-      { "x": 0.4791, "y": 0.9043 },
-      { "x": 0.7372, "y": 0.4916 },
-      { "x": 0.9173, "y": 0.4409 }
+      {x:0.9953,y:0.1551},{x:0.7589,y:0.0012},{x:0.5749,y:0.0249},
+      {x:0.3782,y:0.1872},{x:0.1291,y:0.1264},{x:0.115,y:0.3242},
+      {x:0.0077,y:0.5255},{x:0.0435,y:0.9668},{x:0.2479,y:0.9922},
+      {x:0.4791,y:0.9043},{x:0.7372,y:0.4916},{x:0.9173,y:0.4409}
     ];
-
+    const stamps = [];
+    const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const mapContainer = document.getElementById("mapContainer");
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
+    const victorySound = document.getElementById("victorySound");
     const message = document.getElementById("message");
 
-    const correctAudio = new Audio("game4_assets/correct.mp3");
-    const wrongAudio = new Audio("game4_assets/wrong.mp3");
-    const victoryAudio = new Audio("game4_assets/victory.mp3");
+    let placedCount = 0;
 
-    let stamps = [];
-    let boxes = [];
-
-    map.onload = () => {
-      placeBoxes();
-      createStamps();
-    };
-
-    function placeBoxes() {
-      boxes.forEach(b => b.remove());
-      boxes = [];
-
-      const mapWidth = map.width;
-      const mapHeight = map.height;
-      const boxSize = mapWidth * 0.06; // 6% 大小
-
-      basePositions.forEach((pos, idx) => {
+    function createRedBoxes() {
+      document.querySelectorAll(".red-box").forEach(e=>e.remove());
+      const mapRect = map.getBoundingClientRect();
+      const boxSize = mapRect.width * 0.08;
+      basePositions.forEach(pos=>{
         const box = document.createElement("div");
-        box.className = "box";
-        box.style.width = boxSize + "px";
-        box.style.height = boxSize + "px";
-        box.style.left = (pos.x * mapWidth - boxSize / 2) + "px";
-        box.style.top = (pos.y * mapHeight - boxSize / 2) + "px";
-        mapContainer.appendChild(box);
-        boxes.push(box);
+        box.className="red-box";
+        box.style.width = box.style.height = boxSize+"px";
+        box.style.left = (mapRect.left + pos.x * mapRect.width - boxSize/2)+"px";
+        box.style.top = (mapRect.top + pos.y * mapRect.height - boxSize/2)+"px";
+        gameContainer.appendChild(box);
       });
     }
 
     function createStamps() {
-      stamps.forEach(s => s.remove());
-      stamps = [];
-
-      const mapWidth = map.width;
-      const mapHeight = map.height;
-      const boxSize = mapWidth * 0.06;
-
-      basePositions.forEach((pos, idx) => {
-        const stamp = document.createElement("img");
-        stamp.src = `game4_assets/stamp${idx+1}.jpg`;
-        stamp.className = "stamp";
-        stamp.style.width = boxSize + "px";
-        stamp.style.height = boxSize + "px";
-        randomizeStampPosition(stamp, boxSize);
-        mapContainer.appendChild(stamp);
-        makeDraggable(stamp, idx);
-        stamps.push(stamp);
-      });
-    }
-
-    function randomizeStampPosition(stamp, size) {
+      stamps.forEach(s=>s.remove());
+      stamps.length=0;
       const mapRect = map.getBoundingClientRect();
-      const containerRect = mapContainer.getBoundingClientRect();
-
-      const padding = 20;
-      let x, y;
-
-      if (Math.random() < 0.5) { 
-        // 放在地圖左側
-        x = - (Math.random() * (size*2 + padding));
-        y = Math.random() * (map.height - size);
-      } else { 
-        // 放在地圖右側
-        x = map.width + (Math.random() * (size*2 + padding));
-        y = Math.random() * (map.height - size);
+      const size = mapRect.width * 0.08;
+      for(let i=1;i<=12;i++){
+        const img=document.createElement("img");
+        img.src=`game4_assets/${i}.jpg`;
+        img.className="stamp";
+        img.style.width=img.style.height=size+"px";
+        img.dataset.index=i-1;
+        gameContainer.appendChild(img);
+        stamps.push(img);
+        makeDraggable(img);
       }
-
-      stamp.style.left = x + "px";
-      stamp.style.top = y + "px";
+      shuffleStamps();
     }
 
-    function makeDraggable(stamp, index) {
-      let offsetX, offsetY;
-
-      stamp.onmousedown = (e) => {
-        e.preventDefault();
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-        document.onmousemove = (e) => {
-          stamp.style.left = (e.pageX - mapContainer.offsetLeft - offsetX) + "px";
-          stamp.style.top = (e.pageY - mapContainer.offsetTop - offsetY) + "px";
-        };
-        document.onmouseup = (e) => {
-          document.onmousemove = null;
-          document.onmouseup = null;
-          checkDrop(stamp, index);
-        };
-      };
-    }
-
-    function checkDrop(stamp, index) {
-      const stampRect = stamp.getBoundingClientRect();
-      const targetRect = boxes[index].getBoundingClientRect();
-
-      if (Math.abs(stampRect.left - targetRect.left) < 20 &&
-          Math.abs(stampRect.top - targetRect.top) < 20) {
-        stamp.style.left = boxes[index].style.left;
-        stamp.style.top = boxes[index].style.top;
-        correctAudio.currentTime = 0;
-        correctAudio.play().catch(()=>{});
-        checkWin();
-      } else {
-        wrongAudio.currentTime = 0;
-        wrongAudio.play().catch(()=>{});
-      }
-    }
-
-    function checkWin() {
-      const allMatched = stamps.every((stamp, idx) => {
-        return stamp.style.left === boxes[idx].style.left &&
-               stamp.style.top === boxes[idx].style.top;
-      });
-
-      if (allMatched) {
-        message.style.display = "block";
-        victoryAudio.currentTime = 0;
-        victoryAudio.play().catch(()=>{});
-      }
-    }
-
-    function rearrangeStamps() {
-      stamps.forEach((stamp, idx) => {
-        randomizeStampPosition(stamp, stamp.offsetWidth);
+    function shuffleStamps(){
+      const mapRect = map.getBoundingClientRect();
+      const size = mapRect.width * 0.08;
+      stamps.forEach(stamp=>{
+        let x,y;
+        do {
+          x=Math.random()*(window.innerWidth-size);
+          y=Math.random()*(window.innerHeight-size);
+        } while(
+          x>mapRect.left-size && x<mapRect.right &&
+          y>mapRect.top-size && y<mapRect.bottom
+        );
+        stamp.style.left=x+"px";
+        stamp.style.top=y+"px";
       });
     }
+
+    function makeDraggable(el){
+      let offsetX,offsetY,isDragging=false;
+      el.addEventListener("mousedown",e=>{
+        isDragging=true;
+        offsetX=e.offsetX;
+        offsetY=e.offsetY;
+        el.style.zIndex=1000;
+      });
+      window.addEventListener("mousemove",e=>{
+        if(!isDragging)return;
+        el.style.left=(e.pageX-offsetX)+"px";
+        el.style.top=(e.pageY-offsetY)+"px";
+      });
+      window.addEventListener("mouseup",e=>{
+        if(!isDragging)return;
+        isDragging=false;
+        checkDrop(el);
+      });
+    }
+
+    function checkDrop(stamp){
+      const mapRect = map.getBoundingClientRect();
+      const size = mapRect.width * 0.08;
+      const idx = parseInt(stamp.dataset.index);
+      const targetX = mapRect.left + basePositions[idx].x*mapRect.width - size/2;
+      const targetY = mapRect.top + basePositions[idx].y*mapRect.height - size/2;
+      const sx=parseFloat(stamp.style.left);
+      const sy=parseFloat(stamp.style.top);
+      if(Math.abs(sx-targetX)<size*0.3 && Math.abs(sy-targetY)<size*0.3){
+        stamp.style.left=targetX+"px";
+        stamp.style.top=targetY+"px";
+        correctSound.currentTime=0;
+        correctSound.play();
+        stamp.style.pointerEvents="none";
+        placedCount++;
+        if(placedCount===12){
+          message.style.display="block";
+          victorySound.currentTime=0;
+          victorySound.play();
+        }
+      }else{
+        wrongSound.currentTime=0;
+        wrongSound.play();
+      }
+    }
+
+    window.addEventListener("resize",()=>{
+      createRedBoxes();
+      createStamps();
+    });
+
+    map.onload=()=>{
+      createRedBoxes();
+      createStamps();
+    };
   </script>
 </body>
 </html>
