@@ -1,201 +1,151 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地區郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
+      padding: 0;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: url("game4_assets/north_map.png") no-repeat center center;
+      background-size: contain;
       height: 100vh;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
     }
-    #game-area {
+    #gameContainer {
       position: relative;
-      width: 1760px;   /* 與 north_map.png 一致 */
-      height: 1415px;
-      background: url("game4_assets/north_map.png") no-repeat center center;
-      background-size: cover;
-    }
-    #answer-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
-      background: url("game4_assets/north_answer.png") no-repeat center center;
-      background-size: cover;
-      opacity: 0.4; /* 半透明 */
-      z-index: 0;
-    }
-    .slot {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 2px dashed rgba(255,255,255,0.3);
-      z-index: 1;
     }
     .stamp {
       position: absolute;
-      width: 80px;
+      width: 100px;
+      height: 100px;
       cursor: grab;
-      user-select: none;
-      z-index: 2;
+    }
+    .slot {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 2px dashed transparent; /* 不顯示邊框 */
     }
     #message {
       position: absolute;
-      top: 50%;
+      top: 40%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.1);
-      font-size: 40px;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      color: red;
+      display: none;
       font-weight: bold;
-      color: gold;
-      opacity: 0;
-      z-index: 5;
-      transition: transform 2s ease-out, opacity 2s ease-out;
+      animation: grow 2s forwards;
     }
-    #back-btn {
+    @keyframes grow {
+      from { font-size: 20px; opacity: 0.5; }
+      to { font-size: 120px; opacity: 1; }
+    }
+    #homeButton {
       position: absolute;
       bottom: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: #444;
-      color: white;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      font-size: 22px;
+      font-weight: bold;
+      background-color: #f0ad4e;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 18px;
-      z-index: 10;
-    }
-    #back-btn:hover {
-      background: #666;
     }
   </style>
 </head>
 <body>
-  <div id="game-area">
-    <div id="answer-layer"></div>
-    <div id="message">有夠gâu</div>
-    <button id="back-btn" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
-  </div>
+  <div id="gameContainer"></div>
+  <div id="message">有夠 gâu！</div>
+  <button id="homeButton" onclick="location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
 
   <script>
-    const gameArea = document.getElementById("game-area");
-    const totalStamps = 12;
-    let placedStamps = 0;
+    const container = document.getElementById("gameContainer");
 
-    // 正確答案座標 (與答案圖一致)
+    // 大約估算的 12 個格子座標 (1760x1415 尺寸為基準)
     const answerPositions = [
-      {x: 880, y: 240},
-      {x: 820, y: 200},
-      {x: 950, y: 270},
-      {x: 1010, y: 180},
-      {x: 1130, y: 260},
-      {x: 760, y: 570},
-      {x: 710, y: 630},
-      {x: 670, y: 760},
-      {x: 490, y: 820},
-      {x: 580, y: 880},
-      {x: 430, y: 1000},
-      {x: 650, y: 1090}
+      {x:200, y:200}, {x:400, y:250}, {x:600, y:220},
+      {x:800, y:300}, {x:1000, y:350}, {x:1200, y:320},
+      {x:1400, y:400}, {x:300, y:600}, {x:500, y:650},
+      {x:700, y:700}, {x:900, y:750}, {x:1100, y:800}
     ];
 
-    // 建立空格
+    const stamps = [];
     const slots = [];
-    for (let i = 0; i < totalStamps; i++) {
+
+    // 建立格子
+    answerPositions.forEach((pos, index) => {
       const slot = document.createElement("div");
-      slot.classList.add("slot");
-      slot.style.left = (answerPositions[i].x - 40) + "px";
-      slot.style.top = (answerPositions[i].y - 40) + "px";
-      slot.dataset.index = i;
-      gameArea.appendChild(slot);
+      slot.className = "slot";
+      slot.style.left = pos.x + "px";
+      slot.style.top = pos.y + "px";
+      container.appendChild(slot);
       slots.push(slot);
-    }
+    });
 
-    // 建立郵票
-    for (let i = 1; i <= totalStamps; i++) {
-      const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.classList.add("stamp");
-      img.dataset.index = i - 1;
+    // 隨機散佈郵票
+    answerPositions.forEach((pos, index) => {
+      const stamp = document.createElement("img");
+      stamp.src = `game4_assets/stamp${index+1}.jpg`;
+      stamp.className = "stamp";
+      stamp.style.left = (50 + (index%6)*120) + "px";
+      stamp.style.top = (900 + Math.floor(index/6)*120) + "px";
+      stamp.dataset.index = index;
+      container.appendChild(stamp);
+      stamps.push(stamp);
 
-      // 隨機散佈
-      img.style.left = (Math.random() * (gameArea.clientWidth - 100)) + "px";
-      img.style.top = (Math.random() * (gameArea.clientHeight - 100)) + "px";
+      makeDraggable(stamp, pos, index);
+    });
 
-      gameArea.appendChild(img);
-      makeDraggable(img);
-    }
+    let correctCount = 0;
 
-    function makeDraggable(stamp) {
-      let offsetX, offsetY, startX, startY;
-      let isDragging = false;
+    function makeDraggable(stamp, targetPos, index) {
+      let offsetX, offsetY, originalX, originalY;
 
-      stamp.addEventListener("mousedown", (e) => {
-        isDragging = true;
-        startX = stamp.offsetLeft;
-        startY = stamp.offsetTop;
+      stamp.onmousedown = function(e) {
         offsetX = e.clientX - stamp.offsetLeft;
         offsetY = e.clientY - stamp.offsetTop;
-        stamp.style.cursor = "grabbing";
-      });
+        originalX = stamp.offsetLeft;
+        originalY = stamp.offsetTop;
 
-      document.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        stamp.style.left = (e.clientX - offsetX) + "px";
-        stamp.style.top = (e.clientY - offsetY) + "px";
-      });
+        document.onmousemove = function(e) {
+          stamp.style.left = (e.clientX - offsetX) + "px";
+          stamp.style.top = (e.clientY - offsetY) + "px";
+        };
 
-      document.addEventListener("mouseup", (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        stamp.style.cursor = "grab";
+        document.onmouseup = function(e) {
+          document.onmousemove = null;
+          document.onmouseup = null;
 
-        const index = parseInt(stamp.dataset.index);
-        const slot = slots[index];
+          const dx = stamp.offsetLeft - targetPos.x;
+          const dy = stamp.offsetTop - targetPos.y;
+          const distance = Math.sqrt(dx*dx + dy*dy);
 
-        const centerX = stamp.offsetLeft + stamp.offsetWidth / 2;
-        const centerY = stamp.offsetTop + stamp.offsetHeight / 2;
+          if (distance <= 30) {
+            // 吸附到正確位置
+            stamp.style.left = targetPos.x + "px";
+            stamp.style.top = targetPos.y + "px";
+            stamp.onmousedown = null;
+            new Audio(`game4_assets/stamp${index+1}.mp3`).play();
+            correctCount++;
 
-        const slotX = slot.offsetLeft + slot.offsetWidth / 2;
-        const slotY = slot.offsetTop + slot.offsetHeight / 2;
-
-        const dx = centerX - slotX;
-        const dy = centerY - slotY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 30) {
-          // 正確吸附
-          stamp.style.left = (slotX - stamp.offsetWidth / 2) + "px";
-          stamp.style.top = (slotY - stamp.offsetHeight / 2) + "px";
-          playSound(`game4_assets/stamp${index + 1}.mp3`);
-          stamp.style.pointerEvents = "none";
-          placedStamps++;
-
-          if (placedStamps === totalStamps) {
-            showMessage();
+            if (correctCount === 12) {
+              document.getElementById("message").style.display = "block";
+            }
+          } else {
+            // 錯誤 -> 彈回原位
+            stamp.style.left = originalX + "px";
+            stamp.style.top = originalY + "px";
+            new Audio("game4_assets/wrong.mp3").play();
           }
-        } else {
-          // 錯誤
-          stamp.style.left = startX + "px";
-          stamp.style.top = startY + "px";
-          playSound(`game4_assets/wrong.mp3`);
-        }
-      });
-    }
-
-    function playSound(src) {
-      const audio = new Audio(src);
-      audio.play();
-    }
-
-    function showMessage() {
-      const msg = document.getElementById("message");
-      msg.style.opacity = "1";
-      msg.style.transform = "translate(-50%, -50%) scale(2.5)";
+        };
+      };
     }
   </script>
 </body>
