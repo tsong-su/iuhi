@@ -10,6 +10,7 @@
       text-align: center;
       background: #f5f5f5;
       font-family: Arial, sans-serif;
+      overflow: hidden; /* 🚀 防止捲軸出現 */
     }
     h1 {
       font-size: 28px;
@@ -20,6 +21,7 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
+      background: #f5f5f5;
     }
     #map {
       width: 100%;
@@ -41,11 +43,18 @@
     }
     #controls {
       margin: 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 20;
+      background: rgba(255,255,255,0.7);
+      padding: 5px 10px;
+      border-radius: 8px;
     }
     button {
       font-size: 18px;
-      padding: 8px 16px;
-      margin: 5px;
+      padding: 6px 12px;
+      margin: 2px;
       cursor: pointer;
     }
     #message {
@@ -96,7 +105,6 @@
     const wrongAudio = new Audio("game4_assets/wrong.mp3");
     const victoryAudio = new Audio("game4_assets/victory.mp3");
 
-    // 建立紅框 & 郵票
     function initGame() {
       frames.forEach(f => f.remove());
       stamps.forEach(s => s.remove());
@@ -105,9 +113,9 @@
       placedCount = 0;
       message.textContent = "";
 
-      const rect = container.getBoundingClientRect();
-      const mapW = rect.width;
-      const mapH = rect.height;
+      const mapRect = map.getBoundingClientRect();
+      const mapW = mapRect.width;
+      const mapH = mapRect.height;
       const frameSize = mapW * 0.06;
 
       basePositions.forEach((pos, i) => {
@@ -116,8 +124,8 @@
         frame.className = "frame";
         frame.style.width = frameSize + "px";
         frame.style.height = frameSize + "px";
-        frame.style.left = (pos.x * mapW - frameSize / 2) + "px";
-        frame.style.top = (pos.y * mapH - frameSize / 2) + "px";
+        frame.style.left = (mapRect.left + pos.x * mapW - frameSize / 2) + "px";
+        frame.style.top = (mapRect.top + pos.y * mapH - frameSize / 2) + "px";
         container.appendChild(frame);
         frames.push(frame);
 
@@ -134,26 +142,23 @@
       shuffleStamps();
     }
 
-    // 隨機散落郵票（四周空白區域）
+    // 郵票隨機散落
     function shuffleStamps() {
-      const rect = container.getBoundingClientRect();
-      const mapW = rect.width;
-      const mapH = rect.height;
+      const mapRect = map.getBoundingClientRect();
+      const mapW = mapRect.width;
+      const mapH = mapRect.height;
       const frameSize = mapW * 0.06;
 
       stamps.forEach(stamp => {
         let x, y;
-        const margin = 50;
+        const margin = 60;
 
-        // 避開地圖中心區域，散落四周
         if (Math.random() > 0.5) {
-          // 上下
-          x = Math.random() * (mapW - frameSize - margin);
-          y = Math.random() > 0.5 ? margin : mapH - frameSize - margin;
+          x = Math.random() * (mapW - frameSize - margin) + mapRect.left;
+          y = Math.random() > 0.5 ? mapRect.top + margin : mapRect.bottom - frameSize - margin;
         } else {
-          // 左右
-          x = Math.random() > 0.5 ? margin : mapW - frameSize - margin;
-          y = Math.random() * (mapH - frameSize - margin);
+          x = Math.random() > 0.5 ? mapRect.left + margin : mapRect.right - frameSize - margin;
+          y = Math.random() * (mapH - frameSize - margin) + mapRect.top;
         }
 
         stamp.style.left = x + "px";
@@ -161,7 +166,7 @@
       });
     }
 
-    // 拖曳功能
+    // 拖曳
     let dragTarget = null, offsetX = 0, offsetY = 0;
     document.addEventListener("mousedown", e => {
       if (e.target.classList.contains("stamp")) {
@@ -184,16 +189,13 @@
       }
     });
 
+    // 檢查配對
     function checkDrop(stamp) {
       const idx = parseInt(stamp.dataset.index);
-      const rect = container.getBoundingClientRect();
-      const mapW = rect.width;
-      const mapH = rect.height;
-      const frameSize = mapW * 0.06;
-
       const frame = frames[idx];
       const fRect = frame.getBoundingClientRect();
       const sRect = stamp.getBoundingClientRect();
+      const frameSize = fRect.width;
 
       if (Math.abs(fRect.left - sRect.left) < frameSize/3 &&
           Math.abs(fRect.top - sRect.top) < frameSize/3) {
