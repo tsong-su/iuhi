@@ -1,55 +1,137 @@
-<script>
-// === 郵票載入 ===
-const stampsContainer = document.getElementById("stamps-container");
-const totalStamps = 12;
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #f0f0f0;
+      font-family: "Microsoft JhengHei", sans-serif;
+    }
+    #map-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #map {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .frame {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed red;
+      pointer-events: none;
+    }
+    #stamps-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* 防止影響 map */
+    }
+    .stamp {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      cursor: grab;
+      pointer-events: auto;
+    }
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: #0078d7;
+      color: white;
+    }
+    button:hover {
+      background: #005a9e;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center; margin:10px 0;">臺灣北部地圖&注音符號郵票配對遊戲</h1>
+  <div id="map-container">
+    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
+    <div id="frames-container"></div>
+    <div id="stamps-container"></div>
+  </div>
+  <div id="controls">
+    <button onclick="createStamps()">重排郵票</button>
+    <button onclick="location.href='index.html'">回到遊戲首頁</button>
+  </div>
 
-function createStamps() {
-  stampsContainer.innerHTML = "";
+  <script>
+    const stampsContainer = document.getElementById("stamps-container");
+    const totalStamps = 12;
 
-  const stampSize = 80;   // 固定大小，與紅框一致
-  const margin = 15;      // 郵票間距
+    function createStamps() {
+      stampsContainer.innerHTML = "";
 
-  for (let i = 1; i <= totalStamps; i++) {
-    const img = document.createElement("img");
-    img.src = `game4_assets/stamp${i}.jpg`;
-    img.className = "stamp";
-    img.dataset.index = i;
-    img.draggable = true;
-    img.style.position = "absolute";
-    img.style.width = stampSize + "px";
-    img.style.height = stampSize + "px";
+      const stampSize = 80;
+      const margin = 15;
 
-    // === 計算左右位置 ===
-    const isLeft = i <= 6;
-    const col = (i - 1) % 3; // 0,1,2
-    const row = Math.floor(((i - 1) % 6) / 3); // 0 或 1
+      for (let i = 1; i <= totalStamps; i++) {
+        const img = document.createElement("img");
+        img.src = `game4_assets/stamp${i}.jpg`;
+        img.className = "stamp";
+        img.dataset.index = i;
+        img.draggable = true;
+        img.style.width = stampSize + "px";
+        img.style.height = stampSize + "px";
 
-    const xBase = isLeft ? 20 : window.innerWidth - (stampSize * 3 + margin * 2) - 20;
-    const yBase = window.innerHeight / 2 - (stampSize * 2 + margin) / 2;
+        // === 左右分布 ===
+        const isLeft = i <= 6;
+        const col = (i - 1) % 3;  // 0,1,2
+        const row = Math.floor(((i - 1) % 6) / 3); // 0 或 1
 
-    const x = xBase + col * (stampSize + margin);
-    const y = yBase + row * (stampSize + margin);
+        const xBase = isLeft ? 20 : window.innerWidth - (stampSize * 3 + margin * 2) - 20;
+        const yBase = window.innerHeight / 2 - (stampSize * 2 + margin) / 2;
 
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
+        const x = xBase + col * (stampSize + margin);
+        const y = yBase + row * (stampSize + margin);
 
-    stampsContainer.appendChild(img);
+        img.style.left = `${x}px`;
+        img.style.top = `${y}px`;
 
-    // === 拖曳事件 ===
-    img.addEventListener("dragstart", dragStart);
-    img.addEventListener("dragend", dragEnd);
-  }
-}
+        stampsContainer.appendChild(img);
 
-// === 拖曳 ===
-let dragged = null;
-function dragStart(e) {
-  dragged = e.target;
-  e.dataTransfer.setData("text/plain", e.target.dataset.index);
-}
-function dragEnd() {
-  dragged = null;
-}
+        // 拖曳事件
+        img.addEventListener("dragstart", dragStart);
+        img.addEventListener("dragend", dragEnd);
+      }
+    }
 
-createStamps();
-</script>
+    let dragged = null;
+    function dragStart(e) {
+      dragged = e.target;
+      e.dataTransfer.setData("text/plain", e.target.dataset.index);
+    }
+    function dragEnd() {
+      dragged = null;
+    }
+
+    // 初始化
+    createStamps();
+  </script>
+</body>
+</html>
