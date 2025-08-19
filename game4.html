@@ -53,6 +53,10 @@
       gap: 15px;
       background: #fff;
     }
+    #control-row {
+      display: flex;
+      gap: 40px; /* 左右控制之間的距離 */
+    }
     .control-box {
       display: flex;
       flex-direction: column;
@@ -65,6 +69,7 @@
     .control-buttons {
       display: flex;
       gap: 15px;
+      margin-top: 5px;
     }
     #controls button {
       font-size: 16px;
@@ -80,25 +85,26 @@
   </div>
 
   <div id="controls">
-    <!-- ✅ 左側控制區 -->
-    <div class="control-box">
-      <div>左側控制</div>
-      <div class="control-buttons">
-        <button onclick="adjustLeft(-10)">←10</button>
-        <button onclick="adjustLeft(10)">→10</button>
+    <!-- ✅ 左右控制並列 -->
+    <div id="control-row">
+      <div class="control-box">
+        <div>左側控制</div>
+        <div class="control-buttons">
+          <button onclick="adjustLeft(-10)">←10</button>
+          <button onclick="adjustLeft(10)">→10</button>
+        </div>
+      </div>
+
+      <div class="control-box">
+        <div>右側控制</div>
+        <div class="control-buttons">
+          <button onclick="adjustRight(-10)">←10</button>
+          <button onclick="adjustRight(10)">→10</button>
+        </div>
       </div>
     </div>
 
-    <!-- ✅ 右側控制區 -->
-    <div class="control-box">
-      <div>右側控制</div>
-      <div class="control-buttons">
-        <button onclick="adjustRight(-10)">←10</button>
-        <button onclick="adjustRight(10)">→10</button>
-      </div>
-    </div>
-
-    <!-- ✅ 回首頁 -->
+    <!-- ✅ 回首頁放在下方 -->
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
