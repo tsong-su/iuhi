@@ -22,7 +22,7 @@
     #game-container {
       position: relative;
       width: 70vw;
-      height: 60vh; /* 留空間給郵票區 */
+      height: 60vh; /* 上半部放地圖與紅框 */
       background: #fff;
       display: flex;
       align-items: center;
@@ -40,15 +40,17 @@
       position: absolute;
       border: 2px dashed red;
       width: 8%;
-      height: 8%; /* 固定正方形 */
+      height: 8%; /* 正方形 */
       pointer-events: none;
     }
 
     #stamp-area {
       width: 70vw;
-      height: 20vh;
+      height: 25vh;
       margin-top: 10px;
       position: relative;
+      background: #f9f9f9;
+      border-radius: 8px;
     }
 
     .stamp {
@@ -67,12 +69,22 @@
 
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="map">
-    <!-- 紅色虛線框（放外圍，避免壓到地圖） -->
-    <div class="frame" style="left:10%; top:20%;"></div>
+    <!-- 示範：12 個紅框 -->
+    <div class="frame" style="left:10%; top:10%;"></div>
+    <div class="frame" style="left:25%; top:15%;"></div>
+    <div class="frame" style="left:40%; top:20%;"></div>
+    <div class="frame" style="left:55%; top:25%;"></div>
     <div class="frame" style="left:70%; top:30%;"></div>
+    <div class="frame" style="left:15%; top:40%;"></div>
+    <div class="frame" style="left:30%; top:45%;"></div>
+    <div class="frame" style="left:50%; top:50%;"></div>
+    <div class="frame" style="left:65%; top:55%;"></div>
+    <div class="frame" style="left:20%; top:60%;"></div>
+    <div class="frame" style="left:45%; top:65%;"></div>
+    <div class="frame" style="left:60%; top:70%;"></div>
   </div>
 
-  <!-- 郵票專用區，不會壓住地圖 -->
+  <!-- 郵票區（不會擋到按鈕，會打散到上下左右） -->
   <div id="stamp-area"></div>
 
   <div id="buttons">
@@ -93,11 +105,11 @@
       stamps.push(img);
     }
 
-    // 重排郵票（在下方區域隨機擺放）
+    // 隨機散開郵票（避免集中）
     function shuffleStamps() {
       stamps.forEach(stamp => {
-        const x = Math.random() * 60 + 20;
-        const y = Math.random() * 40 + 20;
+        const x = Math.random() * 60 + 5; // 控制範圍
+        const y = Math.random() * 60 + 5;
         stamp.style.left = `${x}%`;
         stamp.style.top = `${y}%`;
       });
@@ -116,7 +128,7 @@
         stamp.style.cursor = "grabbing";
       });
 
-      window.addEventListener('mousemove', e => {
+      document.addEventListener('mousemove', e => {
         if (!dragging) return;
         const rect = stampArea.getBoundingClientRect();
         let x = e.clientX - rect.left - offsetX;
@@ -125,14 +137,15 @@
         stamp.style.top = `${y}px`;
       });
 
-      window.addEventListener('mouseup', () => {
+      document.addEventListener('mouseup', () => {
         dragging = false;
         stamp.style.cursor = "grab";
       });
     });
 
+    // 回首頁
     function goHome() {
-      alert("回到遊戲首頁（這裡可加連結）");
+      window.location.href = "index.html"; // ✅ 回首頁
     }
   </script>
 </body>
