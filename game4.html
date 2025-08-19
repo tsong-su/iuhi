@@ -6,220 +6,128 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
-      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #fdfdfd;
       overflow: hidden;
     }
+
+    h1 {
+      margin: 10px;
+      font-size: 20px;
+      color: #333;
+    }
+
     #game-container {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      width: 70vw;
+      height: 70vh;
+      border: 1px solid #ccc;
+      background: #fff;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
+
     #map {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       display: block;
     }
+
     .frame {
       position: absolute;
-      border: 3px dashed red;
+      border: 2px dashed red;
       pointer-events: none;
-      box-sizing: border-box;
     }
+
     .stamp {
       position: absolute;
+      width: 8%; /* 比框稍微小一點，之後可再調整 */
       cursor: grab;
-      z-index: 10;
-      transition: transform 0.2s;
     }
-    .stamp:active {
-      cursor: grabbing;
-      transform: scale(1.1);
-    }
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      gap: 10px;
-      z-index: 20;
-    }
-    #ui button {
-      padding: 5px 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: #1976d2;
-      color: white;
-      cursor: pointer;
-    }
-    #ui button:hover {
-      background: #0d47a1;
-    }
-    #message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 48px;
-      font-weight: bold;
-      color: red;
-      display: none;
-      z-index: 30;
+
+    #buttons {
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
+  <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
+
   <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
-    <div id="frames"></div>
-    <div id="stamps"></div>
-    <div id="ui">
-      <button onclick="reshuffleStamps()">🔄 重排郵票</button>
-      <button onclick="goHome()">🏠 回到遊戲首頁</button>
-    </div>
-    <div id="message">有夠gâu！</div>
+    <img id="map" src="game4_assets/north2_map.png" alt="map">
+    <!-- 紅框 -->
+    <div class="frame" style="left:20%; top:30%; width:8%; height:8%;"></div>
+    <div class="frame" style="left:60%; top:40%; width:8%; height:8%;"></div>
+    <!-- 更多紅框依需求加 -->
+  </div>
+
+  <div id="buttons">
+    <button onclick="shuffleStamps()">🔄 重排郵票</button>
+    <button onclick="goHome()">🏠 回到遊戲首頁</button>
   </div>
 
   <script>
-    const frameData = [
-      {id:1, x:20, y:15}, {id:2, x:35, y:18}, {id:3, x:50, y:22},
-      {id:4, x:65, y:25}, {id:5, x:75, y:40}, {id:6, x:60, y:50},
-      {id:7, x:45, y:55}, {id:8, x:30, y:60}, {id:9, x:20, y:70},
-      {id:10, x:40, y:75}, {id:11, x:55, y:80}, {id:12, x:70, y:85}
-    ];
-    const framesContainer = document.getElementById("frames");
-    const stampsContainer = document.getElementById("stamps");
-    const map = document.getElementById("map");
-    const message = document.getElementById("message");
-    const frameSizePercent = 8; // 框與郵票大小 (相對於地圖)
-
-    let stamps = [];
-    let correctCount = 0;
-
-    // 建立紅框
-    function createFrames() {
-      frameData.forEach(fd => {
-        const f = document.createElement("div");
-        f.className = "frame";
-        f.dataset.id = fd.id;
-        framesContainer.appendChild(f);
-      });
-      updateFrames();
-    }
-
-    // 根據地圖大小更新紅框
-    function updateFrames() {
-      const mapRect = map.getBoundingClientRect();
-      frameData.forEach((fd, i) => {
-        const f = framesContainer.children[i];
-        const size = mapRect.width * (frameSizePercent/100);
-        f.style.width = size + "px";
-        f.style.height = size + "px";
-        f.style.left = (mapRect.left + (fd.x/100)*mapRect.width - size/2) + "px";
-        f.style.top = (mapRect.top + (fd.y/100)*mapRect.height - size/2) + "px";
-      });
-    }
+    const container = document.getElementById('game-container');
+    const frames = document.querySelectorAll('.frame');
+    const stamps = [];
 
     // 建立郵票
-    function createStamps() {
-      for(let i=1;i<=12;i++){
-        const s = document.createElement("img");
-        s.src = `game4_assets/stamp${i}.jpg`;
-        s.className = "stamp";
-        s.dataset.id = i;
-        s.draggable = true;
-        s.style.width = (map.width * (frameSizePercent/100)) + "px";
-        stampsContainer.appendChild(s);
-        stamps.push(s);
-
-        s.addEventListener("dragstart", dragStart);
-        s.addEventListener("dragend", dragEnd);
-      }
-      reshuffleStamps();
+    for (let i = 1; i <= 12; i++) {
+      const img = document.createElement('img');
+      img.src = `game4_assets/stamp${i}.jpg`;
+      img.className = 'stamp';
+      container.appendChild(img);
+      stamps.push(img);
     }
 
-    // 隨機散佈郵票
-    function reshuffleStamps() {
-      const mapRect = map.getBoundingClientRect();
-      stamps.forEach(s=>{
-        const size = mapRect.width * (frameSizePercent/100);
-        s.style.width = size+"px";
-        s.style.height = "auto";
-        const x = Math.random()*(window.innerWidth-size);
-        const y = Math.random()*(window.innerHeight-size-100)+100;
-        s.style.left = x+"px";
-        s.style.top = y+"px";
+    // 重排郵票
+    function shuffleStamps() {
+      stamps.forEach(stamp => {
+        const x = Math.random() * 60 + 20; // 保證在容器內
+        const y = Math.random() * 60 + 20;
+        stamp.style.left = `${x}%`;
+        stamp.style.top = `${y}%`;
       });
     }
 
-    // 拖曳
-    let draggedStamp=null, startX=0, startY=0;
-    function dragStart(e){
-      draggedStamp=e.target;
-      startX=parseInt(draggedStamp.style.left);
-      startY=parseInt(draggedStamp.style.top);
-    }
-    function dragEnd(e){
-      if(!draggedStamp)return;
-      let dropped=false;
-      const frames=document.querySelectorAll(".frame");
-      frames.forEach(f=>{
-        const r=f.getBoundingClientRect();
-        const s=draggedStamp.getBoundingClientRect();
-        if(!(s.right<r.left||s.left>r.right||s.bottom<r.top||s.top>r.bottom)){
-          if(f.dataset.id===draggedStamp.dataset.id){
-            // 正確
-            draggedStamp.style.left=r.left+"px";
-            draggedStamp.style.top=r.top+"px";
-            playSound(`game4_assets/stamp${draggedStamp.dataset.id}.mp3`);
-            draggedStamp.draggable=false;
-            draggedStamp.style.zIndex=5;
-            correctCount++;
-            if(correctCount===12) gameWin();
-          }else{
-            // 錯誤
-            playSound("game4_assets/wrong.mp3");
-            draggedStamp.style.left=startX+"px";
-            draggedStamp.style.top=startY+"px";
-          }
-          dropped=true;
-        }
+    shuffleStamps();
+
+    // 拖曳功能（純前端 mousedown + mousemove）
+    stamps.forEach(stamp => {
+      let offsetX = 0, offsetY = 0, dragging = false;
+
+      stamp.addEventListener('mousedown', e => {
+        dragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        stamp.style.cursor = "grabbing";
       });
-      if(!dropped){
-        draggedStamp.style.left=startX+"px";
-        draggedStamp.style.top=startY+"px";
-      }
-      draggedStamp=null;
-    }
 
-    function playSound(file){
-      const a=new Audio(file);
-      a.play();
-    }
+      window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const rect = container.getBoundingClientRect();
+        let x = e.clientX - rect.left - offsetX;
+        let y = e.clientY - rect.top - offsetY;
+        stamp.style.left = `${x}px`;
+        stamp.style.top = `${y}px`;
+      });
 
-    function gameWin(){
-      message.style.display="block";
-      playSound("game4_assets/victory.mp3");
-    }
-
-    function goHome(){
-      window.location.href="index.html";
-    }
-
-    window.addEventListener("resize", ()=>{
-      updateFrames();
-      reshuffleStamps();
+      window.addEventListener('mouseup', () => {
+        dragging = false;
+        stamp.style.cursor = "grab";
+      });
     });
 
-    window.onload=()=>{
-      createFrames();
-      createStamps();
-    };
+    // 回首頁（暫時只是提示）
+    function goHome() {
+      alert("回到遊戲首頁（這裡可加連結）");
+    }
   </script>
 </body>
 </html>
