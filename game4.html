@@ -48,14 +48,9 @@
       width: 100%;
       padding: 10px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
+      justify-content: space-around; /* ✅ 平均分佈 */
       background: #fff;
-    }
-    #control-row {
-      display: flex;
-      gap: 40px; /* 左右控制之間的距離 */
+      align-items: center;
     }
     .control-box {
       display: flex;
@@ -84,27 +79,24 @@
     <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
   </div>
 
+  <!-- ✅ 控制區平均分佈 -->
   <div id="controls">
-    <!-- ✅ 左右控制並列 -->
-    <div id="control-row">
-      <div class="control-box">
-        <div>左側控制</div>
-        <div class="control-buttons">
-          <button onclick="adjustLeft(-10)">←10</button>
-          <button onclick="adjustLeft(10)">→10</button>
-        </div>
-      </div>
-
-      <div class="control-box">
-        <div>右側控制</div>
-        <div class="control-buttons">
-          <button onclick="adjustRight(-10)">←10</button>
-          <button onclick="adjustRight(10)">→10</button>
-        </div>
+    <div class="control-box">
+      <div>左側控制</div>
+      <div class="control-buttons">
+        <button onclick="adjustLeft(-10)">←10</button>
+        <button onclick="adjustLeft(10)">→10</button>
       </div>
     </div>
 
-    <!-- ✅ 回首頁放在下方 -->
+    <div class="control-box">
+      <div>右側控制</div>
+      <div class="control-buttons">
+        <button onclick="adjustRight(-10)">←10</button>
+        <button onclick="adjustRight(10)">→10</button>
+      </div>
+    </div>
+
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
