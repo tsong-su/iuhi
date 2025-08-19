@@ -73,9 +73,8 @@
   <script>
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const frames = [];
-    const stamps = [];
 
+    const frames = [];
     const coords = [
       [0.3,0.3],[0.5,0.3],[0.7,0.3],
       [0.3,0.5],[0.5,0.5],[0.7,0.5],
@@ -83,9 +82,8 @@
       [0.4,0.9],[0.6,0.9],[0.8,0.9]
     ];
 
-    // === 紅框生成 ===
     map.onload = () => {
-      coords.forEach(([x,y])=>{
+      coords.forEach(([x,y],i)=>{
         const frame=document.createElement("div");
         frame.className="frame";
         frame.style.left = `${x*map.width}px`;
@@ -93,47 +91,39 @@
         gameContainer.appendChild(frame);
         frames.push(frame);
       });
-      layoutStamps(); // 郵票等地圖載入後再排列
-    };
 
-    // === 建立郵票 ===
-    for(let i=1;i<=12;i++){
-      const img=document.createElement("img");
-      img.src=`game4_assets/stamp${i}.jpg`;
-      img.className="stamp";
-      gameContainer.appendChild(img);
-      stamps.push(img);
-    }
-
-    // === 郵票排列：左右兩側，各 2×3 ===
-    function layoutStamps() {
+      // === 放置郵票 ===
       const rect = map.getBoundingClientRect();
       const mapLeft = rect.left;
       const mapRight = rect.right;
       const mapTop = rect.top;
       const mapHeight = rect.height;
 
-      const spacingX = 70; // 水平間距
-      const spacingY = 80; // 垂直間距
-      const offsetY = mapTop + mapHeight/2 - (spacingY*1.5); // 垂直置中 2排
+      const spacingX = 180; // 水平間距，再往外推
+      const spacingY = 100; // 垂直間距
+      const offsetY = mapTop + mapHeight/2 - (spacingY*1.5);
 
-      stamps.forEach((stamp,i)=>{
+      for(let i=1;i<=12;i++){
+        const img=document.createElement("img");
+        img.src=`game4_assets/stamp${i}.jpg`;
+        img.className="stamp";
+
         const col = i % 3;
         const row = Math.floor((i % 6) / 3);
-        if(i < 6){
-          // 左側
-          stamp.style.left = `${mapLeft - spacingX*(3-col)}px`;
-          stamp.style.top = `${offsetY + row*spacingY}px`;
-        } else {
-          // 右側
-          stamp.style.left = `${mapRight + spacingX*col}px`;
-          stamp.style.top = `${offsetY + (row)*spacingY}px`;
-        }
-      });
-    }
 
-    // 縮放或視窗大小改變 → 重新排列
-    window.addEventListener("resize", layoutStamps);
+        if(i <= 6){
+          // 左側 6 張
+          img.style.left = `${mapLeft - spacingX*(3-col)}px`;
+          img.style.top = `${offsetY + row*spacingY}px`;
+        } else {
+          // 右側 6 張
+          img.style.left = `${mapRight + spacingX*col}px`;
+          img.style.top = `${offsetY + (row)*spacingY}px`;
+        }
+
+        gameContainer.appendChild(img);
+      }
+    };
 
     function goHome(){
       window.location.href="index.html";
