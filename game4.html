@@ -9,8 +9,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
       background: #fdfdfd;
       overflow: hidden;
     }
@@ -24,8 +22,7 @@
     #game-container {
       position: relative;
       width: 70vw;
-      height: 70vh;
-      border: 1px solid #ccc;
+      height: 60vh; /* 留空間給郵票區 */
       background: #fff;
       display: flex;
       align-items: center;
@@ -42,12 +39,21 @@
     .frame {
       position: absolute;
       border: 2px dashed red;
+      width: 8%;
+      height: 8%; /* 固定正方形 */
       pointer-events: none;
+    }
+
+    #stamp-area {
+      width: 70vw;
+      height: 20vh;
+      margin-top: 10px;
+      position: relative;
     }
 
     .stamp {
       position: absolute;
-      width: 8%; /* 比框稍微小一點，之後可再調整 */
+      width: 8%;
       cursor: grab;
     }
 
@@ -61,11 +67,13 @@
 
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="map">
-    <!-- 紅框 -->
-    <div class="frame" style="left:20%; top:30%; width:8%; height:8%;"></div>
-    <div class="frame" style="left:60%; top:40%; width:8%; height:8%;"></div>
-    <!-- 更多紅框依需求加 -->
+    <!-- 紅色虛線框（放外圍，避免壓到地圖） -->
+    <div class="frame" style="left:10%; top:20%;"></div>
+    <div class="frame" style="left:70%; top:30%;"></div>
   </div>
+
+  <!-- 郵票專用區，不會壓住地圖 -->
+  <div id="stamp-area"></div>
 
   <div id="buttons">
     <button onclick="shuffleStamps()">🔄 重排郵票</button>
@@ -73,8 +81,7 @@
   </div>
 
   <script>
-    const container = document.getElementById('game-container');
-    const frames = document.querySelectorAll('.frame');
+    const stampArea = document.getElementById('stamp-area');
     const stamps = [];
 
     // 建立郵票
@@ -82,15 +89,15 @@
       const img = document.createElement('img');
       img.src = `game4_assets/stamp${i}.jpg`;
       img.className = 'stamp';
-      container.appendChild(img);
+      stampArea.appendChild(img);
       stamps.push(img);
     }
 
-    // 重排郵票
+    // 重排郵票（在下方區域隨機擺放）
     function shuffleStamps() {
       stamps.forEach(stamp => {
-        const x = Math.random() * 60 + 20; // 保證在容器內
-        const y = Math.random() * 60 + 20;
+        const x = Math.random() * 60 + 20;
+        const y = Math.random() * 40 + 20;
         stamp.style.left = `${x}%`;
         stamp.style.top = `${y}%`;
       });
@@ -98,7 +105,7 @@
 
     shuffleStamps();
 
-    // 拖曳功能（純前端 mousedown + mousemove）
+    // 拖曳功能
     stamps.forEach(stamp => {
       let offsetX = 0, offsetY = 0, dragging = false;
 
@@ -111,7 +118,7 @@
 
       window.addEventListener('mousemove', e => {
         if (!dragging) return;
-        const rect = container.getBoundingClientRect();
+        const rect = stampArea.getBoundingClientRect();
         let x = e.clientX - rect.left - offsetX;
         let y = e.clientY - rect.top - offsetY;
         stamp.style.left = `${x}px`;
@@ -124,7 +131,6 @@
       });
     });
 
-    // 回首頁（暫時只是提示）
     function goHome() {
       alert("回到遊戲首頁（這裡可加連結）");
     }
