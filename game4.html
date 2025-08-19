@@ -22,11 +22,12 @@
     #game-container {
       position: relative;
       width: 70vw;
-      height: 60vh; /* 上半部放地圖與紅框 */
+      height: 60vh;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     #map {
@@ -39,9 +40,10 @@
     .frame {
       position: absolute;
       border: 2px dashed red;
-      width: 8%;
-      height: 8%; /* 正方形 */
+      width: 6vw;   /* ✅ 固定方框大小 */
+      height: 6vw;  /* ✅ 保證正方形 */
       pointer-events: none;
+      transform: translate(-50%, -50%); /* 以中心對齊座標 */
     }
 
     #stamp-area {
@@ -51,12 +53,14 @@
       position: relative;
       background: #f9f9f9;
       border-radius: 8px;
+      overflow: hidden;
     }
 
     .stamp {
       position: absolute;
-      width: 8%;
+      width: 6vw;
       cursor: grab;
+      user-select: none;
     }
 
     #buttons {
@@ -69,22 +73,22 @@
 
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="map">
-    <!-- 示範：12 個紅框 -->
-    <div class="frame" style="left:10%; top:10%;"></div>
-    <div class="frame" style="left:25%; top:15%;"></div>
-    <div class="frame" style="left:40%; top:20%;"></div>
-    <div class="frame" style="left:55%; top:25%;"></div>
-    <div class="frame" style="left:70%; top:30%;"></div>
-    <div class="frame" style="left:15%; top:40%;"></div>
-    <div class="frame" style="left:30%; top:45%;"></div>
-    <div class="frame" style="left:50%; top:50%;"></div>
-    <div class="frame" style="left:65%; top:55%;"></div>
-    <div class="frame" style="left:20%; top:60%;"></div>
-    <div class="frame" style="left:45%; top:65%;"></div>
-    <div class="frame" style="left:60%; top:70%;"></div>
+    <!-- 紅框位置 (以中心座標定位) -->
+    <div class="frame" style="left:15%; top:15%;"></div>
+    <div class="frame" style="left:30%; top:20%;"></div>
+    <div class="frame" style="left:45%; top:25%;"></div>
+    <div class="frame" style="left:60%; top:30%;"></div>
+    <div class="frame" style="left:75%; top:35%;"></div>
+    <div class="frame" style="left:20%; top:45%;"></div>
+    <div class="frame" style="left:35%; top:50%;"></div>
+    <div class="frame" style="left:50%; top:55%;"></div>
+    <div class="frame" style="left:65%; top:60%;"></div>
+    <div class="frame" style="left:25%; top:70%;"></div>
+    <div class="frame" style="left:45%; top:75%;"></div>
+    <div class="frame" style="left:60%; top:80%;"></div>
   </div>
 
-  <!-- 郵票區（不會擋到按鈕，會打散到上下左右） -->
+  <!-- 郵票區 -->
   <div id="stamp-area"></div>
 
   <div id="buttons">
@@ -105,30 +109,31 @@
       stamps.push(img);
     }
 
-    // 隨機散開郵票（避免集中）
+    // 郵票隨機散開（避免擋到按鈕）
     function shuffleStamps() {
+      const rect = stampArea.getBoundingClientRect();
       stamps.forEach(stamp => {
-        const x = Math.random() * 60 + 5; // 控制範圍
-        const y = Math.random() * 60 + 5;
-        stamp.style.left = `${x}%`;
-        stamp.style.top = `${y}%`;
+        const x = Math.random() * (rect.width * 0.8); // 限制範圍
+        const y = Math.random() * (rect.height * 0.7); // 預留下方 30%
+        stamp.style.left = `${x}px`;
+        stamp.style.top = `${y}px`;
       });
     }
-
     shuffleStamps();
 
-    // 拖曳功能
+    // 拖曳功能 (mouseup 改 pointerup)
     stamps.forEach(stamp => {
       let offsetX = 0, offsetY = 0, dragging = false;
 
-      stamp.addEventListener('mousedown', e => {
+      stamp.addEventListener('pointerdown', e => {
         dragging = true;
         offsetX = e.offsetX;
         offsetY = e.offsetY;
+        stamp.setPointerCapture(e.pointerId);
         stamp.style.cursor = "grabbing";
       });
 
-      document.addEventListener('mousemove', e => {
+      stamp.addEventListener('pointermove', e => {
         if (!dragging) return;
         const rect = stampArea.getBoundingClientRect();
         let x = e.clientX - rect.left - offsetX;
@@ -137,15 +142,16 @@
         stamp.style.top = `${y}px`;
       });
 
-      document.addEventListener('mouseup', () => {
+      stamp.addEventListener('pointerup', e => {
         dragging = false;
+        stamp.releasePointerCapture(e.pointerId);
         stamp.style.cursor = "grab";
       });
     });
 
     // 回首頁
     function goHome() {
-      window.location.href = "index.html"; // ✅ 回首頁
+      window.location.href = "index.html";
     }
   </script>
 </body>
