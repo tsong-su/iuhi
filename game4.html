@@ -48,9 +48,14 @@
       width: 100%;
       padding: 10px;
       display: flex;
-      justify-content: center;
-      gap: 20px;
+      flex-direction: column; /* ✅ 改成上下排列 */
+      align-items: center;
+      gap: 10px;
       background: #fff;
+    }
+    .control-row {
+      display: flex;
+      gap: 20px;
     }
     #controls button {
       font-size: 18px;
@@ -65,15 +70,25 @@
     <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
   </div>
   <div id="controls">
-    <button onclick="adjustRight(-10)">右側往左 ←10</button>
-    <button onclick="adjustRight(10)">右側往右 →10</button>
+    <!-- ✅ 上排：左側控制 -->
+    <div class="control-row">
+      <button onclick="adjustLeft(-10)">左側往左 ←10</button>
+      <button onclick="adjustLeft(10)">左側往右 →10</button>
+    </div>
+    <!-- ✅ 下排：右側控制 -->
+    <div class="control-row">
+      <button onclick="adjustRight(-10)">右側往左 ←10</button>
+      <button onclick="adjustRight(10)">右側往右 →10</button>
+    </div>
+    <!-- ✅ 最底下：回首頁 -->
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
   <script>
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
-    let rightOffsetX = 300; // ✅ 預設右側距離
+    let rightOffsetX = 300; // 右側初始距離
+    let leftOffsetX = 40;   // 左側初始距離
     const stamps = [];
 
     const coords = [
@@ -91,7 +106,6 @@
         frame.style.top = `${y*map.height}px`;
         gameContainer.appendChild(frame);
       });
-
       createStamps();
     };
 
@@ -103,7 +117,6 @@
       const spacingX = 70;   // 水平間距
       const spacingY = 90;   // 垂直間距
       const offsetTop = 100; // 上方距離
-      const leftOffsetX = 40; // 左側距離
 
       for(let i=1;i<=12;i++){
         const img=document.createElement("img");
@@ -118,7 +131,7 @@
           img.style.left = `${leftOffsetX + col*spacingX}px`;
           img.style.top = `${offsetTop + row*spacingY}px`;
         } else {
-          // 右側（✅ 改用 left）
+          // 右側
           img.style.left = `${map.width + rightOffsetX + col*spacingX}px`;
           img.style.top = `${offsetTop + row*spacingY}px`;
         }
@@ -128,7 +141,13 @@
       }
     }
 
-    // ✅ 控制右側郵票距離
+    // ✅ 控制左側距離
+    function adjustLeft(delta){
+      leftOffsetX += delta;
+      createStamps();
+    }
+
+    // ✅ 控制右側距離
     function adjustRight(delta){
       rightOffsetX += delta;
       createStamps();
