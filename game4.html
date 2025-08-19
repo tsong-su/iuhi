@@ -26,6 +26,7 @@
       align-items: center;
       width: 100%;
       max-height: 80%;
+      overflow: hidden;
     }
     #map {
       max-width: 70%;
@@ -62,7 +63,7 @@
   <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
   <div id="game-container">
     <img id="map" src="taiwan-north.png" alt="臺灣北部地圖">
-    <!-- 紅框 (座標用 data-x data-y) -->
+    <!-- 紅框 -->
     <div class="frame" data-x="0.25" data-y="0.3"></div>
     <div class="frame" data-x="0.45" data-y="0.5"></div>
     <div class="frame" data-x="0.7" data-y="0.6"></div>
@@ -77,7 +78,7 @@
     <div class="frame" data-x="0.5" data-y="0.6"></div>
   </div>
 
-  <!-- 按鈕區 -->
+  <!-- 按鈕 -->
   <div class="buttons">
     <button onclick="shuffleStamps()">重排郵票</button>
     <button onclick="goHome()">回到遊戲首頁</button>
@@ -86,7 +87,6 @@
   <!-- 音效 -->
   <audio id="wrong-sound" src="wrong.mp3"></audio>
   <audio id="victory-sound" src="victory.mp3"></audio>
-  <!-- 每個郵票對應一個正確音效 -->
   <audio id="stamp-sound-1" src="stamp1.mp3"></audio>
   <audio id="stamp-sound-2" src="stamp2.mp3"></audio>
   <audio id="stamp-sound-3" src="stamp3.mp3"></audio>
@@ -105,11 +105,11 @@
     const frames = document.querySelectorAll(".frame");
     const gameContainer = document.getElementById("game-container");
 
-    // 動態建立郵票
+    // 建立郵票
     const stamps = [];
     for (let i = 1; i <= 12; i++) {
       const img = document.createElement("img");
-      img.src = `stamp${i}.jpg`;
+      img.src = `stamp${i}.jpg`;   // 確認檔名正確
       img.className = "stamp";
       img.draggable = true;
       img.dataset.index = i;
@@ -117,7 +117,7 @@
       stamps.push(img);
     }
 
-    // 更新紅框位置
+    // 紅框定位
     function updateFrames() {
       const rect = map.getBoundingClientRect();
       const imgRatio = map.naturalWidth / map.naturalHeight;
@@ -127,13 +127,13 @@
       if (imgRatio > rectRatio) {
         drawWidth = rect.width;
         drawHeight = rect.width / imgRatio;
-        offsetX = rect.left;
-        offsetY = rect.top + (rect.height - drawHeight) / 2;
+        offsetX = (rect.width - drawWidth) / 2;
+        offsetY = (rect.height - drawHeight) / 2;
       } else {
         drawHeight = rect.height;
         drawWidth = rect.height * imgRatio;
-        offsetY = rect.top;
-        offsetX = rect.left + (rect.width - drawWidth) / 2;
+        offsetX = (rect.width - drawWidth) / 2;
+        offsetY = (rect.height - drawHeight) / 2;
       }
 
       frames.forEach(f => {
@@ -144,18 +144,18 @@
       });
     }
 
-    // 郵票隨機打散
+    // 郵票隨機位置
     function shuffleStamps() {
       const rect = gameContainer.getBoundingClientRect();
       stamps.forEach(stamp => {
         const x = Math.random() * (rect.width - 100);
-        const y = rect.height - 150 + Math.random() * 100; // 放在下方區域
+        const y = rect.height - 150 + Math.random() * 100;
         stamp.style.left = `${x}px`;
         stamp.style.top = `${y}px`;
       });
     }
 
-    // 拖曳功能
+    // 拖曳事件
     stamps.forEach(stamp => {
       stamp.addEventListener("dragstart", e => {
         e.dataTransfer.setData("text/plain", stamp.dataset.index);
@@ -168,8 +168,7 @@
         e.preventDefault();
         const index = e.dataTransfer.getData("text/plain");
         if (parseInt(index) === i + 1) {
-          const sound = document.getElementById(`stamp-sound-${index}`);
-          sound.play();
+          document.getElementById(`stamp-sound-${index}`).play();
           stamps[index - 1].style.left = frame.style.left;
           stamps[index - 1].style.top = frame.style.top;
         } else {
@@ -179,7 +178,7 @@
     });
 
     function goHome() {
-      window.location.href = "index.html"; // 回首頁
+      window.location.href = "index.html";
     }
 
     window.addEventListener("resize", updateFrames);
