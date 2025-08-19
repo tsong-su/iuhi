@@ -34,8 +34,8 @@
     .frame {
       position: absolute;
       border: 2px dashed red;
-      width: 60px;
-      height: 60px;
+      width: 55px;   /* ✅ 紅框縮小 */
+      height: 55px;
       pointer-events: none;
       z-index: 5;
     }
@@ -45,24 +45,25 @@
       height: 70px;
       cursor: grab;
       z-index: 10;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* ✅ 陰影效果 */
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* 陰影效果 */
     }
     #controls {
       width: 100%;
-      padding: 10px;
+      padding: 8px;
       display: flex;
-      justify-content: space-evenly; /* ✅ 平均分布 */
+      justify-content: center;
       align-items: center;
+      gap: 20px;  /* ✅ 三個模組更密集 */
       background: #fff;
     }
     #controls > div {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;  /* ✅ 左右排列 */
       gap: 5px;
     }
     #controls button {
-      font-size: 16px;
-      padding: 8px 16px;
+      font-size: 14px;      /* ✅ 字體縮小 */
+      padding: 6px 12px;    /* ✅ 更精簡 */
       cursor: pointer;
     }
   </style>
@@ -76,14 +77,14 @@
   <div id="controls">
     <!-- 左側控制 -->
     <div>
-      <button onclick="moveStamps('left','in')">左側往左 ←10</button>
-      <button onclick="moveStamps('left','out')">左側往右 →10</button>
+      <button onclick="moveStamps('left','in')">←10</button>
+      <button onclick="moveStamps('left','out')">→10</button>
     </div>
 
     <!-- 右側控制 -->
     <div>
-      <button onclick="moveStamps('right','in')">右側往左 ←10</button>
-      <button onclick="moveStamps('right','out')">右側往右 →10</button>
+      <button onclick="moveStamps('right','in')">←10</button>
+      <button onclick="moveStamps('right','out')">→10</button>
     </div>
 
     <!-- 回首頁 -->
