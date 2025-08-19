@@ -48,18 +48,27 @@
       width: 100%;
       padding: 10px;
       display: flex;
-      flex-direction: column; /* ✅ 改成上下排列 */
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
       background: #fff;
     }
-    .control-row {
+    .control-box {
       display: flex;
-      gap: 20px;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid #aaa;
+      border-radius: 8px;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+    .control-buttons {
+      display: flex;
+      gap: 15px;
     }
     #controls button {
-      font-size: 18px;
-      padding: 10px 20px;
+      font-size: 16px;
+      padding: 8px 16px;
       cursor: pointer;
     }
   </style>
@@ -69,18 +78,27 @@
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
   </div>
+
   <div id="controls">
-    <!-- ✅ 上排：左側控制 -->
-    <div class="control-row">
-      <button onclick="adjustLeft(-10)">左側往左 ←10</button>
-      <button onclick="adjustLeft(10)">左側往右 →10</button>
+    <!-- ✅ 左側控制區 -->
+    <div class="control-box">
+      <div>左側控制</div>
+      <div class="control-buttons">
+        <button onclick="adjustLeft(-10)">←10</button>
+        <button onclick="adjustLeft(10)">→10</button>
+      </div>
     </div>
-    <!-- ✅ 下排：右側控制 -->
-    <div class="control-row">
-      <button onclick="adjustRight(-10)">右側往左 ←10</button>
-      <button onclick="adjustRight(10)">右側往右 →10</button>
+
+    <!-- ✅ 右側控制區 -->
+    <div class="control-box">
+      <div>右側控制</div>
+      <div class="control-buttons">
+        <button onclick="adjustRight(-10)">←10</button>
+        <button onclick="adjustRight(10)">→10</button>
+      </div>
     </div>
-    <!-- ✅ 最底下：回首頁 -->
+
+    <!-- ✅ 回首頁 -->
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
@@ -110,13 +128,12 @@
     };
 
     function createStamps(){
-      // 清空舊的
       stamps.forEach(s=>s.remove());
       stamps.length = 0;
 
-      const spacingX = 70;   // 水平間距
-      const spacingY = 90;   // 垂直間距
-      const offsetTop = 100; // 上方距離
+      const spacingX = 70;
+      const spacingY = 90;
+      const offsetTop = 100;
 
       for(let i=1;i<=12;i++){
         const img=document.createElement("img");
@@ -127,11 +144,9 @@
         const row = Math.floor(((i-1) % 6) / 3);
 
         if(i <= 6){
-          // 左側
           img.style.left = `${leftOffsetX + col*spacingX}px`;
           img.style.top = `${offsetTop + row*spacingY}px`;
         } else {
-          // 右側
           img.style.left = `${map.width + rightOffsetX + col*spacingX}px`;
           img.style.top = `${offsetTop + row*spacingY}px`;
         }
@@ -141,18 +156,14 @@
       }
     }
 
-    // ✅ 控制左側距離
     function adjustLeft(delta){
       leftOffsetX += delta;
       createStamps();
     }
-
-    // ✅ 控制右側距離
     function adjustRight(delta){
       rightOffsetX += delta;
       createStamps();
     }
-
     function goHome(){
       window.location.href="index.html";
     }
