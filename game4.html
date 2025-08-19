@@ -1,160 +1,30 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #fdfdfd;
-      overflow: hidden;
-    }
-    h1 { margin: 10px; font-size: 20px; color: #333; }
-    #game-container {
-      position: relative;
-      width: 70vw;
-      height: 60vh;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-    .frame {
-      position: absolute;
-      border: 2px dashed red;
-      width: 6vw; height: 6vw;
-      pointer-events: none;
-      z-index: 5;
-    }
-    .stamp {
-      position: absolute;
-      width: 6vw;
-      cursor: grab;
-      user-select: none;
-      z-index: 10;
-    }
-    #buttons { margin-top: 10px; }
-  </style>
-</head>
-<body>
-  <h1>臺灣北部地圖&注音符號郵票配對遊戲</h1>
+// === 紅框更新 ===
+function updateFrames() {
+  const rect = map.getBoundingClientRect();
 
-  <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="map">
-  </div>
+  // 計算實際圖片繪製區域 (去掉 contain 留白)
+  const imgRatio = map.naturalWidth / map.naturalHeight;
+  const rectRatio = rect.width / rect.height;
 
-  <div id="buttons">
-    <button onclick="shuffleStamps()">🔄 重排郵票</button>
-    <button onclick="goHome()">🏠 回到遊戲首頁</button>
-  </div>
+  let drawWidth, drawHeight, offsetX, offsetY;
+  if (imgRatio > rectRatio) {
+    // 寬受限
+    drawWidth = rect.width;
+    drawHeight = rect.width / imgRatio;
+    offsetX = rect.left;
+    offsetY = rect.top + (rect.height - drawHeight) / 2;
+  } else {
+    // 高受限
+    drawHeight = rect.height;
+    drawWidth = rect.height * imgRatio;
+    offsetY = rect.top;
+    offsetX = rect.left + (rect.width - drawWidth) / 2;
+  }
 
-  <script>
-    const map = document.getElementById('map');
-    const frames = [];
-    const stamps = [];
-
-    // 框的比例座標 (相對地圖)
-    const framePositions = [
-      [0.2,0.2],[0.4,0.25],[0.6,0.3],[0.75,0.35],
-      [0.3,0.5],[0.5,0.55],[0.65,0.6],[0.25,0.7],
-      [0.45,0.75],[0.6,0.8],[0.15,0.4],[0.85,0.45]
-    ];
-
-    // 建立紅框 → 放在 body，不會被裁切
-    framePositions.forEach(pos=>{
-      const f=document.createElement('div');
-      f.className='frame';
-      f.dataset.x=pos[0];
-      f.dataset.y=pos[1];
-      document.body.appendChild(f);
-      frames.push(f);
-    });
-
-    // 更新紅框位置 (精準對齊 map)
-    function updateFrames(){
-      const rect = map.getBoundingClientRect();
-      frames.forEach(f=>{
-        const x = parseFloat(f.dataset.x);
-        const y = parseFloat(f.dataset.y);
-        f.style.left = `${rect.left + rect.width*x - f.offsetWidth/2}px`;
-        f.style.top  = `${rect.top  + rect.height*y - f.offsetHeight/2}px`;
-      });
-    }
-    window.addEventListener('resize', updateFrames);
-    map.onload = updateFrames;
-
-    // 建立郵票
-    for(let i=1;i<=12;i++){
-      const img=document.createElement('img');
-      img.src=`game4_assets/stamp${i}.jpg`;
-      img.className='stamp';
-      document.body.appendChild(img);
-      stamps.push(img);
-    }
-
-    // 打散郵票 (確保不出界，分布在左/右/下)
-    function shuffleStamps(){
-      const rect = map.getBoundingClientRect();
-      stamps.forEach(stamp=>{
-        const area=Math.floor(Math.random()*3); // 0左 1右 2下
-        let x,y;
-        if(area===0){ // 左
-          x = rect.left - 100 - Math.random()*100;
-          y = rect.top + Math.random()*rect.height;
-        }else if(area===1){ // 右
-          x = rect.right + 20 + Math.random()*100;
-          y = rect.top + Math.random()*rect.height;
-        }else{ // 下
-          x = rect.left + Math.random()*rect.width;
-          y = rect.bottom + 40 + Math.random()*200;
-        }
-        // 邊界檢查
-        const maxX = window.innerWidth - stamp.width - 20;
-        const maxY = window.innerHeight - stamp.height - 20;
-        x = Math.max(20, Math.min(x, maxX));
-        y = Math.max(20, Math.min(y, maxY));
-        stamp.style.left=`${x}px`;
-        stamp.style.top =`${y}px`;
-      });
-    }
-    shuffleStamps();
-
-    // 拖曳功能
-    stamps.forEach(stamp=>{
-      let offsetX=0,offsetY=0,dragging=false;
-      stamp.addEventListener('pointerdown',e=>{
-        dragging=true;
-        offsetX=e.offsetX;
-        offsetY=e.offsetY;
-        stamp.setPointerCapture(e.pointerId);
-        stamp.style.cursor="grabbing";
-      });
-      stamp.addEventListener('pointermove',e=>{
-        if(!dragging)return;
-        let x=e.clientX-offsetX;
-        let y=e.clientY-offsetY;
-        stamp.style.left=`${x}px`;
-        stamp.style.top =`${y}px`;
-      });
-      stamp.addEventListener('pointerup',e=>{
-        dragging=false;
-        stamp.releasePointerCapture(e.pointerId);
-        stamp.style.cursor="grab";
-      });
-    });
-
-    function goHome(){
-      window.location.href="index.html";
-    }
-  </script>
-</body>
-</html>
+  frames.forEach(f => {
+    const x = parseFloat(f.dataset.x);
+    const y = parseFloat(f.dataset.y);
+    f.style.left = `${offsetX + drawWidth * x - f.offsetWidth/2}px`;
+    f.style.top  = `${offsetY + drawHeight* y - f.offsetHeight/2}px`;
+  });
+}
