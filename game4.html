@@ -12,13 +12,7 @@
       background: #fdfdfd;
       overflow: hidden;
     }
-
-    h1 {
-      margin: 10px;
-      font-size: 20px;
-      color: #333;
-    }
-
+    h1 { margin: 10px; font-size: 20px; color: #333; }
     #game-container {
       position: relative;
       width: 70vw;
@@ -29,43 +23,27 @@
       justify-content: center;
       overflow: hidden;
     }
-
     #map {
       width: 100%;
       height: 100%;
       object-fit: contain;
       display: block;
     }
-
     .frame {
       position: absolute;
       border: 2px dashed red;
-      width: 6vw;   /* ✅ 固定方框大小 */
-      height: 6vw;  /* ✅ 保證正方形 */
+      width: 6vw; height: 6vw;
       pointer-events: none;
-      transform: translate(-50%, -50%); /* 以中心對齊座標 */
+      transform: translate(-50%, -50%);
     }
-
-    #stamp-area {
-      width: 70vw;
-      height: 25vh;
-      margin-top: 10px;
-      position: relative;
-      background: #f9f9f9;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
     .stamp {
       position: absolute;
       width: 6vw;
       cursor: grab;
       user-select: none;
+      z-index: 10;
     }
-
-    #buttons {
-      margin-top: 10px;
-    }
+    #buttons { margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -73,23 +51,20 @@
 
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="map">
-    <!-- 紅框位置 (以中心座標定位) -->
-    <div class="frame" style="left:15%; top:15%;"></div>
-    <div class="frame" style="left:30%; top:20%;"></div>
-    <div class="frame" style="left:45%; top:25%;"></div>
-    <div class="frame" style="left:60%; top:30%;"></div>
-    <div class="frame" style="left:75%; top:35%;"></div>
-    <div class="frame" style="left:20%; top:45%;"></div>
-    <div class="frame" style="left:35%; top:50%;"></div>
-    <div class="frame" style="left:50%; top:55%;"></div>
-    <div class="frame" style="left:65%; top:60%;"></div>
-    <div class="frame" style="left:25%; top:70%;"></div>
-    <div class="frame" style="left:45%; top:75%;"></div>
-    <div class="frame" style="left:60%; top:80%;"></div>
+    <!-- 紅框，等圖片載入後依照實際大小再校正位置 -->
+    <div class="frame" data-x="0.2" data-y="0.2"></div>
+    <div class="frame" data-x="0.4" data-y="0.25"></div>
+    <div class="frame" data-x="0.6" data-y="0.3"></div>
+    <div class="frame" data-x="0.75" data-y="0.35"></div>
+    <div class="frame" data-x="0.3" data-y="0.5"></div>
+    <div class="frame" data-x="0.5" data-y="0.55"></div>
+    <div class="frame" data-x="0.65" data-y="0.6"></div>
+    <div class="frame" data-x="0.25" data-y="0.7"></div>
+    <div class="frame" data-x="0.45" data-y="0.75"></div>
+    <div class="frame" data-x="0.6" data-y="0.8"></div>
+    <div class="frame" data-x="0.15" data-y="0.4"></div>
+    <div class="frame" data-x="0.85" data-y="0.45"></div>
   </div>
-
-  <!-- 郵票區 -->
-  <div id="stamp-area"></div>
 
   <div id="buttons">
     <button onclick="shuffleStamps()">🔄 重排郵票</button>
@@ -97,7 +72,9 @@
   </div>
 
   <script>
-    const stampArea = document.getElementById('stamp-area');
+    const gameContainer = document.getElementById('game-container');
+    const map = document.getElementById('map');
+    const frames = document.querySelectorAll('.frame');
     const stamps = [];
 
     // 建立郵票
@@ -105,23 +82,46 @@
       const img = document.createElement('img');
       img.src = `game4_assets/stamp${i}.jpg`;
       img.className = 'stamp';
-      stampArea.appendChild(img);
+      document.body.appendChild(img); // 郵票直接放 body，避免被限制在下方
       stamps.push(img);
     }
 
-    // 郵票隨機散開（避免擋到按鈕）
+    // ✅ 根據地圖實際顯示大小，放置紅框
+    function updateFrames() {
+      const rect = map.getBoundingClientRect();
+      frames.forEach(frame => {
+        const x = parseFloat(frame.dataset.x);
+        const y = parseFloat(frame.dataset.y);
+        frame.style.left = `${rect.left + rect.width * x}px`;
+        frame.style.top = `${rect.top + rect.height * y}px`;
+      });
+    }
+    window.addEventListener('resize', updateFrames);
+    map.onload = updateFrames;
+
+    // ✅ 郵票散落左/右/下三區
     function shuffleStamps() {
-      const rect = stampArea.getBoundingClientRect();
+      const rect = gameContainer.getBoundingClientRect();
       stamps.forEach(stamp => {
-        const x = Math.random() * (rect.width * 0.8); // 限制範圍
-        const y = Math.random() * (rect.height * 0.7); // 預留下方 30%
+        const area = Math.floor(Math.random() * 3); // 0=左, 1=右, 2=下
+        let x, y;
+        if (area === 0) { // 左
+          x = rect.left - (Math.random() * rect.width * 0.3);
+          y = rect.top + Math.random() * rect.height;
+        } else if (area === 1) { // 右
+          x = rect.right + (Math.random() * rect.width * 0.2);
+          y = rect.top + Math.random() * rect.height;
+        } else { // 下
+          x = rect.left + Math.random() * rect.width;
+          y = rect.bottom + 40 + Math.random() * 200;
+        }
         stamp.style.left = `${x}px`;
         stamp.style.top = `${y}px`;
       });
     }
     shuffleStamps();
 
-    // 拖曳功能 (mouseup 改 pointerup)
+    // ✅ 拖曳功能（相對整個 document）
     stamps.forEach(stamp => {
       let offsetX = 0, offsetY = 0, dragging = false;
 
@@ -135,9 +135,8 @@
 
       stamp.addEventListener('pointermove', e => {
         if (!dragging) return;
-        const rect = stampArea.getBoundingClientRect();
-        let x = e.clientX - rect.left - offsetX;
-        let y = e.clientY - rect.top - offsetY;
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
         stamp.style.left = `${x}px`;
         stamp.style.top = `${y}px`;
       });
@@ -149,7 +148,6 @@
       });
     });
 
-    // 回首頁
     function goHome() {
       window.location.href = "index.html";
     }
