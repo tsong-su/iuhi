@@ -74,6 +74,8 @@
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
     const frames = [];
+    const stamps = [];
+
     const coords = [
       [0.3,0.3],[0.5,0.3],[0.7,0.3],
       [0.3,0.5],[0.5,0.5],[0.7,0.5],
@@ -81,6 +83,7 @@
       [0.4,0.9],[0.6,0.9],[0.8,0.9]
     ];
 
+    // === 紅框生成 ===
     map.onload = () => {
       coords.forEach(([x,y])=>{
         const frame=document.createElement("div");
@@ -90,51 +93,47 @@
         gameContainer.appendChild(frame);
         frames.push(frame);
       });
+      layoutStamps(); // 郵票等地圖載入後再排列
     };
 
-    // === 郵票建立並左右排列 ===
-    const stamps=[];
+    // === 建立郵票 ===
     for(let i=1;i<=12;i++){
       const img=document.createElement("img");
       img.src=`game4_assets/stamp${i}.jpg`;
       img.className="stamp";
-
-      // 左邊放 1~6，右邊放 7~12
-      let col = (i<=6)? 0 : 1;
-      let row = (i-1)%3;
-      let colIndex = Math.floor(((i-1)%6)/3); // 上下排
-
-      img.style.left = (col===0? 20 : window.innerWidth-100) + "px";
-      img.style.top  = (100 + row*70 + colIndex*150) + "px";
-
-      enableDrag(img);
       gameContainer.appendChild(img);
       stamps.push(img);
     }
 
-    // === 拖曳功能 ===
-    function enableDrag(el){
-      let offsetX, offsetY, dragging=false;
+    // === 郵票排列：左右兩側，各 2×3 ===
+    function layoutStamps() {
+      const rect = map.getBoundingClientRect();
+      const mapLeft = rect.left;
+      const mapRight = rect.right;
+      const mapTop = rect.top;
+      const mapHeight = rect.height;
 
-      el.addEventListener("mousedown", e=>{
-        dragging=true;
-        offsetX = e.clientX - el.offsetLeft;
-        offsetY = e.clientY - el.offsetTop;
-        el.style.cursor="grabbing";
-      });
+      const spacingX = 70; // 水平間距
+      const spacingY = 80; // 垂直間距
+      const offsetY = mapTop + mapHeight/2 - (spacingY*1.5); // 垂直置中 2排
 
-      document.addEventListener("mousemove", e=>{
-        if(dragging){
-          el.style.left = (e.clientX - offsetX) + "px";
-          el.style.top  = (e.clientY - offsetY) + "px";
+      stamps.forEach((stamp,i)=>{
+        const col = i % 3;
+        const row = Math.floor((i % 6) / 3);
+        if(i < 6){
+          // 左側
+          stamp.style.left = `${mapLeft - spacingX*(3-col)}px`;
+          stamp.style.top = `${offsetY + row*spacingY}px`;
+        } else {
+          // 右側
+          stamp.style.left = `${mapRight + spacingX*col}px`;
+          stamp.style.top = `${offsetY + (row)*spacingY}px`;
         }
       });
-
-      document.addEventListener("mouseup", ()=>{
-        dragging=false;
-        el.style.cursor="grab";
-      });
     }
+
+    // 縮放或視窗大小改變 → 重新排列
+    window.addEventListener("resize", layoutStamps);
 
     function goHome(){
       window.location.href="index.html";
