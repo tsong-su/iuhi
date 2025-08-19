@@ -21,7 +21,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
     #map {
       width: 100%;
@@ -35,6 +34,7 @@
       width: 6vw; height: 6vw;
       pointer-events: none;
       transform: translate(-50%, -50%);
+      z-index: 5;
     }
     .stamp {
       position: absolute;
@@ -51,19 +51,6 @@
 
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="map">
-    <!-- 紅框，等圖片載入後依照實際大小再校正位置 -->
-    <div class="frame" data-x="0.2" data-y="0.2"></div>
-    <div class="frame" data-x="0.4" data-y="0.25"></div>
-    <div class="frame" data-x="0.6" data-y="0.3"></div>
-    <div class="frame" data-x="0.75" data-y="0.35"></div>
-    <div class="frame" data-x="0.3" data-y="0.5"></div>
-    <div class="frame" data-x="0.5" data-y="0.55"></div>
-    <div class="frame" data-x="0.65" data-y="0.6"></div>
-    <div class="frame" data-x="0.25" data-y="0.7"></div>
-    <div class="frame" data-x="0.45" data-y="0.75"></div>
-    <div class="frame" data-x="0.6" data-y="0.8"></div>
-    <div class="frame" data-x="0.15" data-y="0.4"></div>
-    <div class="frame" data-x="0.85" data-y="0.45"></div>
   </div>
 
   <div id="buttons">
@@ -72,84 +59,103 @@
   </div>
 
   <script>
-    const gameContainer = document.getElementById('game-container');
     const map = document.getElementById('map');
-    const frames = document.querySelectorAll('.frame');
+    const gameContainer = document.getElementById('game-container');
     const stamps = [];
+    const frames = [];
 
-    // 建立郵票
-    for (let i = 1; i <= 12; i++) {
-      const img = document.createElement('img');
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.className = 'stamp';
-      document.body.appendChild(img); // 郵票直接放 body，避免被限制在下方
-      stamps.push(img);
-    }
+    // 紅框配置 (相對比例)
+    const framePositions = [
+      [0.2,0.2],[0.4,0.25],[0.6,0.3],[0.75,0.35],
+      [0.3,0.5],[0.5,0.55],[0.65,0.6],[0.25,0.7],
+      [0.45,0.75],[0.6,0.8],[0.15,0.4],[0.85,0.45]
+    ];
 
-    // ✅ 根據地圖實際顯示大小，放置紅框
-    function updateFrames() {
+    // ✅ 把紅框加到 body
+    framePositions.forEach(pos=>{
+      const f=document.createElement('div');
+      f.className='frame';
+      f.dataset.x=pos[0];
+      f.dataset.y=pos[1];
+      document.body.appendChild(f);
+      frames.push(f);
+    });
+
+    // ✅ 更新紅框位置（根據 map 真實大小）
+    function updateFrames(){
       const rect = map.getBoundingClientRect();
-      frames.forEach(frame => {
-        const x = parseFloat(frame.dataset.x);
-        const y = parseFloat(frame.dataset.y);
-        frame.style.left = `${rect.left + rect.width * x}px`;
-        frame.style.top = `${rect.top + rect.height * y}px`;
+      frames.forEach(f=>{
+        const x = parseFloat(f.dataset.x);
+        const y = parseFloat(f.dataset.y);
+        f.style.left = `${rect.left + rect.width*x}px`;
+        f.style.top  = `${rect.top + rect.height*y}px`;
       });
     }
     window.addEventListener('resize', updateFrames);
     map.onload = updateFrames;
 
-    // ✅ 郵票散落左/右/下三區
-    function shuffleStamps() {
+    // 建立郵票
+    for(let i=1;i<=12;i++){
+      const img=document.createElement('img');
+      img.src=`game4_assets/stamp${i}.jpg`;
+      img.className='stamp';
+      document.body.appendChild(img);
+      stamps.push(img);
+    }
+
+    // ✅ 打散郵票（確保不出界）
+    function shuffleStamps(){
       const rect = gameContainer.getBoundingClientRect();
-      stamps.forEach(stamp => {
-        const area = Math.floor(Math.random() * 3); // 0=左, 1=右, 2=下
-        let x, y;
-        if (area === 0) { // 左
-          x = rect.left - (Math.random() * rect.width * 0.3);
-          y = rect.top + Math.random() * rect.height;
-        } else if (area === 1) { // 右
-          x = rect.right + (Math.random() * rect.width * 0.2);
-          y = rect.top + Math.random() * rect.height;
-        } else { // 下
-          x = rect.left + Math.random() * rect.width;
-          y = rect.bottom + 40 + Math.random() * 200;
+      stamps.forEach(stamp=>{
+        const area=Math.floor(Math.random()*3); // 0左 1右 2下
+        let x,y;
+        if(area===0){ // 左
+          x = rect.left - (Math.random()*rect.width*0.3);
+          y = rect.top + Math.random()*rect.height;
+        }else if(area===1){ // 右
+          x = rect.right + (Math.random()*rect.width*0.2);
+          y = rect.top + Math.random()*rect.height;
+        }else{ // 下
+          x = rect.left + Math.random()*rect.width;
+          y = rect.bottom + 40 + Math.random()*200;
         }
-        stamp.style.left = `${x}px`;
-        stamp.style.top = `${y}px`;
+        // 邊界檢查
+        const maxX = window.innerWidth - 80;
+        const maxY = window.innerHeight - 80;
+        x = Math.max(20, Math.min(x, maxX));
+        y = Math.max(20, Math.min(y, maxY));
+        stamp.style.left=`${x}px`;
+        stamp.style.top =`${y}px`;
       });
     }
     shuffleStamps();
 
-    // ✅ 拖曳功能（相對整個 document）
-    stamps.forEach(stamp => {
-      let offsetX = 0, offsetY = 0, dragging = false;
-
-      stamp.addEventListener('pointerdown', e => {
-        dragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
+    // ✅ 拖曳功能
+    stamps.forEach(stamp=>{
+      let offsetX=0,offsetY=0,dragging=false;
+      stamp.addEventListener('pointerdown',e=>{
+        dragging=true;
+        offsetX=e.offsetX;
+        offsetY=e.offsetY;
         stamp.setPointerCapture(e.pointerId);
-        stamp.style.cursor = "grabbing";
+        stamp.style.cursor="grabbing";
       });
-
-      stamp.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        let x = e.clientX - offsetX;
-        let y = e.clientY - offsetY;
-        stamp.style.left = `${x}px`;
-        stamp.style.top = `${y}px`;
+      stamp.addEventListener('pointermove',e=>{
+        if(!dragging)return;
+        let x=e.clientX-offsetX;
+        let y=e.clientY-offsetY;
+        stamp.style.left=`${x}px`;
+        stamp.style.top =`${y}px`;
       });
-
-      stamp.addEventListener('pointerup', e => {
-        dragging = false;
+      stamp.addEventListener('pointerup',e=>{
+        dragging=false;
         stamp.releasePointerCapture(e.pointerId);
-        stamp.style.cursor = "grab";
+        stamp.style.cursor="grab";
       });
     });
 
-    function goHome() {
-      window.location.href = "index.html";
+    function goHome(){
+      window.location.href="index.html";
     }
   </script>
 </body>
