@@ -1,137 +1,136 @@
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    background: #fdfdfd;
-    overflow: hidden;
-  }
-
-  /* === 遊戲名稱 === */
-  header {
-    font-size: 20px;
-    font-weight: bold;
-    padding: 10px;
-    text-align: center;
-  }
-
-  /* === 地圖置中 === */
-  #game-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    width: 100%;
-  }
-  #map {
-    max-width: 65%;   /* 微調地圖大小，地圖是配角 */
-    max-height: 65%;
-    object-fit: contain;
-    display: block;
-  }
-
-  /* === 郵票 === */
-  .stamp {
-    position: absolute;
-    width: 95px;   /* 郵票比紅框大一點 */
-    height: 95px;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-    border-radius: 6px;
-  }
-
-  /* === 控制區工具列 === */
-  footer {
-    display: flex;
-    justify-content: center;
-    gap: 10px;   /* 按鈕間隔縮小 */
-    padding: 10px;
-  }
-  button {
-    padding: 5px 12px;
-    font-size: 14px;
-    cursor: pointer;
-  }
-</style>
-
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+    #gameContainer {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #map {
+      max-width: 70%;
+      max-height: 70%;
+    }
+    .stamp {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      cursor: grab;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      z-index: 2;
+    }
+    .red-frame {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      border: 2px solid red;
+      z-index: 1;
+    }
+    footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      background: #f0f0f0;
+      gap: 20px;
+    }
+    footer button {
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+  </style>
+</head>
 <body>
   <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
-
-  <div id="game-container">
+  <div id="gameContainer">
     <img id="map" src="game4_assets/north2_map.png" alt="地圖">
   </div>
-
   <footer>
     <div>
-      <button onclick="shiftStamps('left', -10)">左側往左 ←10</button>
-      <button onclick="shiftStamps('left', 10)">左側往右 →10</button>
+      <button onclick="moveStamps('left', -10)">左側往左 ←10</button>
+      <button onclick="moveStamps('left', 10)">左側往右 →10</button>
     </div>
     <div>
-      <button onclick="shiftStamps('right', -10)">右側往左 ←10</button>
-      <button onclick="shiftStamps('right', 10)">右側往右 →10</button>
+      <button onclick="moveStamps('right', -10)">右側往左 ←10</button>
+      <button onclick="moveStamps('right', 10)">右側往右 →10</button>
     </div>
-    <button onclick="goHome()">回到遊戲首頁</button>
-    <button onclick="toggleMarkerMode()">輔助標記模式</button>
+    <button onclick="location.reload()">回到遊戲首頁</button>
   </footer>
 
   <script>
-    const gameContainer = document.getElementById("game-container");
-    const map = document.getElementById("map");
-
+    const gameContainer = document.getElementById("gameContainer");
     const stamps = [];
 
-    // === 建立郵票（左右各 6 張，2 排 × 3 張） ===
-    function createStamps(){
+    function createStamps() {
       const spacingX = 110;
       const spacingY = 110;
-      const leftBaseX = 80;  // 左側郵票基準 X
-      const rightBaseX = window.innerWidth - 80 - (3 * spacingX); // 右側郵票基準 X
-      const baseY = 120; // 基準 Y
+      const leftBaseX = 80;
+      const rightBaseX = window.innerWidth - 80 - (3 * spacingX);
+      const baseY = window.innerHeight / 2 - 100; // 地圖置中對齊
 
-      // 左側 6 張（2排×3張）
-      for(let i=0;i<6;i++){ 
-        const stamp=document.createElement("img");
-        stamp.className="stamp";
-        stamp.src=`game4_assets/stamp${i+1}.png`; 
-        stamp.style.left = `${leftBaseX + (i%3)*spacingX}px`;
-        stamp.style.top = `${baseY + Math.floor(i/3)*spacingY}px`;
+      function makeStamp(i, x, y, src) {
+        const stamp = document.createElement("img");
+        stamp.className = "stamp";
+        stamp.src = src;
+        stamp.style.left = x + "px";
+        stamp.style.top  = y + "px";
+
+        // 🛑 加入錯誤提示
+        stamp.onerror = () => {
+          alert("⚠️ 找不到圖片：" + src);
+        };
+
         gameContainer.appendChild(stamp);
         stamps.push(stamp);
       }
 
-      // 右側 6 張（2排×3張）
-      for(let i=0;i<6;i++){ 
-        const stamp=document.createElement("img");
-        stamp.className="stamp";
-        stamp.src=`game4_assets/stamp${i+7}.png`; 
-        stamp.style.left = `${rightBaseX + (i%3)*spacingX}px`;
-        stamp.style.top = `${baseY + Math.floor(i/3)*spacingY}px`;
-        gameContainer.appendChild(stamp);
-        stamps.push(stamp);
+      // 左側 6 張
+      for (let i = 0; i < 6; i++) {
+        makeStamp(i,
+          leftBaseX + (i % 3) * spacingX,
+          baseY + Math.floor(i / 3) * spacingY,
+          `game4_assets/stamp${i+1}.png`
+        );
+      }
+
+      // 右側 6 張
+      for (let i = 0; i < 6; i++) {
+        makeStamp(i + 6,
+          rightBaseX + (i % 3) * spacingX,
+          baseY + Math.floor(i / 3) * spacingY,
+          `game4_assets/stamp${i+7}.png`
+        );
       }
     }
-    createStamps();
 
-    function shiftStamps(side,dx){
-      stamps.forEach((s,i)=>{
-        if(side==="left" && i<6){
-          s.style.left = (parseInt(s.style.left)+dx) + "px";
-        }
-        if(side==="right" && i>=6){
-          s.style.left = (parseInt(s.style.left)+dx) + "px";
+    function moveStamps(side, offset) {
+      stamps.forEach((stamp, i) => {
+        if ((side === "left" && i < 6) || (side === "right" && i >= 6)) {
+          stamp.style.left = (parseInt(stamp.style.left) + offset) + "px";
         }
       });
     }
 
-    function goHome(){
-      window.location.href="index.html";
-    }
-
-    function toggleMarkerMode(){
-      alert("輔助標記模式：點擊地圖可記錄座標（尚未完成）。");
-    }
+    createStamps();
   </script>
 </body>
+</html>
