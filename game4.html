@@ -25,10 +25,11 @@
     justify-content: center;
     align-items: center;
     position: relative;
+    width: 100%;
   }
   #map {
-    max-width: 60%;
-    max-height: 60%;
+    max-width: 65%;   /* 微調地圖大小，地圖是配角 */
+    max-height: 65%;
     object-fit: contain;
     display: block;
   }
@@ -36,43 +37,23 @@
   /* === 郵票 === */
   .stamp {
     position: absolute;
-    width: 95px;   /* ✅ 比紅框大一些，主角感 */
+    width: 95px;   /* 郵票比紅框大一點 */
     height: 95px;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
     border-radius: 6px;
-  }
-
-  /* === 紅點（輔助標記模式用） === */
-  .dot {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: red;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
   }
 
   /* === 控制區工具列 === */
   footer {
     display: flex;
     justify-content: center;
-    gap: 10px;   /* ✅ 更密集 */
+    gap: 10px;   /* 按鈕間隔縮小 */
     padding: 10px;
   }
   button {
     padding: 5px 12px;
     font-size: 14px;
     cursor: pointer;
-  }
-
-  /* === 座標清單 === */
-  #coords-list {
-    white-space: pre-wrap;
-    background: #eee;
-    padding: 5px;
-    margin-top: 10px;
-    font-size: 12px;
-    display: none;
   }
 </style>
 
@@ -96,79 +77,61 @@
     <button onclick="toggleMarkerMode()">輔助標記模式</button>
   </footer>
 
-  <div id="coords-list"></div>
-
   <script>
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const coordsList = document.getElementById("coords-list");
-    let markerMode = false;
-    let coords = [];
 
-    // === 建立郵票 ===
     const stamps = [];
-    function createStamps(){
-      const spacingX = 90;
-      const spacingY = 100;
-      const offsetXLeft = -160;
-      const offsetXRight = 160;
 
-      for(let i=0;i<6;i++){ // 左側6張
+    // === 建立郵票（左右各 6 張，2 排 × 3 張） ===
+    function createStamps(){
+      const spacingX = 110;
+      const spacingY = 110;
+      const leftBaseX = 80;  // 左側郵票基準 X
+      const rightBaseX = window.innerWidth - 80 - (3 * spacingX); // 右側郵票基準 X
+      const baseY = 120; // 基準 Y
+
+      // 左側 6 張（2排×3張）
+      for(let i=0;i<6;i++){ 
         const stamp=document.createElement("img");
         stamp.className="stamp";
         stamp.src=`game4_assets/stamp${i+1}.png`; 
-        stamp.style.left=`calc(25% + ${(i%3)*spacingX + offsetXLeft}px)`;
-        stamp.style.top=`${120 + Math.floor(i/3)*spacingY}px`;
+        stamp.style.left = `${leftBaseX + (i%3)*spacingX}px`;
+        stamp.style.top = `${baseY + Math.floor(i/3)*spacingY}px`;
         gameContainer.appendChild(stamp);
         stamps.push(stamp);
       }
-      for(let i=0;i<6;i++){ // 右側6張
+
+      // 右側 6 張（2排×3張）
+      for(let i=0;i<6;i++){ 
         const stamp=document.createElement("img");
         stamp.className="stamp";
         stamp.src=`game4_assets/stamp${i+7}.png`; 
-        stamp.style.left=`calc(75% + ${(i%3)*spacingX + offsetXRight}px)`;
-        stamp.style.top=`${120 + Math.floor(i/3)*spacingY}px`;
+        stamp.style.left = `${rightBaseX + (i%3)*spacingX}px`;
+        stamp.style.top = `${baseY + Math.floor(i/3)*spacingY}px`;
         gameContainer.appendChild(stamp);
         stamps.push(stamp);
       }
     }
     createStamps();
 
-    // === 輔助標記模式 ===
-    function toggleMarkerMode(){
-      markerMode = !markerMode;
-      coordsList.style.display = markerMode ? "block" : "none";
-      if(markerMode){
-        coordsList.textContent = "📍 輔助標記模式啟動中...\n";
-        coords = [];
-      } else {
-        coordsList.textContent += "\n❌ 已關閉輔助標記模式";
-      }
-    }
-
-    map.addEventListener("click",(e)=>{
-      if(!markerMode) return;
-      const rect = map.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-
-      const dot=document.createElement("div");
-      dot.className="dot";
-      dot.style.left=`${x*100}%`;
-      dot.style.top=`${y*100}%`;
-      gameContainer.appendChild(dot);
-
-      const coord = `{x:${x.toFixed(2)}, y:${y.toFixed(2)}}`;
-      coords.push(coord);
-      coordsList.textContent += coord + "\n";
-    });
-
     function shiftStamps(side,dx){
-      console.log(`移動 ${side} 郵票 ${dx}`);
+      stamps.forEach((s,i)=>{
+        if(side==="left" && i<6){
+          s.style.left = (parseInt(s.style.left)+dx) + "px";
+        }
+        if(side==="right" && i>=6){
+          s.style.left = (parseInt(s.style.left)+dx) + "px";
+        }
+      });
     }
 
     function goHome(){
       window.location.href="index.html";
+    }
+
+    function toggleMarkerMode(){
+      alert("輔助標記模式：點擊地圖可記錄座標（尚未完成）。");
     }
   </script>
 </body>
