@@ -8,7 +8,7 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      height: 100vh; /* 整頁就是螢幕高度 */
+      height: 100vh;
       overflow: hidden;
       background: #f0f0f0;
     }
@@ -22,11 +22,11 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      overflow: hidden; /* 保證地圖不會超出 */
+      overflow: hidden;
     }
     #map {
-      max-width: 70%;
-      max-height: 100%; /* 高度稍後用 JS 自動調整 */
+      max-width: 55%;   /* ✅ 地圖再縮小 */
+      max-height: 100%;
       object-fit: contain;
       display: block;
     }
@@ -40,27 +40,21 @@
     }
     .stamp {
       position: absolute;
-      width: 70px;  /* ✅ 郵票比紅框大 */
-      height: 70px;
+      width: 80px;   /* ✅ 郵票再放大 */
+      height: 80px;
       cursor: grab;
       z-index: 10;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* ✅ 小陰影凸顯 */
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.35); /* ✅ 陰影更明顯 */
       border-radius: 6px;
       background: #fff;
     }
     #controls {
       display: flex;
-      justify-content: space-evenly; /* ✅ 平均分佈 */
-      align-items: center;
+      justify-content: center;  /* ✅ 全部按鈕一列 */
+      gap: 20px;                /* 按鈕間距 */
       padding: 8px;
       background: #fff;
       border-top: 1px solid #ccc;
-    }
-    #controls .module {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
     }
     #controls button {
       font-size: 16px;
@@ -75,14 +69,10 @@
     <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
   </div>
   <div id="controls">
-    <div class="module">
-      <button onclick="moveLeft(-10)">左側往左 ←10</button>
-      <button onclick="moveLeft(10)">左側往右 →10</button>
-    </div>
-    <div class="module">
-      <button onclick="moveRight(-10)">右側往左 ←10</button>
-      <button onclick="moveRight(10)">右側往右 →10</button>
-    </div>
+    <button onclick="moveLeft(-10)">左側往左 ←10</button>
+    <button onclick="moveLeft(10)">左側往右 →10</button>
+    <button onclick="moveRight(-10)">右側往左 ←10</button>
+    <button onclick="moveRight(10)">右側往右 →10</button>
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
 
@@ -116,10 +106,10 @@
     // --- 郵票排列 (左右各 6 張，2 排 × 3 張) ---
     const stamps=[];
     function layoutStamps(){
-      stamps.forEach(s=>s.remove()); // 清除舊的
+      stamps.forEach(s=>s.remove());
       stamps.length=0;
 
-      const spacingX=80, spacingY=90;
+      const spacingX=90, spacingY=100;
       const offsetXLeft=40, offsetXRight=map.width+40;
       const offsetY=50;
 
