@@ -6,12 +6,11 @@
   <style>
     body {
       margin: 0;
-      background: black;
+      background: white; /* ✅ 修正背景 */
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      color: white;
       font-family: sans-serif;
     }
     header {
@@ -19,6 +18,7 @@
       font-size: 24px;
       padding: 10px;
       background: #333;
+      color: white;
     }
     main {
       flex: 1;
@@ -26,24 +26,18 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      overflow: hidden;
+      background: #eee;
     }
     #map-container {
       position: relative;
       display: inline-block;
-      max-width: 90%;
-      max-height: 80%;
+      max-width: 70%;   /* ✅ 不再自動放大 */
+      max-height: 70%;
     }
     #map {
       display: block;
       width: 100%;
       height: auto;
-    }
-    .red-frame {
-      position: absolute;
-      border: 3px solid red;
-      box-sizing: border-box;
-      pointer-events: none;
     }
     #red-frames {
       position: absolute;
@@ -51,19 +45,39 @@
       left: 0;
       pointer-events: none;
     }
-    #stamps {
+    .red-frame {
+      position: absolute;
+      border: 3px solid red;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    #stamps-left, #stamps-right {
+      position: absolute;
+      top: 10%;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      padding: 10px;
-      background: #444;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #stamps-left {
+      left: 10px;
+    }
+    #stamps-right {
+      right: 10px;
     }
     .stamp {
-      margin: 5px;
-      cursor: grab;
-      user-select: none;
       width: 80px;
       height: auto;
+      cursor: grab;
+      user-select: none;
+    }
+    #toolbar {
+      height: 60px; /* ✅ 恢復固定高度 */
+      background: #444;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
     }
   </style>
 </head>
@@ -74,43 +88,34 @@
       <img id="map" src="game4_assets/north2_map.png" alt="map">
       <div id="red-frames"></div>
     </div>
+    <div id="stamps-left"></div>
+    <div id="stamps-right"></div>
   </main>
-  <div id="stamps"></div>
+  <div id="toolbar">控制區工具列</div>
 
   <!-- 音效 -->
   <audio id="success-sound" src="game4_assets/success.mp3"></audio>
   <audio id="error-sound" src="game4_assets/error.mp3"></audio>
 
   <script>
-    // 12 個紅框座標（依您之前給的）
     const redFramePositions = [
       { x:1036, y:145 }, { x:905, y:80 }, { x:806, y:83 },
       { x:704, y:144 }, { x:593, y:116 }, { x:593, y:180 },
       { x:544, y:243 }, { x:567, y:396 }, { x:661, y:406 },
       { x:761, y:376 }, { x:873, y:236 }, { x:955, y:220 }
     ];
-
-    // ✅ 正確配對表（依 north_answer.png 配對）
     const correctAnswers = {
-      1: "stamp3.jpg",
-      2: "stamp7.jpg",
-      3: "stamp1.jpg",
-      4: "stamp9.jpg",
-      5: "stamp6.jpg",
-      6: "stamp12.jpg",
-      7: "stamp4.jpg",
-      8: "stamp2.jpg",
-      9: "stamp10.jpg",
-      10: "stamp8.jpg",
-      11: "stamp5.jpg",
-      12: "stamp11.jpg"
+      1: "stamp3.jpg", 2: "stamp7.jpg", 3: "stamp1.jpg",
+      4: "stamp9.jpg", 5: "stamp6.jpg", 6: "stamp12.jpg",
+      7: "stamp4.jpg", 8: "stamp2.jpg", 9: "stamp10.jpg",
+      10: "stamp8.jpg", 11: "stamp5.jpg", 12: "stamp11.jpg"
     };
 
     const map = document.getElementById("map");
     const redFrames = document.getElementById("red-frames");
-    const stampsContainer = document.getElementById("stamps");
+    const stampsLeft = document.getElementById("stamps-left");
+    const stampsRight = document.getElementById("stamps-right");
 
-    // 渲染紅框
     function renderRedFrames() {
       redFrames.innerHTML = "";
       const scale = map.width / map.naturalWidth;
@@ -127,7 +132,6 @@
       });
     }
 
-    // 渲染郵票
     function renderStamps() {
       for (let i = 1; i <= 12; i++) {
         const img = document.createElement("img");
@@ -136,11 +140,11 @@
         img.draggable = true;
         img.dataset.stamp = `stamp${i}.jpg`;
         img.addEventListener("dragstart", dragStart);
-        stampsContainer.appendChild(img);
+        if (i <= 6) stampsLeft.appendChild(img);
+        else stampsRight.appendChild(img);
       }
     }
 
-    // 拖曳邏輯
     function dragStart(e) {
       e.dataTransfer.setData("stamp", e.target.dataset.stamp);
     }
@@ -162,7 +166,6 @@
       }
     });
 
-    // 縮放時自動調整
     window.addEventListener("resize", renderRedFrames);
     window.addEventListener("load", () => {
       map.onload = renderRedFrames;
