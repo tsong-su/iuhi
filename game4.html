@@ -1,376 +1,112 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-<style>
-  :root{
-    --stamp-size: 80px;   /* 郵票大小（固定） */
-    --frame-size: 64px;   /* 紅框（比郵票小） */
-    --map-width-vw: 35vw; /* 地圖寬度 = 35% 視窗 */
-    --gap: 12px;
-    --toolbar-h: 56px;
-    --title-h: 56px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:#f6f6f6;font-family:"Microsoft JhengHei",sans-serif}
-  header{
-    height:var(--title-h);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:700;font-size:20px;background:white;border-bottom:1px solid #eee;
-  }
+import React, { useState } from "react";
 
-  main.stage{
-    min-height: calc(100vh - var(--title-h) - var(--toolbar-h));
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    gap:24px;
-    padding:18px;
-  }
-
-  /* 左右郵票欄（2 排 × 3 張） */
-  .stamps-col{
-    width: calc(var(--stamp-size) * 3 + var(--gap)*2 + 24px); /* 三格 + gap + padding */
-    background: #fff;
-    padding:12px;
-    border-radius:12px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.06);
-    display:grid;
-    grid-template-columns: repeat(3, var(--stamp-size));
-    grid-auto-rows: var(--stamp-size);
-    gap: var(--gap);
-    justify-content:center;
-  }
-  .stamp{
-    width: var(--stamp-size);
-    height: var(--stamp-size);
-    object-fit:cover;
-    border-radius:8px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.12);
-    cursor:grab;
-    user-select:none;
-  }
-
-  /* 中央地圖，置中，寬度固定為 35vw */
-  .map-wrap{
-    width: var(--map-width-vw);
-    max-width: calc(100vw - 2 * (var(--stamp-size) * 3 + var(--gap)*2 + 48px));
-    background: transparent; /* 地圖周圍透明 */
-    padding: 8px;
-    border-radius: 12px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    position:relative;
-  }
-  #map{
-    width:100%;
-    height:auto;
-    display:block;
-    user-select:none;
-    -webkit-user-drag: none;
-  }
-
-  /* 紅框（可 drop） */
-  .drop-zone{
-    position:absolute;
-    width: var(--frame-size);
-    height: var(--frame-size);
-    border: 3px dashed #d33;
-    border-radius:8px;
-    pointer-events: auto; /* enable drop */
-    transform: translate(-50%, -50%); /* center on coordinate */
-  }
-
-  /* 放在地圖上的已放置郵票 */
-  .placed{
-    position:absolute;
-    width: calc(var(--stamp-size));
-    height: calc(var(--stamp-size));
-    transform: translate(-50%, -50%);
-    pointer-events:none;
-    border-radius:8px;
-    box-shadow:0 6px 18px rgba(0,0,0,0.18);
-  }
-
-  /* 工具列 */
-  footer.toolbar{
-    height:var(--toolbar-h);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
-    background:white;
-    border-top:1px solid #eee;
-  }
-  .btn{
-    padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-size:16px;
-  }
-  .btn.reset{background:#ff7675;color:white}
-  .btn.home{background:#55efc4;color:#083}
-  /* 成功訊息 */
-  #success{
-    position:fixed;left:50%;top:40%;
-    transform:translate(-50%,-50%);
-    background:rgba(255,255,255,0.95);
-    color:#d00202;font-weight:800;padding:12px 18px;border-radius:10px;
-    box-shadow:0 6px 24px rgba(0,0,0,0.18);display:none;z-index:1000;
-  }
-  @media(max-width:700px){
-    :root{--map-width-vw: 60vw}
-    .stamps-col{display:none} /* 小螢幕可稍後處理，暫隱藏側欄 */
-  }
-</style>
-</head>
-<body>
-  <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
-
-  <main class="stage">
-    <div id="leftCol" class="stamps-col"></div>
-
-    <div class="map-wrap" id="mapWrap">
-      <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
-      <!-- drop zones 與 placed stamps 會由 JS 動態建立 -->
-      <div id="zonesLayer"></div>
-      <div id="placedLayer"></div>
-    </div>
-
-    <div id="rightCol" class="stamps-col"></div>
-  </main>
-
-  <footer class="toolbar">
-    <button class="btn reset" id="resetBtn">重新開始</button>
-    <button class="btn home" id="homeBtn">回到遊戲首頁</button>
-  </footer>
-
-  <div id="success">有夠gâu！</div>
-
-<script>
-/* --------------------
-  設定區（若需修改答案/座標在此處修改）
-   - 使用相對座標（fraction）維持與地圖對齊
-   - basePositions 是您早前提供的比例座標（x, y 為 0..1）
----------------------*/
-const basePositions = [
-  {"x":0.9953,"y":0.1551},
-  {"x":0.7589,"y":0.0012},
-  {"x":0.5749,"y":0.0249},
-  {"x":0.3782,"y":0.1872},
-  {"x":0.1291,"y":0.1264},
-  {"x":0.115,"y":0.3242},
-  {"x":0.0077,"y":0.5255},
-  {"x":0.0435,"y":0.9668},
-  {"x":0.2479,"y":0.9922},
-  {"x":0.4791,"y":0.9043},
-  {"x":0.7372,"y":0.4916},
-  {"x":0.9173,"y":0.4409}
+// 紅框初始座標 (可以隨便先填，之後用校正模式調整)
+const initialRedBoxes = [
+  { id: 1, x: 420, y: 120 },
+  { id: 2, x: 480, y: 160 },
+  { id: 3, x: 450, y: 210 },
+  { id: 4, x: 500, y: 260 },
+  { id: 5, x: 460, y: 320 },
+  { id: 6, x: 530, y: 360 },
 ];
 
-/* 對應檔案名稱（frame index 1..12 對哪張郵票）
-   預設為 1→stamp1.jpg, 2→stamp2.jpg... 若您有 north_answer 對照表可在此改 */
-const correctPairs = {
-  1: "stamp1.jpg", 2: "stamp2.jpg", 3: "stamp3.jpg", 4: "stamp4.jpg",
-  5: "stamp5.jpg", 6: "stamp6.jpg", 7: "stamp7.jpg", 8: "stamp8.jpg",
-  9: "stamp9.jpg", 10: "stamp10.jpg", 11: "stamp11.jpg", 12: "stamp12.jpg"
+const GameWithCalibration = () => {
+  const [mode, setMode] = useState("game"); // game | calibration
+  const [redBoxes, setRedBoxes] = useState(initialRedBoxes);
+  const [opacity, setOpacity] = useState(0.5);
+
+  // 校正模式用：移動紅框
+  const handleDrag = (id, e) => {
+    const newRedBoxes = redBoxes.map((box) =>
+      box.id === id ? { ...box, x: e.clientX - 25, y: e.clientY - 25 } : box
+    );
+    setRedBoxes(newRedBoxes);
+  };
+
+  return (
+    <div className="flex flex-col items-center p-4">
+      <div className="w-full flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">臺灣北部地圖&注音符號郵票對對遊戲</h2>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          onClick={() => setMode(mode === "game" ? "calibration" : "game")}
+        >
+          {mode === "game" ? "切換到校正模式" : "回到正式遊戲"}
+        </button>
+      </div>
+
+      {/* --- 正式遊戲模式 --- */}
+      {mode === "game" && (
+        <div className="relative w-[700px] h-[550px] border bg-white flex items-center justify-center">
+          {/* 地圖 */}
+          <img
+            src="game4_assets/north_map.png"
+            alt="north_map"
+            className="w-full h-full object-contain"
+          />
+          {/* 紅框 (固定位置, 不可拖曳) */}
+          {redBoxes.map((box) => (
+            <div
+              key={box.id}
+              className="absolute w-[50px] h-[50px] border-2 border-red-500 border-dashed"
+              style={{ left: box.x, top: box.y }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* --- 校正模式 --- */}
+      {mode === "calibration" && (
+        <div className="flex flex-col items-center">
+          <div className="relative w-[700px] h-[550px] border">
+            {/* 底圖 */}
+            <img
+              src="game4_assets/north_map.png"
+              alt="north_map"
+              className="absolute top-0 left-0 w-full h-full object-contain"
+            />
+            {/* 疊圖 */}
+            <img
+              src="game4_assets/north2_map.png"
+              alt="north2_map"
+              style={{ opacity }}
+              className="absolute top-0 left-0 w-full h-full object-contain"
+            />
+            {/* 可拖曳紅框 */}
+            {redBoxes.map((box) => (
+              <div
+                key={box.id}
+                draggable
+                onDragEnd={(e) => handleDrag(box.id, e)}
+                className="absolute w-[50px] h-[50px] border-2 border-red-500 border-dashed cursor-move"
+                style={{ left: box.x, top: box.y }}
+                title={`Box ${box.id}`}
+              />
+            ))}
+          </div>
+
+          {/* 透明度控制 */}
+          <div className="mt-4 flex items-center gap-2">
+            <span>透明度: </span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={opacity}
+              onChange={(e) => setOpacity(Number(e.target.value))}
+            />
+            <span>{Math.round(opacity * 100)}%</span>
+          </div>
+
+          {/* 即時座標輸出 */}
+          <pre className="mt-4 bg-gray-100 p-2 rounded text-sm">
+            {JSON.stringify(redBoxes, null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
 };
 
-/* 檔案路徑前綴（請確認 game4_assets 資料夾內有這些檔案） */
-const ASSET_PATH = "game4_assets/";
-
-/* DOM */
-const leftCol = document.getElementById('leftCol');
-const rightCol = document.getElementById('rightCol');
-const map = document.getElementById('map');
-const mapWrap = document.getElementById('mapWrap');
-const zonesLayer = document.getElementById('zonesLayer');
-const placedLayer = document.getElementById('placedLayer');
-const successEl = document.getElementById('success');
-const resetBtn = document.getElementById('resetBtn');
-const homeBtn = document.getElementById('homeBtn');
-
-/* stamp file list */
-const stampsList = [
-  "stamp1.jpg","stamp2.jpg","stamp3.jpg","stamp4.jpg","stamp5.jpg","stamp6.jpg",
-  "stamp7.jpg","stamp8.jpg","stamp9.jpg","stamp10.jpg","stamp11.jpg","stamp12.jpg"
-];
-
-/* 初始化左/右欄（2行×3列） */
-function initStamps(){
-  leftCol.innerHTML = "";
-  rightCol.innerHTML = "";
-  // 左 6
-  for(let i=0;i<6;i++){
-    const img = makeStampEl(stampsList[i]);
-    leftCol.appendChild(img);
-  }
-  // 右 6
-  for(let i=6;i<12;i++){
-    const img = makeStampEl(stampsList[i]);
-    rightCol.appendChild(img);
-  }
-}
-
-function makeStampEl(filename){
-  const img = document.createElement('img');
-  img.className = 'stamp';
-  img.draggable = true;
-  img.src = ASSET_PATH + filename;
-  img.dataset.file = filename;
-  img.addEventListener('dragstart', onDragStart);
-  return img;
-}
-
-/* 建立 drop zones（用比例座標與目前 map 寬高換算） */
-function renderZones(){
-  zonesLayer.innerHTML = "";
-  const mw = map.clientWidth;
-  const mh = map.clientHeight;
-  const rect = map.getBoundingClientRect();
-  // Place each zone centered at (x*mw, y*mh) inside mapWrap
-  basePositions.forEach((p, idx) => {
-    const dz = document.createElement('div');
-    dz.className = 'drop-zone';
-    dz.dataset.index = String(idx+1);
-    // Using transform translate(-50%,-50%) so set left/top to center
-    dz.style.left = (rect.left + window.scrollX + p.x * mw) + 'px';
-    dz.style.top  = (rect.top  + window.scrollY + p.y * mh) + 'px';
-    dz.addEventListener('dragover', e => e.preventDefault());
-    dz.addEventListener('drop', onDropZone);
-    zonesLayer.appendChild(dz);
-  });
-}
-
-/* 把 zonesLayer 放到 mapWrap 的內部座標系（absolutely positioned relative to page),
-   我們 positioned them in page coordinates so placed items align with map.  */
-/* 放置被放上的圖片（鎖定在框上） */
-function placeStampOnZone(filename, zoneElem){
-  // create img positioned absolute in placedLayer aligned to zone center
-  const img = document.createElement('img');
-  img.className = 'placed';
-  img.src = ASSET_PATH + filename;
-  // compute zone center relative to mapWrap
-  const zoneRect = zoneElem.getBoundingClientRect();
-  const wrapRect = mapWrap.getBoundingClientRect();
-  const cx = zoneRect.left + zoneRect.width/2 - wrapRect.left;
-  const cy = zoneRect.top  + zoneRect.height/2 - wrapRect.top;
-  img.style.left = cx + 'px';
-  img.style.top  = cy + 'px';
-  placedLayer.appendChild(img);
-  // mark zone taken
-  zoneElem.dataset.taken = '1';
-}
-
-/* 檢查是否全部完成 */
-function checkAllDone(){
-  const taken = zonesLayer.querySelectorAll('.drop-zone[data-taken="1"]').length;
-  if(taken === basePositions.length){
-    // show victory and play sound
-    successEl.style.display = 'block';
-    playAudio(ASSET_PATH + 'victory.mp3');
-  }
-}
-
-/* Drag / Drop handlers */
-function onDragStart(e){
-  // send filename only
-  e.dataTransfer.setData('text/plain', e.target.dataset.file);
-  // some browsers require setDragImage - we use default
-}
-
-function onDropZone(e){
-  e.preventDefault();
-  const file = e.dataTransfer.getData('text/plain');
-  const zone = e.currentTarget;
-  if(zone.dataset.taken === '1') {
-    // already taken
-    playAudio(ASSET_PATH + 'wrong.mp3');
-    return;
-  }
-  // check correct mapping
-  const idx = parseInt(zone.dataset.index,10); // 1..12
-  const correctFile = correctPairs[idx];
-  if(correctFile === file){
-    // success
-    placeStampOnZone(file, zone);
-    // hide source stamp in side columns
-    hideSourceStamp(file);
-    playAudio(ASSET_PATH + 'stamp' + getStampNumber(file) + '.mp3').catch(()=>{});
-    checkAllDone();
-  } else {
-    // wrong
-    playAudio(ASSET_PATH + 'wrong.mp3');
-  }
-}
-
-function hideSourceStamp(filename){
-  // find side image with data-file = filename and hide it
-  const selector = `.stamp[src="${ASSET_PATH + filename}"]`;
-  const el = document.querySelector(selector);
-  if(el) el.style.visibility = 'hidden';
-}
-
-function getStampNumber(fileName){
-  // extract number from "stampN.jpg"
-  const m = fileName.match(/stamp(\d+)/);
-  return m ? m[1] : '';
-}
-
-/* 音效 */
-function playAudio(src){
-  const a = new Audio(src);
-  return a.play();
-}
-
-/* reset & home */
-function resetGame(){
-  // clear placed
-  placedLayer.innerHTML = '';
-  // clear zones taken flag
-  zonesLayer.querySelectorAll('.drop-zone').forEach(z => z.dataset.taken = '0');
-  // restore side stamps visibility
-  document.querySelectorAll('.stamps-col .stamp').forEach(s => s.style.visibility = 'visible');
-  // hide success
-  successEl.style.display = 'none';
-}
-
-function goHome(){
-  // navigate to index.html (adjust if your homepage path different)
-  window.location.href = "index.html";
-}
-
-/* on resize, re-render zones so they follow map size and position */
-function layoutEverything(){
-  // ensure mapWrap layout done (map loaded)
-  renderZones();
-  // reposition placed images (if any) to follow new positions
-  placedLayer.querySelectorAll('.placed').forEach(img => {
-    // determine which file and find its zone index from frameToStamp (inverse)
-    const file = img.src.split('/').pop();
-    // find zone index where zone's taken stamp corresponded to this file
-    // we can't easily recover which zone holds which file unless we store it; skip reposition for now
-    // simplest: on resize we clear placed and require user to redo, or we could compute by file matching
-  });
-}
-
-/* 初始化 */
-map.addEventListener('load', ()=>{
-  initStamps();
-  renderZones();
-});
-window.addEventListener('resize', ()=>{
-  // slight delay to allow layout to update
-  setTimeout(()=>{ renderZones(); }, 50);
-});
-resetBtn.addEventListener('click', resetGame);
-homeBtn.addEventListener('click', goHome);
-
-/* 若 map 已載入（從快取），立即初始化 */
-if(map.complete){
-  initStamps();
-  setTimeout(renderZones, 50);
-}
-</script>
-</body>
-</html>
+export default GameWithCalibration;
