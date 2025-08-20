@@ -2,154 +2,136 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>台灣北部地圖遊戲</title>
+<title>北部郵票配對遊戲</title>
 <style>
   body {
     margin: 0;
-    background: #f5f5f5;
-    overflow: hidden; /* 避免捲軸 */
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background: #f8f8f8;
   }
 
-  #game-wrapper {
-    transform-origin: top center;
-    display: flex;
-    flex-direction: column;
+  .container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-  }
-
-  #game-area {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     gap: 20px;
-  }
-
-  #map-container {
-    position: relative;
-    width: 1056px; /* 固定縮小後大小 */
-    height: 849px;
-  }
-
-  #map {
     width: 100%;
     height: 100%;
-    display: block;
   }
 
-  #red-frames {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .red-frame {
-    position: absolute;
-    width: 60px;
-    height: 60px;
-    border: 2px solid red;
-    box-sizing: border-box;
-  }
-
+  /* 郵票側邊欄 */
   .stamps {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    justify-content: center;
+    gap: 15px;
   }
 
-  .stamp {
-    width: 80px;  /* 固定大小 */
-    height: auto;
+  .stamps img {
+    width: 120px;   /* 放大郵票 */
+    height: 120px;
+    object-fit: contain;
     cursor: grab;
   }
 
-  #controls {
-    margin-top: 15px;
+  /* 地圖區塊 */
+  .map-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  #controls button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
+  .map-container img {
+    width: 50vw;   /* 地圖縮小到視窗 50% */
+    height: auto;
+    display: block;
   }
 
-  #controls button:hover {
-    background-color: #45a049;
+  /* 紅框 */
+  .drop-zone {
+    position: absolute;
+    width: 90px;   /* 比郵票小 */
+    height: 90px;
+    border: 2px solid red;
+    box-sizing: border-box;
+    pointer-events: none; /* 不能直接拖到紅框 */
+  }
+
+  /* 成功放置後鎖定 */
+  .dropped {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
-  <div id="game-wrapper">
-    <h2>台灣北部地圖&注音符號郵票配對遊戲</h2>
-    <div id="game-area">
-      <div class="stamps" id="stamps-left">
-        <img src="game4_assets/stamp1.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp2.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp3.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp4.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp5.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp6.jpg" class="stamp" draggable="true">
-      </div>
+  <div class="container">
+    <!-- 左側郵票 -->
+    <div class="stamps" id="left-stamps"></div>
 
-      <div id="map-container">
-        <img id="map" src="north2_map.png" alt="地圖">
-        <div id="red-frames"></div>
-      </div>
-
-      <div class="stamps" id="stamps-right">
-        <img src="game4_assets/stamp7.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp8.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp9.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp10.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp11.jpg" class="stamp" draggable="true">
-        <img src="game4_assets/stamp12.jpg" class="stamp" draggable="true">
-      </div>
+    <!-- 地圖 -->
+    <div class="map-container">
+      <img id="map" src="north2_map.png" alt="地圖">
+      <div id="dropzones"></div>
     </div>
 
-    <div id="controls">
-      <button onclick="location.href='index.html'">回到遊戲首頁</button>
-    </div>
+    <!-- 右側郵票 -->
+    <div class="stamps" id="right-stamps"></div>
   </div>
 
 <script>
-  const redFramePositions = [
-    {x: 520, y: 120}, {x: 580, y: 200}, {x: 480, y: 300},
-    {x: 640, y: 250}, {x: 700, y: 400}, {x: 400, y: 500},
-    {x: 550, y: 550}, {x: 600, y: 600}, {x: 300, y: 650},
-    {x: 450, y: 700}, {x: 700, y: 750}, {x: 800, y: 800}
-  ];
+const leftStamps = [
+  "stamp1.jpg", "stamp2.jpg", "stamp3.jpg", "stamp4.jpg",
+  "stamp5.jpg", "stamp6.jpg"
+];
+const rightStamps = [
+  "stamp7.jpg", "stamp8.jpg", "stamp9.jpg", "stamp10.jpg",
+  "stamp11.jpg", "stamp12.jpg"
+];
 
-  function renderRedFrames() {
-    const redFrames = document.getElementById('red-frames');
-    redFrames.innerHTML = "";
-    redFramePositions.forEach(pos => {
-      const frame = document.createElement('div');
-      frame.className = 'red-frame';
-      frame.style.left = pos.x + "px";
-      frame.style.top = pos.y + "px";
-      redFrames.appendChild(frame);
-    });
-  }
-
-  function resizeGame() {
-    const wrapper = document.getElementById('game-wrapper');
-    const scaleX = window.innerWidth / wrapper.offsetWidth;
-    const scaleY = window.innerHeight / wrapper.offsetHeight;
-    const scale = Math.min(scaleX, scaleY, 1); // 不放大，只縮小
-    wrapper.style.transform = `scale(${scale})`;
-  }
-
-  window.addEventListener('resize', resizeGame);
-  window.addEventListener('load', () => {
-    renderRedFrames();
-    resizeGame();
+// 動態載入郵票
+function loadStamps(containerId, stamps) {
+  const container = document.getElementById(containerId);
+  stamps.forEach(src => {
+    const img = document.createElement("img");
+    img.src = src;  // 直接讀取 stamp1.jpg ~ stamp12.jpg
+    img.draggable = true;
+    img.addEventListener("dragstart", dragStart);
+    container.appendChild(img);
   });
+}
+loadStamps("left-stamps", leftStamps);
+loadStamps("right-stamps", rightStamps);
+
+// 拖曳處理
+function dragStart(event) {
+  event.dataTransfer.setData("text/plain", event.target.src);
+}
+
+// 建立紅框
+const map = document.getElementById("map");
+const dropzones = document.getElementById("dropzones");
+
+map.addEventListener("load", () => {
+  fetch("north_answer.json")
+    .then(res => res.json())
+    .then(data => {
+      const scale = map.width / data.originalWidth; // 根據縮小比例
+      data.locations.forEach(loc => {
+        const dz = document.createElement("div");
+        dz.className = "drop-zone";
+        dz.style.left = (loc.x * scale - 45) + "px";
+        dz.style.top = (loc.y * scale - 45) + "px";
+        dropzones.appendChild(dz);
+      });
+    });
+});
 </script>
 </body>
 </html>
