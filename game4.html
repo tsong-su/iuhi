@@ -1,108 +1,101 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100vh;
-      background: #f0f0f0;
-      overflow: hidden;
-    }
-    h2 {
-      margin: 5px;
-    }
-    #game-container {
-      flex: 1;
-      width: 100%;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start; /* 改成靠上 */
-      background: #ddd;
-    }
-    #map {
-      max-width: 50%;  /* 地圖縮小 */
-      max-height: 50%;
-      object-fit: contain;
-      display: block;
-      margin-top: 10px; /* 往上貼近標題 */
-    }
-    .stamp {
-      position: absolute;
-      width: 80px;  /* 郵票比紅框大 */
-      height: 80px;
-      cursor: grab;
-      z-index: 10;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* 郵票小陰影 */
-    }
-    .frame {
-      position: absolute;
-      border: 2px dashed red;
-      width: 60px;
-      height: 60px;
-      pointer-events: none;
-      z-index: 5;
-    }
-    #controls {
-      width: 100%;
-      padding: 5px;
-      display: flex;
-      justify-content: center;
-      gap: 10px; /* 三個模組密集些 */
-      background: #fff;
-      align-items: center;
-    }
-    #controls button {
-      font-size: 14px;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-    #coords-list {
-      width: 90%;
-      max-width: 600px;
-      height: 120px;
-      overflow-y: auto;
-      background: #fff;
-      border: 1px solid #ccc;
-      font-family: monospace;
-      white-space: pre;
-      padding: 5px;
-      margin: 5px;
-      display: none; /* 初始隱藏 */
-    }
-    .dot {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: red;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 20;
-    }
-  </style>
-</head>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    background: #fdfdfd;
+    overflow: hidden;
+  }
+
+  /* === 遊戲名稱 === */
+  header {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+  }
+
+  /* === 地圖置中 === */
+  #game-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  #map {
+    max-width: 60%;
+    max-height: 60%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* === 郵票 === */
+  .stamp {
+    position: absolute;
+    width: 95px;   /* ✅ 比紅框大一些，主角感 */
+    height: 95px;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+    border-radius: 6px;
+  }
+
+  /* === 紅點（輔助標記模式用） === */
+  .dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* === 控制區工具列 === */
+  footer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;   /* ✅ 更密集 */
+    padding: 10px;
+  }
+  button {
+    padding: 5px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* === 座標清單 === */
+  #coords-list {
+    white-space: pre-wrap;
+    background: #eee;
+    padding: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+    display: none;
+  }
+</style>
+
 <body>
-  <h2>臺灣北部地圖&注音符號郵票配對遊戲</h2>
+  <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
+
   <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
+    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
   </div>
-  <div id="controls">
+
+  <footer>
     <div>
-      <button onclick="shiftStamps('left',-10)">左側 ←10</button>
-      <button onclick="shiftStamps('left',10)">左側 →10</button>
+      <button onclick="shiftStamps('left', -10)">左側往左 ←10</button>
+      <button onclick="shiftStamps('left', 10)">左側往右 →10</button>
     </div>
     <div>
-      <button onclick="shiftStamps('right',-10)">右側 ←10</button>
-      <button onclick="shiftStamps('right',10)">右側 →10</button>
+      <button onclick="shiftStamps('right', -10)">右側往左 ←10</button>
+      <button onclick="shiftStamps('right', 10)">右側往右 →10</button>
     </div>
-    <button onclick="toggleMarkerMode()">輔助標記模式</button>
     <button onclick="goHome()">回到遊戲首頁</button>
-  </div>
+    <button onclick="toggleMarkerMode()">輔助標記模式</button>
+  </footer>
+
   <div id="coords-list"></div>
 
   <script>
@@ -115,33 +108,33 @@
     // === 建立郵票 ===
     const stamps = [];
     function createStamps(){
-      const spacingX = 90;  // 郵票水平間距
-      const spacingY = 100; // 郵票垂直間距
-      const offsetXLeft = -120; // 左側靠近地圖
-      const offsetXRight = 120; // 右側靠近地圖
+      const spacingX = 90;
+      const spacingY = 100;
+      const offsetXLeft = -160;
+      const offsetXRight = 160;
 
       for(let i=0;i<6;i++){ // 左側6張
         const stamp=document.createElement("img");
-        stamp.src=`game4_assets/stamp${i+1}.png`;
         stamp.className="stamp";
+        stamp.src=`game4_assets/stamp${i+1}.png`; 
         stamp.style.left=`calc(25% + ${(i%3)*spacingX + offsetXLeft}px)`;
-        stamp.style.top=`${100 + Math.floor(i/3)*spacingY}px`;
+        stamp.style.top=`${120 + Math.floor(i/3)*spacingY}px`;
         gameContainer.appendChild(stamp);
         stamps.push(stamp);
       }
       for(let i=0;i<6;i++){ // 右側6張
         const stamp=document.createElement("img");
-        stamp.src=`game4_assets/stamp${i+7}.png`;
         stamp.className="stamp";
+        stamp.src=`game4_assets/stamp${i+7}.png`; 
         stamp.style.left=`calc(75% + ${(i%3)*spacingX + offsetXRight}px)`;
-        stamp.style.top=`${100 + Math.floor(i/3)*spacingY}px`;
+        stamp.style.top=`${120 + Math.floor(i/3)*spacingY}px`;
         gameContainer.appendChild(stamp);
         stamps.push(stamp);
       }
     }
     createStamps();
 
-    // === 輔助標記模式開關 ===
+    // === 輔助標記模式 ===
     function toggleMarkerMode(){
       markerMode = !markerMode;
       coordsList.style.display = markerMode ? "block" : "none";
@@ -153,27 +146,23 @@
       }
     }
 
-    // 點擊地圖 → 標記紅點 & 記錄座標
     map.addEventListener("click",(e)=>{
       if(!markerMode) return;
       const rect = map.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
 
-      // 畫紅點
       const dot=document.createElement("div");
       dot.className="dot";
       dot.style.left=`${x*100}%`;
       dot.style.top=`${y*100}%`;
       gameContainer.appendChild(dot);
 
-      // 記錄
       const coord = `{x:${x.toFixed(2)}, y:${y.toFixed(2)}}`;
       coords.push(coord);
       coordsList.textContent += coord + "\n";
     });
 
-    // 郵票左右移動（目前僅示範 log）
     function shiftStamps(side,dx){
       console.log(`移動 ${side} 郵票 ${dx}`);
     }
@@ -183,4 +172,3 @@
     }
   </script>
 </body>
-</html>
