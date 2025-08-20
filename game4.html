@@ -1,112 +1,182 @@
-import React, { useState } from "react";
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #f8f8f8;
+      text-align: center;
+    }
+    h2 {
+      margin: 20px 0;
+    }
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      margin-top: 20px;
+    }
+    #map-container {
+      position: relative;
+      width: 35vw;
+      min-width: 400px;
+    }
+    #map {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .red-frame {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed red;
+      pointer-events: none;
+    }
+    .stamp {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      cursor: grab;
+    }
+    #stamps-left, #stamps-right {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    #stamps-left {
+      justify-items: end;
+    }
+    #stamps-right {
+      justify-items: start;
+    }
+    .button-container {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .restart {
+      background: #ff6b6b;
+      color: white;
+    }
+    .home {
+      background: #4caf50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>臺灣北部地圖&注音符號郵票配對遊戲</h2>
+  <div id="game-container">
+    <!-- 左側郵票 -->
+    <div id="stamps-left"></div>
 
-// 紅框初始座標 (可以隨便先填，之後用校正模式調整)
-const initialRedBoxes = [
-  { id: 1, x: 420, y: 120 },
-  { id: 2, x: 480, y: 160 },
-  { id: 3, x: 450, y: 210 },
-  { id: 4, x: 500, y: 260 },
-  { id: 5, x: 460, y: 320 },
-  { id: 6, x: 530, y: 360 },
-];
-
-const GameWithCalibration = () => {
-  const [mode, setMode] = useState("game"); // game | calibration
-  const [redBoxes, setRedBoxes] = useState(initialRedBoxes);
-  const [opacity, setOpacity] = useState(0.5);
-
-  // 校正模式用：移動紅框
-  const handleDrag = (id, e) => {
-    const newRedBoxes = redBoxes.map((box) =>
-      box.id === id ? { ...box, x: e.clientX - 25, y: e.clientY - 25 } : box
-    );
-    setRedBoxes(newRedBoxes);
-  };
-
-  return (
-    <div className="flex flex-col items-center p-4">
-      <div className="w-full flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">臺灣北部地圖&注音符號郵票對對遊戲</h2>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-          onClick={() => setMode(mode === "game" ? "calibration" : "game")}
-        >
-          {mode === "game" ? "切換到校正模式" : "回到正式遊戲"}
-        </button>
-      </div>
-
-      {/* --- 正式遊戲模式 --- */}
-      {mode === "game" && (
-        <div className="relative w-[700px] h-[550px] border bg-white flex items-center justify-center">
-          {/* 地圖 */}
-          <img
-            src="game4_assets/north_map.png"
-            alt="north_map"
-            className="w-full h-full object-contain"
-          />
-          {/* 紅框 (固定位置, 不可拖曳) */}
-          {redBoxes.map((box) => (
-            <div
-              key={box.id}
-              className="absolute w-[50px] h-[50px] border-2 border-red-500 border-dashed"
-              style={{ left: box.x, top: box.y }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* --- 校正模式 --- */}
-      {mode === "calibration" && (
-        <div className="flex flex-col items-center">
-          <div className="relative w-[700px] h-[550px] border">
-            {/* 底圖 */}
-            <img
-              src="game4_assets/north_map.png"
-              alt="north_map"
-              className="absolute top-0 left-0 w-full h-full object-contain"
-            />
-            {/* 疊圖 */}
-            <img
-              src="game4_assets/north2_map.png"
-              alt="north2_map"
-              style={{ opacity }}
-              className="absolute top-0 left-0 w-full h-full object-contain"
-            />
-            {/* 可拖曳紅框 */}
-            {redBoxes.map((box) => (
-              <div
-                key={box.id}
-                draggable
-                onDragEnd={(e) => handleDrag(box.id, e)}
-                className="absolute w-[50px] h-[50px] border-2 border-red-500 border-dashed cursor-move"
-                style={{ left: box.x, top: box.y }}
-                title={`Box ${box.id}`}
-              />
-            ))}
-          </div>
-
-          {/* 透明度控制 */}
-          <div className="mt-4 flex items-center gap-2">
-            <span>透明度: </span>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              value={opacity}
-              onChange={(e) => setOpacity(Number(e.target.value))}
-            />
-            <span>{Math.round(opacity * 100)}%</span>
-          </div>
-
-          {/* 即時座標輸出 */}
-          <pre className="mt-4 bg-gray-100 p-2 rounded text-sm">
-            {JSON.stringify(redBoxes, null, 2)}
-          </pre>
-        </div>
-      )}
+    <!-- 中間地圖 -->
+    <div id="map-container">
+      <img id="map" src="game4_assets/north_map.png" alt="臺灣北部地圖">
     </div>
-  );
-};
 
-export default GameWithCalibration;
+    <!-- 右側郵票 -->
+    <div id="stamps-right"></div>
+  </div>
+
+  <div class="button-container">
+    <button class="restart" onclick="location.reload()">重新開始</button>
+    <button class="home" onclick="window.location.href='index.html'">回到遊戲首頁</button>
+  </div>
+
+  <script>
+    const stamps = [
+      "stamp1.jpg","stamp2.jpg","stamp3.jpg","stamp4.jpg","stamp5.jpg","stamp6.jpg",
+      "stamp7.jpg","stamp8.jpg","stamp9.jpg","stamp10.jpg","stamp11.jpg","stamp12.jpg"
+    ];
+
+    // 紅框位置 (80px × 80px)
+    const redFramePositions = [
+      { x: 260, y: 60,  stamp: "stamp3.jpg" },   // 台北市 北投
+      { x: 370, y: 60,  stamp: "stamp2.jpg" },   // 基隆市 石門
+      { x: 290, y: 160, stamp: "stamp1.jpg" },   // 新北市 安樂
+      { x: 450, y: 180, stamp: "stamp12.jpg" },  // 新北市 平溪
+      { x: 180, y: 220, stamp: "stamp6.jpg" },   // 桃園縣 蓮花
+      { x: 120, y: 300, stamp: "stamp5.jpg" },   // 新竹縣 茶壺
+      { x: 240, y: 330, stamp: "stamp10.jpg" },  // 苗栗縣 文山
+      { x: 70,  y: 390, stamp: "stamp7.jpg" },   // 苗栗縣 葡萄
+      { x: 200, y: 410, stamp: "stamp11.jpg" },  // 苗栗縣 頭份
+      { x: 310, y: 410, stamp: "stamp8.jpg" },   // 苗栗縣 西瓜
+      { x: 60,  y: 490, stamp: "stamp9.jpg" },   // 苗栗縣 橘子
+      { x: 160, y: 490, stamp: "stamp4.jpg" },   // 苗栗縣 蓮花
+    ];
+
+    const mapContainer = document.getElementById("map-container");
+
+    // 加入紅框
+    redFramePositions.forEach(pos => {
+      const frame = document.createElement("div");
+      frame.className = "red-frame";
+      frame.style.left = pos.x + "px";
+      frame.style.top = pos.y + "px";
+      mapContainer.appendChild(frame);
+    });
+
+    // 郵票隨機分配到左右兩側
+    const shuffled = stamps.sort(() => Math.random() - 0.5);
+    const leftStamps = shuffled.slice(0, 6);
+    const rightStamps = shuffled.slice(6);
+
+    function createStampElement(stamp) {
+      const img = document.createElement("img");
+      img.src = "game4_assets/" + stamp;
+      img.className = "stamp";
+      img.draggable = true;
+
+      img.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("stamp", stamp);
+      });
+      return img;
+    }
+
+    leftStamps.forEach(stamp => {
+      document.getElementById("stamps-left").appendChild(createStampElement(stamp));
+    });
+    rightStamps.forEach(stamp => {
+      document.getElementById("stamps-right").appendChild(createStampElement(stamp));
+    });
+
+    // 允許放置
+    mapContainer.addEventListener("dragover", e => e.preventDefault());
+
+    // 放下郵票
+    mapContainer.addEventListener("drop", e => {
+      e.preventDefault();
+      const stamp = e.dataTransfer.getData("stamp");
+      if (!stamp) return;
+
+      // 找對應位置
+      const target = redFramePositions.find(pos => {
+        return Math.abs(e.offsetX - pos.x) < 40 && Math.abs(e.offsetY - pos.y) < 40;
+      });
+
+      if (target && target.stamp === stamp) {
+        const img = createStampElement(stamp);
+        img.style.position = "absolute";
+        img.style.left = target.x + "px";
+        img.style.top = target.y + "px";
+        img.draggable = false;
+        mapContainer.appendChild(img);
+      } else {
+        alert("放錯位置了！");
+      }
+    });
+  </script>
+</body>
+</html>
