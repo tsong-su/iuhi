@@ -1,101 +1,105 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>北部郵票配對遊戲</title>
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
-      background: white; /* ✅ 修正背景 */
+      padding: 0;
+      background: #f0f0f0;
       display: flex;
       flex-direction: column;
+      align-items: center;
       height: 100vh;
       overflow: hidden;
-      font-family: sans-serif;
     }
+
     header {
-      text-align: center;
-      font-size: 24px;
-      padding: 10px;
-      background: #333;
-      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0;
     }
-    main {
-      flex: 1;
+
+    #game-container {
       display: flex;
+      flex: 1;
+      width: 100%;
       justify-content: center;
       align-items: center;
-      position: relative;
-      background: #eee;
+      gap: 10px;
+      overflow: hidden;
     }
+
     #map-container {
       position: relative;
-      display: inline-block;
-      max-width: 70%;   /* ✅ 不再自動放大 */
-      max-height: 70%;
+      max-width: 60vw;
+      max-height: 40vh; /* ✅ 限制地圖高度 40% */
     }
+
     #map {
-      display: block;
       width: 100%;
       height: auto;
+      display: block;
     }
+
     #red-frames {
       position: absolute;
       top: 0;
       left: 0;
       pointer-events: none;
     }
+
     .red-frame {
       position: absolute;
-      border: 3px solid red;
+      border: 2px solid red;
       box-sizing: border-box;
-      pointer-events: none;
     }
-    #stamps-left, #stamps-right {
-      position: absolute;
-      top: 10%;
+
+    .stamps {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: 10px;
     }
-    #stamps-left {
-      left: 10px;
-    }
-    #stamps-right {
-      right: 10px;
-    }
-    .stamp {
-      width: 80px;
-      height: auto;
+
+    .stamps img {
       cursor: grab;
-      user-select: none;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     }
-    #toolbar {
-      height: 60px; /* ✅ 恢復固定高度 */
-      background: #444;
-      color: white;
+
+    #controls {
       display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: 18px;
+      align-items: center;
+      gap: 20px;
+      padding: 10px;
+      background: #ddd;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <header>北部郵票配對遊戲</header>
-  <main>
+  <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
+
+  <div id="game-container">
+    <!-- 左側郵票 -->
+    <div class="stamps" id="left-stamps"></div>
+
+    <!-- 地圖 -->
     <div id="map-container">
       <img id="map" src="game4_assets/north2_map.png" alt="map">
       <div id="red-frames"></div>
     </div>
-    <div id="stamps-left"></div>
-    <div id="stamps-right"></div>
-  </main>
-  <div id="toolbar">控制區工具列</div>
 
-  <!-- 音效 -->
-  <audio id="success-sound" src="game4_assets/success.mp3"></audio>
-  <audio id="error-sound" src="game4_assets/error.mp3"></audio>
+    <!-- 右側郵票 -->
+    <div class="stamps" id="right-stamps"></div>
+  </div>
+
+  <!-- 控制區 -->
+  <div id="controls">
+    <button onclick="resetGame()">回到遊戲首頁</button>
+  </div>
 
   <script>
     const redFramePositions = [
@@ -104,72 +108,109 @@
       { x:544, y:243 }, { x:567, y:396 }, { x:661, y:406 },
       { x:761, y:376 }, { x:873, y:236 }, { x:955, y:220 }
     ];
-    const correctAnswers = {
-      1: "stamp3.jpg", 2: "stamp7.jpg", 3: "stamp1.jpg",
-      4: "stamp9.jpg", 5: "stamp6.jpg", 6: "stamp12.jpg",
-      7: "stamp4.jpg", 8: "stamp2.jpg", 9: "stamp10.jpg",
-      10: "stamp8.jpg", 11: "stamp5.jpg", 12: "stamp11.jpg"
+
+    // ✅ 測試配對答案 (範例)
+    const correctPairs = {
+      1: "stamp3.jpg",
+      2: "stamp7.jpg",
+      3: "stamp1.jpg",
+      4: "stamp5.jpg",
+      5: "stamp2.jpg",
+      6: "stamp8.jpg",
+      7: "stamp4.jpg",
+      8: "stamp10.jpg",
+      9: "stamp6.jpg",
+      10: "stamp12.jpg",
+      11: "stamp9.jpg",
+      12: "stamp11.jpg"
     };
 
-    const map = document.getElementById("map");
+    const stamps = [];
+    for (let i = 1; i <= 12; i++) {
+      const img = document.createElement("img");
+      img.src = `game4_assets/stamp${i}.jpg`;
+      img.draggable = true;
+      img.dataset.stamp = `stamp${i}.jpg`;
+      stamps.push(img);
+    }
+
+    // 左右各 6 張
+    const left = document.getElementById("left-stamps");
+    const right = document.getElementById("right-stamps");
+    stamps.slice(0, 6).forEach(s => left.appendChild(s));
+    stamps.slice(6).forEach(s => right.appendChild(s));
+
     const redFrames = document.getElementById("red-frames");
-    const stampsLeft = document.getElementById("stamps-left");
-    const stampsRight = document.getElementById("stamps-right");
 
     function renderRedFrames() {
-      redFrames.innerHTML = "";
+      const map = document.getElementById("map");
       const scale = map.width / map.naturalWidth;
-      redFramePositions.forEach((pos, index) => {
+      redFrames.innerHTML = "";
+
+      redFramePositions.forEach((pos, i) => {
         const frame = document.createElement("div");
         frame.className = "red-frame";
-        frame.dataset.index = index + 1;
+        frame.dataset.index = i+1;
+        frame.style.left = (pos.x * scale) + "px";
+        frame.style.top = (pos.y * scale) + "px";
+
         const frameSize = 50 * scale;
-        frame.style.left = (pos.x * scale - frameSize/2) + "px";
-        frame.style.top = (pos.y * scale - frameSize/2) + "px";
         frame.style.width = frameSize + "px";
         frame.style.height = frameSize + "px";
+
+        // drop target
+        frame.addEventListener("dragover", e => e.preventDefault());
+        frame.addEventListener("drop", e => {
+          e.preventDefault();
+          const stampName = e.dataTransfer.getData("text/plain");
+          checkMatch(i+1, stampName, frame);
+        });
+
         redFrames.appendChild(frame);
+      });
+
+      scaleStamps(scale);
+    }
+
+    function scaleStamps(scale) {
+      const frameSize = 50 * scale;
+      const stampSize = frameSize * 1.2;
+      document.querySelectorAll(".stamps img").forEach(stamp => {
+        stamp.style.width = stampSize + "px";
+        stamp.style.height = "auto";
       });
     }
 
-    function renderStamps() {
-      for (let i = 1; i <= 12; i++) {
-        const img = document.createElement("img");
-        img.src = `game4_assets/stamp${i}.jpg`;
-        img.className = "stamp";
-        img.draggable = true;
-        img.dataset.stamp = `stamp${i}.jpg`;
-        img.addEventListener("dragstart", dragStart);
-        if (i <= 6) stampsLeft.appendChild(img);
-        else stampsRight.appendChild(img);
-      }
-    }
-
-    function dragStart(e) {
-      e.dataTransfer.setData("stamp", e.target.dataset.stamp);
-    }
-    map.addEventListener("dragover", e => e.preventDefault());
-    redFrames.addEventListener("dragover", e => e.preventDefault());
-
-    redFrames.addEventListener("drop", e => {
-      e.preventDefault();
-      const stampFile = e.dataTransfer.getData("stamp");
-      const targetFrame = e.target.closest(".red-frame");
-      if (!targetFrame) return;
-      const frameIndex = targetFrame.dataset.index;
-      if (correctAnswers[frameIndex] === stampFile) {
-        document.getElementById("success-sound").play();
-        targetFrame.style.border = "3px solid lime";
+    function checkMatch(frameIndex, stampName, frame) {
+      if (correctPairs[frameIndex] === stampName) {
+        frame.style.background = "rgba(0,255,0,0.3)";
+        playSound("game4_assets/correct.mp3");
       } else {
-        document.getElementById("error-sound").play();
-        targetFrame.style.border = "3px solid red";
+        frame.style.background = "rgba(255,0,0,0.3)";
+        playSound("game4_assets/wrong.mp3");
       }
+    }
+
+    function playSound(src) {
+      const audio = new Audio(src);
+      audio.play();
+    }
+
+    function resetGame() {
+      location.reload();
+    }
+
+    // 拖曳
+    document.querySelectorAll(".stamps img").forEach(img => {
+      img.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", e.target.dataset.stamp);
+      });
     });
 
     window.addEventListener("resize", renderRedFrames);
     window.addEventListener("load", () => {
+      const map = document.getElementById("map");
       map.onload = renderRedFrames;
-      renderStamps();
     });
   </script>
 </body>
