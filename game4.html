@@ -8,52 +8,59 @@
       margin: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      background: #f0f0f0;
+      height: 100vh; /* 整頁就是螢幕高度 */
       overflow: hidden;
+      background: #f0f0f0;
     }
     h2 {
-      font-size: 18px;
-      margin: 8px 0;
+      margin: 10px;
+      text-align: center;
     }
     #game-container {
-      flex: 1;  /* 讓它自動撐滿中間，不會再留空白 */
-      width: 100%;
-      position: relative;
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #ddd;
+      position: relative;
+      overflow: hidden; /* 保證地圖不會超出 */
     }
     #map {
       max-width: 70%;
-      max-height: 70%;
+      max-height: 100%; /* 高度稍後用 JS 自動調整 */
       object-fit: contain;
       display: block;
     }
     .frame {
       position: absolute;
       border: 2px dashed red;
-      width: 50px;  
-      height: 50px; 
+      width: 50px;
+      height: 50px;
       pointer-events: none;
       z-index: 5;
     }
     .stamp {
       position: absolute;
-      width: 70px;   /* 郵票比紅框大 */
+      width: 70px;  /* ✅ 郵票比紅框大 */
       height: 70px;
       cursor: grab;
       z-index: 10;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* ✅ 小陰影凸顯 */
+      border-radius: 6px;
+      background: #fff;
     }
     #controls {
-      width: 100%;
-      padding: 5px 10px;
       display: flex;
-      justify-content: center;
-      gap: 10px;  /* 間隔縮小 */
+      justify-content: space-evenly; /* ✅ 平均分佈 */
+      align-items: center;
+      padding: 8px;
       background: #fff;
+      border-top: 1px solid #ccc;
+    }
+    #controls .module {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
     #controls button {
       font-size: 16px;
@@ -67,15 +74,14 @@
   <div id="game-container">
     <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
   </div>
-
   <div id="controls">
-    <div>
-      <button onclick="moveLeft(-10)">左側 ←10</button>
-      <button onclick="moveLeft(10)">左側 →10</button>
+    <div class="module">
+      <button onclick="moveLeft(-10)">左側往左 ←10</button>
+      <button onclick="moveLeft(10)">左側往右 →10</button>
     </div>
-    <div>
-      <button onclick="moveRight(-10)">右側 ←10</button>
-      <button onclick="moveRight(10)">右側 →10</button>
+    <div class="module">
+      <button onclick="moveRight(-10)">右側往左 ←10</button>
+      <button onclick="moveRight(10)">右側往右 →10</button>
     </div>
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
@@ -83,8 +89,9 @@
   <script>
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
-    const frames = [];
 
+    // --- 紅框座標 ---
+    const frames = [];
     const coords = [
       [0.3,0.3],[0.5,0.3],[0.7,0.3],
       [0.3,0.5],[0.5,0.5],[0.7,0.5],
@@ -101,49 +108,51 @@
         gameContainer.appendChild(frame);
         frames.push(frame);
       });
+
+      layoutStamps();
+      adjustMapSize();
     };
 
+    // --- 郵票排列 (左右各 6 張，2 排 × 3 張) ---
     const stamps=[];
-    const spacingX = 80;  // 水平間距
-    const spacingY = 100; // 垂直間距
-    const leftStartX = 50; // 左側起點
-    const rightStartX = window.innerWidth - 300; // 右側起點（避免太靠近地圖）
+    function layoutStamps(){
+      stamps.forEach(s=>s.remove()); // 清除舊的
+      stamps.length=0;
 
-    for(let i=1;i<=12;i++){
-      const img=document.createElement("img");
-      img.src=`game4_assets/stamp${i}.jpg`;
-      img.className="stamp";
+      const spacingX=80, spacingY=90;
+      const offsetXLeft=40, offsetXRight=map.width+40;
+      const offsetY=50;
 
-      const col = (i-1)%3;  // 0~2
-      const row = Math.floor(((i-1)%6)/3); // 0~1
-      const side = i<=6 ? "left" : "right";
-
-      if(side==="left"){
-        img.style.left=`${leftStartX + col*spacingX}px`;
-        img.style.top = `${100 + row*spacingY}px`;
-      } else {
-        img.style.left=`${rightStartX + col*spacingX}px`;
-        img.style.top = `${100 + row*spacingY}px`;
+      for(let i=1;i<=12;i++){
+        const img=document.createElement("img");
+        img.src=`game4_assets/stamp${i}.jpg`;
+        img.className="stamp";
+        const col=(i-1)%3;
+        const row=Math.floor(((i-1)%6)/3);
+        const side=(i<=6)?"left":"right";
+        const x=side==="left" ? offsetXLeft+col*spacingX : offsetXRight+col*spacingX;
+        const y=offsetY+row*spacingY;
+        img.style.left=`${x}px`;
+        img.style.top=`${y}px`;
+        gameContainer.appendChild(img);
+        stamps.push(img);
       }
-
-      gameContainer.appendChild(img);
-      stamps.push(img);
     }
 
-    function goHome(){
-      window.location.href="index.html";
+    // --- 保證地圖完整塞入視窗 ---
+    function adjustMapSize(){
+      const headerH=document.querySelector("h2").offsetHeight;
+      const controlsH=document.getElementById("controls").offsetHeight;
+      const availableH=window.innerHeight - headerH - controlsH;
+      map.style.maxHeight = availableH+"px";
     }
 
-    function moveLeft(offset){
-      stamps.slice(0,6).forEach(stamp=>{
-        stamp.style.left = (parseInt(stamp.style.left) + offset) + "px";
-      });
-    }
-    function moveRight(offset){
-      stamps.slice(6).forEach(stamp=>{
-        stamp.style.left = (parseInt(stamp.style.left) + offset) + "px";
-      });
-    }
+    window.addEventListener("resize", adjustMapSize);
+
+    // --- 控制區功能 ---
+    function moveLeft(delta){ frames.forEach(f=>f.style.left=(parseInt(f.style.left)+delta)+"px"); }
+    function moveRight(delta){ frames.forEach(f=>f.style.left=(parseInt(f.style.left)+delta)+"px"); }
+    function goHome(){ window.location.href="index.html"; }
   </script>
 </body>
 </html>
