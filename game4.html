@@ -6,92 +6,49 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      font-family: "Microsoft JhengHei", sans-serif;
     }
     header {
       text-align: center;
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 20px;
       padding: 10px;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #f0f0f0;
+      flex: 0 0 auto;
     }
-    main {
-      flex: 1;
+    #game-container {
+      flex: 1 1 auto;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
       overflow: hidden;
+      position: relative;
     }
-    #map {
-      max-width: 70%;
-      max-height: 70%;
-      object-fit: contain;
-      display: block;
-      margin: auto;
-    }
-    .marker {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: red;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-    .stamps {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .left-stamps { left: 2%; }
-    .right-stamps { right: 2%; }
-    .row {
-      display: flex;
-      flex-direction: row;
-      gap: 15px;
-    }
-    .stamp {
-      width: 80px;
-      height: 80px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-      cursor: pointer;
+    #mapCanvas {
+      border: 1px solid #ccc;
+      background: #fff;
     }
     footer {
-      background: #fff;
-      padding: 10px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-    }
-    .controls {
       display: flex;
       justify-content: center;
+      align-items: center;
+      padding: 8px;
+      background: #f0f0f0;
+      flex: 0 0 auto;
       gap: 20px;
     }
     button {
-      padding: 8px 16px;
-      font-size: 16px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: #4CAF50;
+      color: white;
       cursor: pointer;
     }
-    #coords-list {
-      font-size: 14px;
-      text-align: center;
-      white-space: pre-line;
-      margin-top: 5px;
-      max-height: 100px;
-      overflow-y: auto;
+    button:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
@@ -99,83 +56,154 @@
   <header>
     臺灣北部地圖&注音符號郵票配對遊戲
   </header>
-
-  <main id="map-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="地圖">
-    <!-- 郵票左右兩側 -->
-    <div class="stamps left-stamps">
-      <div class="row">
-        <img src="game4_assets/stamp1.jpg" class="stamp">
-        <img src="game4_assets/stamp2.jpg" class="stamp">
-        <img src="game4_assets/stamp3.jpg" class="stamp">
-      </div>
-      <div class="row">
-        <img src="game4_assets/stamp4.jpg" class="stamp">
-        <img src="game4_assets/stamp5.jpg" class="stamp">
-        <img src="game4_assets/stamp6.jpg" class="stamp">
-      </div>
+  <div id="game-container">
+    <canvas id="mapCanvas" width="1200" height="600"></canvas>
+  </div>
+  <footer id="control-bar">
+    <div>
+      <button onclick="moveStamps('left', -10)">左側 ←10</button>
+      <button onclick="moveStamps('left', 10)">左側 →10</button>
     </div>
-    <div class="stamps right-stamps">
-      <div class="row">
-        <img src="game4_assets/stamp7.jpg" class="stamp">
-        <img src="game4_assets/stamp8.jpg" class="stamp">
-        <img src="game4_assets/stamp9.jpg" class="stamp">
-      </div>
-      <div class="row">
-        <img src="game4_assets/stamp10.jpg" class="stamp">
-        <img src="game4_assets/stamp11.jpg" class="stamp">
-        <img src="game4_assets/stamp12.jpg" class="stamp">
-      </div>
+    <div>
+      <button onclick="moveStamps('right', -10)">右側 ←10</button>
+      <button onclick="moveStamps('right', 10)">右側 →10</button>
     </div>
-  </main>
-
-  <footer>
-    <div class="controls">
-      <button id="left-controls">左側控制 (←10 →10)</button>
-      <button id="right-controls">右側控制 (←10 →10)</button>
+    <div>
       <button onclick="location.reload()">回到遊戲首頁</button>
-      <button onclick="toggleMarkerMode()">輔助標記模式</button>
     </div>
-    <div id="coords-list"></div>
   </footer>
 
   <script>
-    let markerMode = false;
-    let coords = [];
+    const canvas = document.getElementById("mapCanvas");
+    const ctx = canvas.getContext("2d");
 
-    function toggleMarkerMode() {
-      markerMode = !markerMode;
-      if (markerMode) {
-        alert("輔助標記模式啟動：請在地圖上點擊標記紅點");
-      } else {
-        alert("輔助標記模式已關閉");
-      }
+    // 載入地圖
+    const mapImage = new Image();
+    mapImage.src = "game4_assets/north2_map.png";
+
+    // 紅框座標（固定）
+    const redFrames = [
+      {x:1036, y:145}, {x:905, y:80}, {x:806, y:83}, {x:704, y:144},
+      {x:593, y:116}, {x:593, y:180}, {x:544, y:243}, {x:567, y:396},
+      {x:661, y:406}, {x:761, y:376}, {x:873, y:236}, {x:955, y:220}
+    ];
+
+    // 郵票資料
+    let stamps = [];
+    let placedCount = 0;
+
+    for (let i = 1; i <= 12; i++) {
+      let img = new Image();
+      img.src = `game4_assets/stamp${i}.jpg`;
+      stamps.push({
+        id: i,
+        img: img,
+        x: i <= 6 ? 50 : 1050,  // 左右放置
+        y: 100 + ((i-1)%6)*70, // 6張縱向排列
+        width: 60,
+        height: 60,
+        isDragging: false,
+        placed: false
+      });
     }
 
-    const mapContainer = document.getElementById("map-container");
-    const coordsList = document.getElementById("coords-list");
+    // 音效
+    const sounds = {
+      correct: new Audio("game4_assets/victory.mp3"),
+      wrong: new Audio("game4_assets/wrong.mp3"),
+    };
+    const stampSounds = [];
+    for (let i = 1; i <= 12; i++) {
+      stampSounds[i] = new Audio(`game4_assets/stamp${i}.mp3`);
+    }
 
-    mapContainer.addEventListener("click", function(e) {
-      if (!markerMode) return;
+    let draggingStamp = null;
 
-      const rect = mapContainer.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    function drawGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(mapImage, (canvas.width-mapImage.width*0.8)/2, 50, mapImage.width*0.8, mapImage.height*0.8);
 
-      // 畫紅點
-      const marker = document.createElement("div");
-      marker.className = "marker";
-      marker.style.left = `${x}px`;
-      marker.style.top = `${y}px`;
-      mapContainer.appendChild(marker);
+      // 畫紅框
+      redFrames.forEach(f => {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(f.x-25, f.y-25, 50, 50);
+      });
 
-      // 存入座標
-      coords.push({x: Math.round(x), y: Math.round(y)});
-      updateCoordsList();
+      // 畫郵票
+      stamps.forEach(stamp => {
+        if (!stamp.placed || stamp.isDragging) {
+          ctx.shadowColor = "rgba(0,0,0,0.5)";
+          ctx.shadowBlur = 6;
+          ctx.drawImage(stamp.img, stamp.x, stamp.y, stamp.width, stamp.height);
+          ctx.shadowBlur = 0;
+        } else {
+          ctx.drawImage(stamp.img, stamp.x, stamp.y, stamp.width, stamp.height);
+        }
+      });
+    }
+
+    // 拖曳
+    canvas.addEventListener("mousedown", e => {
+      const {offsetX, offsetY} = e;
+      stamps.forEach(stamp => {
+        if (!stamp.placed &&
+          offsetX >= stamp.x && offsetX <= stamp.x+stamp.width &&
+          offsetY >= stamp.y && offsetY <= stamp.y+stamp.height) {
+          stamp.isDragging = true;
+          draggingStamp = stamp;
+        }
+      });
     });
 
-    function updateCoordsList() {
-      coordsList.textContent = coords.map((c,i)=> `${i+1}. x:${c.x}, y:${c.y}`).join("\n");
+    canvas.addEventListener("mousemove", e => {
+      if (draggingStamp) {
+        draggingStamp.x = e.offsetX - draggingStamp.width/2;
+        draggingStamp.y = e.offsetY - draggingStamp.height/2;
+        drawGame();
+      }
+    });
+
+    canvas.addEventListener("mouseup", e => {
+      if (draggingStamp) {
+        let placed = false;
+        redFrames.forEach((f, i) => {
+          if (Math.abs(draggingStamp.x - f.x) < 30 && Math.abs(draggingStamp.y - f.y) < 30) {
+            if (draggingStamp.id === i+1) {
+              draggingStamp.x = f.x-25;
+              draggingStamp.y = f.y-25;
+              draggingStamp.placed = true;
+              stampSounds[draggingStamp.id].play();
+              placedCount++;
+              if (placedCount === 12) sounds.correct.play();
+            } else {
+              sounds.wrong.play();
+            }
+            placed = true;
+          }
+        });
+        draggingStamp.isDragging = false;
+        draggingStamp = null;
+        drawGame();
+      }
+    });
+
+    mapImage.onload = () => {
+      drawGame();
+    };
+
+    // 控制列功能
+    function moveStamps(side, delta) {
+      stamps.forEach(stamp => {
+        if (!stamp.placed) {
+          if (side === "left" && stamp.x < canvas.width/2) {
+            stamp.x += delta;
+          } else if (side === "right" && stamp.x > canvas.width/2) {
+            stamp.x += delta;
+          }
+        }
+      });
+      drawGame();
     }
   </script>
 </body>
