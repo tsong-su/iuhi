@@ -36,6 +36,15 @@
       display: block;
       margin: auto;
     }
+    .marker {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
     .stamps {
       position: absolute;
       top: 50%;
@@ -62,14 +71,27 @@
       padding: 10px;
       text-align: center;
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .controls {
+      display: flex;
       justify-content: center;
       gap: 20px;
-      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
     }
     button {
       padding: 8px 16px;
       font-size: 16px;
       cursor: pointer;
+    }
+    #coords-list {
+      font-size: 14px;
+      text-align: center;
+      white-space: pre-line;
+      margin-top: 5px;
+      max-height: 100px;
+      overflow-y: auto;
     }
   </style>
 </head>
@@ -78,8 +100,9 @@
     臺灣北部地圖&注音符號郵票配對遊戲
   </header>
 
-  <main>
+  <main id="map-container">
     <img id="map" src="game4_assets/north2_map.png" alt="地圖">
+    <!-- 郵票左右兩側 -->
     <div class="stamps left-stamps">
       <div class="row">
         <img src="game4_assets/stamp1.jpg" class="stamp">
@@ -107,17 +130,52 @@
   </main>
 
   <footer>
-    <button id="left-controls">左側控制 (←10 →10)</button>
-    <button id="right-controls">右側控制 (←10 →10)</button>
-    <button onclick="location.reload()">回到遊戲首頁</button>
-    <button onclick="toggleMarkerMode()">輔助標記模式</button>
+    <div class="controls">
+      <button id="left-controls">左側控制 (←10 →10)</button>
+      <button id="right-controls">右側控制 (←10 →10)</button>
+      <button onclick="location.reload()">回到遊戲首頁</button>
+      <button onclick="toggleMarkerMode()">輔助標記模式</button>
+    </div>
+    <div id="coords-list"></div>
   </footer>
 
   <script>
     let markerMode = false;
+    let coords = [];
+
     function toggleMarkerMode() {
       markerMode = !markerMode;
-      alert(markerMode ? "輔助標記模式啟動：請在地圖上點擊標記紅點" : "輔助標記模式已關閉");
+      if (markerMode) {
+        alert("輔助標記模式啟動：請在地圖上點擊標記紅點");
+      } else {
+        alert("輔助標記模式已關閉");
+      }
+    }
+
+    const mapContainer = document.getElementById("map-container");
+    const coordsList = document.getElementById("coords-list");
+
+    mapContainer.addEventListener("click", function(e) {
+      if (!markerMode) return;
+
+      const rect = mapContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // 畫紅點
+      const marker = document.createElement("div");
+      marker.className = "marker";
+      marker.style.left = `${x}px`;
+      marker.style.top = `${y}px`;
+      mapContainer.appendChild(marker);
+
+      // 存入座標
+      coords.push({x: Math.round(x), y: Math.round(y)});
+      updateCoordsList();
+    });
+
+    function updateCoordsList() {
+      coordsList.textContent = coords.map((c,i)=> `${i+1}. x:${c.x}, y:${c.y}`).join("\n");
     }
   </script>
 </body>
