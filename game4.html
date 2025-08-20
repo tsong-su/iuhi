@@ -2,38 +2,42 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>台灣北部郵票配對遊戲</title>
+<title>台灣北部地圖遊戲</title>
 <style>
   body {
     margin: 0;
-    background: #f4f4f4;
-    text-align: center;
-    font-family: Arial, sans-serif;
-  }
-
-  h2 {
-    margin: 10px;
-  }
-
-  #game-container {
+    background: #f5f5f5;
+    overflow: hidden; /* 避免捲軸 */
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    height: calc(100vh - 60px);
-    overflow: hidden;
+    height: 100vh;
+  }
+
+  #game-wrapper {
+    transform-origin: top center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #game-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
   }
 
   #map-container {
     position: relative;
-    flex: 1;
-    text-align: center;
+    width: 1056px; /* 固定縮小後大小 */
+    height: 849px;
   }
 
   #map {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
   #red-frames {
@@ -44,6 +48,8 @@
 
   .red-frame {
     position: absolute;
+    width: 60px;
+    height: 60px;
     border: 2px solid red;
     box-sizing: border-box;
   }
@@ -51,173 +57,99 @@
   .stamps {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     gap: 10px;
-    padding: 10px;
   }
 
   .stamp {
+    width: 80px;  /* 固定大小 */
+    height: auto;
     cursor: grab;
-    border: 2px solid #ccc;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
-  #toolbar {
-    height: 60px;
-    background: #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  #controls {
+    margin-top: 15px;
   }
 
-  #toolbar button {
+  #controls button {
     padding: 8px 16px;
-    margin: 0 5px;
-    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+  }
+
+  #controls button:hover {
+    background-color: #45a049;
   }
 </style>
 </head>
 <body>
+  <div id="game-wrapper">
+    <h2>台灣北部地圖&注音符號郵票配對遊戲</h2>
+    <div id="game-area">
+      <div class="stamps" id="stamps-left">
+        <img src="game4_assets/stamp1.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp2.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp3.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp4.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp5.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp6.jpg" class="stamp" draggable="true">
+      </div>
 
-<h2>台灣北部地圖＆注音符號郵票配對遊戲</h2>
+      <div id="map-container">
+        <img id="map" src="north2_map.png" alt="地圖">
+        <div id="red-frames"></div>
+      </div>
 
-<div id="game-container">
-  <!-- 左側郵票 -->
-  <div class="stamps" id="left-stamps"></div>
+      <div class="stamps" id="stamps-right">
+        <img src="game4_assets/stamp7.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp8.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp9.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp10.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp11.jpg" class="stamp" draggable="true">
+        <img src="game4_assets/stamp12.jpg" class="stamp" draggable="true">
+      </div>
+    </div>
 
-  <!-- 地圖區 -->
-  <div id="map-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
-    <div id="red-frames"></div>
+    <div id="controls">
+      <button onclick="location.href='index.html'">回到遊戲首頁</button>
+    </div>
   </div>
 
-  <!-- 右側郵票 -->
-  <div class="stamps" id="right-stamps"></div>
-</div>
-
-<!-- 工具列 -->
-<div id="toolbar">
-  <button onclick="location.href='index.html'">回到遊戲首頁</button>
-</div>
-
 <script>
-const redFramePositions = [
-  {x:1036, y:145}, {x:905, y:80}, {x:806, y:83}, {x:704, y:144},
-  {x:593, y:116}, {x:593, y:180}, {x:544, y:243}, {x:567, y:396},
-  {x:661, y:406}, {x:761, y:376}, {x:873, y:236}, {x:955, y:220}
-];
+  const redFramePositions = [
+    {x: 520, y: 120}, {x: 580, y: 200}, {x: 480, y: 300},
+    {x: 640, y: 250}, {x: 700, y: 400}, {x: 400, y: 500},
+    {x: 550, y: 550}, {x: 600, y: 600}, {x: 300, y: 650},
+    {x: 450, y: 700}, {x: 700, y: 750}, {x: 800, y: 800}
+  ];
 
-// 答案表（示範，需根據 north_answer.png 調整）
-const correctAnswers = {
-  1: "stamp3.jpg",
-  2: "stamp7.jpg",
-  3: "stamp1.jpg",
-  4: "stamp5.jpg",
-  5: "stamp2.jpg",
-  6: "stamp6.jpg",
-  7: "stamp4.jpg",
-  8: "stamp9.jpg",
-  9: "stamp10.jpg",
-  10: "stamp8.jpg",
-  11: "stamp11.jpg",
-  12: "stamp12.jpg"
-};
-
-const allStamps = [
-  "stamp1.jpg","stamp2.jpg","stamp3.jpg","stamp4.jpg",
-  "stamp5.jpg","stamp6.jpg","stamp7.jpg","stamp8.jpg",
-  "stamp9.jpg","stamp10.jpg","stamp11.jpg","stamp12.jpg"
-];
-
-// 分兩邊顯示郵票
-function renderStamps() {
-  const left = document.getElementById("left-stamps");
-  const right = document.getElementById("right-stamps");
-  allStamps.slice(0,6).forEach(name => {
-    const img = createStamp(name);
-    left.appendChild(img);
-  });
-  allStamps.slice(6).forEach(name => {
-    const img = createStamp(name);
-    right.appendChild(img);
-  });
-}
-
-// 建立可拖曳的郵票
-function createStamp(name) {
-  const img = document.createElement("img");
-  img.src = "game4_assets/" + name;
-  img.className = "stamp";
-  img.draggable = true;
-  img.addEventListener("dragstart", e => {
-    e.dataTransfer.setData("text/plain", name);
-  });
-  return img;
-}
-
-// 繪製紅框
-function renderRedFrames() {
-  const map = document.getElementById('map');
-  const redFrames = document.getElementById('red-frames');
-  redFrames.innerHTML = "";
-
-  const scale = map.width / map.naturalWidth;
-
-  redFramePositions.forEach((pos, i) => {
-    const frame = document.createElement("div");
-    frame.className = "red-frame";
-    frame.dataset.index = i + 1;
-
-    const frameSize = 60 * scale; // 紅框比郵票小
-    frame.style.width = frameSize + "px";
-    frame.style.height = frameSize + "px";
-
-    // 中心對齊
-    frame.style.left = (pos.x * scale - frameSize/2) + "px";
-    frame.style.top = (pos.y * scale - frameSize/2) + "px";
-
-    frame.addEventListener("dragover", e => e.preventDefault());
-    frame.addEventListener("drop", e => {
-      e.preventDefault();
-      const stampName = e.dataTransfer.getData("text/plain");
-      checkMatch(i+1, stampName, frame);
+  function renderRedFrames() {
+    const redFrames = document.getElementById('red-frames');
+    redFrames.innerHTML = "";
+    redFramePositions.forEach(pos => {
+      const frame = document.createElement('div');
+      frame.className = 'red-frame';
+      frame.style.left = pos.x + "px";
+      frame.style.top = pos.y + "px";
+      redFrames.appendChild(frame);
     });
-
-    redFrames.appendChild(frame);
-  });
-
-  scaleStamps(scale);
-}
-
-// 調整郵票大小
-function scaleStamps(scale) {
-  const stampSize = 80 * scale; // 郵票比紅框大
-  document.querySelectorAll('.stamp').forEach(stamp => {
-    stamp.style.width = stampSize + "px";
-    stamp.style.height = "auto";
-  });
-}
-
-// 檢查配對
-function checkMatch(frameIndex, stampName, frame) {
-  if (correctAnswers[frameIndex] === stampName) {
-    frame.style.border = "2px solid green";
-    new Audio("game4_assets/correct.mp3").play();
-  } else {
-    frame.style.border = "2px solid red";
-    new Audio("game4_assets/wrong.mp3").play();
   }
-}
 
-// 初始化
-window.addEventListener('resize', renderRedFrames);
-window.addEventListener('load', () => {
-  renderStamps();
-  const map = document.getElementById('map');
-  map.onload = renderRedFrames;
-});
+  function resizeGame() {
+    const wrapper = document.getElementById('game-wrapper');
+    const scaleX = window.innerWidth / wrapper.offsetWidth;
+    const scaleY = window.innerHeight / wrapper.offsetHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // 不放大，只縮小
+    wrapper.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('load', () => {
+    renderRedFrames();
+    resizeGame();
+  });
 </script>
 </body>
 </html>
