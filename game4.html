@@ -1,38 +1,213 @@
-function renderRedFrames() {
-  const map = document.getElementById('map');
-  const redFrames = document.getElementById('red-frames');
-  redFrames.innerHTML = "";
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地區郵票配對遊戲</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin: 20px 0;
+      color: #333;
+    }
+    #game-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 1284px; /* 限制在地圖原始寬度 */
+    }
+    #map {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .stamp {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      cursor: grab;
+      z-index: 10;
+    }
+    .slot {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 3px dashed red; /* 加粗紅色方框 */
+      pointer-events: none;
+    }
+    #success {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: red;
+      display: none;
+    }
+    #home-btn {
+      margin-top: 20px;
+      padding: 14px 28px;
+      font-size: 24px;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      display: inline-block;
+    }
+    #home-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>臺灣北部地區郵票配對遊戲</h1>
+  <div id="game-container">
+    <img id="map" src="game4_assets/north2_map.png">
+    <div id="success">有夠gâu！</div>
+  </div>
+  <br>
+  <a id="home-btn" href="https://tsong-su.github.io/iuhi/index.html">回到遊戲首頁</a>
 
-  const scale = map.width / map.naturalWidth;
+  <script>
+    const container = document.getElementById("game-container");
+    const map = document.getElementById("map");
+    const success = document.getElementById("success");
 
-  redFramePositions.forEach(pos => {
-    const frame = document.createElement('div');
-    frame.className = 'red-frame';
-    frame.style.left = (pos.x * scale) + "px";
-    frame.style.top = (pos.y * scale) + "px";
+    // ✅ 您提供的比例座標
+    const basePositions = [
+      { "x": 0.9953, "y": 0.1551 },
+      { "x": 0.7589, "y": 0.0012 },
+      { "x": 0.5749, "y": 0.0249 },
+      { "x": 0.3782, "y": 0.1872 },
+      { "x": 0.1291, "y": 0.1264 },
+      { "x": 0.115,  "y": 0.3242 },
+      { "x": 0.0077, "y": 0.5255 },
+      { "x": 0.0435, "y": 0.9668 },
+      { "x": 0.2479, "y": 0.9922 },
+      { "x": 0.4791, "y": 0.9043 },
+      { "x": 0.7372, "y": 0.4916 },
+      { "x": 0.9173, "y": 0.4409 }
+    ];
 
-    const frameSize = 50 * scale; // 紅框基準大小
-    frame.style.width = frameSize + "px";
-    frame.style.height = frameSize + "px";
+    let stampsPlaced = 0;
 
-    redFrames.appendChild(frame);
-  });
+    map.onload = () => {
+      const mapWidth = map.width;
+      const mapHeight = map.height;
 
-  scaleStamps(scale);
-}
+      // ✅ 計算實際位置
+      const answerPositions = basePositions.map(p => ({
+        x: p.x * mapWidth,
+        y: p.y * mapHeight
+      }));
 
-function scaleStamps(scale) {
-  const frameSize = 50 * scale;
-  const stampSize = frameSize * 1.2; // 郵票比紅框大 20%
+      answerPositions.forEach((pos, i) => {
+        // 建立紅框 slot
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.style.left = (pos.x - 40) + "px";
+        slot.style.top = (pos.y - 40) + "px";
+        container.appendChild(slot);
 
-  document.querySelectorAll('.stamp').forEach(stamp => {
-    stamp.style.width = stampSize + "px";
-    stamp.style.height = "auto";
-  });
-}
+        // 建立郵票
+        const stamp = document.createElement("img");
+        stamp.src = `game4_assets/stamp${i+1}.jpg`;
+        stamp.className = "stamp";
+        stamp.dataset.index = i;
 
-window.addEventListener('resize', renderRedFrames);
-window.addEventListener('load', () => {
-  const map = document.getElementById('map');
-  map.onload = renderRedFrames;
-});
+        // ✅ 隨機生成在地圖四周「外圍」
+        const side = Math.floor(Math.random()*4);
+        let randX, randY;
+        if(side===0){ randX = Math.random()*mapWidth; randY = -120; } // 上方
+        if(side===1){ randX = mapWidth + 50; randY = Math.random()*mapHeight; } // 右側
+        if(side===2){ randX = Math.random()*mapWidth; randY = mapHeight + 50; } // 下方
+        if(side===3){ randX = -120; randY = Math.random()*mapHeight; } // 左側
+
+        stamp.style.left = randX + "px";
+        stamp.style.top = randY + "px";
+        container.appendChild(stamp);
+
+        // 拖曳功能
+        dragElement(stamp, pos, i);
+      });
+
+      function dragElement(elmnt, correctPos, index) {
+        let offsetX=0, offsetY=0, mouseX=0, mouseY=0, originalX=0, originalY=0;
+
+        elmnt.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+          e.preventDefault();
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          originalX = elmnt.offsetLeft;
+          originalY = elmnt.offsetTop;
+          document.onmouseup = closeDragElement;
+          document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+          offsetX = e.clientX - mouseX;
+          offsetY = e.clientY - mouseY;
+          elmnt.style.left = (elmnt.offsetLeft + offsetX) + "px";
+          elmnt.style.top = (elmnt.offsetTop + offsetY) + "px";
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        }
+
+        function closeDragElement() {
+          document.onmouseup = null;
+          document.onmousemove = null;
+          const stampX = elmnt.offsetLeft + 40;
+          const stampY = elmnt.offsetTop + 40;
+
+          const dx = stampX - correctPos.x;
+          const dy = stampY - correctPos.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+
+          if(dist < 30){
+            elmnt.style.left = (correctPos.x-40)+"px";
+            elmnt.style.top = (correctPos.y-40)+"px";
+            elmnt.onmousedown = null;
+            playSound(`game4_assets/stamp${index+1}.mp3`);
+            stampsPlaced++;
+            if(stampsPlaced===basePositions.length){
+              showSuccess();
+            }
+          }else{
+            elmnt.style.left = originalX+"px";
+            elmnt.style.top = originalY+"px";
+            playSound("game4_assets/wrong.mp3");
+          }
+        }
+      }
+
+      function playSound(src){
+        const audio = new Audio(src);
+        audio.play();
+      }
+
+      function showSuccess(){
+        success.style.display = "block";
+        success.style.fontSize = "20px";
+        let size = 20;
+        const interval = setInterval(()=>{
+          size += 5;
+          success.style.fontSize = size+"px";
+          if(size>=100){ clearInterval(interval); }
+        }, 200);
+
+        // ✅ 播放勝利音效
+        playSound("game4_assets/victory.mp3");
+      }
+    }
+  </script>
+</body>
+</html>
