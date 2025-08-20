@@ -1,221 +1,223 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+<meta charset="UTF-8">
+<title>台灣北部郵票配對遊戲</title>
+<style>
+  body {
+    margin: 0;
+    background: #f4f4f4;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
 
-    header {
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      margin: 10px 0;
-    }
+  h2 {
+    margin: 10px;
+  }
 
-    #game-container {
-      display: flex;
-      flex: 1;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      overflow: hidden;
-    }
+  #game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
 
-    #map-container {
-      position: relative;
-      flex-shrink: 0;
-    }
+  #map-container {
+    position: relative;
+    flex: 1;
+    text-align: center;
+  }
 
-    #map {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
-    }
+  #map {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 
-    #red-frames {
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-    }
+  #red-frames {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 
-    .red-frame {
-      position: absolute;
-      border: 2px solid red;
-      box-sizing: border-box;
-    }
+  .red-frame {
+    position: absolute;
+    border: 2px solid red;
+    box-sizing: border-box;
+  }
 
-    .stamps {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 10px;
-      flex-shrink: 0;
-    }
+  .stamps {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+  }
 
-    .stamps img {
-      cursor: grab;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    }
+  .stamp {
+    cursor: grab;
+    border: 2px solid #ccc;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
 
-    #controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      padding: 10px;
-      background: #ddd;
-      width: 100%;
-      flex-shrink: 0;
-    }
-  </style>
+  #toolbar {
+    height: 60px;
+    background: #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #toolbar button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
-  <header>臺灣北部地圖&注音符號郵票配對遊戲</header>
 
-  <div id="game-container">
-    <!-- 左側郵票 -->
-    <div class="stamps" id="left-stamps"></div>
+<h2>台灣北部地圖＆注音符號郵票配對遊戲</h2>
 
-    <!-- 地圖 -->
-    <div id="map-container">
-      <img id="map" src="game4_assets/north2_map.png" alt="map">
-      <div id="red-frames"></div>
-    </div>
+<div id="game-container">
+  <!-- 左側郵票 -->
+  <div class="stamps" id="left-stamps"></div>
 
-    <!-- 右側郵票 -->
-    <div class="stamps" id="right-stamps"></div>
+  <!-- 地圖區 -->
+  <div id="map-container">
+    <img id="map" src="game4_assets/north2_map.png" alt="北部地圖">
+    <div id="red-frames"></div>
   </div>
 
-  <!-- 控制區 -->
-  <div id="controls">
-    <button onclick="resetGame()">回到遊戲首頁</button>
-  </div>
+  <!-- 右側郵票 -->
+  <div class="stamps" id="right-stamps"></div>
+</div>
 
-  <script>
-    // 原始地圖大小
-    const MAP_WIDTH = 1760;
-    const MAP_HEIGHT = 1415;
+<!-- 工具列 -->
+<div id="toolbar">
+  <button onclick="location.href='index.html'">回到遊戲首頁</button>
+</div>
 
-    const redFramePositions = [
-      { x:1036, y:145 }, { x:905, y:80 }, { x:806, y:83 },
-      { x:704, y:144 }, { x:593, y:116 }, { x:593, y:180 },
-      { x:544, y:243 }, { x:567, y:396 }, { x:661, y:406 },
-      { x:761, y:376 }, { x:873, y:236 }, { x:955, y:220 }
-    ];
+<script>
+const redFramePositions = [
+  {x:1036, y:145}, {x:905, y:80}, {x:806, y:83}, {x:704, y:144},
+  {x:593, y:116}, {x:593, y:180}, {x:544, y:243}, {x:567, y:396},
+  {x:661, y:406}, {x:761, y:376}, {x:873, y:236}, {x:955, y:220}
+];
 
-    const correctPairs = {
-      1: "stamp3.jpg", 2: "stamp7.jpg", 3: "stamp1.jpg",
-      4: "stamp5.jpg", 5: "stamp2.jpg", 6: "stamp8.jpg",
-      7: "stamp4.jpg", 8: "stamp10.jpg", 9: "stamp6.jpg",
-      10: "stamp12.jpg", 11: "stamp9.jpg", 12: "stamp11.jpg"
-    };
+// 答案表（示範，需根據 north_answer.png 調整）
+const correctAnswers = {
+  1: "stamp3.jpg",
+  2: "stamp7.jpg",
+  3: "stamp1.jpg",
+  4: "stamp5.jpg",
+  5: "stamp2.jpg",
+  6: "stamp6.jpg",
+  7: "stamp4.jpg",
+  8: "stamp9.jpg",
+  9: "stamp10.jpg",
+  10: "stamp8.jpg",
+  11: "stamp11.jpg",
+  12: "stamp12.jpg"
+};
 
-    const stamps = [];
-    for (let i = 1; i <= 12; i++) {
-      const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.draggable = true;
-      img.dataset.stamp = `stamp${i}.jpg`;
-      stamps.push(img);
-    }
+const allStamps = [
+  "stamp1.jpg","stamp2.jpg","stamp3.jpg","stamp4.jpg",
+  "stamp5.jpg","stamp6.jpg","stamp7.jpg","stamp8.jpg",
+  "stamp9.jpg","stamp10.jpg","stamp11.jpg","stamp12.jpg"
+];
 
-    const left = document.getElementById("left-stamps");
-    const right = document.getElementById("right-stamps");
-    stamps.slice(0, 6).forEach(s => left.appendChild(s));
-    stamps.slice(6).forEach(s => right.appendChild(s));
+// 分兩邊顯示郵票
+function renderStamps() {
+  const left = document.getElementById("left-stamps");
+  const right = document.getElementById("right-stamps");
+  allStamps.slice(0,6).forEach(name => {
+    const img = createStamp(name);
+    left.appendChild(img);
+  });
+  allStamps.slice(6).forEach(name => {
+    const img = createStamp(name);
+    right.appendChild(img);
+  });
+}
 
-    const map = document.getElementById("map");
-    const redFrames = document.getElementById("red-frames");
+// 建立可拖曳的郵票
+function createStamp(name) {
+  const img = document.createElement("img");
+  img.src = "game4_assets/" + name;
+  img.className = "stamp";
+  img.draggable = true;
+  img.addEventListener("dragstart", e => {
+    e.dataTransfer.setData("text/plain", name);
+  });
+  return img;
+}
 
-    function renderGame() {
-      const container = document.getElementById("game-container");
+// 繪製紅框
+function renderRedFrames() {
+  const map = document.getElementById('map');
+  const redFrames = document.getElementById('red-frames');
+  redFrames.innerHTML = "";
 
-      // 可用高度 (扣掉 header + controls)
-      const availableHeight = container.clientHeight;
-      const availableWidth = container.clientWidth - 200; // 預留左右郵票
+  const scale = map.width / map.naturalWidth;
 
-      // 計算縮放比例
-      const scale = Math.min(
-        availableWidth / MAP_WIDTH,
-        availableHeight / MAP_HEIGHT
-      );
+  redFramePositions.forEach((pos, i) => {
+    const frame = document.createElement("div");
+    frame.className = "red-frame";
+    frame.dataset.index = i + 1;
 
-      // 設定地圖大小
-      map.style.width = (MAP_WIDTH * scale) + "px";
-      map.style.height = (MAP_HEIGHT * scale) + "px";
+    const frameSize = 60 * scale; // 紅框比郵票小
+    frame.style.width = frameSize + "px";
+    frame.style.height = frameSize + "px";
 
-      // 設定紅框
-      redFrames.innerHTML = "";
-      redFrames.style.width = map.style.width;
-      redFrames.style.height = map.style.height;
+    // 中心對齊
+    frame.style.left = (pos.x * scale - frameSize/2) + "px";
+    frame.style.top = (pos.y * scale - frameSize/2) + "px";
 
-      redFramePositions.forEach((pos, i) => {
-        const frame = document.createElement("div");
-        frame.className = "red-frame";
-        frame.dataset.index = i+1;
-        frame.style.left = (pos.x * scale) + "px";
-        frame.style.top = (pos.y * scale) + "px";
-
-        const frameSize = 50 * scale;
-        frame.style.width = frameSize + "px";
-        frame.style.height = frameSize + "px";
-
-        frame.addEventListener("dragover", e => e.preventDefault());
-        frame.addEventListener("drop", e => {
-          e.preventDefault();
-          const stampName = e.dataTransfer.getData("text/plain");
-          checkMatch(i+1, stampName, frame);
-        });
-
-        redFrames.appendChild(frame);
-      });
-
-      // 郵票大小 (隨比例縮放)
-      const stampSize = 80 * scale; 
-      document.querySelectorAll(".stamps img").forEach(img => {
-        img.style.width = stampSize + "px";
-        img.style.height = "auto";
-      });
-    }
-
-    function checkMatch(frameIndex, stampName, frame) {
-      if (correctPairs[frameIndex] === stampName) {
-        frame.style.background = "rgba(0,255,0,0.3)";
-        playSound("game4_assets/correct.mp3");
-      } else {
-        frame.style.background = "rgba(255,0,0,0.3)";
-        playSound("game4_assets/wrong.mp3");
-      }
-    }
-
-    function playSound(src) {
-      const audio = new Audio(src);
-      audio.play();
-    }
-
-    function resetGame() {
-      window.location.href = "index.html";
-    }
-
-    // 拖曳
-    document.querySelectorAll(".stamps img").forEach(img => {
-      img.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", e.target.dataset.stamp);
-      });
+    frame.addEventListener("dragover", e => e.preventDefault());
+    frame.addEventListener("drop", e => {
+      e.preventDefault();
+      const stampName = e.dataTransfer.getData("text/plain");
+      checkMatch(i+1, stampName, frame);
     });
 
-    window.addEventListener("resize", renderGame);
-    window.addEventListener("load", renderGame);
-  </script>
+    redFrames.appendChild(frame);
+  });
+
+  scaleStamps(scale);
+}
+
+// 調整郵票大小
+function scaleStamps(scale) {
+  const stampSize = 80 * scale; // 郵票比紅框大
+  document.querySelectorAll('.stamp').forEach(stamp => {
+    stamp.style.width = stampSize + "px";
+    stamp.style.height = "auto";
+  });
+}
+
+// 檢查配對
+function checkMatch(frameIndex, stampName, frame) {
+  if (correctAnswers[frameIndex] === stampName) {
+    frame.style.border = "2px solid green";
+    new Audio("game4_assets/correct.mp3").play();
+  } else {
+    frame.style.border = "2px solid red";
+    new Audio("game4_assets/wrong.mp3").play();
+  }
+}
+
+// 初始化
+window.addEventListener('resize', renderRedFrames);
+window.addEventListener('load', () => {
+  renderStamps();
+  const map = document.getElementById('map');
+  map.onload = renderRedFrames;
+});
+</script>
 </body>
 </html>
