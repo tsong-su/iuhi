@@ -29,10 +29,7 @@
       width: 35vw;              /* 固定 35% 視窗寬度 */
       margin: auto;
       position: relative;
-      background: white;
-      padding: 10px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     /* 地圖圖片 */
@@ -41,13 +38,14 @@
       height: auto;
       display: block;
       margin: 0 auto;
+      background: transparent;  /* 拿掉白色底色 */
     }
 
     /* 紅色框 */
     .dropzone {
       position: absolute;
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       border: 2px dashed red;
       pointer-events: none;
     }
@@ -65,12 +63,12 @@
 
     /* 郵票 */
     .stamp {
-      width: 90px;             /* 固定郵票大小 */
+      width: 80px;             /* 郵票改為 80px */
       height: auto;
       cursor: grab;
+      user-select: none;
     }
 
-    /* 工具列 */
     .toolbar {
       margin: 20px 0;
     }
@@ -96,7 +94,7 @@
     <div class="stamps" id="left-stamps"></div>
 
     <!-- 中央地圖 -->
-    <div class="map-container">
+    <div class="map-container" id="map-container">
       <img id="map" src="north_map.png" alt="台灣北部地圖">
     </div>
 
@@ -111,7 +109,7 @@
   </div>
 
   <script>
-    const mapContainer = document.querySelector('.map-container');
+    const mapContainer = document.getElementById('map-container');
 
     // 郵票檔案清單
     const stamps = [
@@ -126,25 +124,26 @@
     const leftContainer = document.getElementById('left-stamps');
     const rightContainer = document.getElementById('right-stamps');
 
-    leftStamps.forEach((src, i) => {
+    // 建立郵票
+    function createStamp(src, id, parent) {
       let img = document.createElement('img');
       img.src = src;
       img.className = 'stamp';
       img.draggable = true;
-      img.id = "stampL" + (i+1);
-      leftContainer.appendChild(img);
-    });
+      img.id = id;
 
-    rightStamps.forEach((src, i) => {
-      let img = document.createElement('img');
-      img.src = src;
-      img.className = 'stamp';
-      img.draggable = true;
-      img.id = "stampR" + (i+1);
-      rightContainer.appendChild(img);
-    });
+      // 拖曳事件（不再複製，只是移動）
+      img.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", id);
+      });
 
-    // 紅框位置（範例，座標比值依據地圖原始大小計算）
+      parent.appendChild(img);
+    }
+
+    leftStamps.forEach((src, i) => createStamp(src, "stampL" + (i+1), leftContainer));
+    rightStamps.forEach((src, i) => createStamp(src, "stampR" + (i+1), rightContainer));
+
+    // 紅框位置（先測試用，比例位置）
     const dropzonesData = [
       { left: 0.55, top: 0.1 },
       { left: 0.75, top: 0.15 },
@@ -158,8 +157,8 @@
       dropzonesData.forEach(pos => {
         let dz = document.createElement('div');
         dz.className = 'dropzone';
-        dz.style.left = (pos.left * mapContainer.clientWidth - 35) + "px";
-        dz.style.top = (pos.top * mapContainer.clientHeight - 35) + "px";
+        dz.style.left = (pos.left * mapContainer.clientWidth - 30) + "px";
+        dz.style.top = (pos.top * mapContainer.clientHeight - 30) + "px";
         mapContainer.appendChild(dz);
       });
     }
@@ -167,11 +166,11 @@
     window.onload = createDropzones;
 
     function resetGame() {
-      alert("遊戲已重置（可在此補上重置邏輯）");
+      alert("遊戲已重置（這裡可以補充重置邏輯）");
     }
 
     function goHome() {
-      alert("返回首頁（可在此導向首頁頁面）");
+      alert("返回首頁（這裡可以導向首頁頁面）");
     }
   </script>
 </body>
