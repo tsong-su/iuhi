@@ -9,7 +9,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
       background: #f0f0f0;
       overflow: hidden;
     }
@@ -18,8 +17,8 @@
       margin: 8px 0;
     }
     #game-container {
+      flex: 1;  /* 讓它自動撐滿中間，不會再留空白 */
       width: 100%;
-      height: 80vh;
       position: relative;
       display: flex;
       justify-content: center;
@@ -35,8 +34,8 @@
     .frame {
       position: absolute;
       border: 2px dashed red;
-      width: 50px;  /* 比之前小 */
-      height: 50px; /* 比之前小 */
+      width: 50px;  
+      height: 50px; 
       pointer-events: none;
       z-index: 5;
     }
@@ -46,19 +45,19 @@
       height: 70px;
       cursor: grab;
       z-index: 10;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); /* 小陰影 */
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
     }
     #controls {
       width: 100%;
-      padding: 5px 10px;   /* 縮小高度 */
+      padding: 5px 10px;
       display: flex;
       justify-content: center;
-      gap: 10px;          /* 三個模組更緊湊 */
+      gap: 10px;  /* 間隔縮小 */
       background: #fff;
     }
     #controls button {
-      font-size: 16px;     /* 與標題一致 */
-      padding: 6px 12px;   /* 壓縮高度 */
+      font-size: 16px;
+      padding: 6px 12px;
       cursor: pointer;
     }
   </style>
@@ -85,6 +84,7 @@
     const gameContainer = document.getElementById("game-container");
     const map = document.getElementById("map");
     const frames = [];
+
     const coords = [
       [0.3,0.3],[0.5,0.3],[0.7,0.3],
       [0.3,0.5],[0.5,0.5],[0.7,0.5],
@@ -104,21 +104,26 @@
     };
 
     const stamps=[];
+    const spacingX = 80;  // 水平間距
+    const spacingY = 100; // 垂直間距
+    const leftStartX = 50; // 左側起點
+    const rightStartX = window.innerWidth - 300; // 右側起點（避免太靠近地圖）
+
     for(let i=1;i<=12;i++){
       const img=document.createElement("img");
       img.src=`game4_assets/stamp${i}.jpg`;
       img.className="stamp";
-      // 左右分配：左邊 6 張 / 右邊 6 張，2 排 × 3 張
-      const col = i<=6 ? (i-1)%3 : (i-7)%3;
-      const row = i<=6 ? Math.floor((i-1)/3) : Math.floor((i-7)/3);
+
+      const col = (i-1)%3;  // 0~2
+      const row = Math.floor(((i-1)%6)/3); // 0~1
       const side = i<=6 ? "left" : "right";
 
       if(side==="left"){
-        img.style.left=`50px`; // 靠左邊
-        img.style.top=`${100+row*100 + col*80}px`;
+        img.style.left=`${leftStartX + col*spacingX}px`;
+        img.style.top = `${100 + row*spacingY}px`;
       } else {
-        img.style.right=`50px`; // 靠右邊
-        img.style.top=`${100+row*100 + col*80}px`;
+        img.style.left=`${rightStartX + col*spacingX}px`;
+        img.style.top = `${100 + row*spacingY}px`;
       }
 
       gameContainer.appendChild(img);
@@ -136,7 +141,7 @@
     }
     function moveRight(offset){
       stamps.slice(6).forEach(stamp=>{
-        stamp.style.right = (parseInt(stamp.style.right||"50") + offset) + "px";
+        stamp.style.left = (parseInt(stamp.style.left) + offset) + "px";
       });
     }
   </script>
