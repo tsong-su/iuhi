@@ -1,148 +1,26 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-      background: #f0f0f0;
-    }
-    h2 {
-      margin: 10px;
-      text-align: center;
-    }
-    #game-container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-    #map {
-      max-width: 55%;   /* ✅ 地圖再縮小 */
-      max-height: 100%;
-      object-fit: contain;
-      display: block;
-    }
-    .frame {
-      position: absolute;
-      border: 2px dashed red;
-      width: 50px;
-      height: 50px;
-      pointer-events: none;
-      z-index: 5;
-    }
-    .stamp {
-      position: absolute;
-      width: 80px;   /* ✅ 郵票再放大 */
-      height: 80px;
-      cursor: grab;
-      z-index: 10;
-      box-shadow: 3px 3px 8px rgba(0,0,0,0.35); /* ✅ 陰影更明顯 */
-      border-radius: 6px;
-      background: #fff;
-    }
-    #controls {
-      display: flex;
-      justify-content: center;  /* ✅ 全部按鈕一列 */
-      gap: 20px;                /* 按鈕間距 */
-      padding: 8px;
-      background: #fff;
-      border-top: 1px solid #ccc;
-    }
-    #controls button {
-      font-size: 16px;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h2>臺灣北部地圖&注音符號郵票配對遊戲</h2>
-  <div id="game-container">
-    <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖">
-  </div>
-  <div id="controls">
-    <button onclick="moveLeft(-10)">左側往左 ←10</button>
-    <button onclick="moveLeft(10)">左側往右 →10</button>
-    <button onclick="moveRight(-10)">右側往左 ←10</button>
-    <button onclick="moveRight(10)">右側往右 →10</button>
-    <button onclick="goHome()">回到遊戲首頁</button>
-  </div>
-
-  <script>
-    const gameContainer = document.getElementById("game-container");
-    const map = document.getElementById("map");
-
-    // --- 紅框座標 ---
-    const frames = [];
-    const coords = [
-      [0.3,0.3],[0.5,0.3],[0.7,0.3],
-      [0.3,0.5],[0.5,0.5],[0.7,0.5],
-      [0.3,0.7],[0.5,0.7],[0.7,0.7],
-      [0.4,0.9],[0.6,0.9],[0.8,0.9]
-    ];
-
-    map.onload = () => {
-      coords.forEach(([x,y])=>{
-        const frame=document.createElement("div");
-        frame.className="frame";
-        frame.style.left = `${x*map.width}px`;
-        frame.style.top = `${y*map.height}px`;
-        gameContainer.appendChild(frame);
-        frames.push(frame);
-      });
-
-      layoutStamps();
-      adjustMapSize();
-    };
-
-    // --- 郵票排列 (左右各 6 張，2 排 × 3 張) ---
-    const stamps=[];
-    function layoutStamps(){
-      stamps.forEach(s=>s.remove());
-      stamps.length=0;
-
-      const spacingX=90, spacingY=100;
-      const offsetXLeft=40, offsetXRight=map.width+40;
-      const offsetY=50;
-
-      for(let i=1;i<=12;i++){
-        const img=document.createElement("img");
-        img.src=`game4_assets/stamp${i}.jpg`;
-        img.className="stamp";
-        const col=(i-1)%3;
-        const row=Math.floor(((i-1)%6)/3);
-        const side=(i<=6)?"left":"right";
-        const x=side==="left" ? offsetXLeft+col*spacingX : offsetXRight+col*spacingX;
-        const y=offsetY+row*spacingY;
-        img.style.left=`${x}px`;
-        img.style.top=`${y}px`;
-        gameContainer.appendChild(img);
-        stamps.push(img);
-      }
-    }
-
-    // --- 保證地圖完整塞入視窗 ---
-    function adjustMapSize(){
-      const headerH=document.querySelector("h2").offsetHeight;
-      const controlsH=document.getElementById("controls").offsetHeight;
-      const availableH=window.innerHeight - headerH - controlsH;
-      map.style.maxHeight = availableH+"px";
-    }
-
-    window.addEventListener("resize", adjustMapSize);
-
-    // --- 控制區功能 ---
-    function moveLeft(delta){ frames.forEach(f=>f.style.left=(parseInt(f.style.left)+delta)+"px"); }
-    function moveRight(delta){ frames.forEach(f=>f.style.left=(parseInt(f.style.left)+delta)+"px"); }
-    function goHome(){ window.location.href="index.html"; }
-  </script>
-</body>
-</html>
+<style>
+  #map {
+    max-width: 40%;   /* ✅ 地圖再縮小，郵票更凸顯 */
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .frame {
+    position: absolute;
+    border: 2px dashed red;
+    width: 45px;   /* ✅ 紅框再小一點，比郵票小即可 */
+    height: 45px;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .stamp {
+    position: absolute;
+    width: 80px;   /* 郵票保持大一點 */
+    height: 80px;
+    cursor: grab;
+    z-index: 10;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.35);
+    border-radius: 6px;
+    background: #fff;
+  }
+</style>
