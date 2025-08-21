@@ -2,173 +2,196 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>臺灣北部地圖郵票配對遊戲</title>
+  <title>臺灣北部地區&注音符號郵票配對遊戲</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f5f5;
       margin: 0;
       padding: 0;
-      overflow-x: hidden; /* 避免水平捲軸 */
-    }
-    h1 {
-      margin: 15px 0;
-    }
-    #map-container {
-      position: relative;
-      width: 35vw;
-      max-width: 600px;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-    #map {
-      width: 100%;
-      display: block;
-    }
-    .dropzone {
-      position: absolute;
-      width: 6%;
-      height: 6%;
-      border: 2px dashed red;
-      pointer-events: none; /* 紅框不擋拖曳 */
-    }
-    #stamps-container {
+      font-family: Arial, sans-serif;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      max-width: 90vw;
-      margin: 15px auto;
+      flex-direction: column;
+      align-items: center;
+      background: #f9f9f9;
     }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 22px;
+      color: #333;
+    }
+
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin: 10px;
+      gap: 15px;
+    }
+
+    #stamps-left, #stamps-right {
+      display: grid;
+      grid-template-columns: repeat(2, 90px);
+      grid-template-rows: repeat(3, 90px);
+      gap: 10px;
+    }
+
     .stamp {
       width: 80px;
-      height: auto;
+      height: 80px;
       cursor: grab;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
     }
+
+    #map-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    #map {
+      max-width: 700px;
+      height: auto;
+      display: block;
+      border: 1px solid #aaa;
+    }
+
+    .answer-box {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed red;
+      pointer-events: none;
+    }
+
     #controls {
-      margin: 15px auto;
-      padding: 10px;
-      background: #ddd;
-      border-top: 2px solid #aaa;
+      margin-top: 12px;
       display: flex;
-      justify-content: center;
       gap: 12px;
-      flex-wrap: wrap;
     }
+
     button {
       padding: 6px 12px;
-      font-size: 14px;
       border: none;
       border-radius: 5px;
-      cursor: pointer;
-      background: #4285f4;
+      background-color: #4CAF50;
       color: white;
+      font-size: 14px;
+      cursor: pointer;
     }
+
     button:hover {
-      background: #3367d6;
+      background-color: #45a049;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地圖郵票配對遊戲</h1>
+  <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
 
-  <div id="map-container">
-    <img id="map" src="game4_assets/north_map.png" alt="北部地圖">
+  <div id="game-container">
+    <div id="stamps-left"></div>
+    <div id="map-container">
+      <img id="map" src="game4_assets/north_map.png" alt="臺灣北部地圖">
+      <!-- 紅框答案區會用 JS 插入 -->
+    </div>
+    <div id="stamps-right"></div>
   </div>
 
-  <div id="stamps-container"></div>
-
   <div id="controls">
-    <button onclick="goHome()">回到遊戲首頁</button>
-    <button onclick="resetGame()">重新開始</button>
-    <button onclick="toggleCalibration()">對位校正</button>
-    <button onclick="clearCustom()">清除座標</button>
+    <button onclick="restartGame()">重新開始</button>
+    <button onclick="toggleMode()">對位校正模式</button>
     <button onclick="exportCoords()">匯出座標</button>
+    <button onclick="goHome()">返回遊戲首頁</button>
   </div>
 
   <script>
-    const stamps = Array.from({length: 12}, (_, i) => `game4_assets/stamp${i+1}.jpg`);
-    const container = document.getElementById("stamps-container");
     const mapContainer = document.getElementById("map-container");
+    const stampsLeft = document.getElementById("stamps-left");
+    const stampsRight = document.getElementById("stamps-right");
 
-    // 初始紅框（相對百分比座標）
-    let dropzones = [
-      {x: 86, y: 18}, {x: 69, y: 0}, {x: 47, y: 0}, {x: 5, y: 27},
-      {x: 28, y: 6}, {x: 0, y: 51}, {x: 9, y: 2}, {x: 3, y: 82},
-      {x: 47, y: 77}, {x: 24, y: 83}, {x: 81, y: 41}, {x: 63, y: 48}
+    // 紅框座標（百分比位置）
+    let answerCoords = [
+      { x: 86.4476, y: 17.6471 },
+      { x: 68.9938, y: -4.6036 },
+      { x: 47.2279, y: -4.8593 },
+      { x: 5.3388, y: 26.8542 },
+      { x: 28.3368, y: 6.3939 },
+      { x: -3.6961, y: 50.6394 },
+      { x: 8.6242, y: 2.3018 },
+      { x: 2.8747, y: 81.8414 },
+      { x: 46.6119, y: 76.9821 },
+      { x: 23.8193, y: 83.376 },
+      { x: 80.6982, y: 40.665 },
+      { x: 63.039, y: 48.3376 }
     ];
 
-    let calibrationMode = false;
+    let mode = "game"; // "game" or "calibration"
 
-    // 建立郵票
-    stamps.forEach((src, idx) => {
-      const img = document.createElement("img");
-      img.src = src;
-      img.className = "stamp";
-      img.draggable = true;
-      img.dataset.index = idx;
-      img.addEventListener("dragstart", dragStart);
-      container.appendChild(img);
-    });
+    function initGame() {
+      // 放置郵票
+      for (let i = 1; i <= 12; i++) {
+        const img = document.createElement("img");
+        img.src = `game4_assets/stamp${i}.jpg`;
+        img.className = "stamp";
+        img.draggable = true;
+        img.id = "stamp" + i;
+        (i <= 6 ? stampsLeft : stampsRight).appendChild(img);
+      }
 
-    // 建立紅框
-    function renderDropzones() {
-      mapContainer.querySelectorAll(".dropzone").forEach(z => z.remove());
-      dropzones.forEach((pos, i) => {
-        const dz = document.createElement("div");
-        dz.className = "dropzone";
-        dz.style.left = pos.x + "%";
-        dz.style.top = pos.y + "%";
-        if (calibrationMode) {
-          dz.style.pointerEvents = "auto";
-          dz.style.cursor = "move";
-          dz.draggable = true;
-          dz.addEventListener("dragstart", e => {
-            e.dataTransfer.setData("dz", i);
-          });
-        }
-        mapContainer.appendChild(dz);
+      renderAnswerBoxes();
+    }
+
+    function renderAnswerBoxes() {
+      // 先清除舊的
+      document.querySelectorAll(".answer-box").forEach(el => el.remove());
+
+      const map = document.getElementById("map");
+      const mapRect = map.getBoundingClientRect();
+
+      answerCoords.forEach((coord, idx) => {
+        const box = document.createElement("div");
+        box.className = "answer-box";
+        box.style.left = `calc(${coord.x}% - 40px)`; // 80px 一半
+        box.style.top = `calc(${coord.y}% - 40px)`;
+        box.dataset.index = idx;
+        mapContainer.appendChild(box);
       });
     }
-    renderDropzones();
 
-    // 拖曳處理
-    function dragStart(e) {
-      e.dataTransfer.setData("stamp", e.target.dataset.index);
-    }
-
-    mapContainer.addEventListener("dragover", e => e.preventDefault());
-    mapContainer.addEventListener("drop", e => {
-      e.preventDefault();
-      const stampIdx = e.dataTransfer.getData("stamp");
-      if (stampIdx !== "") {
-        alert("暫時判定：放置錯誤！");
+    function toggleMode() {
+      if (mode === "game") {
+        mode = "calibration";
+        alert("已切換到『對位校正模式』，拖曳紅框來調整座標。");
+      } else {
+        mode = "game";
+        alert("已切換回『正式遊戲模式』。");
       }
-    });
+    }
 
-    // 工具列功能
-    function goHome() {
-      alert("返回首頁（可連結回首頁頁面）");
-    }
-    function resetGame() {
-      alert("遊戲已重置！");
-    }
-    function toggleCalibration() {
-      calibrationMode = !calibrationMode;
-      renderDropzones();
-      alert(calibrationMode ? "進入對位校正模式" : "回到正式遊戲");
-    }
-    function clearCustom() {
-      dropzones = [];
-      renderDropzones();
-      alert("已清除自訂座標");
-    }
     function exportCoords() {
-      const json = JSON.stringify(dropzones, null, 2);
-      navigator.clipboard.writeText(json);
-      alert("已複製座標到剪貼簿：\n" + json);
+      const coords = Array.from(document.querySelectorAll(".answer-box")).map(box => {
+        const map = document.getElementById("map");
+        const rect = map.getBoundingClientRect();
+        const boxRect = box.getBoundingClientRect();
+        const x = ((boxRect.left + boxRect.width / 2) - rect.left) / rect.width * 100;
+        const y = ((boxRect.top + boxRect.height / 2) - rect.top) / rect.height * 100;
+        return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
+      });
+      const json = JSON.stringify(coords, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        alert("座標已複製到剪貼簿：\n" + json);
+      });
     }
+
+    function restartGame() {
+      location.reload();
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    initGame();
   </script>
 </body>
 </html>
