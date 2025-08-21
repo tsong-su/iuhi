@@ -20,13 +20,13 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 80vh;
+      height: 75vh;
       position: relative;
     }
     #map {
       position: relative;
-      width: 35%;
-      min-width: 300px;
+      width: 40%;
+      min-width: 400px;
     }
     #map img {
       width: 100%;
@@ -37,8 +37,21 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed red; /* ✅ 改成紅色虛線 */
+      border: 2px dashed red; /* 紅色虛線 */
       pointer-events: none;
+    }
+    .stamp {
+      width: 80px;
+      height: 80px;
+      margin: 10px;
+      cursor: grab;
+    }
+    #stamps-left, #stamps-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 120px;
     }
     #toolbar {
       background: #333;
@@ -58,19 +71,26 @@
     #toolbar button:hover {
       opacity: 0.8;
     }
+    #stamps-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 80%;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
   <h1>臺灣北部地圖郵票配對遊戲</h1>
-  <div id="game-container">
+
+  <div id="stamps-container">
+    <div id="stamps-left"></div>
     <div id="map">
       <img src="game4_assets/north_map.png" alt="地圖">
-      <!-- 紅框 -->
-      <div class="frame" style="top:25%; left:50%;"></div>
-      <div class="frame" style="top:45%; left:30%;"></div>
-      <div class="frame" style="top:65%; left:60%;"></div>
     </div>
+    <div id="stamps-right"></div>
   </div>
+
   <div id="toolbar">
     <button onclick="resetGame()">重新開始</button>
     <button onclick="setMode(mode === 'game' ? 'calibration' : 'game')">
@@ -81,6 +101,52 @@
 
   <script>
     let mode = "game";
+
+    // ✅ 紅框座標 (百分比)
+    const defaultCoords = [
+      { "x": 93.0897, "y": 25.7946 },
+      { "x": 75.9719, "y": 10.2785 },
+      { "x": 55.3176, "y": 8.0863 },
+      { "x": 15.1483, "y": 37.9385 },
+      { "x": 40.0902, "y": 19.8571 },
+      { "x": 7.0545, "y": 59.1781 },
+      { "x": 21.9796, "y": 15.8747 },
+      { "x": 11.6792, "y": 90.3606 },
+      { "x": 55.4129, "y": 80.3338 },
+      { "x": 37.7325, "y": 91.9079 },
+      { "x": 87.6953, "y": 46.8462 },
+      { "x": 71.3728, "y": 57.7465 }
+    ];
+
+    const map = document.getElementById("map");
+
+    // ✅ 建立紅框
+    defaultCoords.forEach(coord => {
+      const frame = document.createElement("div");
+      frame.className = "frame";
+      frame.style.left = coord.x + "%";
+      frame.style.top = coord.y + "%";
+      map.appendChild(frame);
+    });
+
+    // ✅ 建立郵票 (左6右6)
+    const stampsLeft = document.getElementById("stamps-left");
+    const stampsRight = document.getElementById("stamps-right");
+
+    for (let i = 1; i <= 12; i++) {
+      const img = document.createElement("img");
+      img.src = `game4_assets/stamp${i}.jpg`;
+      img.className = "stamp";
+      img.draggable = true;
+
+      img.addEventListener("dragstart", dragStart);
+      if (i <= 6) stampsLeft.appendChild(img);
+      else stampsRight.appendChild(img);
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData("stamp", e.target.src);
+    }
 
     function resetGame() {
       alert("遊戲已重置（可在此補上重置邏輯）");
@@ -137,7 +203,6 @@
     }
 
     function exportCoords() {
-      const map = document.getElementById("map");
       const frames = document.querySelectorAll(".frame");
 
       const coords = [];
