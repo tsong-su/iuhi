@@ -17,18 +17,20 @@
     }
     #gameArea {
       position: relative;
-      width: 800px;
+      width: 600px; /* 固定地圖大小，避免縮放跑掉 */
       height: auto;
       margin: 10px 0;
+      overflow: hidden; /* 不要讓框框溢出產生捲軸 */
     }
     #map {
-      width: 100%;
+      width: 600px; /* 固定寬度 */
+      height: auto;
       display: block;
     }
     .red-box {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 100px; /* 與郵票大小一致 */
+      height: 100px;
       border: 2px dashed red;
       cursor: move;
     }
@@ -36,6 +38,8 @@
       margin-top: 15px;
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     button {
       padding: 6px 12px;
@@ -59,18 +63,18 @@
 
   <script>
     const boxesData = [
-      { x: 86.4476, y: 17.6471 },
-      { x: 68.9938, y: -4.6036 },
-      { x: 47.2279, y: -4.8593 },
-      { x: 5.3388,  y: 26.8542 },
-      { x: 28.3368, y: 6.3939 },
-      { x: -3.6961, y: 50.6394 },
-      { x: 8.6242,  y: 2.3018 },
-      { x: 2.8747,  y: 81.8414 },
-      { x: 46.6119, y: 76.9821 },
-      { x: 23.8193, y: 83.376  },
-      { x: 80.6982, y: 40.665  },
-      { x: 63.039,  y: 48.3376 }
+      { x: 86.375, y: 21.4619 },
+      { x: 69.5,   y: 9.4868 },
+      { x: 51.875, y: 6.9984 },
+      { x: 14.25,  y: 32.5039 },
+      { x: 36.875, y: 17.8849 },
+      { x: 5.625,  y: 47.7449 },
+      { x: 19.125, y: 13.8414 },
+      { x: 13.25,  y: 81.3375 },
+      { x: 48.5,   y: 72.6283 },
+      { x: 29.375, y: 83.3593 },
+      { x: 81,     y: 40.7465 },
+      { x: 64.25,  y: 48.5226 }
     ];
 
     const gameArea = document.getElementById("gameArea");
@@ -90,15 +94,13 @@
 
     function setBoxPosition(box, pos) {
       const map = document.getElementById("map");
-      const mapRect = map.getBoundingClientRect();
-      const areaRect = gameArea.getBoundingClientRect();
       const offsetX = (pos.x / 100) * map.width;
       const offsetY = (pos.y / 100) * map.height;
       box.style.left = offsetX + "px";
       box.style.top = offsetY + "px";
     }
 
-    // 對位校正模式：紅框可拖曳
+    // 對位校正模式
     document.getElementById("calibrateBtn").addEventListener("click", () => {
       isCalibration = !isCalibration;
       document.getElementById("calibrateBtn").textContent =
@@ -127,8 +129,8 @@
 
     function dragMove(e) {
       if (!currentBox) return;
-      currentBox.style.left = e.clientX - offsetX + "px";
-      currentBox.style.top = e.clientY - offsetY + "px";
+      currentBox.style.left = e.clientX - offsetX - gameArea.getBoundingClientRect().left + "px";
+      currentBox.style.top  = e.clientY - offsetY - gameArea.getBoundingClientRect().top + "px";
     }
 
     function dragEnd() {
@@ -140,13 +142,10 @@
     // 匯出座標
     document.getElementById("exportBtn").addEventListener("click", () => {
       const map = document.getElementById("map");
-      const mapRect = map.getBoundingClientRect();
-      const areaRect = gameArea.getBoundingClientRect();
-
       const coords = boxes.map(box => {
         const x = (parseFloat(box.style.left) / map.width) * 100;
         const y = (parseFloat(box.style.top) / map.height) * 100;
-        return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
+        return { x: parseFloat(x.toFixed(3)), y: parseFloat(y.toFixed(3)) };
       });
 
       const json = JSON.stringify(coords, null, 2);
@@ -155,7 +154,7 @@
       });
     });
 
-    // 清除自訂座標（回復原始）
+    // 清除自訂座標
     document.getElementById("clearBtn").addEventListener("click", () => {
       boxes.forEach((box, idx) => {
         setBoxPosition(box, boxesData[idx]);
@@ -164,7 +163,7 @@
 
     // 返回首頁
     document.getElementById("homeBtn").addEventListener("click", () => {
-      window.location.href = "index.html"; // 請確認首頁檔案名稱
+      window.location.href = "index.html"; 
     });
 
     window.onload = createBoxes;
