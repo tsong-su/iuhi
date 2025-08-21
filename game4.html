@@ -23,7 +23,7 @@
       overflow: hidden; /* 不要讓框框溢出產生捲軸 */
     }
     #map {
-      width: 600px; /* 固定寬度 */
+      width: 600px;
       height: auto;
       display: block;
     }
@@ -33,6 +33,20 @@
       height: 100px;
       border: 2px dashed red;
       cursor: move;
+    }
+    #stampsArea {
+      display: grid;
+      grid-template-columns: repeat(2, 100px);
+      grid-template-rows: repeat(6, 100px);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .stamp {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ccc;
+      background-size: cover;
+      background-position: center;
     }
     #controls {
       margin-top: 15px;
@@ -52,6 +66,22 @@
 
   <div id="gameArea">
     <img id="map" src="game4_assets/north_map.png" alt="臺灣北部地圖">
+  </div>
+
+  <!-- 郵票展示區（暫時固定不動） -->
+  <div id="stampsArea">
+    <div class="stamp" style="background-image:url('game4_assets/stamp1.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp2.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp3.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp4.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp5.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp6.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp7.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp8.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp9.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp10.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp11.png')"></div>
+    <div class="stamp" style="background-image:url('game4_assets/stamp12.png')"></div>
   </div>
 
   <div id="controls">
