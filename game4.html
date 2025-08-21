@@ -2,227 +2,222 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>臺灣北部地圖郵票配對遊戲</title>
+  <title>臺灣北部地圖注音符號郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      text-align: center;
+      font-family: sans-serif;
       background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h1 {
-      background: #4CAF50;
+      background: #005BAC;
       color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
       margin: 0;
-      padding: 10px;
     }
     #game-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 75vh;
+      margin-top: 10px;
       position: relative;
+      width: 100%;
+      height: 80vh;
     }
-    #map {
+    #map-container {
       position: relative;
-      width: 40%;
-      min-width: 400px;
+      width: 35%;
+      height: 100%;
+      background: transparent;
     }
-    #map img {
+    #map-container img {
       width: 100%;
       height: auto;
       display: block;
     }
-    .frame {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 2px dashed red; /* 紅色虛線 */
-      pointer-events: none;
-    }
     .stamp {
       width: 80px;
-      height: 80px;
-      margin: 10px;
+      height: auto;
       cursor: grab;
+      margin: 5px;
     }
-    #stamps-left, #stamps-right {
+    .stamps-left, .stamps-right {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      flex-wrap: wrap;
-      width: 120px;
+      align-items: center;
+      gap: 10px;
+    }
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .target {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed red;
+      pointer-events: none;
+    }
+    .calibration {
+      border-style: solid !important;
+      pointer-events: auto !important;
+      cursor: move;
     }
     #toolbar {
-      background: #333;
-      color: white;
+      margin-top: 10px;
       padding: 10px;
+      background: #ddd;
+      border-radius: 10px;
       display: flex;
-      justify-content: center;
-      gap: 15px;
+      gap: 10px;
     }
-    #toolbar button {
-      padding: 8px 16px;
+    button {
+      padding: 6px 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      background: #005BAC;
+      color: white;
     }
-    #toolbar button:hover {
-      opacity: 0.8;
-    }
-    #stamps-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 80%;
-      margin: auto;
+    button:hover {
+      background: #004080;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地圖郵票配對遊戲</h1>
-
-  <div id="stamps-container">
-    <div id="stamps-left"></div>
-    <div id="map">
-      <img src="game4_assets/north_map.png" alt="地圖">
+  <h1>臺灣北部地圖注音符號郵票配對遊戲</h1>
+  <div id="game-container">
+    <div class="stamps-left">
+      <div class="stamp-grid" id="left-stamps"></div>
     </div>
-    <div id="stamps-right"></div>
+    <div id="map-container">
+      <img src="game4_assets/north_map.png" id="map">
+    </div>
+    <div class="stamps-right">
+      <div class="stamp-grid" id="right-stamps"></div>
+    </div>
   </div>
 
   <div id="toolbar">
-    <button onclick="resetGame()">重新開始</button>
-    <button onclick="setMode(mode === 'game' ? 'calibration' : 'game')">
-      切換到校正模式
-    </button>
+    <button onclick="toggleCalibration()">對位校正</button>
+    <button onclick="clearCustom()">清除自訂座標</button>
     <button onclick="exportCoords()">匯出座標</button>
+    <button onclick="resetGame()">重新開始</button>
   </div>
 
   <script>
-    let mode = "game";
-
-    // ✅ 紅框座標 (百分比)
-    const defaultCoords = [
-      { "x": 93.0897, "y": 25.7946 },
-      { "x": 75.9719, "y": 10.2785 },
-      { "x": 55.3176, "y": 8.0863 },
-      { "x": 15.1483, "y": 37.9385 },
-      { "x": 40.0902, "y": 19.8571 },
-      { "x": 7.0545, "y": 59.1781 },
-      { "x": 21.9796, "y": 15.8747 },
-      { "x": 11.6792, "y": 90.3606 },
-      { "x": 55.4129, "y": 80.3338 },
-      { "x": 37.7325, "y": 91.9079 },
-      { "x": 87.6953, "y": 46.8462 },
-      { "x": 71.3728, "y": 57.7465 }
+    const coords = [
+      { x: 86.4476, y: 17.6471 },
+      { x: 68.9938, y: -4.6036 },
+      { x: 47.2279, y: -4.8593 },
+      { x: 5.3388, y: 26.8542 },
+      { x: 28.3368, y: 6.3939 },
+      { x: -3.6961, y: 50.6394 },
+      { x: 8.6242, y: 2.3018 },
+      { x: 2.8747, y: 81.8414 },
+      { x: 46.6119, y: 76.9821 },
+      { x: 23.8193, y: 83.376 },
+      { x: 80.6982, y: 40.665 },
+      { x: 63.039, y: 48.3376 }
     ];
 
-    const map = document.getElementById("map");
+    let calibrationMode = false;
+    const mapContainer = document.getElementById("map-container");
 
-    // ✅ 建立紅框
-    defaultCoords.forEach(coord => {
-      const frame = document.createElement("div");
-      frame.className = "frame";
-      frame.style.left = coord.x + "%";
-      frame.style.top = coord.y + "%";
-      map.appendChild(frame);
+    // 建立紅框
+    coords.forEach((c, i) => {
+      const div = document.createElement("div");
+      div.className = "target";
+      div.style.left = c.x + "%";
+      div.style.top = c.y + "%";
+      mapContainer.appendChild(div);
     });
 
-    // ✅ 建立郵票 (左6右6)
-    const stampsLeft = document.getElementById("stamps-left");
-    const stampsRight = document.getElementById("stamps-right");
-
+    // 建立郵票
+    const left = document.getElementById("left-stamps");
+    const right = document.getElementById("right-stamps");
     for (let i = 1; i <= 12; i++) {
       const img = document.createElement("img");
       img.src = `game4_assets/stamp${i}.jpg`;
       img.className = "stamp";
       img.draggable = true;
-
-      img.addEventListener("dragstart", dragStart);
-      if (i <= 6) stampsLeft.appendChild(img);
-      else stampsRight.appendChild(img);
+      img.dataset.index = i - 1;
+      if (i <= 6) left.appendChild(img); else right.appendChild(img);
     }
 
-    function dragStart(e) {
-      e.dataTransfer.setData("stamp", e.target.src);
-    }
+    // 拖曳邏輯
+    const stamps = document.querySelectorAll(".stamp");
+    let dragged = null;
+    stamps.forEach(stamp => {
+      stamp.addEventListener("dragstart", e => {
+        dragged = e.target;
+        setTimeout(() => (stamp.style.display = "none"), 0);
+      });
+      stamp.addEventListener("dragend", e => {
+        dragged.style.display = "block";
+        dragged = null;
+      });
+    });
 
-    function resetGame() {
-      alert("遊戲已重置（可在此補上重置邏輯）");
-    }
+    mapContainer.addEventListener("dragover", e => e.preventDefault());
+    mapContainer.addEventListener("drop", e => {
+      e.preventDefault();
+      if (!dragged) return;
+      const rect = mapContainer.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    function setMode(newMode) {
-      mode = newMode;
-      const frames = document.querySelectorAll(".frame");
-
-      frames.forEach(frame => {
-        if (mode === "calibration") {
-          frame.style.pointerEvents = "auto";
-          frame.style.cursor = "move";
-          dragElement(frame);
-        } else {
-          frame.style.pointerEvents = "none";
-          frame.style.cursor = "default";
+      let placed = false;
+      document.querySelectorAll(".target").forEach((t, idx) => {
+        const tx = parseFloat(t.style.left);
+        const ty = parseFloat(t.style.top);
+        if (Math.abs(x - tx) < 5 && Math.abs(y - ty) < 5) {
+          dragged.style.position = "absolute";
+          dragged.style.left = t.style.left;
+          dragged.style.top = t.style.top;
+          mapContainer.appendChild(dragged);
+          placed = true;
         }
       });
+      if (!placed) {
+        alert("放錯位置！");
+      }
+    });
 
-      document.querySelector("#toolbar button:nth-child(2)").innerText =
-        mode === "game" ? "切換到校正模式" : "回到正式遊戲";
+    function toggleCalibration() {
+      calibrationMode = !calibrationMode;
+      document.querySelectorAll(".target").forEach(t => {
+        if (calibrationMode) {
+          t.classList.add("calibration");
+        } else {
+          t.classList.remove("calibration");
+        }
+      });
     }
 
-    function dragElement(el) {
-      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
-      el.onmousedown = dragMouseDown;
-
-      function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-      }
-
-      function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        el.style.top = (el.offsetTop - pos2) + "px";
-        el.style.left = (el.offsetLeft - pos1) + "px";
-      }
-
-      function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
+    function clearCustom() {
+      alert("已清除自訂座標（可補上邏輯）");
     }
 
     function exportCoords() {
-      const frames = document.querySelectorAll(".frame");
-
-      const coords = [];
-      frames.forEach(frame => {
-        const x = (parseFloat(frame.style.left) / map.clientWidth) * 100;
-        const y = (parseFloat(frame.style.top) / map.clientHeight) * 100;
-        coords.push({ x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) });
+      const arr = [];
+      document.querySelectorAll(".target").forEach(t => {
+        arr.push({ x: parseFloat(t.style.left), y: parseFloat(t.style.top) });
       });
-
-      const json = JSON.stringify(coords, null, 2);
-
-      // ✅ 自動複製到剪貼簿
+      const json = JSON.stringify(arr, null, 2);
       navigator.clipboard.writeText(json).then(() => {
-        alert("紅框座標已匯出並自動複製到剪貼簿！\n直接貼上就可以用了 ✅");
-      }).catch(err => {
-        console.error("複製失敗：", err);
-        alert("紅框座標已匯出，無法自動複製，請到 Console 手動複製：\n" + json);
+        alert("座標已複製：\n" + json);
       });
+    }
 
-      console.log("匯出紅框座標：\n", json);
+    function resetGame() {
+      location.reload();
     }
   </script>
 </body>
