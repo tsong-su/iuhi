@@ -5,108 +5,114 @@
   <title>臺灣北部地區&注音符號郵票配對遊戲</title>
   <style>
     body {
+      text-align: center;
+      font-family: Arial, sans-serif;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
       overflow: hidden;
-      font-family: "Microsoft JhengHei", sans-serif;
     }
-    h1 {
-      margin: 10px 0;
+
+    h2 {
+      margin: 20px 0;
     }
-    .game-container {
+
+    #game-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: calc(100vh - 100px);
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    #stamps-left, #stamps-right {
+      display: grid;
+      grid-template-columns: repeat(2, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+    }
+
+    .stamp {
+      width: 100px;
+      height: 100px;
+      cursor: grab;
+    }
+
+    #map-container {
       position: relative;
-      flex: 1;
-      width: 100%;
+      flex-grow: 1;
+      max-width: 800px;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
-    .map-container {
-      position: relative;
-      width: 70%;
-      max-height: 90%;
-    }
-    .map-container img {
-      width: 100%;
-      height: auto;
+
+    #map {
+      max-width: 100%;
+      max-height: 100%;
       display: block;
     }
-    .stamp {
-      width: 80px;
-      height: 80px;
-      margin: 10px;
-      cursor: grab;
-    }
-    .stamps-left, .stamps-right {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 10px;
-    }
-    .stamps-left {
+
+    .dropzone {
       position: absolute;
-      left: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .stamps-right {
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .target {
-      position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       border: 2px dashed red;
       pointer-events: none;
     }
-    .control-panel {
-      width: 100%;
-      background: #f0f0f0;
-      padding: 8px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      border-top: 1px solid #ccc;
-    }
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
+
+    #controls {
+      margin: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-  <div class="game-container">
-    <div class="stamps-left" id="stamps-left"></div>
-    <div class="map-container">
-      <img src="taiwan-north-map.png" alt="臺灣北部地圖">
-      <div id="targets"></div>
+  <h2>臺灣北部地區&注音符號郵票配對遊戲</h2>
+  <div id="game-container">
+    <!-- 左側郵票 -->
+    <div id="stamps-left">
+      <img src="game4_assets/stamp1.jpg" class="stamp" draggable="true" id="stamp1">
+      <img src="game4_assets/stamp2.jpg" class="stamp" draggable="true" id="stamp2">
+      <img src="game4_assets/stamp3.jpg" class="stamp" draggable="true" id="stamp3">
+      <img src="game4_assets/stamp4.jpg" class="stamp" draggable="true" id="stamp4">
+      <img src="game4_assets/stamp5.jpg" class="stamp" draggable="true" id="stamp5">
+      <img src="game4_assets/stamp6.jpg" class="stamp" draggable="true" id="stamp6">
     </div>
-    <div class="stamps-right" id="stamps-right"></div>
+
+    <!-- 地圖 -->
+    <div id="map-container">
+      <img src="game4_assets/north_map.png" id="map" alt="臺灣北部地圖">
+      <!-- 紅框投放區 (會根據座標生成) -->
+    </div>
+
+    <!-- 右側郵票 -->
+    <div id="stamps-right">
+      <img src="game4_assets/stamp7.jpg" class="stamp" draggable="true" id="stamp7">
+      <img src="game4_assets/stamp8.jpg" class="stamp" draggable="true" id="stamp8">
+      <img src="game4_assets/stamp9.jpg" class="stamp" draggable="true" id="stamp9">
+      <img src="game4_assets/stamp10.jpg" class="stamp" draggable="true" id="stamp10">
+      <img src="game4_assets/stamp11.jpg" class="stamp" draggable="true" id="stamp11">
+      <img src="game4_assets/stamp12.jpg" class="stamp" draggable="true" id="stamp12">
+    </div>
   </div>
-  <div class="control-panel">
+
+  <!-- 控制按鈕 -->
+  <div id="controls">
     <button onclick="setMode('game')">一般模式</button>
     <button onclick="setMode('calibration')">對位校正模式</button>
-    <button onclick="exportCoordinates()">匯出座標</button>
-    <button onclick="clearCustomCoordinates()">清除自訂座標</button>
+    <button onclick="exportPositions()">匯出座標</button>
+    <button onclick="clearCustomPositions()">清除自訂座標</button>
     <button onclick="location.reload()">重新開始</button>
-    <button onclick="goHome()">返回遊戲首頁</button>
+    <button onclick="window.location.href='index.html'">返回遊戲首頁</button>
   </div>
 
   <script>
-    const stamps = [
-      "stamp1.png","stamp2.png","stamp3.png","stamp4.png","stamp5.png","stamp6.png",
-      "stamp7.png","stamp8.png","stamp9.png","stamp10.png","stamp11.png","stamp12.png"
-    ];
+    const mapContainer = document.getElementById("map-container");
+    const map = document.getElementById("map");
+    const stamps = document.querySelectorAll(".stamp");
 
-    const targetsData = [
+    // ✅ 預設正確座標 (百分比)
+    const correctPositions = [
       { x: 100, y: 18.0033 },
       { x: 81.1616, y: 2.681 },
       { x: 57.101, y: 0 },
@@ -121,136 +127,56 @@
       { x: 73.6003, y: 55.3403 }
     ];
 
-    const stampsLeft = document.getElementById("stamps-left");
-    const stampsRight = document.getElementById("stamps-right");
-    const targetsContainer = document.getElementById("targets");
-    let mode = "game";
+    let mode = "game"; // game 或 calibration
+    let dropzones = [];
 
-    function init() {
-      // 放置郵票
-      stamps.slice(0, 6).forEach(src => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.className = "stamp";
-        img.draggable = true;
-        img.ondragstart = drag;
-        stampsLeft.appendChild(img);
-      });
-      stamps.slice(6).forEach(src => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.className = "stamp";
-        img.draggable = true;
-        img.ondragstart = drag;
-        stampsRight.appendChild(img);
-      });
+    // 初始化紅框
+    function createDropzones() {
+      map.addEventListener("load", () => {
+        const rect = map.getBoundingClientRect();
+        dropzones.forEach(z => z.remove());
+        dropzones = [];
 
-      // 建立紅框
-      targetsData.forEach((t, i) => {
-        const div = document.createElement("div");
-        div.className = "target";
-        div.style.left = t.x + "%";
-        div.style.top = t.y + "%";
-        div.style.transform = "translate(-50%, -50%)";
-        div.dataset.index = i;
-        targetsContainer.appendChild(div);
-      });
-    }
-
-    function setMode(m) {
-      mode = m;
-      const targets = document.querySelectorAll(".target");
-      if (mode === "calibration") {
-        targets.forEach(t => {
-          t.style.pointerEvents = "auto";
-          t.style.cursor = "move";
-          dragElement(t);
+        correctPositions.forEach((pos, i) => {
+          const dz = document.createElement("div");
+          dz.classList.add("dropzone");
+          dz.style.left = (rect.width * pos.x / 100 - 50) + "px";
+          dz.style.top = (rect.height * pos.y / 100 - 50) + "px";
+          dz.dataset.index = i + 1;
+          mapContainer.appendChild(dz);
+          dropzones.push(dz);
         });
-      } else {
-        targets.forEach(t => {
-          t.style.pointerEvents = "none";
-          t.style.cursor = "default";
-        });
-      }
-    }
-
-    function drag(ev) {
-      if (mode !== "game") return;
-      ev.dataTransfer.setData("text", ev.target.src);
-    }
-
-    function allowDrop(ev) {
-      ev.preventDefault();
-    }
-
-    function drop(ev, target) {
-      ev.preventDefault();
-      if (mode !== "game") return;
-      const src = ev.dataTransfer.getData("text");
-      const stamp = document.querySelector(`img[src="${src}"]`);
-      if (stamp) {
-        target.appendChild(stamp);
-        stamp.style.position = "absolute";
-        stamp.style.left = "0";
-        stamp.style.top = "0";
-        stamp.draggable = false;
-      }
-    }
-
-    function dragElement(elmnt) {
-      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      elmnt.onmousedown = dragMouseDown;
-
-      function dragMouseDown(e) {
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-      }
-
-      function elementDrag(e) {
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.transform = "translate(0,0)";
-      }
-
-      function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-      }
-    }
-
-    function exportCoordinates() {
-      const targets = document.querySelectorAll(".target");
-      const mapRect = document.querySelector(".map-container img").getBoundingClientRect();
-      const coords = Array.from(targets).map(t => {
-        const rect = t.getBoundingClientRect();
-        const xPercent = ((rect.left + rect.width / 2 - mapRect.left) / mapRect.width) * 100;
-        const yPercent = ((rect.top + rect.height / 2 - mapRect.top) / mapRect.height) * 100;
-        return { x: xPercent, y: yPercent };
-      });
-      const json = JSON.stringify(coords, null, 2);
-      navigator.clipboard.writeText(json).then(() => {
-        alert("座標已複製到剪貼簿:\n" + json);
       });
     }
 
-    function clearCustomCoordinates() {
-      targetsContainer.innerHTML = "";
-      init();
+    createDropzones();
+
+    // 模式切換
+    function setMode(newMode) {
+      mode = newMode;
+      alert("切換到 " + (mode === "calibration" ? "對位校正模式" : "一般模式"));
     }
 
-    function goHome() {
-      window.location.href = "index.html";
+    // 匯出座標
+    function exportPositions() {
+      const rect = map.getBoundingClientRect();
+      const exported = dropzones.map(dz => {
+        const left = parseFloat(dz.style.left) + 50;
+        const top = parseFloat(dz.style.top) + 50;
+        return {
+          x: ((left / rect.width) * 100).toFixed(4),
+          y: ((top / rect.height) * 100).toFixed(4)
+        };
+      });
+      console.log(JSON.stringify(exported, null, 2));
+      alert("座標已匯出（請打開瀏覽器 Console 查看）");
     }
 
-    init();
+    // 清除自訂座標
+    function clearCustomPositions() {
+      createDropzones();
+      alert("已清除自訂座標");
+    }
   </script>
 </body>
 </html>
