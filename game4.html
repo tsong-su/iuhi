@@ -2,150 +2,163 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <title>臺灣北部地圖郵票配對遊戲</title>
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f9f9f9;
+      background: #f0f0f0;
     }
-
-    h2 {
-      margin: 20px;
+    h1 {
+      background: #4CAF50;
+      color: white;
+      margin: 0;
+      padding: 10px;
     }
-
-    #map-container {
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
       position: relative;
-      display: inline-block;
     }
-
     #map {
-      display: block;
-      width: 600px; /* 控制地圖大小 */
+      position: relative;
+      width: 35%;
+      min-width: 300px;
     }
-
-    .dropzone {
+    #map img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .frame {
       position: absolute;
       width: 80px;
       height: 80px;
-      border: 2px dashed red;
-      background: transparent;
-      pointer-events: none; /* 不要擋到拖曳 */
+      border: 2px dashed red; /* ✅ 改成紅色虛線 */
+      pointer-events: none;
     }
-
-    .stamps-container {
+    #toolbar {
+      background: #333;
+      color: white;
+      padding: 10px;
       display: flex;
-      justify-content: space-around;
-      margin: 20px;
+      justify-content: center;
+      gap: 15px;
     }
-
-    .stamps-column {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .stamp {
-      width: 80px;
-      height: 80px;
-      cursor: grab;
-    }
-
-    .controls {
-      margin-top: 20px;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      margin: 5px;
+    #toolbar button {
+      padding: 8px 16px;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
     }
-
-    .btn-restart {
-      background-color: #e74c3c;
-      color: white;
-    }
-
-    .btn-home {
-      background-color: #27ae60;
-      color: white;
+    #toolbar button:hover {
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <h2>臺灣北部地圖&注音符號郵票配對遊戲</h2>
-
-  <div class="stamps-container">
-    <div class="stamps-column" id="stamps-left"></div>
-    <div id="map-container">
-      <img id="map" src="north_map.png" alt="臺灣北部地圖">
-      <!-- 紅框定位區 -->
-      <div class="dropzone" style="left:93.0897%; top:25.7946%;"></div>
-      <div class="dropzone" style="left:75.9719%; top:10.2785%;"></div>
-      <div class="dropzone" style="left:55.3176%; top:8.0863%;"></div>
-      <div class="dropzone" style="left:15.1483%; top:37.9385%;"></div>
-      <div class="dropzone" style="left:40.0902%; top:19.8571%;"></div>
-      <div class="dropzone" style="left:7.0545%; top:59.1781%;"></div>
-      <div class="dropzone" style="left:21.9796%; top:15.8747%;"></div>
-      <div class="dropzone" style="left:11.6792%; top:90.3606%;"></div>
-      <div class="dropzone" style="left:55.4129%; top:80.3338%;"></div>
-      <div class="dropzone" style="left:37.7325%; top:91.9079%;"></div>
-      <div class="dropzone" style="left:87.6953%; top:46.8462%;"></div>
-      <div class="dropzone" style="left:71.3728%; top:57.7465%;"></div>
+  <h1>臺灣北部地圖郵票配對遊戲</h1>
+  <div id="game-container">
+    <div id="map">
+      <img src="game4_assets/north_map.png" alt="地圖">
+      <!-- 紅框 -->
+      <div class="frame" style="top:25%; left:50%;"></div>
+      <div class="frame" style="top:45%; left:30%;"></div>
+      <div class="frame" style="top:65%; left:60%;"></div>
     </div>
-    <div class="stamps-column" id="stamps-right"></div>
   </div>
-
-  <div class="controls">
-    <button class="btn btn-restart" onclick="restartGame()">重新開始</button>
-    <button class="btn btn-home" onclick="goHome()">回到遊戲首頁</button>
+  <div id="toolbar">
+    <button onclick="resetGame()">重新開始</button>
+    <button onclick="setMode(mode === 'game' ? 'calibration' : 'game')">
+      切換到校正模式
+    </button>
+    <button onclick="exportCoords()">匯出座標</button>
   </div>
 
   <script>
-    const stamps = [
-      "stamp1.png", "stamp2.png", "stamp3.png", "stamp4.png", "stamp5.png", "stamp6.png",
-      "stamp7.png", "stamp8.png", "stamp9.png", "stamp10.png", "stamp11.png", "stamp12.png"
-    ];
+    let mode = "game";
 
-    function createStamps() {
-      const left = document.getElementById("stamps-left");
-      const right = document.getElementById("stamps-right");
+    function resetGame() {
+      alert("遊戲已重置（可在此補上重置邏輯）");
+    }
 
-      left.innerHTML = "";
-      right.innerHTML = "";
+    function setMode(newMode) {
+      mode = newMode;
+      const frames = document.querySelectorAll(".frame");
 
-      const half = Math.ceil(stamps.length / 2);
-      stamps.slice(0, half).forEach(src => {
-        const img = document.createElement("img");
-        img.src = "game4_assets/" + src;
-        img.className = "stamp";
-        img.draggable = true;
-        left.appendChild(img);
+      frames.forEach(frame => {
+        if (mode === "calibration") {
+          frame.style.pointerEvents = "auto";
+          frame.style.cursor = "move";
+          dragElement(frame);
+        } else {
+          frame.style.pointerEvents = "none";
+          frame.style.cursor = "default";
+        }
       });
 
-      stamps.slice(half).forEach(src => {
-        const img = document.createElement("img");
-        img.src = "game4_assets/" + src;
-        img.className = "stamp";
-        img.draggable = true;
-        right.appendChild(img);
+      document.querySelector("#toolbar button:nth-child(2)").innerText =
+        mode === "game" ? "切換到校正模式" : "回到正式遊戲";
+    }
+
+    function dragElement(el) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+      el.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        el.style.top = (el.offsetTop - pos2) + "px";
+        el.style.left = (el.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+
+    function exportCoords() {
+      const map = document.getElementById("map");
+      const frames = document.querySelectorAll(".frame");
+
+      const coords = [];
+      frames.forEach(frame => {
+        const x = (parseFloat(frame.style.left) / map.clientWidth) * 100;
+        const y = (parseFloat(frame.style.top) / map.clientHeight) * 100;
+        coords.push({ x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) });
       });
-    }
 
-    function restartGame() {
-      createStamps();
-      alert("遊戲已重新開始！");
-    }
+      const json = JSON.stringify(coords, null, 2);
 
-    function goHome() {
-      window.location.href = "index.html";
-    }
+      // ✅ 自動複製到剪貼簿
+      navigator.clipboard.writeText(json).then(() => {
+        alert("紅框座標已匯出並自動複製到剪貼簿！\n直接貼上就可以用了 ✅");
+      }).catch(err => {
+        console.error("複製失敗：", err);
+        alert("紅框座標已匯出，無法自動複製，請到 Console 手動複製：\n" + json);
+      });
 
-    // 初始化
-    createStamps();
+      console.log("匯出紅框座標：\n", json);
+    }
   </script>
 </body>
 </html>
