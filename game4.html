@@ -1,202 +1,259 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>臺灣北部地區&注音符號郵票配對遊戲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 0;
+    :root{
+      /* 地圖=配角（固定寬度比例，避免撐出捲軸） */
+      --map-w: clamp(420px, 35vw, 620px);
+      /* 郵票=主角（固定 80px） */
+      --stamp: 80px;
+      /* 紅框略小於郵票 */
+      --frame: 56px;
+      --gap: 20px;
     }
-    h1 {
-      margin: 10px 0;
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0; display:flex; flex-direction:column; overflow:hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
+      background:#f6f7fa; color:#222;
     }
-    #gameArea {
-      position: relative;
-      width: 600px; /* 固定地圖大小，避免縮放跑掉 */
-      height: auto;
-      margin: 10px 0;
-      overflow: hidden; /* 不要讓框框溢出產生捲軸 */
+    header{ padding:10px 8px 6px; text-align:center; }
+    header h1{ margin:0; font-size:22px; }
+
+    /* 主舞台：左右郵票 + 中間地圖，保證整頁塞入視窗 */
+    .stage{
+      flex:1; display:flex; align-items:center; justify-content:center;
+      gap: var(--gap); padding: 8px 10px;
+      min-height: 0; /* 讓內層不把高度撐爆 */
     }
-    #map {
-      width: 600px;
-      height: auto;
-      display: block;
+
+    /* 郵票欄（固定 2×3） */
+    .rack{
+      display:grid; grid-template-columns: repeat(3, var(--stamp));
+      grid-auto-rows: var(--stamp); gap:12px;
+      place-content:center; place-items:center;
+      padding:12px; border-radius:14px; background:#fff;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      min-width: calc(3*var(--stamp) + 2*12px + 24px);
     }
-    .red-box {
-      position: absolute;
-      width: 100px; /* 與郵票大小一致 */
-      height: 100px;
-      border: 2px dashed red;
-      cursor: move;
+    .stamp{
+      width:var(--stamp); height:var(--stamp); object-fit:cover; user-select:none;
+      border-radius:8px; filter: drop-shadow(0 3px 8px rgba(0,0,0,.18));
+      pointer-events:none; /* 校正階段：郵票只展示，不可拖曳 */
     }
-    #stampsArea {
-      display: grid;
-      grid-template-columns: repeat(2, 100px);
-      grid-template-rows: repeat(6, 100px);
-      gap: 10px;
-      margin-top: 20px;
+
+    /* 地圖容器（透明、無邊框，避免限制郵票將來的落點） */
+    .map-card{
+      position:relative; width:var(--map-w); aspect-ratio: 1760 / 1415;
+      border-radius:12px; background: transparent; /* 不加白底 */
+      display:flex; align-items:center; justify-content:center; overflow:visible;
     }
-    .stamp {
-      width: 100px;
-      height: 100px;
-      border: 1px solid #ccc;
-      background-size: cover;
-      background-position: center;
+    #map{ width:100%; height:auto; display:block; border-radius:10px; }
+
+    /* 紅框（虛線） */
+    .frame{
+      position:absolute; width:var(--frame); height:var(--frame);
+      border:2px dashed #e74c3c; border-radius:8px;
+      transform:translate(-50%, -50%);
+      pointer-events:none; /* 一般狀態不可抓 */
     }
-    #controls {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+    /* 校正模式：紅框可拖曳 */
+    .calibrating .frame{ pointer-events:auto; cursor:move; }
+
+    /* 下方控制列（單行、緊湊） */
+    .controls{
+      padding:8px 10px 12px; display:flex; justify-content:center; align-items:center;
+      gap:10px; flex-wrap:wrap; background:#fff; box-shadow:0 -4px 16px rgba(0,0,0,.06);
     }
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
+    .btn{
+      border:0; border-radius:10px; padding:8px 14px; font-size:14px; cursor:pointer;
+      color:#fff; background:#27ae60; box-shadow:0 4px 10px rgba(39,174,96,.25);
     }
+    .btn.ghost{ background:#6c7a89; }
+    .btn.outline{ color:#444; background:#fff; border:1px solid #dadde2; box-shadow:none; }
+    .btn.danger{ background:#e74c3c; box-shadow:0 4px 10px rgba(231,76,60,.25); }
+
+    /* 防止任何元素把頁面撐出捲軸 */
+    img, canvas, svg { max-width: 100%; height: auto; }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
+  <header><h1>臺灣北部地區&注音符號郵票配對遊戲</h1></header>
 
-  <div id="gameArea">
-    <img id="map" src="game4_assets/north_map.png" alt="臺灣北部地圖">
-  </div>
+  <main class="stage" id="stage">
+    <!-- 左 6 張 -->
+    <section id="rack-left" class="rack" aria-label="左側郵票欄"></section>
 
-  <!-- 郵票展示區（暫時固定不動） -->
-  <div id="stampsArea">
-    <div class="stamp" style="background-image:url('game4_assets/stamp1.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp2.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp3.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp4.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp5.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp6.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp7.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp8.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp9.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp10.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp11.png')"></div>
-    <div class="stamp" style="background-image:url('game4_assets/stamp12.png')"></div>
-  </div>
+    <!-- 地圖（配角） -->
+    <section class="map-card" id="mapCard" aria-label="地圖">
+      <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖" />
+      <div id="frames"></div>
+    </section>
 
-  <div id="controls">
-    <button id="calibrateBtn">對位校正</button>
-    <button id="clearBtn">清除自訂座標</button>
-    <button id="exportBtn">匯出座標</button>
-    <button id="homeBtn">返回遊戲首頁</button>
+    <!-- 右 6 張 -->
+    <section id="rack-right" class="rack" aria-label="右側郵票欄"></section>
+  </main>
+
+  <div class="controls">
+    <button class="btn outline" id="btnToggleCalib">對位校正</button>
+    <button class="btn" id="btnExport">匯出座標</button>
+    <button class="btn ghost" id="btnClearPos">清除自訂座標</button>
+    <button class="btn danger" id="btnReset">重新開始</button>
+    <button class="btn outline" id="btnHome">回到遊戲首頁</button>
   </div>
 
   <script>
-    const boxesData = [
-      { x: 86.375, y: 21.4619 },
-      { x: 69.5,   y: 9.4868 },
-      { x: 51.875, y: 6.9984 },
-      { x: 14.25,  y: 32.5039 },
-      { x: 36.875, y: 17.8849 },
-      { x: 5.625,  y: 47.7449 },
-      { x: 19.125, y: 13.8414 },
-      { x: 13.25,  y: 81.3375 },
-      { x: 48.5,   y: 72.6283 },
-      { x: 29.375, y: 83.3593 },
-      { x: 81,     y: 40.7465 },
-      { x: 64.25,  y: 48.5226 }
+    /* ====== 固定資料 ====== */
+
+    // 郵票（左右各 6 張，固定展示，不可拖）
+    const STAMPS = Array.from({length:12}, (_,i)=>({
+      id:i+1, src:`game4_assets/stamp${i+1}.jpg`
+    }));
+
+    // 預設紅框百分比（以 north2_map 的顯示區域為基準；您上次提供的 12 點）
+    const DEFAULT_POS = [
+      { "x": 86.375, "y": 21.4619 },
+      { "x": 69.5,   "y":  9.4868 },
+      { "x": 51.875, "y":  6.9984 },
+      { "x": 14.25,  "y": 32.5039 },
+      { "x": 36.875, "y": 17.8849 },
+      { "x": 5.625,  "y": 47.7449 },
+      { "x": 19.125, "y": 13.8414 },
+      { "x": 13.25,  "y": 81.3375 },
+      { "x": 48.5,   "y": 72.6283 },
+      { "x": 29.375, "y": 83.3593 },
+      { "x": 81,     "y": 40.7465 },
+      { "x": 64.25,  "y": 48.5226 }
     ];
 
-    const gameArea = document.getElementById("gameArea");
-    let boxes = [];
-    let isCalibration = false;
+    /* ====== 元素 ====== */
+    const stage = document.getElementById('stage');
+    const mapCard = document.getElementById('mapCard');
+    const framesWrap = document.getElementById('frames');
+    const rackLeft = document.getElementById('rack-left');
+    const rackRight = document.getElementById('rack-right');
 
-    function createBoxes() {
-      boxesData.forEach((pos, idx) => {
-        const box = document.createElement("div");
-        box.classList.add("red-box");
-        box.dataset.index = idx;
-        setBoxPosition(box, pos);
-        gameArea.appendChild(box);
-        boxes.push(box);
+    const btnToggleCalib = document.getElementById('btnToggleCalib');
+    const btnExport = document.getElementById('btnExport');
+    const btnClearPos = document.getElementById('btnClearPos');
+    const btnReset = document.getElementById('btnReset');
+    const btnHome = document.getElementById('btnHome');
+
+    /* ====== 本地儲存座標 ====== */
+    const LS_KEY = 'game4_frame_pos';
+    const loadPos = () => JSON.parse(localStorage.getItem(LS_KEY) || 'null') || DEFAULT_POS.slice();
+    const savePos = pos => localStorage.setItem(LS_KEY, JSON.stringify(pos));
+    const clearPos = () => localStorage.removeItem(LS_KEY);
+
+    /* ====== 狀態 ====== */
+    let calibrating = false;
+    let frames = [];
+
+    /* ====== 渲染：郵票固定、左右各 2×3 ====== */
+    function renderStamps(){
+      rackLeft.innerHTML = '';
+      rackRight.innerHTML = '';
+      const left = STAMPS.slice(0,6);
+      const right = STAMPS.slice(6);
+
+      left.forEach(s => {
+        const img = new Image();
+        img.src = s.src; img.alt = `stamp${s.id}`;
+        img.className = 'stamp';
+        rackLeft.appendChild(img);
+      });
+      right.forEach(s => {
+        const img = new Image();
+        img.src = s.src; img.alt = `stamp${s.id}`;
+        img.className = 'stamp';
+        rackRight.appendChild(img);
       });
     }
 
-    function setBoxPosition(box, pos) {
-      const map = document.getElementById("map");
-      const offsetX = (pos.x / 100) * map.width;
-      const offsetY = (pos.y / 100) * map.height;
-      box.style.left = offsetX + "px";
-      box.style.top = offsetY + "px";
+    /* ====== 渲染：紅框 ====== */
+    function renderFrames(){
+      framesWrap.innerHTML = '';
+      const pos = loadPos();
+      frames = pos.map((p, i) => {
+        const f = document.createElement('div');
+        f.className = 'frame';
+        f.dataset.index = String(i+1);
+        f.style.left = p.x + '%';
+        f.style.top  = p.y + '%';
+        framesWrap.appendChild(f);
+        if (calibrating) makeFrameDraggable(f, i);
+        return f;
+      });
     }
 
-    // 對位校正模式
-    document.getElementById("calibrateBtn").addEventListener("click", () => {
-      isCalibration = !isCalibration;
-      document.getElementById("calibrateBtn").textContent =
-        isCalibration ? "結束校正" : "對位校正";
+    /* ====== 校正模式拖曳 ====== */
+    function makeFrameDraggable(f, i){
+      let sx=0, sy=0, startLeft=0, startTop=0, dragging=false;
 
-      boxes.forEach(box => {
-        if (isCalibration) {
-          box.addEventListener("mousedown", dragStart);
-        } else {
-          box.removeEventListener("mousedown", dragStart);
-        }
+      f.addEventListener('pointerdown', e=>{
+        dragging=true; f.setPointerCapture(e.pointerId);
+        const r=f.getBoundingClientRect();
+        sx=e.clientX; sy=e.clientY; startLeft=r.left; startTop=r.top;
+      });
+      f.addEventListener('pointermove', e=>{
+        if(!dragging) return;
+        const dx=e.clientX-sx, dy=e.clientY-sy;
+        const cardRect = mapCard.getBoundingClientRect();
+        // 算出中心點相對於 mapCard 的百分比
+        const cx = startLeft + dx + f.offsetWidth/2 - cardRect.left;
+        const cy = startTop  + dy + f.offsetHeight/2 - cardRect.top;
+        const xPct = Math.max(0, Math.min(100, 100*cx/cardRect.width));
+        const yPct = Math.max(0, Math.min(100, 100*cy/cardRect.height));
+        f.style.left = xPct + '%';
+        f.style.top  = yPct + '%';
+        // 即時存
+        const pos = loadPos(); pos[i] = {x:xPct, y:yPct}; savePos(pos);
+      });
+      f.addEventListener('pointerup',   ()=> dragging=false);
+      f.addEventListener('pointercancel',()=> dragging=false);
+    }
+
+    /* ====== 事件 ====== */
+    btnToggleCalib.addEventListener('click', ()=>{
+      calibrating = !calibrating;
+      stage.classList.toggle('calibrating', calibrating);
+      btnToggleCalib.textContent = calibrating ? '結束校正' : '對位校正';
+      renderFrames(); // 重新附掛可拖曳
+    });
+
+    btnExport.addEventListener('click', ()=>{
+      const pos = loadPos().map(p=>({x:+p.x.toFixed(4), y:+p.y.toFixed(4)}));
+      const json = JSON.stringify(pos, null, 2);
+      navigator.clipboard.writeText(json).then(()=>{
+        alert('座標已複製到剪貼簿：\n' + json);
       });
     });
 
-    // 拖曳事件
-    let currentBox = null;
-    let offsetX, offsetY;
-
-    function dragStart(e) {
-      currentBox = e.target;
-      offsetX = e.clientX - currentBox.offsetLeft;
-      offsetY = e.clientY - currentBox.offsetTop;
-      document.addEventListener("mousemove", dragMove);
-      document.addEventListener("mouseup", dragEnd);
-    }
-
-    function dragMove(e) {
-      if (!currentBox) return;
-      currentBox.style.left = e.clientX - offsetX - gameArea.getBoundingClientRect().left + "px";
-      currentBox.style.top  = e.clientY - offsetY - gameArea.getBoundingClientRect().top + "px";
-    }
-
-    function dragEnd() {
-      document.removeEventListener("mousemove", dragMove);
-      document.removeEventListener("mouseup", dragEnd);
-      currentBox = null;
-    }
-
-    // 匯出座標
-    document.getElementById("exportBtn").addEventListener("click", () => {
-      const map = document.getElementById("map");
-      const coords = boxes.map(box => {
-        const x = (parseFloat(box.style.left) / map.width) * 100;
-        const y = (parseFloat(box.style.top) / map.height) * 100;
-        return { x: parseFloat(x.toFixed(3)), y: parseFloat(y.toFixed(3)) };
-      });
-
-      const json = JSON.stringify(coords, null, 2);
-      navigator.clipboard.writeText(json).then(() => {
-        alert("座標已匯出並複製到剪貼簿：\n" + json);
-      });
+    btnClearPos.addEventListener('click', ()=>{
+      if(confirm('清除目前儲存的自訂座標並還原預設？')){
+        clearPos(); renderFrames();
+      }
     });
 
-    // 清除自訂座標
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      boxes.forEach((box, idx) => {
-        setBoxPosition(box, boxesData[idx]);
-      });
+    btnReset.addEventListener('click', ()=>{
+      // 校正階段只需要把框恢復到目前座標即可
+      renderFrames();
+      alert('已重新整理畫面（郵票固定展示、紅框依現有座標重繪）');
     });
 
-    // 返回首頁
-    document.getElementById("homeBtn").addEventListener("click", () => {
-      window.location.href = "index.html"; 
+    btnHome.addEventListener('click', ()=>{
+      location.href = 'index.html';
     });
 
-    window.onload = createBoxes;
+    /* ====== 啟動 ====== */
+    (function init(){
+      renderStamps();
+      renderFrames();
+    })();
   </script>
 </body>
 </html>
