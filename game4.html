@@ -1,333 +1,151 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<title>臺灣北部地圖&注音符號郵票配對遊戲</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root{
-    --map-w: clamp(420px, 35vw, 640px); /* 地圖是配角：固定寬度比例 */
-    --stamp: 80px;                      /* 郵票主角：固定 80px */
-    --frame: 56px;                      /* 紅框比郵票小一些 */
-    --gap: clamp(18px, 6vw, 56px);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0; height:100vh; display:flex; flex-direction:column;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
-    background:#f6f7fa; color:#222; overflow:hidden; /* 保證「完整塞入視窗」 */
-  }
-  header{ text-align:center; padding:14px 8px 4px; }
-  header h1{ margin:0; font-size:24px; letter-spacing:.4px; }
+  <meta charset="UTF-8">
+  <title>臺灣北部地圖&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f9f9f9;
+    }
 
-  /* 舞台：左右郵票 + 中間地圖 */
-  .stage{
-    flex:1; display:flex; align-items:center; justify-content:center;
-    gap:var(--gap); padding:10px 12px;
-  }
+    h2 {
+      margin: 20px;
+    }
 
-  /* 郵票欄（2×3） */
-  .rack{
-    display:grid; grid-template-columns: repeat(3, var(--stamp));
-    grid-auto-rows: var(--stamp); gap:14px; place-content:center; place-items:center;
-    padding:14px; border-radius:16px; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,.07);
-    min-width: calc(3*var(--stamp) + 2*14px + 28px);
-  }
-  .stamp{
-    width:var(--stamp); height:var(--stamp); object-fit:cover; user-select:none;
-    cursor:grab; border-radius:8px; filter: drop-shadow(0 3px 8px rgba(0,0,0,.2));
-    transition: transform .12s ease;
-    touch-action:none;
-  }
-  .stamp:active{ cursor:grabbing; transform:scale(1.03); }
-  .stamp.locked{
-    cursor:default; filter: drop-shadow(0 1px 4px rgba(0,0,0,.15));
-  }
+    #map-container {
+      position: relative;
+      display: inline-block;
+    }
 
-  /* 地圖（配角） */
-  .map-card{
-    position:relative; width:var(--map-w); aspect-ratio: 1760 / 1415;
-    border-radius:18px; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,.08);
-    display:flex; align-items:center; justify-content:center; overflow:visible;
-  }
-  #map{ width:100%; height:auto; display:block; border-radius:12px; }
+    #map {
+      display: block;
+      width: 600px; /* 控制地圖大小 */
+    }
 
-  /* 紅框（答案框） */
-  .frame{
-    position:absolute; width:var(--frame); height:var(--frame);
-    border:2px dashed #e74c3c; border-radius:8px;
-    transform:translate(-50%, -50%); pointer-events:none; /* 避免擋拖曳 */
-  }
-  .frame.filled{ border-color:#2ecc71; border-style:solid; }
+    .dropzone {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px dashed red;
+      background: transparent;
+      pointer-events: none; /* 不要擋到拖曳 */
+    }
 
-  /* 校正用：讓紅框可拖 */
-  .calibrating .frame{ pointer-events:auto; cursor:move; }
+    .stamps-container {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+    }
 
-  /* 校正疊圖 */
-  .answer-overlay{
-    position:absolute; inset:0; background-size:contain; background-repeat:no-repeat; background-position:center;
-    opacity:.35; display:none; border-radius:12px;
-  }
-  .calibrating .answer-overlay{ display:block; }
+    .stamps-column {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
 
-  /* 控制列（單行） */
-  .controls{
-    display:flex; justify-content:center; gap:12px; padding:10px 0 14px; flex-wrap:wrap;
-  }
-  .btn{
-    border:0; border-radius:10px; padding:10px 16px; font-size:15px; cursor:pointer;
-    color:#fff; background:#27ae60; box-shadow:0 4px 10px rgba(39,174,96,.25);
-  }
-  .btn.reset{ background:#e74c3c; box-shadow:0 4px 10px rgba(231,76,60,.25); }
-  .btn.ghost{ background:#6c7a89; }
-  .btn.outline{
-    color:#444; background:#fff; border:1px solid #dadde2; box-shadow:none;
-  }
-</style>
+    .stamp {
+      width: 80px;
+      height: 80px;
+      cursor: grab;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-restart {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .btn-home {
+      background-color: #27ae60;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <header><h1>臺灣北部地圖&注音符號郵票配對遊戲</h1></header>
+  <h2>臺灣北部地圖&注音符號郵票配對遊戲</h2>
 
-  <main class="stage" id="stage">
-    <!-- 左 6 張 -->
-    <section id="rack-left" class="rack" aria-label="左側郵票欄"></section>
-
-    <!-- 地圖 -->
-    <section class="map-card" id="mapCard" aria-label="地圖">
-      <img id="map" src="game4_assets/north2_map.png" alt="臺灣北部地圖" />
-      <div class="answer-overlay" id="answerOverlay" style="background-image:url('game4_assets/north_answer.png')"></div>
-      <div id="frames"></div>
-    </section>
-
-    <!-- 右 6 張 -->
-    <section id="rack-right" class="rack" aria-label="右側郵票欄"></section>
-  </main>
-
-  <div class="controls">
-    <button class="btn reset" id="btnReset">重新開始</button>
-    <button class="btn" id="btnHome">回到遊戲首頁</button>
-    <button class="btn outline" id="btnToggleCalib">對位校正</button>
-    <button class="btn ghost" id="btnExport" style="display:none;">匯出座標</button>
-    <button class="btn outline" id="btnClearPos" style="display:none;">清除自訂座標</button>
+  <div class="stamps-container">
+    <div class="stamps-column" id="stamps-left"></div>
+    <div id="map-container">
+      <img id="map" src="north_map.png" alt="臺灣北部地圖">
+      <!-- 紅框定位區 -->
+      <div class="dropzone" style="left:93.0897%; top:25.7946%;"></div>
+      <div class="dropzone" style="left:75.9719%; top:10.2785%;"></div>
+      <div class="dropzone" style="left:55.3176%; top:8.0863%;"></div>
+      <div class="dropzone" style="left:15.1483%; top:37.9385%;"></div>
+      <div class="dropzone" style="left:40.0902%; top:19.8571%;"></div>
+      <div class="dropzone" style="left:7.0545%; top:59.1781%;"></div>
+      <div class="dropzone" style="left:21.9796%; top:15.8747%;"></div>
+      <div class="dropzone" style="left:11.6792%; top:90.3606%;"></div>
+      <div class="dropzone" style="left:55.4129%; top:80.3338%;"></div>
+      <div class="dropzone" style="left:37.7325%; top:91.9079%;"></div>
+      <div class="dropzone" style="left:87.6953%; top:46.8462%;"></div>
+      <div class="dropzone" style="left:71.3728%; top:57.7465%;"></div>
+    </div>
+    <div class="stamps-column" id="stamps-right"></div>
   </div>
 
-  <!-- 音效 -->
-  <audio id="sfx-wrong" src="game4_assets/wrong.mp3" preload="auto"></audio>
-  <audio id="sfx-victory" src="game4_assets/victory.mp3" preload="auto"></audio>
+  <div class="controls">
+    <button class="btn btn-restart" onclick="restartGame()">重新開始</button>
+    <button class="btn btn-home" onclick="goHome()">回到遊戲首頁</button>
+  </div>
 
-<script>
-/* ======== 可調整區 ======== */
+  <script>
+    const stamps = [
+      "stamp1.png", "stamp2.png", "stamp3.png", "stamp4.png", "stamp5.png", "stamp6.png",
+      "stamp7.png", "stamp8.png", "stamp9.png", "stamp10.png", "stamp11.png", "stamp12.png"
+    ];
 
-/* 預設紅框百分比（以 north_answer.png / 1760×1415 為基準早期量測值）
-   之後建議用「對位校正」拉到正確點並存檔，就不會再跑位 */
-const DEFAULT_POS = [
-  {x:58.8636,y:10.2473},{x:51.4205,y:5.6537},{x:45.7955,y:5.8657},
-  {x:40.0000,y:10.1767},{x:33.6932,y:8.1979},{x:33.6932,y:12.7208},
-  {x:30.9091,y:17.1731},{x:32.2159,y:27.9859},{x:37.5568,y:28.6926},
-  {x:43.2386,y:26.5724},{x:49.6023,y:16.6784},{x:54.2614,y:15.5477},
-];
+    function createStamps() {
+      const left = document.getElementById("stamps-left");
+      const right = document.getElementById("stamps-right");
 
-/* 紅框序號 → 正確郵票編號（1→stamp3、2→stamp7、3→stamp1… 其餘暫同號） */
-const ANSWER_MAP = {1:3,2:7,3:1,4:4,5:5,6:6,7:7,8:8,9:9,10:10,11:11,12:12};
+      left.innerHTML = "";
+      right.innerHTML = "";
 
-/* 12 張郵票（左右各 6 張、2×3） */
-const STAMPS = Array.from({length:12}, (_,i)=>({
-  id:i+1, src:`game4_assets/stamp${i+1}.jpg`
-}));
+      const half = Math.ceil(stamps.length / 2);
+      stamps.slice(0, half).forEach(src => {
+        const img = document.createElement("img");
+        img.src = "game4_assets/" + src;
+        img.className = "stamp";
+        img.draggable = true;
+        left.appendChild(img);
+      });
 
-/* ======== 程式 ======== */
-const framesWrap = document.getElementById('frames');
-const rackLeft = document.getElementById('rack-left');
-const rackRight = document.getElementById('rack-right');
-const sfxWrong = document.getElementById('sfx-wrong');
-const sfxVictory = document.getElementById('sfx-victory');
-const stage = document.getElementById('stage');
-const mapCard = document.getElementById('mapCard');
-
-let frames=[], stamps=[], placed=0, calibrating=false;
-
-/* 讀寫座標（localStorage） */
-const LS_KEY='game4_frame_pos';
-const loadPos = ()=> JSON.parse(localStorage.getItem(LS_KEY) || 'null') || DEFAULT_POS;
-const savePos = (pos)=> localStorage.setItem(LS_KEY, JSON.stringify(pos));
-const clearPos = ()=> localStorage.removeItem(LS_KEY);
-
-/* 渲染紅框 */
-function renderFrames(){
-  framesWrap.innerHTML='';
-  const pos = loadPos();
-  frames = pos.map((p, i)=>{
-    const f=document.createElement('div');
-    f.className='frame';
-    f.style.left= p.x+'%';
-    f.style.top = p.y+'%';
-    f.dataset.index=String(i+1);
-    framesWrap.appendChild(f);
-    if(calibrating) makeFrameDraggable(f, i);
-    return f;
-  });
-}
-
-/* 校正模式：拖紅框，更新百分比並即時存起來（你也可按「匯出座標」copy 用） */
-function makeFrameDraggable(f, i){
-  let sx=0, sy=0, startLeft=0, startTop=0, dragging=false;
-
-  f.addEventListener('pointerdown', e=>{
-    dragging=true; f.setPointerCapture(e.pointerId);
-    const r=f.getBoundingClientRect();
-    sx=e.clientX; sy=e.clientY; startLeft=r.left; startTop=r.top;
-  });
-  f.addEventListener('pointermove', e=>{
-    if(!dragging) return;
-    const dx=e.clientX-sx, dy=e.clientY-sy;
-    const cardRect = mapCard.getBoundingClientRect();
-    const cx = startLeft + dx + f.offsetWidth/2 - cardRect.left;
-    const cy = startTop  + dy + f.offsetHeight/2 - cardRect.top;
-    const xPct = 100*cx/cardRect.width;
-    const yPct = 100*cy/cardRect.height;
-    f.style.left = xPct+'%';
-    f.style.top  = yPct+'%';
-
-    // 即時寫回
-    const pos=loadPos(); pos[i]={x:xPct,y:yPct}; savePos(pos);
-  });
-  f.addEventListener('pointerup', ()=> dragging=false);
-  f.addEventListener('pointercancel', ()=> dragging=false);
-}
-
-/* 渲染郵票到左右欄（固定 2×3） */
-function renderStamps(){
-  rackLeft.innerHTML=''; rackRight.innerHTML='';
-  stamps=[];
-
-  const left=STAMPS.slice(0,6), right=STAMPS.slice(6);
-  left.forEach(s=> rackLeft.appendChild(createStamp(s)));
-  right.forEach(s=> rackRight.appendChild(createStamp(s)));
-}
-
-/* 製作一張可拖曳郵票 */
-function createStamp({id,src}){
-  const img=new Image(); img.src=src; img.alt=`stamp${id}`;
-  img.className='stamp'; img.dataset.stamp=String(id);
-  enableDrag(img);
-  stamps.push(img); return img;
-}
-
-/* 拖曳行為（避免「點一下就出錯音」：需要移動超過 6px 才視為拖） */
-function enableDrag(el){
-  let downX=0, downY=0, startLeft=0, startTop=0, dragging=false, moved=false;
-
-  el.addEventListener('pointerdown', e=>{
-    if(el.classList.contains('locked')) return;
-    dragging=true; moved=false; el.setPointerCapture(e.pointerId);
-    const r=el.getBoundingClientRect();
-    downX=e.clientX; downY=e.clientY;
-    startLeft=r.left + window.scrollX; startTop=r.top + window.scrollY;
-    el.style.position='fixed'; el.style.left=`${startLeft}px`; el.style.top=`${startTop}px`; el.style.zIndex=9999;
-  });
-
-  el.addEventListener('pointermove', e=>{
-    if(!dragging) return;
-    const dx=e.clientX-downX, dy=e.clientY-downY;
-    if(Math.hypot(dx,dy)>6) moved=true;     // 拖曳門檻
-    el.style.left=`${startLeft+dx}px`; el.style.top=`${startTop+dy}px`;
-  });
-
-  function end(e){
-    if(!dragging) return; dragging=false; el.releasePointerCapture(e.pointerId);
-
-    if(!moved){
-      // 只是點一下：不播放錯誤音，直接回架上
-      el.style.position=''; el.style.left=''; el.style.top=''; el.style.zIndex='';
-      return;
+      stamps.slice(half).forEach(src => {
+        const img = document.createElement("img");
+        img.src = "game4_assets/" + src;
+        img.className = "stamp";
+        img.draggable = true;
+        right.appendChild(img);
+      });
     }
 
-    const target=hitFrame(e.clientX,e.clientY);
-    if(target){
-      const idx=Number(target.dataset.index);
-      const want=ANSWER_MAP[idx];
-      const have=Number(el.dataset.stamp);
-      if(want===have && !target.classList.contains('filled')){
-        lockIntoFrame(el,target);
-        placed++; if(placed===frames.length) sfxVictory.play();
-        return;
-      }
+    function restartGame() {
+      createStamps();
+      alert("遊戲已重新開始！");
     }
-    // 放錯或沒框：回去且播放錯誤音
-    sfxWrong.currentTime=0; sfxWrong.play();
-    el.style.position=''; el.style.left=''; el.style.top=''; el.style.zIndex='';
-  }
 
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
-}
+    function goHome() {
+      window.location.href = "index.html";
+    }
 
-/* 命中測試：距離紅框中心小於閾值就視為投遞到該框 */
-function hitFrame(x,y){
-  let best=null, bestD=1e9;
-  for(const f of frames){
-    if(f.classList.contains('filled')) continue;
-    const r=f.getBoundingClientRect();
-    const cx=(r.left+r.right)/2, cy=(r.top+r.bottom)/2;
-    const d=Math.hypot(cx-x, cy-y);
-    if(d<bestD){ bestD=d; best=f; }
-  }
-  const side=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--frame'))||56;
-  return (bestD<side*0.8) ? best : null;
-}
-
-/* 鎖進紅框中心 */
-function lockIntoFrame(el,frame){
-  const r=frame.getBoundingClientRect();
-  const x=(r.left+r.right)/2, y=(r.top+r.bottom)/2;
-  el.style.position='fixed'; el.style.left=`${x-el.offsetWidth/2}px`; el.style.top=`${y-el.offsetHeight/2}px`;
-  el.classList.add('locked'); frame.classList.add('filled');
-  // 可選：播放對應郵票音效（若沒檔案不影響）
-  const n=Number(el.dataset.stamp); new Audio(`game4_assets/stamp${n}.mp3`).play().catch(()=>{});
-}
-
-/* 重置遊戲（可見成效）：清鎖定＋重畫郵票＋紅框恢復未完成狀態 */
-function resetGame(){
-  placed=0;
-  frames.forEach(f=>f.classList.remove('filled'));
-  renderStamps(); // 重新渲染（位置回兩側 2×3）
-}
-
-/* 校正模式切換 */
-function toggleCalib(){
-  calibrating=!calibrating;
-  document.getElementById('btnExport').style.display=calibrating?'inline-block':'none';
-  document.getElementById('btnClearPos').style.display=calibrating?'inline-block':'none';
-  stage.classList.toggle('calibrating', calibrating);
-  renderFrames(); // 重新附加拖曳手把
-}
-
-/* 匯出目前紅框百分比（複製到剪貼簿） */
-function exportPos(){
-  const pos=loadPos();
-  const text = JSON.stringify(pos.map(p=>({x:+p.x.toFixed(4), y:+p.y.toFixed(4)})), null, 2);
-  navigator.clipboard.writeText(text).then(()=> alert('座標已複製，直接貼給我即可！\n' + text));
-}
-
-/* 清除自訂，還原預設 */
-function clearCustom(){
-  if(confirm('清除目前儲存的自訂座標並還原預設？')){
-    clearPos(); renderFrames();
-  }
-}
-
-/* 事件綁定 */
-document.getElementById('btnReset').addEventListener('click', resetGame);
-document.getElementById('btnHome').addEventListener('click', ()=> location.href='index.html');
-document.getElementById('btnToggleCalib').addEventListener('click', toggleCalib);
-document.getElementById('btnExport').addEventListener('click', exportPos);
-document.getElementById('btnClearPos').addEventListener('click', clearCustom);
-
-/* 啟動 */
-(function init(){
-  renderFrames();
-  renderStamps();
-})();
-</script>
+    // 初始化
+    createStamps();
+  </script>
 </body>
 </html>
