@@ -7,217 +7,181 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f0f0f0;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    h1 {
-      background: #005BAC;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      margin: 0;
+    h2 {
+      margin: 10px 0;
     }
     #game-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 10px;
-      position: relative;
       width: 100%;
       height: 80vh;
-    }
-    #map-container {
       position: relative;
-      width: 35%;
-      height: 100%;
-      background: transparent;
+      overflow: hidden;
     }
-    #map-container img {
-      width: 100%;
-      height: auto;
-      display: block;
+    #map {
+      max-height: 100%;
+      max-width: 35%;
+      object-fit: contain;
+      z-index: 1;
     }
     .stamp {
       width: 80px;
       height: auto;
       cursor: grab;
-      margin: 5px;
-    }
-    .stamps-left, .stamps-right {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-    .stamp-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    .target {
       position: absolute;
-      width: 80px;
-      height: 80px;
-      border: 2px dashed red;
-      pointer-events: none;
+      z-index: 2;
     }
-    .calibration {
-      border-style: solid !important;
-      pointer-events: auto !important;
-      cursor: move;
+    .red-box {
+      width: 60px;
+      height: 60px;
+      border: 2px dashed red;
+      position: absolute;
+      pointer-events: none;
+      z-index: 3;
     }
     #toolbar {
-      margin-top: 10px;
+      width: 100%;
       padding: 10px;
-      background: #ddd;
-      border-radius: 10px;
+      background: #f0f0f0;
       display: flex;
-      gap: 10px;
+      justify-content: center;
+      gap: 20px;
+      border-top: 2px solid #ccc;
     }
     button {
       padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
       cursor: pointer;
-      background: #005BAC;
-      color: white;
-    }
-    button:hover {
-      background: #004080;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地圖注音符號郵票配對遊戲</h1>
+  <h2>臺灣北部地圖注音符號郵票配對遊戲</h2>
   <div id="game-container">
-    <div class="stamps-left">
-      <div class="stamp-grid" id="left-stamps"></div>
-    </div>
-    <div id="map-container">
-      <img src="game4_assets/north_map.png" id="map">
-    </div>
-    <div class="stamps-right">
-      <div class="stamp-grid" id="right-stamps"></div>
-    </div>
+    <img id="map" src="game4_assets/north_map.png" alt="地圖">
   </div>
 
   <div id="toolbar">
-    <button onclick="toggleCalibration()">對位校正</button>
-    <button onclick="clearCustom()">清除自訂座標</button>
-    <button onclick="exportCoords()">匯出座標</button>
     <button onclick="resetGame()">重新開始</button>
+    <button onclick="goHome()">回到遊戲首頁</button>
+    <button onclick="exportCoords()">匯出座標</button>
   </div>
 
+  <audio id="error-sound" src="game4_assets/error.mp3"></audio>
+
   <script>
-    const coords = [
-      { x: 86.4476, y: 17.6471 },
-      { x: 68.9938, y: -4.6036 },
-      { x: 47.2279, y: -4.8593 },
-      { x: 5.3388, y: 26.8542 },
-      { x: 28.3368, y: 6.3939 },
-      { x: -3.6961, y: 50.6394 },
-      { x: 8.6242, y: 2.3018 },
-      { x: 2.8747, y: 81.8414 },
-      { x: 46.6119, y: 76.9821 },
-      { x: 23.8193, y: 83.376 },
-      { x: 80.6982, y: 40.665 },
-      { x: 63.039, y: 48.3376 }
+    const container = document.getElementById("game-container");
+    const map = document.getElementById("map");
+    const errorSound = document.getElementById("error-sound");
+
+    // ✅ 紅框正確位置（你上次給的 JSON）
+    const correctCoords = [
+      { "x": 86.4476, "y": 17.6471 },
+      { "x": 68.9938, "y": -4.6036 },
+      { "x": 47.2279, "y": -4.8593 },
+      { "x": 5.3388, "y": 26.8542 },
+      { "x": 28.3368, "y": 6.3939 },
+      { "x": -3.6961, "y": 50.6394 },
+      { "x": 8.6242, "y": 2.3018 },
+      { "x": 2.8747, "y": 81.8414 },
+      { "x": 46.6119, "y": 76.9821 },
+      { "x": 23.8193, "y": 83.376 },
+      { "x": 80.6982, "y": 40.665 },
+      { "x": 63.039, "y": 48.3376 }
     ];
 
-    let calibrationMode = false;
-    const mapContainer = document.getElementById("map-container");
-
-    // 建立紅框
-    coords.forEach((c, i) => {
-      const div = document.createElement("div");
-      div.className = "target";
-      div.style.left = c.x + "%";
-      div.style.top = c.y + "%";
-      mapContainer.appendChild(div);
+    // ✅ 加入紅框
+    const redBoxes = [];
+    correctCoords.forEach((c, i) => {
+      const box = document.createElement("div");
+      box.className = "red-box";
+      box.style.left = `calc(${c.x}% - 30px)`; // 減去一半，中心對齊
+      box.style.top = `calc(${c.y}% - 30px)`;
+      container.appendChild(box);
+      redBoxes.push(box);
     });
 
-    // 建立郵票
-    const left = document.getElementById("left-stamps");
-    const right = document.getElementById("right-stamps");
+    // ✅ 加入郵票（12張）
+    const stamps = [];
     for (let i = 1; i <= 12; i++) {
-      const img = document.createElement("img");
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.className = "stamp";
-      img.draggable = true;
-      img.dataset.index = i - 1;
-      if (i <= 6) left.appendChild(img); else right.appendChild(img);
+      const stamp = document.createElement("img");
+      stamp.src = `game4_assets/stamp${i}.jpg`;
+      stamp.className = "stamp";
+      stamp.style.left = (i <= 6 ? "70%" : "10%");
+      stamp.style.top = (10 + (i % 6) * 12) + "%";
+      stamp.draggable = false;
+      container.appendChild(stamp);
+      stamps.push(stamp);
+
+      dragElement(stamp, i - 1);
     }
 
-    // 拖曳邏輯
-    const stamps = document.querySelectorAll(".stamp");
-    let dragged = null;
-    stamps.forEach(stamp => {
-      stamp.addEventListener("dragstart", e => {
-        dragged = e.target;
-        setTimeout(() => (stamp.style.display = "none"), 0);
-      });
-      stamp.addEventListener("dragend", e => {
-        dragged.style.display = "block";
-        dragged = null;
-      });
-    });
+    // ✅ 拖曳功能
+    function dragElement(el, index) {
+      let offsetX = 0, offsetY = 0, isDragging = false;
 
-    mapContainer.addEventListener("dragover", e => e.preventDefault());
-    mapContainer.addEventListener("drop", e => {
-      e.preventDefault();
-      if (!dragged) return;
-      const rect = mapContainer.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-      let placed = false;
-      document.querySelectorAll(".target").forEach((t, idx) => {
-        const tx = parseFloat(t.style.left);
-        const ty = parseFloat(t.style.top);
-        if (Math.abs(x - tx) < 5 && Math.abs(y - ty) < 5) {
-          dragged.style.position = "absolute";
-          dragged.style.left = t.style.left;
-          dragged.style.top = t.style.top;
-          mapContainer.appendChild(dragged);
-          placed = true;
-        }
+      el.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        el.style.zIndex = 10;
       });
-      if (!placed) {
-        alert("放錯位置！");
-      }
-    });
 
-    function toggleCalibration() {
-      calibrationMode = !calibrationMode;
-      document.querySelectorAll(".target").forEach(t => {
-        if (calibrationMode) {
-          t.classList.add("calibration");
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        el.style.left = (e.pageX - container.offsetLeft - offsetX) + "px";
+        el.style.top = (e.pageY - container.offsetTop - offsetY) + "px";
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.style.zIndex = 2;
+
+        // 📌 檢查和紅框是否重疊
+        const rect1 = el.getBoundingClientRect();
+        const rect2 = redBoxes[index].getBoundingClientRect();
+        if (isOverlap(rect1, rect2)) {
+          el.style.left = redBoxes[index].style.left;
+          el.style.top = redBoxes[index].style.top;
         } else {
-          t.classList.remove("calibration");
+          errorSound.play();
         }
       });
     }
 
-    function clearCustom() {
-      alert("已清除自訂座標（可補上邏輯）");
+    // ✅ 檢查矩形重疊
+    function isOverlap(r1, r2) {
+      return !(
+        r1.right < r2.left ||
+        r1.left > r2.right ||
+        r1.bottom < r2.top ||
+        r1.top > r2.bottom
+      );
+    }
+
+    // 工具列功能
+    function resetGame() {
+      location.reload();
+    }
+
+    function goHome() {
+      window.location.href = "index.html"; // 回首頁
     }
 
     function exportCoords() {
-      const arr = [];
-      document.querySelectorAll(".target").forEach(t => {
-        arr.push({ x: parseFloat(t.style.left), y: parseFloat(t.style.top) });
-      });
-      const json = JSON.stringify(arr, null, 2);
+      const coords = redBoxes.map(b => ({
+        x: parseFloat(b.style.left),
+        y: parseFloat(b.style.top)
+      }));
+      const json = JSON.stringify(coords, null, 2);
       navigator.clipboard.writeText(json).then(() => {
-        alert("座標已複製：\n" + json);
+        alert("座標已複製到剪貼簿：\n" + json);
       });
-    }
-
-    function resetGame() {
-      location.reload();
     }
   </script>
 </body>
