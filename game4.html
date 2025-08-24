@@ -1,108 +1,145 @@
-<div id="map-area" style="position: relative; width: 100%; height: 80vh; background: #eee;"></div>
-
-<script>
-  const mapArea = document.getElementById("map-area");
-  const calibrationBoxes = [];
-  let calibrationMode = false;
-  let draggedBox = null;
-  let offsetX, offsetY;
-
-  // 🔹 預設的 12 個座標
-  const defaultCoords = [
-    {x: 27.9921, y: 15.6464},
-    {x: 54.4882, y: 8.5199},
-    {x: 70.3543, y: 10.2262},
-    {x: 83.8583, y: 25.4198},
-    {x: 22.7362, y: 37.5369},
-    {x: 42.1260, y: 19.3719},
-    {x: 80.1378, y: 46.3522},
-    {x: 15.8661, y: 59.4275},
-    {x: 19.6260, y: 89.9254},
-    {x: 54.0945, y: 79.6603},
-    {x: 66.4173, y: 57.6667},
-    {x: 40.2362, y: 91.6842}
-  ];
-
-  // 🔹 嘗試讀取 localStorage（防呆）
-  let coords = defaultCoords;
-  try {
-    const saved = localStorage.getItem("calibrationCoords");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length === 12) {
-        coords = parsed;
-      } else {
-        console.warn("⚠️ localStorage 座標格式錯誤，已忽略");
-        localStorage.removeItem("calibrationCoords");
-      }
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>臺灣北部地區&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      overflow: hidden;
     }
-  } catch (e) {
-    console.error("⚠️ localStorage 解析失敗，回到預設", e);
-    localStorage.removeItem("calibrationCoords");
-  }
+    /* 紅框區域 */
+    #map-area {
+      position: relative;
+      width: 100%;
+      height: 100vh; /* 全螢幕高度 */
+      background: transparent; /* 移除灰底 */
+    }
+    /* 紅框樣式 */
+    .red-box {
+      position: absolute;
+      border: 2px dashed red;
+      width: 100px;
+      height: 100px;
+      transform: translate(-50%, -50%); /* 用中心點對齊 */
+      cursor: move;
+      background: transparent; /* 移除灰色填充 */
+    }
+    /* 右下角控制工具列 */
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9); /* 半透明白底 */
+      border-radius: 10px;
+      padding: 10px 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .controls button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
 
-  // 🔹 建立紅框（確認 mapArea 存在）
-  if (mapArea) {
+  <!-- 紅框顯示區 -->
+  <div id="map-area"></div>
+
+  <!-- 浮動控制列 -->
+  <div class="controls">
+    <button onclick="toggleCalibration()">對位校正模式</button>
+    <button onclick="exportCoordinates()">匯出座標</button>
+  </div>
+
+  <script>
+    const mapArea = document.getElementById("map-area");
+    const calibrationBoxes = [];
+    let calibrationMode = false;
+    let draggedBox = null;
+    let offsetX, offsetY;
+
+    // 12 個座標
+    const coords = [
+      {x: 27.9921, y: 15.6464},
+      {x: 54.4882, y: 8.5199},
+      {x: 70.3543, y: 10.2262},
+      {x: 83.8583, y: 25.4198},
+      {x: 22.7362, y: 37.5369},
+      {x: 42.1260, y: 19.3719},
+      {x: 80.1378, y: 46.3522},
+      {x: 15.8661, y: 59.4275},
+      {x: 19.6260, y: 89.9254},
+      {x: 54.0945, y: 79.6603},
+      {x: 66.4173, y: 57.6667},
+      {x: 40.2362, y: 91.6842}
+    ];
+
+    // 建立紅框
     coords.forEach(c => {
       const box = document.createElement("div");
       box.className = "red-box";
-      box.style.position = "absolute";
-      box.style.width = "40px";
-      box.style.height = "40px";
-      box.style.border = "2px solid red";
       box.style.left = c.x + "%";
       box.style.top = c.y + "%";
-      box.style.transform = "translate(-50%, -50%)"; // 中心點對齊
       mapArea.appendChild(box);
       calibrationBoxes.push(box);
     });
-  } else {
-    console.error("❌ 找不到 #map-area，請確認 HTML 有 <div id='map-area'>");
-  }
 
-  // 切換對位校正模式
-  function toggleCalibration() {
-    calibrationMode = !calibrationMode;
-    alert("對位校正模式：" + (calibrationMode ? "開啟" : "關閉"));
-  }
-
-  // 匯出座標
-  function exportCoordinates() {
-    const results = calibrationBoxes.map(box => {
-      const leftPercent = parseFloat(box.style.left);
-      const topPercent = parseFloat(box.style.top);
-      return {x: leftPercent.toFixed(4), y: topPercent.toFixed(4)};
-    });
-
-    // 存到 localStorage
-    localStorage.setItem("calibrationCoords", JSON.stringify(results));
-
-    // 複製到剪貼簿
-    const json = JSON.stringify(results, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      alert("座標已複製並存到 localStorage:\n" + json);
-    });
-  }
-
-  // 紅框拖曳
-  mapArea.addEventListener("mousedown", e => {
-    if (!calibrationMode) return;
-    if (e.target.classList.contains("red-box")) {
-      draggedBox = e.target;
-      const rect = draggedBox.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
+    // 切換校正模式
+    function toggleCalibration() {
+      calibrationMode = !calibrationMode;
+      alert("對位校正模式：" + (calibrationMode ? "開啟" : "關閉"));
     }
-  });
-  mapArea.addEventListener("mousemove", e => {
-    if (!calibrationMode || !draggedBox) return;
-    const rect = mapArea.getBoundingClientRect();
-    let left = ((e.clientX - rect.left - offsetX) / rect.width) * 100;
-    let top = ((e.clientY - rect.top - offsetY) / rect.height) * 100;
-    draggedBox.style.left = left + "%";
-    draggedBox.style.top = top + "%";
-  });
-  mapArea.addEventListener("mouseup", () => {
-    draggedBox = null;
-  });
-</script>
+
+    // 匯出座標
+    function exportCoordinates() {
+      const rect = mapArea.getBoundingClientRect();
+      const results = calibrationBoxes.map(box => {
+        const left = parseFloat(box.style.left);
+        const top = parseFloat(box.style.top);
+        return {x: left.toFixed(4), y: top.toFixed(4)};
+      });
+      const json = JSON.stringify(results, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        alert("座標已複製到剪貼簿:\n" + json);
+      });
+    }
+
+    // 紅框拖曳
+    mapArea.addEventListener("mousedown", e => {
+      if (!calibrationMode) return;
+      if (e.target.classList.contains("red-box")) {
+        draggedBox = e.target;
+        const rect = draggedBox.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+      }
+    });
+
+    mapArea.addEventListener("mousemove", e => {
+      if (!calibrationMode || !draggedBox) return;
+      const rect = mapArea.getBoundingClientRect();
+      let left = ((e.clientX - rect.left - offsetX) / rect.width) * 100;
+      let top = ((e.clientY - rect.top - offsetY) / rect.height) * 100;
+      draggedBox.style.left = left + "%";
+      draggedBox.style.top = top + "%";
+    });
+
+    mapArea.addEventListener("mouseup", () => {
+      draggedBox = null;
+    });
+  </script>
+</body>
+</html>
