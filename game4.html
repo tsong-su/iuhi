@@ -7,61 +7,130 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f8f8f8;
+      background-color: #f8f8f8;
       overflow: hidden;
     }
-    /* 紅框區域 */
-    #map-area {
-      position: relative;
-      width: 100%;
-      height: 100vh; /* 全螢幕高度 */
-      background: transparent; /* 移除灰底 */
+
+    /* 三欄佈局 */
+    .container {
+      display: flex;
+      height: calc(100vh - 70px); /* 預留工具列 */
+      box-sizing: border-box;
     }
-    /* 紅框樣式 */
+
+    /* 左右郵票區 */
+    .stamps {
+      width: 220px; /* 固定寬度，避免地圖壓縮 */
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .stamp {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ccc;
+      cursor: grab;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* 地圖區 */
+    .map-area {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: white;
+    }
+
+    .map-area img {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    /* 紅框 */
     .red-box {
       position: absolute;
       border: 2px dashed red;
-      width: 100px;
-      height: 100px;
-      transform: translate(-50%, -50%); /* 用中心點對齊 */
+      width: 8%;   /* 相對比例 */
+      height: 12%; /* 相對比例 */
+      transform: translate(-50%, -50%); /* 中心點對齊 */
       cursor: move;
-      background: transparent; /* 移除灰色填充 */
+      pointer-events: auto;
     }
-    /* 右下角控制工具列 */
+
+    /* 工具列 */
     .controls {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(255, 255, 255, 0.9); /* 半透明白底 */
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 10px;
-      padding: 10px 15px;
+      padding: 8px 15px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       display: flex;
       gap: 10px;
       z-index: 1000;
     }
-    .controls button {
-      padding: 8px 14px;
+
+    button {
+      padding: 8px 15px;
       border: none;
-      border-radius: 6px;
       background: #007bff;
       color: white;
       cursor: pointer;
+      border-radius: 5px;
     }
-    .controls button:hover {
+    button:hover {
       background: #0056b3;
     }
   </style>
 </head>
 <body>
+  <h2 style="text-align:center; margin:10px 0;">
+    臺灣北部地區&注音符號郵票配對遊戲
+  </h2>
 
-  <!-- 紅框顯示區 -->
-  <div id="map-area"></div>
+  <div class="container">
+    <!-- 左側郵票 -->
+    <div class="stamps" id="left-stamps">
+      <div class="stamp" style="background-image:url('game4_assets/stamp1.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp2.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp3.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp4.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp5.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp6.jpg')" draggable="true"></div>
+    </div>
 
-  <!-- 浮動控制列 -->
+    <!-- 地圖 -->
+    <div class="map-area" id="map-area">
+      <img src="game4_assets/north_map.png" alt="map" id="map-image">
+    </div>
+
+    <!-- 右側郵票 -->
+    <div class="stamps" id="right-stamps">
+      <div class="stamp" style="background-image:url('game4_assets/stamp7.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp8.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp9.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp10.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp11.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp12.jpg')" draggable="true"></div>
+    </div>
+  </div>
+
+  <!-- 工具列 -->
   <div class="controls">
     <button onclick="toggleCalibration()">對位校正模式</button>
     <button onclick="exportCoordinates()">匯出座標</button>
+    <button onclick="alert('返回首頁（可連結回首頁頁面）')">返回遊戲首頁</button>
   </div>
 
   <script>
@@ -71,7 +140,7 @@
     let draggedBox = null;
     let offsetX, offsetY;
 
-    // 12 個座標
+    // 12 個紅框座標
     const coords = [
       {x: 27.9921, y: 15.6464},
       {x: 54.4882, y: 8.5199},
@@ -97,7 +166,7 @@
       calibrationBoxes.push(box);
     });
 
-    // 切換校正模式
+    // 校正模式切換
     function toggleCalibration() {
       calibrationMode = !calibrationMode;
       alert("對位校正模式：" + (calibrationMode ? "開啟" : "關閉"));
@@ -107,9 +176,9 @@
     function exportCoordinates() {
       const rect = mapArea.getBoundingClientRect();
       const results = calibrationBoxes.map(box => {
-        const left = parseFloat(box.style.left);
-        const top = parseFloat(box.style.top);
-        return {x: left.toFixed(4), y: top.toFixed(4)};
+        const x = parseFloat(box.style.left);
+        const y = parseFloat(box.style.top);
+        return {x: x.toFixed(4), y: y.toFixed(4)};
       });
       const json = JSON.stringify(results, null, 2);
       navigator.clipboard.writeText(json).then(() => {
@@ -127,16 +196,14 @@
         offsetY = e.clientY - rect.top;
       }
     });
-
     mapArea.addEventListener("mousemove", e => {
       if (!calibrationMode || !draggedBox) return;
       const rect = mapArea.getBoundingClientRect();
-      let left = ((e.clientX - rect.left - offsetX) / rect.width) * 100;
-      let top = ((e.clientY - rect.top - offsetY) / rect.height) * 100;
+      let left = ((e.clientX - rect.left) / rect.width) * 100;
+      let top = ((e.clientY - rect.top) / rect.height) * 100;
       draggedBox.style.left = left + "%";
       draggedBox.style.top = top + "%";
     });
-
     mapArea.addEventListener("mouseup", () => {
       draggedBox = null;
     });
