@@ -21,8 +21,13 @@
     {x: 40.2362, y: 91.6842}
   ];
 
-  // 🔹 嘗試讀取 localStorage
-  let coords = JSON.parse(localStorage.getItem("calibrationCoords")) || defaultCoords;
+  // 🔹 嘗試讀取 localStorage（轉成物件陣列）
+  let coords;
+  try {
+    coords = JSON.parse(localStorage.getItem("calibrationCoords")) || defaultCoords;
+  } catch (e) {
+    coords = defaultCoords; // 讀取失敗就回到預設
+  }
 
   // 建立紅框
   coords.forEach(c => {
@@ -43,18 +48,17 @@
 
   // 匯出座標
   function exportCoordinates() {
-    const rect = mapArea.getBoundingClientRect();
     const results = calibrationBoxes.map(box => {
       const leftPercent = parseFloat(box.style.left);
       const topPercent = parseFloat(box.style.top);
       return {x: leftPercent.toFixed(4), y: topPercent.toFixed(4)};
     });
-    const json = JSON.stringify(results, null, 2);
 
     // 存到 localStorage
-    localStorage.setItem("calibrationCoords", json);
+    localStorage.setItem("calibrationCoords", JSON.stringify(results));
 
     // 複製到剪貼簿
+    const json = JSON.stringify(results, null, 2);
     navigator.clipboard.writeText(json).then(() => {
       alert("座標已複製並存到 localStorage:\n" + json);
     });
