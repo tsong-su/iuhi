@@ -8,11 +8,11 @@
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f8f8f8;
-      overflow: hidden; /* 防止多餘捲軸 */
+      overflow: hidden;
     }
     .container {
       display: flex;
-      height: calc(100vh - 80px); /* 預留工具列空間 */
+      height: calc(100vh - 60px); /* 預留工具列空間 */
       box-sizing: border-box;
     }
     .map-area {
@@ -30,13 +30,13 @@
     }
     .stamps {
       width: 240px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       gap: 10px;
       padding: 10px;
+      justify-items: center;
+      align-items: center;
     }
     .stamp {
       width: 100px;
@@ -52,13 +52,14 @@
       width: 100px;
       height: 100px;
       cursor: move;
+      transform: translate(-50%, -50%); /* 中心點對齊 */
     }
     .toolbar {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 80px;
+      height: 60px; /* 縮小高度 */
       background: #ddd;
       display: flex;
       justify-content: center;
@@ -67,7 +68,7 @@
       box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
     }
     button {
-      padding: 10px 20px;
+      padding: 6px 15px;
       border: none;
       background: #007bff;
       color: white;
@@ -76,6 +77,18 @@
     }
     button:hover {
       background: #0056b3;
+    }
+    /* 浮動座標顯示 */
+    .coord-tooltip {
+      position: fixed;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 3px 6px;
+      font-size: 12px;
+      border-radius: 4px;
+      pointer-events: none;
+      display: none;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -98,7 +111,7 @@
     <!-- 地圖 -->
     <div class="map-area" id="map-area">
       <img src="game4_assets/north_map.png" alt="map" id="map-image">
-      <!-- 紅框 (先放 12 個) -->
+      <!-- 紅框 (12個) -->
     </div>
 
     <!-- 右側郵票 -->
@@ -119,19 +132,22 @@
     <button onclick="alert('返回首頁（可連結回首頁頁面）')">返回遊戲首頁</button>
   </div>
 
+  <!-- 浮動座標提示 -->
+  <div id="coord-tooltip" class="coord-tooltip"></div>
+
   <script>
     const mapArea = document.getElementById("map-area");
+    const tooltip = document.getElementById("coord-tooltip");
     const calibrationBoxes = [];
     let calibrationMode = false;
     let draggedBox = null;
     let offsetX, offsetY;
 
-    // 建立 12 個紅框
+    // 建立 12 個紅框 (初始隨機分散，方便之後校正)
     const coords = [
-      {x: 100, y: 18.0033}, {x: 81.1616, y: 2.681}, {x: 57.101, y: 0},
-      {x: 9.189, y: 34.9741}, {x: 37.2605, y: 15.0418}, {x: 1.9834, y: 57.8766},
-      {x: 12.8999, y: 9.3935}, {x: 1.702, y: 99.0745}, {x: 48.1213, y: 93.6605},
-      {x: 23.1445, y: 100}, {x: 96.768, y: 44.4399}, {x: 73.6003, y: 55.3403}
+      {x: 15, y: 20}, {x: 35, y: 25}, {x: 55, y: 18}, {x: 75, y: 22},
+      {x: 25, y: 45}, {x: 50, y: 50}, {x: 70, y: 42}, {x: 20, y: 70},
+      {x: 40, y: 75}, {x: 60, y: 68}, {x: 80, y: 60}, {x: 55, y: 85}
     ];
     coords.forEach(c => {
       const box = document.createElement("div");
@@ -151,9 +167,8 @@
     // 匯出座標
     function exportCoordinates() {
       const results = calibrationBoxes.map(box => {
-        const rect = mapArea.getBoundingClientRect();
-        const x = (parseFloat(box.style.left) / rect.width) * 100;
-        const y = (parseFloat(box.style.top) / rect.height) * 100;
+        const x = parseFloat(box.style.left); // 已是百分比
+        const y = parseFloat(box.style.top);
         return {x: x.toFixed(4), y: y.toFixed(4)};
       });
       const json = JSON.stringify(results, null, 2);
@@ -162,14 +177,14 @@
       });
     }
 
-    // 紅框拖曳 (只在校正模式開啟時啟動)
+    // 紅框拖曳
     mapArea.addEventListener("mousedown", e => {
       if (!calibrationMode) return;
       if (e.target.classList.contains("red-box")) {
         draggedBox = e.target;
         const rect = draggedBox.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
+        offsetX = e.clientX - rect.left - rect.width/2;
+        offsetY = e.clientY - rect.top - rect.height/2;
       }
     });
     mapArea.addEventListener("mousemove", e => {
@@ -179,9 +194,16 @@
       let top = ((e.clientY - rect.top - offsetY) / rect.height) * 100;
       draggedBox.style.left = left + "%";
       draggedBox.style.top = top + "%";
+
+      // 顯示座標提示
+      tooltip.style.display = "block";
+      tooltip.style.left = e.pageX + 15 + "px";
+      tooltip.style.top = e.pageY + 15 + "px";
+      tooltip.textContent = `(${left.toFixed(2)}%, ${top.toFixed(2)}%)`;
     });
     mapArea.addEventListener("mouseup", () => {
       draggedBox = null;
+      tooltip.style.display = "none";
     });
   </script>
 </body>
