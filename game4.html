@@ -1,3 +1,5 @@
+<div id="map-area" style="position: relative; width: 100%; height: 80vh; background: #eee;"></div>
+
 <script>
   const mapArea = document.getElementById("map-area");
   const calibrationBoxes = [];
@@ -21,24 +23,42 @@
     {x: 40.2362, y: 91.6842}
   ];
 
-  // 🔹 嘗試讀取 localStorage（轉成物件陣列）
-  let coords;
+  // 🔹 嘗試讀取 localStorage（防呆）
+  let coords = defaultCoords;
   try {
-    coords = JSON.parse(localStorage.getItem("calibrationCoords")) || defaultCoords;
+    const saved = localStorage.getItem("calibrationCoords");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length === 12) {
+        coords = parsed;
+      } else {
+        console.warn("⚠️ localStorage 座標格式錯誤，已忽略");
+        localStorage.removeItem("calibrationCoords");
+      }
+    }
   } catch (e) {
-    coords = defaultCoords; // 讀取失敗就回到預設
+    console.error("⚠️ localStorage 解析失敗，回到預設", e);
+    localStorage.removeItem("calibrationCoords");
   }
 
-  // 建立紅框
-  coords.forEach(c => {
-    const box = document.createElement("div");
-    box.className = "red-box";
-    box.style.left = c.x + "%";
-    box.style.top = c.y + "%";
-    box.style.transform = "translate(-50%, -50%)"; // 中心點對齊
-    mapArea.appendChild(box);
-    calibrationBoxes.push(box);
-  });
+  // 🔹 建立紅框（確認 mapArea 存在）
+  if (mapArea) {
+    coords.forEach(c => {
+      const box = document.createElement("div");
+      box.className = "red-box";
+      box.style.position = "absolute";
+      box.style.width = "40px";
+      box.style.height = "40px";
+      box.style.border = "2px solid red";
+      box.style.left = c.x + "%";
+      box.style.top = c.y + "%";
+      box.style.transform = "translate(-50%, -50%)"; // 中心點對齊
+      mapArea.appendChild(box);
+      calibrationBoxes.push(box);
+    });
+  } else {
+    console.error("❌ 找不到 #map-area，請確認 HTML 有 <div id='map-area'>");
+  }
 
   // 切換對位校正模式
   function toggleCalibration() {
@@ -64,7 +84,7 @@
     });
   }
 
-  // 紅框拖曳 (只在校正模式開啟時啟動)
+  // 紅框拖曳
   mapArea.addEventListener("mousedown", e => {
     if (!calibrationMode) return;
     if (e.target.classList.contains("red-box")) {
