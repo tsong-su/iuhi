@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -12,24 +13,23 @@
     }
     .container {
       display: flex;
-      height: calc(100vh - 100px); /* 預留工具列空間 */
+      height: calc(100vh - 80px); /* 預留工具列空間 */
       box-sizing: border-box;
     }
     .map-area {
       flex: 1;
       position: relative;
-      background-color: white;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
     }
     .map-area img {
-      max-width: 75%;
-      max-height: 75%;
+      max-width: 80%;
+      max-height: 80%;
     }
     .stamps {
-      width: 100px;
+      width: 200px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -128,11 +128,13 @@
 
     // 建立 12 個紅框
     const coords = [
-      {x: 100, y: 18.0033}, {x: 81.1616, y: 2.681}, {x: 57.101, y: 0},
-      {x: 9.189, y: 34.9741}, {x: 37.2605, y: 15.0418}, {x: 1.9834, y: 57.8766},
-      {x: 12.8999, y: 9.3935}, {x: 1.702, y: 99.0745}, {x: 48.1213, y: 93.6605},
-      {x: 23.1445, y: 100}, {x: 96.768, y: 44.4399}, {x: 73.6003, y: 55.3403}
+		{x: 100, y: 18.0033},{x: 6.4395,y: 3.7682},{x: 5.5512,y: 1.8371},
+		{x: 2.7863,y: 2.6324},{x: 3.6661,y: 3.0058},{x: 1.9875,y: 8.1573},
+		{x: 3.5662,y: 12.3282},{x: 2.2282,y: 12.0453},{x: 4.5071,y: 1.6083},
+		{x: 2.4197,y: 5.3389},{x: 6.1652,y: 6.4908},{x: 5.3000,y: 7.8908}
     ];
+	
+	
     coords.forEach(c => {
       const box = document.createElement("div");
       box.className = "red-box";
@@ -186,4 +188,3 @@
   </script>
 </body>
 </html>
-
