@@ -1,634 +1,189 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣北部縣市地圖挑戰</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: "Inter", sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-            overflow: hidden; /* Prevent scrolling */
-        }
-        .drag-item {
-            cursor: grab;
-            transition: transform 0.2s ease-in-out;
-            touch-action: none; /* Prevent browser default touch behavior */
-        }
-        .drag-item:active {
-            cursor: grabbing;
-        }
-        .drop-target {
-            border: 2px dashed #9ca3af; /* Gray dashed border for drop zones */
-            background-color: rgba(229, 231, 235, 0.5); /* Light gray transparent background */
-            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            color: #4b5563; /* Darker text for readability */
-            font-size: 0.875rem; /* text-sm */
-            line-height: 1.25rem;
-        }
-        .drop-target.hovered {
-            background-color: rgba(209, 250, 229, 0.7); /* Light green on hover, more opaque */
-            border-color: #34d399; /* Green border on hover */
-        }
-        .drop-target.correct {
-            background-color: rgba(209, 250, 229, 0.8); /* Green for correct placement */
-            border-color: #34d399;
-            color: #10b981; /* Green text */
-            font-weight: bold;
-        }
-        .drop-target.incorrect {
-            background-color: rgba(254, 226, 226, 0.8); /* Red for incorrect placement */
-            border-color: #ef4444;
-            color: #ef4444; /* Red text */
-            font-weight: bold;
-        }
-        .message-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            border: 2px solid #34d399;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            z-index: 1000;
-            display: none;
-            text-align: center;
-        }
-        .message-box button {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background-color: #34d399;
-            color: white;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-        }
-        .message-box button:hover {
-            background-color: #22c55e;
-        }
-
-        /* Custom styles for the map image */
-        #map-container {
-            position: relative;
-            max-width: 600px; /* Constrain map size */
-            width: 100%;
-            aspect-ratio: 1.7777; /* Aspect ratio of north_map.jpg (approx 16:9) */
-            background-image: url('north_map.jpg-2d84987e-9da6-45bf-a482-7f896ea02aa3'); /* Use the uploaded map image with content ID */
-            background-size: contain; /* Scale the image to fit the container */
-            background-repeat: no-repeat; /* Do not repeat the image */
-            background-position: center; /* Center the image */
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            overflow: hidden; /* Ensure content doesn't spill out */
-            flex-shrink: 0; /* Prevent map from shrinking too much */
-        }
-
-        /* Positions for drop zones on the map, adjusted for north_map.jpg */
-        /* These values are estimated and may need fine-tuning upon preview */
-        .drop-zone-overlay {
-            position: absolute;
-            opacity: 0.8; /* Make them slightly transparent */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #333;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
-            border-radius: 0.5rem;
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-            text-align: center;
-        }
-        /* Adjusted based on visual estimation from north_map.jpg */
-        #drop-taipei { top: 20%; left: 52%; width: 12%; height: 12%; } /* 台北市 */
-        #drop-keelung { top: 10%; left: 66%; width: 8%; height: 8%; } /* 基隆市 */
-        #drop-new-taipei { top: 38%; left: 56%; width: 18%; height: 18%; } /* 新北市 */
-        #drop-taoyuan { top: 38%; left: 39%; width: 13%; height: 13%; } /* 桃園縣 */
-        #drop-hsinchu { top: 55%; left: 31%; width: 11%; height: 11%; } /* 新竹縣 */
-        #drop-miaoli { top: 72%; left: 29%; width: 13%; height: 13%; } /* 苗栗縣 */
-
-
-        /* Styles for collected stamps on the right */
-        .collected-stamp-placeholder {
-            border: 2px dashed #d1d5db; /* Light gray dashed border */
-            background-color: #f9fafb; /* Very light gray */
-        }
-
-        /* Fixed stamp grid layout */
-        .stamp-grid-container {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columns */
-            gap: 1rem; /* Gap between stamps */
-            max-width: 240px; /* Adjust based on stamp size (2x 96px + gap) */
-            flex-shrink: 0;
-            padding: 1rem;
-        }
-        /* Animation for "有夠gâu！" */
-        @keyframes scaleIn {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.5); /* Slightly larger peak */
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        .victory-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 3rem;
-            font-weight: bold;
-            color: #ef4444; /* Red color */
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            z-index: 1001;
-            opacity: 0;
-            animation: scaleIn 1s ease-out forwards;
-        }
-        /* Mobile adjustments */
-        @media (max-width: 1023px) { /* Tailind's lg breakpoint */
-            .main-game-layout {
-                flex-direction: column;
-                justify-content: flex-start; /* Align items to top on small screens */
-                align-items: center;
-                height: auto; /* Allow height to adjust */
-                min-height: 100vh; /* Ensure full viewport height */
-            }
-            .stamp-grid-container {
-                grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 columns on smaller screens */
-                max-width: none; /* Let it expand */
-                width: 100%;
-            }
-            #map-container {
-                max-width: 100%;
-                width: 100%; /* Adjust map width for mobile */
-                height: auto;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>臺灣北部地區&注音符號郵票配對遊戲</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      overflow: hidden; /* 防止多餘捲軸 */
+    }
+    .container {
+      display: flex;
+      height: calc(100vh - 80px); /* 預留工具列空間 */
+      box-sizing: border-box;
+    }
+    .map-area {
+      flex: 1;
+      position: relative;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .map-area img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .stamps {
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+    }
+    .stamp {
+      width: 100px;
+      height: 100px;
+      border: 1px solid #ccc;
+      cursor: grab;
+      background-size: cover;
+      background-position: center;
+    }
+    .red-box {
+      position: absolute;
+      border: 2px dashed red;
+      width: 100px;
+      height: 100px;
+      cursor: move;
+    }
+    .toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 80px;
+      background: #ddd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-green-100 min-h-screen w-screen flex flex-col items-center justify-center p-4">
+<body>
+  <h2 style="text-align:center; margin:10px 0;">
+    臺灣北部地區&注音符號郵票配對遊戲
+  </h2>
 
-    <!-- Main Game Container -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-7xl w-full h-full flex flex-col items-center justify-between space-y-8 lg:space-y-0 lg:flex-row lg:space-x-8 main-game-layout">
-
-        <!-- Left: Draggable Stamps -->
-        <div class="flex-shrink-0 w-full lg:w-1/5 flex flex-col items-center space-y-4 p-4 bg-blue-50 rounded-lg shadow-inner h-full">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-4">郵票區</h2>
-            <div id="stamps-container" class="stamp-grid-container h-full place-content-center">
-                <!-- Stamps will be dynamically loaded here -->
-            </div>
-        </div>
-
-        <!-- Center: Game Board (Map and Drop Zones) -->
-        <div class="flex-grow w-full lg:w-3/5 flex flex-col items-center justify-between space-y-6 relative h-full">
-            <div class="text-center w-full">
-                <h1 class="text-4xl font-extrabold text-blue-800 tracking-tight mb-4">
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-600">
-                        台灣北部縣市地圖挑戰
-                    </span>
-                </h1>
-                <p class="text-lg text-gray-600">拖曳郵票到正確的縣市位置！</p>
-            </div>
-
-            <div id="map-container">
-                <!-- Map image is set as background in CSS -->
-                <!-- Drop zones. The text here helps identify the zones. -->
-                <div id="drop-taipei" class="drop-zone-overlay drop-target">台北市</div>
-                <div id="drop-keelung" class="drop-zone-overlay drop-target">基隆市</div>
-                <div id="drop-new-taipei" class="drop-zone-overlay drop-target">新北市</div>
-                <div id="drop-taoyuan" class="drop-zone-overlay drop-target">桃園縣</div>
-                <div id="drop-hsinchu" class="drop-zone-overlay drop-target">新竹縣</div>
-                <div id="drop-miaoli" class="drop-zone-overlay drop-target">苗栗縣</div>
-            </div>
-
-            <!-- Victory message container -->
-            <div id="victory-message-container" class="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none" style="display: none;">
-                <div id="victory-text" class="victory-message">有夠gâu！</div>
-            </div>
-
-
-            <!-- Control Buttons -->
-            <div class="flex flex-wrap justify-center gap-4 mt-6 w-full lg:order-last">
-                <button id="reset-button" class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md transition transform hover:scale-105">
-                    <i class="fas fa-redo mr-2"></i> 閣耍一擺
-                </button>
-                <button id="back-to-home-button" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md transition transform hover:scale-105">
-                    <i class="fas fa-home mr-2"></i> 回到遊戲首頁
-                </button>
-                <!-- Removed check and hint buttons as per new instructions. Can be re-added if needed. -->
-            </div>
-        </div>
-
-        <!-- Right: Collected Stamps -->
-        <div class="flex-shrink-0 w-full lg:w-1/5 flex flex-col items-center space-y-4 p-4 bg-green-50 rounded-lg shadow-inner h-full">
-            <h2 class="text-2xl font-semibold text-green-700 mb-4">已蒐集郵票</h2>
-            <div id="collected-stamps-container" class="stamp-grid-container h-full place-content-center">
-                <!-- Placeholders for collected stamps -->
-                <div id="collected-taipei" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">台北市</div>
-                <div id="collected-keelung" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">基隆市</div>
-                <div id="collected-new-taipei" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">新北市</div>
-                <div id="collected-taoyuan" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">桃園縣</div>
-                <div id="collected-hsinchu" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">新竹縣</div>
-                <div id="collected-miaoli" class="collected-stamp-placeholder w-24 h-24 rounded-md flex items-center justify-center text-gray-400 text-sm">苗栗縣</div>
-            </div>
-        </div>
-
+  <div class="container">
+    <!-- 左側郵票 -->
+    <div class="stamps" id="left-stamps">
+      <div class="stamp" style="background-image:url('game4_assets/stamp1.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp2.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp3.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp4.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp5.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp6.jpg')" draggable="true"></div>
     </div>
 
-    <!-- Message Box for Alerts -->
-    <div id="message-box" class="message-box">
-        <p id="message-text" class="text-xl font-medium text-gray-800"></p>
-        <button id="message-box-ok">確定</button>
+    <!-- 地圖 -->
+    <div class="map-area" id="map-area">
+      <img src="game4_assets/north_map.png" alt="map" id="map-image">
+      <!-- 紅框 (先放 12 個) -->
     </div>
 
-    <!-- Font Awesome for icons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <!-- 右側郵票 -->
+    <div class="stamps" id="right-stamps">
+      <div class="stamp" style="background-image:url('game4_assets/stamp7.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp8.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp9.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp10.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp11.jpg')" draggable="true"></div>
+      <div class="stamp" style="background-image:url('game4_assets/stamp12.jpg')" draggable="true"></div>
+    </div>
+  </div>
 
-    <script>
-        // Game Data and State
-        const regions = [
-            { id: 'taipei', name: '台北市', dropZoneId: 'drop-taipei', collectedId: 'collected-taipei' },
-            { id: 'keelung', name: '基隆市', dropZoneId: 'drop-keelung', collectedId: 'collected-keelung' },
-            { id: 'new-taipei', name: '新北市', dropZoneId: 'drop-new-taipei', collectedId: 'collected-new-taipei' },
-            { id: 'taoyuan', name: '桃園縣', dropZoneId: 'drop-taoyuan', collectedId: 'collected-taoyuan' },
-            { id: 'hsinchu', name: '新竹縣', dropZoneId: 'drop-hsinchu', collectedId: 'collected-hsinchu' },
-            { id: 'miaoli', name: '苗栗縣', dropZoneId: 'drop-miaoli', collectedId: 'collected-miaoli' },
-        ];
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <button onclick="toggleCalibration()">對位校正模式</button>
+    <button onclick="exportCoordinates()">匯出座標</button>
+    <button onclick="alert('返回首頁（可連結回首頁頁面）')">返回遊戲首頁</button>
+  </div>
 
-        // Using provided image file content IDs and placeholders for the rest
-        const stamps = [
-            { id: 'stamp-taipei', name: '台北市', image: 'stamp1.jpg-75ec659b-6492-40c5-b8b2-2197495c1f57', correctRegionId: 'taipei' },
-            { id: 'stamp-keelung', name: '基隆市', image: 'stamp2.jpg-b6da6bec-c91b-40de-b62e-18031c95b064', correctRegionId: 'keelung' },
-            { id: 'stamp-new-taipei', name: '新北市', image: 'stamp3.jpg-3551083e-8d47-4605-83e3-1b3a0f4534d5', correctRegionId: 'new-taipei' },
-            { id: 'stamp-taoyuan', name: '桃園縣', image: 'stamp4.jpg-9d04eae1-f0f8-4ad9-a37b-39260142b65b', correctRegionId: 'taoyuan' },
-            { id: 'stamp-hsinchu', name: '新竹縣', image: 'https://placehold.co/96x96/cccccc/333333?text=新竹', correctRegionId: 'hsinchu' }, // Placeholder
-            { id: 'stamp-miaoli', name: '苗栗縣', image: 'https://placehold.co/96x96/dddddd/333333?text=苗栗', correctRegionId: 'miaoli' }, // Placeholder
-        ];
+  <script>
+    const mapArea = document.getElementById("map-area");
+    const calibrationBoxes = [];
+    let calibrationMode = false;
+    let draggedBox = null;
+    let offsetX, offsetY;
 
-        let gameState = {}; // Stores { stampId: 'regionId', ... } for correctly placed stamps
-        let draggedStampId = null;
-        let originalStampContainer = {}; // To store original parent for returning stamps
+    // 建立 12 個紅框
+    const coords = [
+      {x: 100, y: 18.0033}, {x: 81.1616, y: 2.681}, {x: 57.101, y: 0},
+      {x: 9.189, y: 34.9741}, {x: 37.2605, y: 15.0418}, {x: 1.9834, y: 57.8766},
+      {x: 12.8999, y: 9.3935}, {x: 1.702, y: 99.0745}, {x: 48.1213, y: 93.6605},
+      {x: 23.1445, y: 100}, {x: 96.768, y: 44.4399}, {x: 73.6003, y: 55.3403}
+    ];
+    coords.forEach(c => {
+      const box = document.createElement("div");
+      box.className = "red-box";
+      box.style.left = c.x + "%";
+      box.style.top = c.y + "%";
+      mapArea.appendChild(box);
+      calibrationBoxes.push(box);
+    });
 
-        // Audio elements - using provided files
-        const correctDropSound = new Audio('stamp1.mp3'); // Correct drop sound
-        const errorSound = new Audio('wrong.mp3');      // Incorrect drop sound
-        const victorySound = new Audio('victory.mp3');   // All correct sound
+    // 切換對位校正模式
+    function toggleCalibration() {
+      calibrationMode = !calibrationMode;
+      alert("對位校正模式：" + (calibrationMode ? "開啟" : "關閉"));
+    }
 
-        // Helper function to show a custom message box
-        function showMessageBox(message, type = 'info') {
-            const msgBox = document.getElementById('message-box');
-            const msgText = document.getElementById('message-text');
-            msgText.textContent = message;
-            msgBox.style.display = 'block';
+    // 匯出座標
+    function exportCoordinates() {
+      const results = calibrationBoxes.map(box => {
+        const rect = mapArea.getBoundingClientRect();
+        const x = (parseFloat(box.style.left) / rect.width) * 100;
+        const y = (parseFloat(box.style.top) / rect.height) * 100;
+        return {x: x.toFixed(4), y: y.toFixed(4)};
+      });
+      const json = JSON.stringify(results, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        alert("座標已複製到剪貼簿:\n" + json);
+      });
+    }
 
-            // Optional: Change border color based on message type
-            if (type === 'success') {
-                msgBox.style.borderColor = '#34d399'; // Green
-            } else if (type === 'error') {
-                msgBox.style.borderColor = '#ef4444'; // Red
-            } else {
-                msgBox.style.borderColor = '#60a5fa'; // Blue (info)
-            }
-
-            document.getElementById('message-box-ok').onclick = () => {
-                msgBox.style.display = 'none';
-            };
-        }
-
-        // Show victory message with animation
-        function showVictoryMessage() {
-            const victoryMessageContainer = document.getElementById('victory-message-container');
-            const victoryText = document.getElementById('victory-text');
-
-            victoryMessageContainer.style.display = 'flex';
-            victoryText.style.animation = 'none'; // Reset animation
-            void victoryText.offsetWidth; // Trigger reflow
-            victoryText.style.animation = 'scaleIn 1s ease-out forwards'; // Restart animation
-            victoryText.style.transform = 'translate(-50%, -50%) scale(1)'; // Ensure final scale is 1
-            victoryText.style.opacity = '1';
-
-            // Hide after a duration if needed, or let it stay until reset
-            setTimeout(() => {
-                victoryMessageContainer.style.display = 'none';
-                victoryText.style.animation = ''; // Clear animation style
-            }, 3000); // Display for 3 seconds
-        }
-
-
-        // Initialize Game
-        function initializeGame() {
-            gameState = {}; // Reset game state
-            const stampsContainer = document.getElementById('stamps-container');
-            stampsContainer.innerHTML = ''; // Clear existing stamps
-            originalStampContainer = {}; // Clear original parent tracker
-
-            // Hide victory message
-            document.getElementById('victory-message-container').style.display = 'none';
-            document.getElementById('victory-text').style.animation = '';
-
-
-            // Clear collected stamps and reset drop zone styles
-            regions.forEach(region => {
-                const collectedPlaceholder = document.getElementById(region.collectedId);
-                collectedPlaceholder.innerHTML = region.name; // Reset to text
-                collectedPlaceholder.classList.add('collected-stamp-placeholder', 'text-gray-400', 'text-sm');
-                collectedPlaceholder.classList.remove('bg-white', 'shadow-md', 'border-green-500');
-
-                const dropZone = document.getElementById(region.dropZoneId);
-                dropZone.classList.remove('correct', 'incorrect');
-                dropZone.classList.add('drop-target');
-                dropZone.textContent = region.name; // Show region name again
-                dropZone.style.opacity = '0.8'; // Reset opacity
-                // Clear any stamps that might be in the drop zone
-                while (dropZone.firstChild) {
-                    if (dropZone.firstChild.tagName === 'IMG') {
-                        dropZone.removeChild(dropZone.firstChild);
-                    } else {
-                        dropZone.appendChild(dropZone.firstChild); // Keep the text node
-                    }
-                }
-            });
-
-            // Shuffle stamps for variety
-            const shuffledStamps = [...stamps].sort(() => Math.random() - 0.5);
-
-            shuffledStamps.forEach(stamp => {
-                const img = document.createElement('img');
-                img.src = stamp.image;
-                img.alt = stamp.name + '郵票';
-                img.id = stamp.id;
-                img.classList.add('w-24', 'h-24', 'object-cover', 'rounded-md', 'shadow-md', 'drag-item', 'border-2', 'border-gray-200');
-                img.setAttribute('draggable', true);
-                img.dataset.correctRegionId = stamp.correctRegionId; // Store correct region ID
-
-                stampsContainer.appendChild(img);
-                originalStampContainer[stamp.id] = stampsContainer; // Track original parent
-
-                // Add drag event listener for desktop
-                img.addEventListener('dragstart', (e) => {
-                    draggedStampId = e.target.id;
-                    e.dataTransfer.setData('text/plain', draggedStampId);
-                    e.dataTransfer.setDragImage(e.target, 0, 0); // Use the stamp image as drag image
-                    e.target.classList.add('opacity-50', 'border-blue-500'); // Visual feedback when dragging
-                });
-
-                img.addEventListener('dragend', (e) => {
-                    e.target.classList.remove('opacity-50', 'border-blue-500');
-                });
-
-                // Add touch event listeners for mobile drag and drop
-                let initialX, initialY;
-                let currentDraggedElement = null; // To track the element being touched/moved
-
-                img.addEventListener('touchstart', (e) => {
-                    e.preventDefault(); // Prevent scrolling
-                    draggedStampId = e.target.id;
-                    currentDraggedElement = e.target;
-                    e.target.classList.add('opacity-50', 'border-blue-500');
-
-                    // Clone the element to allow dragging outside its original container
-                    const clone = e.target.cloneNode(true);
-                    clone.id = 'dragging-' + e.target.id; // Give clone a unique ID
-                    clone.style.position = 'absolute';
-                    clone.style.zIndex = '100';
-                    clone.style.width = e.target.offsetWidth + 'px'; // Maintain original size
-                    clone.style.height = e.target.offsetHeight + 'px';
-                    document.body.appendChild(clone);
-                    currentDraggedElement = clone; // Now drag the clone
-
-                    // Hide original element temporarily
-                    e.target.style.visibility = 'hidden';
-
-                    initialX = e.touches[0].clientX - e.target.getBoundingClientRect().left;
-                    initialY = e.touches[0].clientY - e.target.getBoundingClientRect().top;
-
-                    currentDraggedElement.style.left = (e.touches[0].clientX - initialX) + 'px';
-                    currentDraggedElement.style.top = (e.touches[0].clientY - initialY) + 'px';
-                });
-
-                img.addEventListener('touchmove', (e) => {
-                    e.preventDefault(); // Prevent scrolling
-                    if (currentDraggedElement) {
-                        currentDraggedElement.style.left = (e.touches[0].clientX - initialX) + 'px';
-                        currentDraggedElement.style.top = (e.touches[0].clientY - initialY) + 'px';
-                    }
-                });
-
-                img.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    if (!currentDraggedElement) return;
-
-                    currentDraggedElement.classList.remove('opacity-50', 'border-blue-500');
-                    const originalStamp = document.getElementById(draggedStampId);
-
-                    let droppedCorrectly = false;
-                    let targetDropZone = null;
-
-                    // Check if dropped within any drop zone
-                    regions.forEach(region => {
-                        const dropZone = document.getElementById(region.dropZoneId);
-                        const dropZoneRect = dropZone.getBoundingClientRect();
-                        const touch = e.changedTouches[0];
-
-                        // Use the cloned element's position for checking
-                        const cloneRect = currentDraggedElement.getBoundingClientRect();
-
-                        if (cloneRect.right > dropZoneRect.left &&
-                            cloneRect.left < dropZoneRect.right &&
-                            cloneRect.bottom > dropZoneRect.top &&
-                            cloneRect.top < dropZoneRect.bottom) {
-                            targetDropZone = dropZone;
-                            // Only allow drop if the drop zone is empty (no image children)
-                            if (!dropZone.querySelector('img')) {
-                                if (originalStamp.dataset.correctRegionId === region.id) {
-                                    // Correct placement
-                                    correctDropSound.play();
-                                    gameState[draggedStampId] = region.id;
-
-                                    // Move original stamp to the drop zone
-                                    dropZone.appendChild(originalStamp);
-                                    originalStamp.classList.remove('drag-item', 'w-24', 'h-24');
-                                    originalStamp.classList.add('w-16', 'h-16', 'border-green-500', 'shadow-inner');
-                                    originalStamp.removeAttribute('draggable');
-                                    originalStamp.style.visibility = 'visible'; // Show original stamp
-                                    originalStamp.style.position = ''; // Reset position styles
-                                    originalStamp.style.left = '';
-                                    originalStamp.style.top = '';
-                                    originalStamp.style.zIndex = '';
-
-
-                                    dropZone.classList.add('correct');
-                                    dropZone.classList.remove('drop-target');
-                                    dropZone.textContent = ''; // Clear text, stamp takes its place
-
-                                    // Move stamp to collected area (creating a new clone for visual consistency)
-                                    const collectedPlaceholder = document.getElementById(region.collectedId);
-                                    collectedPlaceholder.innerHTML = '';
-                                    collectedPlaceholder.classList.remove('collected-stamp-placeholder', 'text-gray-400', 'text-sm');
-                                    collectedPlaceholder.classList.add('bg-white', 'shadow-md', 'border-2', 'border-green-500', 'flex', 'items-center', 'justify-center');
-
-                                    const collectedImg = document.createElement('img');
-                                    collectedImg.src = originalStamp.src;
-                                    collectedImg.alt = originalStamp.alt;
-                                    collectedImg.classList.add('w-20', 'h-20', 'object-cover', 'rounded-md');
-                                    collectedPlaceholder.appendChild(collectedImg);
-
-                                    checkWinCondition();
-                                    droppedCorrectly = true;
-                                } else {
-                                    // Incorrect placement within a valid, empty drop zone
-                                    errorSound.play();
-                                    dropZone.classList.add('incorrect');
-                                    setTimeout(() => {
-                                        dropZone.classList.remove('incorrect');
-                                    }, 500);
-                                    droppedCorrectly = false; // Still an incorrect drop within a zone
-                                }
-                            } else {
-                                // Drop zone is already occupied
-                                errorSound.play();
-                                dropZone.classList.add('incorrect'); // Briefly show feedback
-                                setTimeout(() => { dropZone.classList.remove('incorrect'); }, 500);
-                                droppedCorrectly = false; // Treat as incorrect as it couldn't be placed
-                            }
-                        }
-                    });
-
-                    // Remove the clone after touch end
-                    if (currentDraggedElement && currentDraggedElement.parentNode) {
-                        currentDraggedElement.parentNode.removeChild(currentDraggedElement);
-                    }
-                    originalStamp.style.visibility = 'visible'; // Ensure original is visible if not moved
-
-                    if (!droppedCorrectly) {
-                        // If not dropped correctly in an empty zone, return original stamp to its original container
-                        const originalParent = originalStampContainer[draggedStampId];
-                        if (originalParent) {
-                            originalParent.appendChild(originalStamp);
-                            originalStamp.style.position = '';
-                            originalStamp.style.left = '';
-                            originalStamp.style.top = '';
-                            originalStamp.style.zIndex = '';
-                        }
-                    }
-                    draggedStampId = null; // Reset dragged stamp ID
-                    currentDraggedElement = null; // Reset current dragged element
-                });
-            });
-
-            // Add drop event listeners to all drop zones for mouse interaction
-            regions.forEach(region => {
-                const dropZone = document.getElementById(region.dropZoneId);
-                dropZone.addEventListener('dragover', (e) => {
-                    e.preventDefault(); // Allow drop
-                    const draggedStamp = document.getElementById(draggedStampId);
-                    // Only apply hover if stamp isn't already placed AND drop zone is empty
-                    if (draggedStampId && !gameState[draggedStampId] && !dropZone.querySelector('img')) {
-                        dropZone.classList.add('hovered');
-                    }
-                });
-
-                dropZone.addEventListener('dragleave', () => {
-                    dropZone.classList.remove('hovered');
-                });
-
-                dropZone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropZone.classList.remove('hovered');
-
-                    if (!draggedStampId) return; // No stamp being dragged
-
-                    const droppedStamp = document.getElementById(draggedStampId);
-                    // Check if stamp already placed OR if the drop zone is already occupied
-                    if (!droppedStamp || gameState[draggedStampId] || dropZone.querySelector('img')) {
-                        // Return stamp to its original container if already placed or target is occupied
-                        const originalParent = originalStampContainer[draggedStampId];
-                        if (originalParent) {
-                            originalParent.appendChild(droppedStamp);
-                        }
-                        return;
-                    }
-
-                    const correctRegionIdForStamp = droppedStamp.dataset.correctRegionId;
-                    const targetRegionId = region.id;
-
-                    if (correctRegionIdForStamp === targetRegionId) {
-                        // Correct placement
-                        correctDropSound.play();
-                        gameState[draggedStampId] = targetRegionId; // Update game state
-
-                        // Move stamp to the drop zone (visually)
-                        dropZone.appendChild(droppedStamp);
-                        droppedStamp.classList.remove('drag-item', 'w-24', 'h-24'); // Remove draggable styles
-                        droppedStamp.classList.add('w-16', 'h-16', 'border-green-500', 'shadow-inner'); // Smaller on map
-                        droppedStamp.removeAttribute('draggable');
-
-                        // Update drop zone style
-                        dropZone.classList.add('correct');
-                        dropZone.classList.remove('drop-target');
-                        dropZone.textContent = ''; // Remove text from drop zone
-
-                        // Move stamp to collected area
-                        const collectedPlaceholder = document.getElementById(region.collectedId);
-                        collectedPlaceholder.innerHTML = ''; // Clear placeholder text
-                        collectedPlaceholder.classList.remove('collected-stamp-placeholder', 'text-gray-400', 'text-sm');
-                        collectedPlaceholder.classList.add('bg-white', 'shadow-md', 'border-2', 'border-green-500', 'flex', 'items-center', 'justify-center');
-
-                        const collectedImg = document.createElement('img');
-                        collectedImg.src = droppedStamp.src;
-                        collectedImg.alt = droppedStamp.alt;
-                        collectedImg.classList.add('w-20', 'h-20', 'object-cover', 'rounded-md');
-                        collectedPlaceholder.appendChild(collectedImg);
-
-                        checkWinCondition();
-
-                    } else {
-                        // Incorrect placement
-                        errorSound.play();
-                        dropZone.classList.add('incorrect');
-                        setTimeout(() => {
-                            dropZone.classList.remove('incorrect');
-                        }, 500); // Briefly show incorrect feedback
-
-                        // Return stamp to its original container (stamps-container)
-                        const originalParent = originalStampContainer[draggedStampId];
-                        if (originalParent) {
-                            originalParent.appendChild(droppedStamp);
-                        }
-                    }
-                    draggedStampId = null; // Reset dragged stamp ID
-                });
-            });
-        }
-
-        function checkWinCondition() {
-            if (Object.keys(gameState).length === stamps.length) {
-                // All stamps are placed
-                victorySound.play();
-                showVictoryMessage(); // Show "有夠gâu！" animation
-            }
-        }
-
-        // Button Event Listeners
-        document.getElementById('reset-button').addEventListener('click', initializeGame); // 「閣耍一擺」
-
-        document.getElementById('back-to-home-button').addEventListener('click', () => {
-            window.location.reload(); // 「回到遊戲首頁」 - simply reload the page
-        });
-
-        // Initialize the game when the window loads
-        window.onload = initializeGame;
-
-    </script>
+    // 紅框拖曳 (只在校正模式開啟時啟動)
+    mapArea.addEventListener("mousedown", e => {
+      if (!calibrationMode) return;
+      if (e.target.classList.contains("red-box")) {
+        draggedBox = e.target;
+        const rect = draggedBox.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+      }
+    });
+    mapArea.addEventListener("mousemove", e => {
+      if (!calibrationMode || !draggedBox) return;
+      const rect = mapArea.getBoundingClientRect();
+      let left = ((e.clientX - rect.left - offsetX) / rect.width) * 100;
+      let top = ((e.clientY - rect.top - offsetY) / rect.height) * 100;
+      draggedBox.style.left = left + "%";
+      draggedBox.style.top = top + "%";
+    });
+    mapArea.addEventListener("mouseup", () => {
+      draggedBox = null;
+    });
+  </script>
 </body>
 </html>
+
