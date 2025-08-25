@@ -11,12 +11,11 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      background: #f9f9f9;
+      background: white; /* 沒有灰色底圖 */
     }
     header {
       text-align: center;
       padding: 10px;
-      background: #fff;
       border-bottom: 2px solid #ccc;
     }
     header h1 {
@@ -31,28 +30,29 @@
     .container {
       flex: 1;
       display: grid;
-      grid-template-columns: 260px 1fr 260px; /* 左-中-右 */
-      gap: 20px;
-      overflow: hidden;
+      grid-template-columns: 220px 1fr 220px; /* 左-中-右 */
+      gap: 10px;
       padding: 10px;
       box-sizing: border-box;
+      align-items: center;
     }
     .stamps {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, 1fr); /* 2排×3張 */
       grid-template-rows: repeat(2, 1fr);
       gap: 10px;
-      padding: 20px; /* 內縮，避免貼邊 */
       justify-items: center;
+      align-items: center;
+      padding: 10px;
     }
     .stamp {
       width: 80px;
       height: 80px;
       border: 1px solid #ccc;
+      background: white;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: white;
       cursor: grab;
     }
     .stamp img {
@@ -67,7 +67,7 @@
     }
     .map {
       max-width: 100%;
-      max-height: 100%;
+      max-height: 65vh; /* 控制地圖適中，不會太大 */
       display: block;
     }
     .red-box {
@@ -77,25 +77,22 @@
       border: 2px dashed red;
       transform: translate(-50%, -50%);
       cursor: move;
-      user-select: none;
-    }
-    .label {
-      position: absolute;
-      background: rgba(255,255,255,0.8);
-      border: 1px solid #ccc;
-      font-size: 12px;
-      padding: 2px 5px;
-      display: none;
-      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: red;
+      background: rgba(255,255,255,0.3); /* 保持透明，只有框 */
     }
     footer {
       text-align: center;
-      padding: 10px;
-      background: #fff;
+      padding: 8px;
       border-top: 2px solid #ccc;
+      background: #fff;
     }
     button {
-      padding: 8px 12px;
+      padding: 6px 12px;
       margin: 0 5px;
       cursor: pointer;
       border-radius: 5px;
@@ -150,7 +147,7 @@
     let isDragging = false;
     let currentBox = null;
 
-    // 初始 12 個紅框（位置先隨意，之後可調整）
+    // 初始 12 個紅框（示意位置，百分比）
     const positions = [
       {x: 28, y: 16}, {x: 54, y: 9}, {x: 70, y: 10}, {x: 84, y: 25},
       {x: 23, y: 38}, {x: 42, y: 19}, {x: 80, y: 46}, {x: 16, y: 59},
@@ -162,11 +159,7 @@
       box.className = 'red-box';
       box.style.left = pos.x + '%';
       box.style.top = pos.y + '%';
-
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.innerText = `${index+1}`;
-      box.appendChild(label);
+      box.innerText = index + 1; // 紅框內顯示號碼
 
       // 阻止瀏覽器預設拖曳
       box.addEventListener('dragstart', e => e.preventDefault());
@@ -177,7 +170,6 @@
         e.preventDefault();
         isDragging = true;
         currentBox = box;
-        label.style.display = 'block';
       });
 
       // 滑鼠移動
@@ -188,8 +180,6 @@
           let y = ((e.clientY - rect.top) / rect.height) * 100;
           currentBox.style.left = x + '%';
           currentBox.style.top = y + '%';
-          currentBox.querySelector('.label').innerText =
-            `${(x).toFixed(1)}, ${(y).toFixed(1)}`;
         }
       });
 
