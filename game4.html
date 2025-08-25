@@ -35,7 +35,7 @@
     .container {
       flex: 1;
       display: grid;
-      grid-template-columns: 240px 1fr 240px; /* 左右各縮進 */
+      grid-template-columns: 240px 1fr 240px; /* 左右對稱 */
       gap: 10px;
       overflow: hidden;
     }
@@ -79,7 +79,7 @@
       display: block;
     }
 
-    /* 紅框樣式（可拖曳） */
+    /* 紅框樣式（可拖曳 + 編號） */
     .red-box {
       position: absolute;
       width: 80px;
@@ -87,6 +87,26 @@
       border: 2px dashed red;
       transform: translate(-50%, -50%);
       cursor: move;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      color: red;
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 即時座標提示 */
+    .coord-label {
+      position: absolute;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transform: translate(10px, -10px);
+      pointer-events: none;
+      white-space: nowrap;
     }
 
     /* 工具列 */
@@ -150,6 +170,15 @@
       box.dataset.index = i + 1;
       box.style.left = c.x + '%';
       box.style.top = c.y + '%';
+      box.textContent = i + 1;
+
+      // 座標標籤
+      const label = document.createElement('div');
+      label.className = 'coord-label';
+      label.textContent = `X:${c.x}% Y:${c.y}%`;
+      label.style.display = 'none';
+      box.appendChild(label);
+
       redBoxesContainer.appendChild(box);
     });
 
@@ -200,13 +229,12 @@
 
     document.querySelectorAll('.red-box').forEach(box => {
       let isDragging = false;
-      let offsetX, offsetY;
+      const label = box.querySelector('.coord-label');
 
       box.addEventListener('mousedown', e => {
         if (!calibrationMode) return;
         isDragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
+        label.style.display = 'block'; // 顯示座標
       });
 
       window.addEventListener('mousemove', e => {
@@ -214,11 +242,17 @@
         const parentRect = redBoxesContainer.getBoundingClientRect();
         let x = ((e.clientX - parentRect.left) / parentRect.width) * 100;
         let y = ((e.clientY - parentRect.top) / parentRect.height) * 100;
+        x = Math.max(0, Math.min(100, x));
+        y = Math.max(0, Math.min(100, y));
         box.style.left = x + "%";
         box.style.top = y + "%";
+        label.textContent = `X:${x.toFixed(2)}% Y:${y.toFixed(2)}%`;
       });
 
       window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          label.style.display = 'none'; // 放開滑鼠隱藏
+        }
         isDragging = false;
       });
     });
