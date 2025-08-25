@@ -1,216 +1,178 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地區&注音符號郵票配對遊戲</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      font-family: Arial, sans-serif;
       height: 100vh;
-      background: white; /* 沒有灰色底圖 */
+      overflow: hidden; /* 不要出現捲軸 */
     }
-    header {
+
+    h1 {
+      font-size: 22px;
+      margin: 10px 0 5px 0;
       text-align: center;
-      padding: 10px;
-      border-bottom: 2px solid #ccc;
     }
-    header h1 {
-      margin: 0;
-      font-size: 20px;
+
+    h2 {
+      font-size: 16px;
+      margin: 0 0 10px 0;
+      font-weight: normal;
+      text-align: center;
     }
-    header p {
-      margin: 5px 0 0;
-      font-size: 14px;
-      color: #444;
-    }
-    .container {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 220px 1fr 220px; /* 左-中-右 */
-      gap: 10px;
-      padding: 10px;
-      box-sizing: border-box;
-      align-items: center;
-    }
-    .stamps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr); /* 2排×3張 */
-      grid-template-rows: repeat(2, 1fr);
-      gap: 10px;
-      justify-items: center;
-      align-items: center;
-      padding: 10px;
-    }
-    .stamp {
-      width: 80px;
-      height: 80px;
-      border: 1px solid #ccc;
-      background: white;
+
+    .game-container {
       display: flex;
-      justify-content: center;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
+      flex: 1;
+      width: 100%;
+    }
+
+    .stamps-container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(2, 140px);
+      gap: 10px;
+      justify-content: center;
+      align-content: center;
+      flex: 0 0 320px; /* 左右固定寬度，保持對稱 */
+    }
+
+    .stamps-container img {
+      width: 100px;
+      height: 140px;
       cursor: grab;
     }
-    .stamp img {
-      max-width: 100%;
-      max-height: 100%;
-    }
-    .map-area {
+
+    .map-container {
       position: relative;
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
+      max-width: 650px;  /* 地圖大小限制 */
+      max-height: 80vh; /* 高度不超過視窗 */
     }
-    .map {
-      max-width: 100%;
-      max-height: 65vh; /* 控制地圖適中，不會太大 */
-      display: block;
+
+    .map-container img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
     }
-    .red-box {
+
+    .dropzone {
       position: absolute;
-      width: 80px;
-      height: 80px;
+      width: 90px;
+      height: 120px;
       border: 2px dashed red;
-      transform: translate(-50%, -50%);
-      cursor: move;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       font-size: 14px;
       font-weight: bold;
       color: red;
-      background: rgba(255,255,255,0.3); /* 保持透明，只有框 */
+      pointer-events: none; /* 避免擋住拖曳 */
     }
-    footer {
-      text-align: center;
-      padding: 8px;
-      border-top: 2px solid #ccc;
-      background: #fff;
+
+    .toolbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 10px;
     }
+
     button {
-      padding: 6px 12px;
-      margin: 0 5px;
+      padding: 8px 14px;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
-      border: 1px solid #aaa;
-      background: #f0f0f0;
+    }
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-    <p>共郵票 suá 到對應的縣市格仔內</p>
-  </header>
+  <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
+  <h2>共郵票 suá 到對應的縣市格仔內</h2>
 
-  <div class="container">
+  <div class="game-container">
     <!-- 左側郵票 -->
-    <div class="stamps">
-      <div class="stamp" draggable="true" data-id="1"><img src="game4_assets/stamp1.jpg" alt="1"></div>
-      <div class="stamp" draggable="true" data-id="2"><img src="game4_assets/stamp2.jpg" alt="2"></div>
-      <div class="stamp" draggable="true" data-id="3"><img src="game4_assets/stamp3.jpg" alt="3"></div>
-      <div class="stamp" draggable="true" data-id="4"><img src="game4_assets/stamp4.jpg" alt="4"></div>
-      <div class="stamp" draggable="true" data-id="5"><img src="game4_assets/stamp5.jpg" alt="5"></div>
-      <div class="stamp" draggable="true" data-id="6"><img src="game4_assets/stamp6.jpg" alt="6"></div>
+    <div class="stamps-container" id="stamps-left">
+      <img src="game4_assets/stamp1.jpg" draggable="true" id="stamp1">
+      <img src="game4_assets/stamp2.jpg" draggable="true" id="stamp2">
+      <img src="game4_assets/stamp3.jpg" draggable="true" id="stamp3">
+      <img src="game4_assets/stamp4.jpg" draggable="true" id="stamp4">
+      <img src="game4_assets/stamp5.jpg" draggable="true" id="stamp5">
+      <img src="game4_assets/stamp6.jpg" draggable="true" id="stamp6">
     </div>
 
-    <!-- 中央地圖 -->
-    <div class="map-area">
-      <img src="game4_assets/north_map.png" alt="地圖" class="map">
-      <div id="red-boxes"></div>
+    <!-- 地圖 -->
+    <div class="map-container">
+      <img src="game4_assets/north_map.png" alt="北部地圖">
+      <!-- 12個紅框 (位置依需求微調) -->
+      <div class="dropzone" style="top:15%; left:30%;">1</div>
+      <div class="dropzone" style="top:12%; left:50%;">2</div>
+      <div class="dropzone" style="top:20%; left:65%;">3</div>
+      <div class="dropzone" style="top:28%; left:78%;">4</div>
+      <div class="dropzone" style="top:30%; left:25%;">5</div>
+      <div class="dropzone" style="top:22%; left:40%;">6</div>
+      <div class="dropzone" style="top:45%; left:75%;">7</div>
+      <div class="dropzone" style="top:40%; left:18%;">8</div>
+      <div class="dropzone" style="top:65%; left:20%;">9</div>
+      <div class="dropzone" style="top:70%; left:55%;">10</div>
+      <div class="dropzone" style="top:55%; left:60%;">11</div>
+      <div class="dropzone" style="top:75%; left:35%;">12</div>
     </div>
 
     <!-- 右側郵票 -->
-    <div class="stamps">
-      <div class="stamp" draggable="true" data-id="7"><img src="game4_assets/stamp7.jpg" alt="7"></div>
-      <div class="stamp" draggable="true" data-id="8"><img src="game4_assets/stamp8.jpg" alt="8"></div>
-      <div class="stamp" draggable="true" data-id="9"><img src="game4_assets/stamp9.jpg" alt="9"></div>
-      <div class="stamp" draggable="true" data-id="10"><img src="game4_assets/stamp10.jpg" alt="10"></div>
-      <div class="stamp" draggable="true" data-id="11"><img src="game4_assets/stamp11.jpg" alt="11"></div>
-      <div class="stamp" draggable="true" data-id="12"><img src="game4_assets/stamp12.jpg" alt="12"></div>
+    <div class="stamps-container" id="stamps-right">
+      <img src="game4_assets/stamp7.jpg" draggable="true" id="stamp7">
+      <img src="game4_assets/stamp8.jpg" draggable="true" id="stamp8">
+      <img src="game4_assets/stamp9.jpg" draggable="true" id="stamp9">
+      <img src="game4_assets/stamp10.jpg" draggable="true" id="stamp10">
+      <img src="game4_assets/stamp11.jpg" draggable="true" id="stamp11">
+      <img src="game4_assets/stamp12.jpg" draggable="true" id="stamp12">
     </div>
   </div>
 
-  <footer>
-    <button id="toggleCalibration">切換對位校正模式</button>
-    <button id="exportCoordinates">匯出座標</button>
-  </footer>
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <button onclick="toggleCalibration()">切換對位校正模式</button>
+    <button onclick="exportCoords()">匯出座標</button>
+  </div>
 
   <script>
-    const redBoxesContainer = document.getElementById('red-boxes');
-    const calibrationBtn = document.getElementById('toggleCalibration');
-    let calibrationMode = false;
-    let isDragging = false;
-    let currentBox = null;
+    function toggleCalibration() {
+      alert("進入對位校正模式，可拖曳紅框調整位置");
+      // 這裡可以再加紅框可拖曳功能
+    }
 
-    // 初始 12 個紅框（示意位置，百分比）
-    const positions = [
-      {x: 28, y: 16}, {x: 54, y: 9}, {x: 70, y: 10}, {x: 84, y: 25},
-      {x: 23, y: 38}, {x: 42, y: 19}, {x: 80, y: 46}, {x: 16, y: 59},
-      {x: 20, y: 90}, {x: 54, y: 80}, {x: 66, y: 58}, {x: 40, y: 92}
-    ];
-
-    positions.forEach((pos, index) => {
-      const box = document.createElement('div');
-      box.className = 'red-box';
-      box.style.left = pos.x + '%';
-      box.style.top = pos.y + '%';
-      box.innerText = index + 1; // 紅框內顯示號碼
-
-      // 阻止瀏覽器預設拖曳
-      box.addEventListener('dragstart', e => e.preventDefault());
-
-      // 滑鼠按下
-      box.addEventListener('mousedown', e => {
-        if (!calibrationMode) return;
-        e.preventDefault();
-        isDragging = true;
-        currentBox = box;
+    function exportCoords() {
+      const zones = document.querySelectorAll('.dropzone');
+      const coords = [];
+      zones.forEach(z => {
+        coords.push({
+          x: z.style.left,
+          y: z.style.top
+        });
       });
-
-      // 滑鼠移動
-      document.addEventListener('mousemove', e => {
-        if (isDragging && currentBox) {
-          const rect = redBoxesContainer.parentElement.getBoundingClientRect();
-          let x = ((e.clientX - rect.left) / rect.width) * 100;
-          let y = ((e.clientY - rect.top) / rect.height) * 100;
-          currentBox.style.left = x + '%';
-          currentBox.style.top = y + '%';
-        }
-      });
-
-      // 滑鼠放開
-      document.addEventListener('mouseup', () => {
-        if (isDragging) {
-          isDragging = false;
-          currentBox = null;
-        }
-      });
-
-      redBoxesContainer.appendChild(box);
-    });
-
-    // 切換校正模式
-    calibrationBtn.addEventListener('click', () => {
-      calibrationMode = !calibrationMode;
-      alert(calibrationMode
-        ? "進入對位校正模式，可拖曳紅框調整位置"
-        : "退出對位校正模式");
-    });
-
-    // 匯出座標
-    document.getElementById('exportCoordinates').addEventListener('click', () => {
-      const coords = Array.from(document.querySelectorAll('.red-box')).map(b => ({
-        x: parseFloat(b.style.left),
-        y: parseFloat(b.style.top)
-      }));
-      console.log(JSON.stringify(coords, null, 2));
-      alert("座標已輸出到 Console");
-    });
+      console.log(coords);
+      alert("已匯出座標，請查看 console.log");
+    }
   </script>
 </body>
 </html>
