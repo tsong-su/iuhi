@@ -13,7 +13,7 @@
       justify-content: flex-start;
       font-family: Arial, sans-serif;
       height: 100vh;
-      overflow: hidden; /* 不要出現捲軸 */
+      overflow: hidden;
     }
 
     h1 {
@@ -45,7 +45,7 @@
       gap: 10px;
       justify-content: center;
       align-content: center;
-      flex: 0 0 320px; /* 左右固定寬度，保持對稱 */
+      flex: 0 0 320px;
     }
 
     .stamps-container img {
@@ -60,8 +60,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      max-width: 650px;  /* 地圖大小限制 */
-      max-height: 80vh; /* 高度不超過視窗 */
+      max-width: 650px;
+      max-height: 80vh;
     }
 
     .map-container img {
@@ -81,7 +81,13 @@
       font-size: 14px;
       font-weight: bold;
       color: red;
-      pointer-events: none; /* 避免擋住拖曳 */
+      cursor: default;
+      user-select: none;
+    }
+
+    .dropzone.calibrating {
+      cursor: move;
+      pointer-events: auto;
     }
 
     .toolbar {
@@ -121,9 +127,9 @@
     </div>
 
     <!-- 地圖 -->
-    <div class="map-container">
+    <div class="map-container" id="map">
       <img src="game4_assets/north_map.png" alt="北部地圖">
-      <!-- 12個紅框 (位置依需求微調) -->
+      <!-- 紅框 (初始位置，會在 calibration 模式可調整) -->
       <div class="dropzone" style="top:15%; left:30%;">1</div>
       <div class="dropzone" style="top:12%; left:50%;">2</div>
       <div class="dropzone" style="top:20%; left:65%;">3</div>
@@ -156,18 +162,68 @@
   </div>
 
   <script>
+    let calibrating = false;
+    let dragging = null;
+    let offsetX = 0, offsetY = 0;
+
     function toggleCalibration() {
-      alert("進入對位校正模式，可拖曳紅框調整位置");
-      // 這裡可以再加紅框可拖曳功能
+      calibrating = !calibrating;
+      const zones = document.querySelectorAll('.dropzone');
+
+      zones.forEach(z => {
+        if (calibrating) {
+          z.classList.add('calibrating');
+        } else {
+          z.classList.remove('calibrating');
+        }
+      });
+
+      if (calibrating) {
+        alert("進入對位校正模式，可拖曳紅框調整位置");
+      } else {
+        alert("已退出對位校正模式");
+      }
     }
+
+    document.addEventListener('mousedown', function(e) {
+      if (!calibrating) return;
+      if (e.target.classList.contains('dropzone')) {
+        dragging = e.target;
+        const rect = dragging.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+      }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (dragging && calibrating) {
+        const map = document.getElementById('map');
+        const mapRect = map.getBoundingClientRect();
+
+        let x = ((e.clientX - mapRect.left - offsetX) / mapRect.width) * 100;
+        let y = ((e.clientY - mapRect.top - offsetY) / mapRect.height) * 100;
+
+        // 限制在 0~100% 範圍
+        x = Math.max(0, Math.min(100, x));
+        y = Math.max(0, Math.min(100, y));
+
+        dragging.style.left = x + "%";
+        dragging.style.top = y + "%";
+      }
+    });
+
+    document.addEventListener('mouseup', function() {
+      dragging = null;
+    });
 
     function exportCoords() {
       const zones = document.querySelectorAll('.dropzone');
       const coords = [];
       zones.forEach(z => {
         coords.push({
-          x: z.style.left,
-          y: z.style.top
+          id: z.textContent.trim(),
+          left: z.style.left,
+          top: z.style.top
         });
       });
       console.log(coords);
