@@ -36,10 +36,14 @@
       width: 80px;
       height: 80px;
       border: 1px solid #ccc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       background: white;
+      cursor: grab;
+    }
+
+    .stamp img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .map-area {
@@ -56,11 +60,11 @@
       display: block;
     }
 
-    /* 紅框樣式 */
+    /* 紅框樣式（與實線框一致大小，這裡假設80x80） */
     .red-box {
       position: absolute;
-      width: 40px;
-      height: 40px;
+      width: 80px;
+      height: 80px;
       border: 2px dashed red;
       transform: translate(-50%, -50%);
       pointer-events: none;
@@ -78,14 +82,7 @@
 <body>
   <div class="container">
     <!-- 左側郵票 -->
-    <div class="stamps">
-      <div class="stamp">郵票1</div>
-      <div class="stamp">郵票2</div>
-      <div class="stamp">郵票3</div>
-      <div class="stamp">郵票4</div>
-      <div class="stamp">郵票5</div>
-      <div class="stamp">郵票6</div>
-    </div>
+    <div class="stamps" id="left-stamps"></div>
 
     <!-- 中央地圖 -->
     <div class="map-area">
@@ -94,14 +91,7 @@
     </div>
 
     <!-- 右側郵票 -->
-    <div class="stamps">
-      <div class="stamp">郵票7</div>
-      <div class="stamp">郵票8</div>
-      <div class="stamp">郵票9</div>
-      <div class="stamp">郵票10</div>
-      <div class="stamp">郵票11</div>
-      <div class="stamp">郵票12</div>
-    </div>
+    <div class="stamps" id="right-stamps"></div>
   </div>
 
   <!-- 工具列 -->
@@ -128,12 +118,51 @@
     ];
 
     const redBoxesContainer = document.getElementById('red-boxes');
-    coords.forEach(c => {
+    coords.forEach((c, i) => {
       const box = document.createElement('div');
       box.className = 'red-box';
+      box.dataset.index = i + 1;
       box.style.left = c.x + '%';
       box.style.top = c.y + '%';
       redBoxesContainer.appendChild(box);
+    });
+
+    // 建立郵票 (左 6, 右 6)
+    function createStamp(i) {
+      const div = document.createElement('div');
+      div.className = 'stamp';
+      div.draggable = true;
+      div.dataset.index = i;
+      div.innerHTML = `<img src="game4_assets/stamp${i}.jpg" alt="郵票${i}">`;
+      return div;
+    }
+
+    const leftStamps = document.getElementById('left-stamps');
+    const rightStamps = document.getElementById('right-stamps');
+    for (let i = 1; i <= 6; i++) leftStamps.appendChild(createStamp(i));
+    for (let i = 7; i <= 12; i++) rightStamps.appendChild(createStamp(i));
+
+    // 拖曳事件
+    document.querySelectorAll('.stamp').forEach(stamp => {
+      stamp.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', stamp.dataset.index);
+      });
+    });
+
+    document.querySelectorAll('.red-box').forEach(box => {
+      box.addEventListener('dragover', e => e.preventDefault());
+      box.addEventListener('drop', e => {
+        e.preventDefault();
+        const index = e.dataTransfer.getData('text/plain');
+        if (box.dataset.index === index) {
+          // 播放對應音效
+          const audio = new Audio(`game4_assets/stamp${index}.mp3`);
+          audio.play();
+          alert(`✅ 郵票 ${index} 放置正確！`);
+        } else {
+          alert(`❌ 郵票 ${index} 放錯位置！`);
+        }
+      });
     });
 
     // 地圖縮放
