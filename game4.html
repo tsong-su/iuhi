@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>郵票對位遊戲</title>
+  <title>臺灣北部地區&注音符號郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
@@ -13,10 +13,29 @@
       height: 100vh;
     }
 
+    /* ===== 標題區 ===== */
+    header {
+      text-align: center;
+      padding: 15px 10px 5px 10px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    header p {
+      margin: 5px 0 0 0;
+      font-size: 16px;
+      color: #444;
+    }
+
+    /* ===== 主體結構 三欄 ===== */
     .container {
       flex: 1;
       display: grid;
-      grid-template-columns: 260px 1fr 260px;
+      grid-template-columns: 240px 1fr 240px; /* 左右各縮進 */
       gap: 10px;
       overflow: hidden;
     }
@@ -60,14 +79,14 @@
       display: block;
     }
 
-    /* 紅框樣式（與實線框一致大小，這裡假設80x80） */
+    /* 紅框樣式（可拖曳） */
     .red-box {
       position: absolute;
       width: 80px;
       height: 80px;
       border: 2px dashed red;
       transform: translate(-50%, -50%);
-      pointer-events: none;
+      cursor: move;
     }
 
     /* 工具列 */
@@ -80,6 +99,13 @@
   </style>
 </head>
 <body>
+  <!-- 標題 -->
+  <header>
+    <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
+    <p>共郵票 suá 到對應的縣市格仔內</p>
+  </header>
+
+  <!-- 三欄遊戲主體 -->
   <div class="container">
     <!-- 左側郵票 -->
     <div class="stamps" id="left-stamps"></div>
@@ -142,20 +168,20 @@
     for (let i = 1; i <= 6; i++) leftStamps.appendChild(createStamp(i));
     for (let i = 7; i <= 12; i++) rightStamps.appendChild(createStamp(i));
 
-    // 拖曳事件
+    // 拖曳郵票
     document.querySelectorAll('.stamp').forEach(stamp => {
       stamp.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', stamp.dataset.index);
       });
     });
 
+    // 紅框 drop 檢查
     document.querySelectorAll('.red-box').forEach(box => {
       box.addEventListener('dragover', e => e.preventDefault());
       box.addEventListener('drop', e => {
         e.preventDefault();
         const index = e.dataTransfer.getData('text/plain');
         if (box.dataset.index === index) {
-          // 播放對應音效
           const audio = new Audio(`game4_assets/stamp${index}.mp3`);
           audio.play();
           alert(`✅ 郵票 ${index} 放置正確！`);
@@ -163,6 +189,49 @@
           alert(`❌ 郵票 ${index} 放錯位置！`);
         }
       });
+    });
+
+    // ===== 對位校正模式 =====
+    let calibrationMode = false;
+    document.getElementById('toggleMode').addEventListener('click', () => {
+      calibrationMode = !calibrationMode;
+      alert(calibrationMode ? "進入對位校正模式，可拖曳紅框調整位置" : "退出對位校正模式");
+    });
+
+    document.querySelectorAll('.red-box').forEach(box => {
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      box.addEventListener('mousedown', e => {
+        if (!calibrationMode) return;
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!isDragging || !calibrationMode) return;
+        const parentRect = redBoxesContainer.getBoundingClientRect();
+        let x = ((e.clientX - parentRect.left) / parentRect.width) * 100;
+        let y = ((e.clientY - parentRect.top) / parentRect.height) * 100;
+        box.style.left = x + "%";
+        box.style.top = y + "%";
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+    });
+
+    // 匯出座標
+    document.getElementById('exportCoords').addEventListener('click', () => {
+      const boxes = document.querySelectorAll('.red-box');
+      const newCoords = Array.from(boxes).map(box => ({
+        x: parseFloat(box.style.left).toFixed(4),
+        y: parseFloat(box.style.top).toFixed(4)
+      }));
+      console.log(newCoords);
+      alert("新座標已輸出到 console");
     });
 
     // 地圖縮放
