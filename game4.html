@@ -32,24 +32,22 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 }
 
 .stamp-container {
-  display: grid;
-  grid-template-columns: repeat(3, 120px);
-  grid-template-rows: repeat(2, 120px);
-  gap: 10px;
-  justify-content: center;
-  align-content: start;
-  margin-top: 50px; /* 往下置中 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 280px; /* 2排直列高度 */
 }
 
-.stamp-wrapper {
-  position: relative;
-  width: 120px;
-  height: 120px;
+.stamp-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
 }
 
 .stamp {
-  width: 100%;
-  height: 100%;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   border: 2px solid #333;
   border-radius: 8px;
@@ -120,12 +118,12 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 <div id="victory-text">有夠gâu</div>
 
 <script>
-const mapArea=document.querySelector('.map-area');
 const leftStamps=document.getElementById('left-stamps');
 const rightStamps=document.getElementById('right-stamps');
+const mapArea=document.querySelector('.map-area');
 const victoryText=document.getElementById('victory-text');
 
-// 紅框座標 (隱藏，用於碰撞判斷)
+// 紅框座標 (隱藏)
 const coords=[
   {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
   {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
@@ -136,57 +134,44 @@ const coords=[
 const answerKey={1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
 
 let correctCount=0;
-
-// 建立紅框位置資料 (隱藏)
 const redBoxes=[];
-coords.forEach((pt,i)=>{
-  redBoxes.push({
-    left: pt.x,
-    top: pt.y,
-    matched: false
-  });
-});
+coords.forEach((pt)=>{ redBoxes.push({left:pt.x,top:pt.y,matched:false}); });
 
-// 郵票生成
-function createStamps(container,start,end){
-  for(let i=start;i<=end;i++){
-    const wrapper=document.createElement('div');
-    wrapper.className='stamp-wrapper';
-    const img=document.createElement('img');
-    img.src=`game4_assets/stamp${i}.jpg`;
-    img.className='stamp';
-    img.draggable=true;
-    img.dataset.id=i;
-    wrapper.appendChild(img);
-    container.appendChild(wrapper);
+// 郵票生成 2排×3張
+function createStamps(container,start){
+  for(let i=0;i<2;i++){
+    const row=document.createElement('div');
+    row.className='stamp-row';
+    for(let j=0;j<3;j++){
+      const index=start+i*3+j;
+      if(index>12) continue;
+      const img=document.createElement('img');
+      img.src=`game4_assets/stamp${index}.jpg`;
+      img.className='stamp';
+      img.draggable=true;
+      img.dataset.id=index;
+      row.appendChild(img);
+    }
+    container.appendChild(row);
   }
 }
 
-createStamps(leftStamps,1,6);
-createStamps(rightStamps,7,12);
+createStamps(leftStamps,1);
+createStamps(rightStamps,7);
 
-// 拖曳功能
+// 拖曳事件
 let dragging=null;
 document.addEventListener('dragstart',e=>{
-  if(e.target.classList.contains('stamp')){
-    dragging=e.target;
-  }
+  if(e.target.classList.contains('stamp')) dragging=e.target;
 });
-document.addEventListener('dragend',e=>{
-  dragging=null;
-});
+document.addEventListener('dragend',e=>{ dragging=null; });
 
 // 判斷碰撞
 function isCollide(stampRect, boxRect){
-  return !(
-    stampRect.right<boxRect.left ||
-    stampRect.left>boxRect.right ||
-    stampRect.bottom<boxRect.top ||
-    stampRect.top>boxRect.bottom
-  );
+  return !(stampRect.right<boxRect.left || stampRect.left>boxRect.right ||
+           stampRect.bottom<boxRect.top || stampRect.top>boxRect.bottom);
 }
 
-// 拖曳時判斷是否放到對應位置
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{
   if(!dragging) return;
