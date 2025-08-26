@@ -99,6 +99,7 @@
 
     let draggedStamp = null;
     let originalParent = null;
+    let originalIndex = null; // 紀錄郵票在容器中的位置
 
     function createStamps() {
       const leftContainer = document.createElement("div");
@@ -140,6 +141,7 @@
     function dragStart(e) {
       draggedStamp = e.target;
       originalParent = draggedStamp.parentNode;
+      originalIndex = Array.from(originalParent.children).indexOf(draggedStamp);
     }
 
     mapContainer.addEventListener("dragover", e => {
@@ -160,23 +162,34 @@
           e.clientY <= rect.bottom
         ) {
           if (draggedStamp.dataset.id === target.dataset.id) {
+            // 正確 → 吸附到座標
+            draggedStamp.style.position = "absolute";
             draggedStamp.style.left = target.style.left;
             draggedStamp.style.top = target.style.top;
-            draggedStamp.style.position = "absolute";
-            target.appendChild(draggedStamp);
+            mapContainer.appendChild(draggedStamp);
             playSound("game4_assets/correct.mp3");
             checkVictory();
           } else {
+            // 錯誤 → 彈回原位
             playSound("game4_assets/wrong.mp3");
-            originalParent.appendChild(draggedStamp);
+            if (originalIndex >= originalParent.children.length) {
+              originalParent.appendChild(draggedStamp);
+            } else {
+              originalParent.insertBefore(draggedStamp, originalParent.children[originalIndex]);
+            }
           }
           placed = true;
         }
       });
 
       if (!placed) {
+        // 沒有放到任何 target → 彈回原位
         playSound("game4_assets/wrong.mp3");
-        originalParent.appendChild(draggedStamp);
+        if (originalIndex >= originalParent.children.length) {
+          originalParent.appendChild(draggedStamp);
+        } else {
+          originalParent.insertBefore(draggedStamp, originalParent.children[originalIndex]);
+        }
       }
     });
 
@@ -189,7 +202,12 @@
       const targets = document.querySelectorAll(".target");
       let allFilled = true;
       targets.forEach(t => {
-        if (!t.querySelector("img")) allFilled = false;
+        const match = Array.from(mapContainer.querySelectorAll(".stamp")).find(
+          s => s.dataset.id === t.dataset.id &&
+               s.style.left === t.style.left &&
+               s.style.top === t.style.top
+        );
+        if (!match) allFilled = false;
       });
 
       if (allFilled) {
