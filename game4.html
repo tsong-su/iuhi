@@ -1,231 +1,203 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>臺灣北部地區郵票配對遊戲</title>
-<style>
-  body{
-    margin:0;
-    padding:0;
-    font-family:Arial, sans-serif;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    height:100vh;
-    overflow:hidden;
-    background:#fff;
-  }
-  header{ text-align:center; margin:10px 0; }
-  header h1{ margin:0; font-size:20px; }
-  header p{ margin:4px 0 10px 0; font-size:14px; }
-
-  .game-container{
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    flex:1;
-    width:100%;
-    padding:10px;
-  }
-
-  /* 兩側：直排 2 排 × 橫排 3 張，固定寬度避免被擠成 2 欄 */
-  .stamp-container{
-    display:grid;
-    grid-template-columns: repeat(3, 120px);
-    grid-template-rows: repeat(2, 120px);
-    gap:10px;
-    justify-content:center;
-    align-content:center;
-    margin-top:120px;          /* 置中往下 */
-    width:390px;               /* 120*3 + 10*2 = 390，保證 3 欄 */
-    flex:0 0 auto;             /* 不要被壓縮成 2 欄 */
-  }
-  .stamp{
-    width:120px;
-    height:120px;
-    object-fit:cover;
-    border:2px solid #333;
-    border-radius:8px;
-    cursor:grab;
-  }
-
-  .map-area{
-    position:relative;
-    margin:0 20px;
-    flex:0 1 auto;
-  }
-  .map{
-    max-height:70vh;
-    height:auto;
-    display:block;
-  }
-
-  #victory-text{
-    position:absolute;
-    top:40%;
-    left:50%;
-    transform:translate(-50%,-50%) scale(0);
-    font-size:48px;
-    font-weight:bold;
-    color:orange;
-    z-index:10;
-    pointer-events:none;
-    transition:transform 1s ease;
-    text-shadow:0 2px 6px rgba(0,0,0,.25);
-  }
-
-  .controls{
-    width:100%;
-    text-align:center;
-    padding:10px 0;
-    background:#f8f8f8;
-    border-top:1px solid #ccc;
-  }
-  .controls button{
-    margin:0 10px;
-    padding:6px 12px;
-    font-size:14px;
-    cursor:pointer;
-    border-radius:10px;
-    border:1px solid #ddd;
-    background:#fff;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>臺灣北部地區郵票配對遊戲</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    #map-container {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    #map {
+      width: 700px;
+      display: block;
+    }
+    .stamp {
+      width: 80px;
+      cursor: grab;
+      position: absolute;
+      z-index: 10;
+    }
+    .target {
+      position: absolute;
+      width: 80px;
+      height: 100px;
+    }
+    #stamps-left, #stamps-right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, auto);
+      gap: 10px;
+    }
+    #stamps-left { left: -120px; }
+    #stamps-right { right: -120px; }
+    #victory {
+      display: none;
+      font-size: 40px;
+      font-weight: bold;
+      color: green;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.1);
+      animation: grow 2s forwards;
+      z-index: 100;
+    }
+    @keyframes grow {
+      to { transform: translate(-50%, -50%) scale(1.5); }
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    .controls button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>臺灣北部地區郵票配對遊戲</h1>
-  <p>耍法：kā郵票suá 到對應縣市的格仔內</p>
-</header>
-
-<div class="game-container">
-  <div class="stamp-container" id="left-stamps"></div>
-
-  <div class="map-area" id="map-area">
-    <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
-    <div id="victory-text">有夠gâu</div>
+  <h2>臺灣北部地區郵票配對遊戲</h2>
+  <p>耍法：kā 郵票 suá 到對應縣市的格仔內</p>
+  <div id="map-container">
+    <img id="map" src="game4_assets/map.png" alt="地圖">
+    <div id="victory">有夠gâu！</div>
+  </div>
+  <div class="controls">
+    <button onclick="location.reload()">閣耍一擺</button>
+    <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
   </div>
 
-  <div class="stamp-container" id="right-stamps"></div>
-</div>
+  <script>
+    const stampsData = [
+      { id: 1, img: "game4_assets/1.png", target: {x:21.9069, y:15.2772} },
+      { id: 2, img: "game4_assets/2.png", target: {x:55.5533, y:8.5731} },
+      { id: 3, img: "game4_assets/3.png", target: {x:75.6431, y:10.4015} },
+      { id: 4, img: "game4_assets/4.png", target: {x:93.1196, y:25.8412} },
+      { id: 5, img: "game4_assets/5.png", target: {x:15.3736, y:37.421} },
+      { id: 6, img: "game4_assets/6.png", target: {x:39.8734, y:19.1371} },
+      { id: 7, img: "game4_assets/7.png", target: {x:87.7297, y:46.3597} },
+      { id: 8, img: "game4_assets/8.png", target: {x:6.88036, y:59.1584} },
+      { id: 9, img: "game4_assets/9.png", target: {x:11.2903, y:89.8347} },
+      { id: 10, img: "game4_assets/10.png", target: {x:55.2266, y:79.677} },
+      { id: 11, img: "game4_assets/11.png", target: {x:71.0698, y:57.33} },
+      { id: 12, img: "game4_assets/12.png", target: {x:37.5868, y:91.8662} }
+    ];
 
-<div class="controls">
-  <button onclick="location.reload()">閣耍一擺</button>
-  <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
-</div>
+    const mapContainer = document.getElementById("map-container");
+    const map = document.getElementById("map");
 
-<script>
-  const left = document.getElementById('left-stamps');
-  const right = document.getElementById('right-stamps');
-  const mapArea = document.getElementById('map-area');
-  const victoryText = document.getElementById('victory-text');
+    // 建立郵票元素
+    function createStamps() {
+      const leftContainer = document.createElement("div");
+      leftContainer.id = "stamps-left";
+      const rightContainer = document.createElement("div");
+      rightContainer.id = "stamps-right";
+      mapContainer.appendChild(leftContainer);
+      mapContainer.appendChild(rightContainer);
 
-  // 紅框座標 (百分比；紅框大小 80×80)
-  const coords = [
-    {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
-    {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
-    {x:11.2903,y:89.8347},{x:55.2266,y:79.677},{x:71.0698,y:57.33},{x:37.5868,y:91.8662}
-  ];
+      stampsData.forEach((stamp, index) => {
+        const img = document.createElement("img");
+        img.src = stamp.img;
+        img.classList.add("stamp");
+        img.draggable = true;
+        img.dataset.id = stamp.id;
 
-  // 正解：紅框 n 對應 stampId
-  const answerKey = {1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
-
-  let correctCount = 0;
-  const redBoxes = coords.map(pt => ({ left: pt.x, top: pt.y, matched: false }));
-
-  // 產生郵票（左右各 2×3，總 12）
-  function fill(container, startId){
-    for(let i=0;i<6;i++){
-      const id = startId + i;
-      const img = document.createElement('img');
-      img.className = 'stamp';
-      img.draggable = true;
-      img.dataset.id = id;
-      img.src = `game4_assets/stamp${id}.jpg`;
-      container.appendChild(img);
-    }
-  }
-  fill(left, 1);
-  fill(right, 7);
-
-  // 目前拖曳中的元素
-  let dragging = null;
-  document.addEventListener('dragstart', e => {
-    if(e.target.classList.contains('stamp') && e.target.draggable){
-      dragging = e.target;
-    }
-  });
-  document.addEventListener('dragend', () => { dragging = null; });
-
-  // 只允許在地圖區放置
-  mapArea.addEventListener('dragover', e => e.preventDefault());
-  mapArea.addEventListener('drop', e => {
-    e.preventDefault();
-    if(!dragging) return;
-
-    const stampId = parseInt(dragging.dataset.id, 10);
-    const mapRect = mapArea.getBoundingClientRect();
-
-    // 以滑鼠游標位置作為投放點（關鍵修正）
-    const dropX = e.clientX;
-    const dropY = e.clientY;
-
-    let matched = false;
-
-    for(let i=0;i<redBoxes.length;i++){
-      const box = redBoxes[i];
-      if(box.matched) continue;
-
-      // 將百分比轉成地圖區像素框（80×80）
-      const boxLeft   = mapRect.left + (box.left/100) * mapRect.width;
-      const boxTop    = mapRect.top  + (box.top/100)  * mapRect.height;
-      const boxRight  = boxLeft + 80;
-      const boxBottom = boxTop  + 80;
-
-      // 游標是否落在框內
-      const inside = (dropX >= boxLeft && dropX <= boxRight && dropY >= boxTop && dropY <= boxBottom);
-
-      if(inside){
-        // 檢查是否正確的郵票
-        if(answerKey[i+1] === stampId){
-          box.matched = true;
-          matched = true;
-          correctCount++;
-
-          // 吸附定位（相對 mapArea 的絕對像素）
-          const pxLeft = (box.left/100) * mapArea.clientWidth;
-          const pxTop  = (box.top/100)  * mapArea.clientHeight;
-
-          dragging.style.position = 'absolute';
-          dragging.style.width = '80px';
-          dragging.style.height = '80px';
-          dragging.style.left = pxLeft + 'px';
-          dragging.style.top  = pxTop  + 'px';
-          dragging.style.cursor = 'default';
-          dragging.draggable = false;              // 放對就鎖住
-          dragging.style.pointerEvents = 'none';   // 避免再被拖
-
-          mapArea.appendChild(dragging);
-
-          new Audio(`game4_assets/stamp${stampId}.mp3`).play();
+        if (index < stampsData.length / 2) {
+          leftContainer.appendChild(img);
+        } else {
+          rightContainer.appendChild(img);
         }
-        break; // 找到命中的框就結束迴圈
+
+        img.addEventListener("dragstart", dragStart);
+      });
+    }
+
+    // 建立目標區域
+    function createTargets() {
+      stampsData.forEach(stamp => {
+        const div = document.createElement("div");
+        div.classList.add("target");
+        div.dataset.id = stamp.id;
+
+        const rect = map.getBoundingClientRect();
+        div.style.left = (map.width * stamp.target.x / 100) + "px";
+        div.style.top = (map.height * stamp.target.y / 100) + "px";
+        mapContainer.appendChild(div);
+      });
+    }
+
+    let draggedStamp = null;
+    function dragStart(e) {
+      draggedStamp = e.target;
+    }
+
+    mapContainer.addEventListener("dragover", e => {
+      e.preventDefault();
+    });
+
+    mapContainer.addEventListener("drop", e => {
+      e.preventDefault();
+      const targets = document.querySelectorAll(".target");
+      let placed = false;
+
+      targets.forEach(target => {
+        const rect = target.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) {
+          if (draggedStamp.dataset.id === target.dataset.id) {
+            draggedStamp.style.left = target.style.left;
+            draggedStamp.style.top = target.style.top;
+            draggedStamp.style.position = "absolute";
+            target.appendChild(draggedStamp);
+            playSound("game4_assets/correct.mp3");
+            checkVictory();
+          } else {
+            playSound("game4_assets/wrong.mp3");
+          }
+          placed = true;
+        }
+      });
+
+      if (!placed) {
+        playSound("game4_assets/wrong.mp3");
+      }
+    });
+
+    function playSound(src) {
+      const audio = new Audio(src);
+      audio.play();
+    }
+
+    function checkVictory() {
+      const targets = document.querySelectorAll(".target");
+      let allFilled = true;
+      targets.forEach(t => {
+        if (!t.querySelector("img")) allFilled = false;
+      });
+
+      if (allFilled) {
+        playSound("game4_assets/victory.mp3");
+        document.getElementById("victory").style.display = "block";
       }
     }
 
-    if(!matched){
-      new Audio('game4_assets/wrong.mp3').play();
-    }
-
-    // 全數完成
-    if(correctCount === 12){
-      new Audio('game4_assets/victory.mp3').play();
-      victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
-      setTimeout(()=> {
-        victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
-      }, 2000);
-    }
-  });
-</script>
+    createStamps();
+    createTargets();
+  </script>
 </body>
 </html>
