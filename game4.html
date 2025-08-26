@@ -38,7 +38,7 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   gap: 10px;
   justify-content: center;
   align-content: start;
-  margin-top: 50px; /* 往下修至置中 */
+  margin-top: 50px; /* 往下置中 */
 }
 
 .stamp-wrapper {
@@ -114,7 +114,7 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 
 <div class="controls">
   <button onclick="location.reload()">閣耍一擺</button>
-  <button onclick="window.location.href='index.html'">回到遊戲首頁</button>
+  <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
 </div>
 
 <div id="victory-text">有夠gâu</div>
@@ -191,7 +191,6 @@ document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{
   if(!dragging) return;
   const stampId=parseInt(dragging.dataset.id);
-  let matched=false;
   const mapRect=mapArea.getBoundingClientRect();
   redBoxes.forEach((box,i)=>{
     if(box.matched) return;
@@ -203,7 +202,6 @@ document.addEventListener('drop',e=>{
     };
     const stampRect=dragging.getBoundingClientRect();
     if(isCollide(stampRect,boxPixel)){
-      // 判斷正確
       if(answerKey[i+1]===stampId){
         box.matched=true;
         correctCount++;
@@ -214,13 +212,11 @@ document.addEventListener('drop',e=>{
         dragging.style.height='80px';
         mapArea.appendChild(dragging);
         new Audio(`game4_assets/stamp${stampId}.mp3`).play();
-        matched=true;
       }else{
         new Audio('game4_assets/wrong.mp3').play();
       }
     }
   });
-  // 完全答對
   if(correctCount===12){
     new Audio('game4_assets/victory.mp3').play();
     victoryText.style.transform='translate(-50%,-50%) scale(1)';
