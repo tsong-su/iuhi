@@ -34,9 +34,10 @@
     .game-container {
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       flex: 1;
       width: 100%;
+      padding: 10px;
     }
 
     .stamp-container {
@@ -61,7 +62,7 @@
     .stamp-number {
       position: absolute;
       font-size: 12px;
-      background: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.8);
       border-radius: 50%;
       width: 18px;
       height: 18px;
@@ -115,11 +116,6 @@
       font-size: 14px;
       cursor: pointer;
     }
-
-    .droppable-hover {
-      transform: scale(0.83);
-      transition: transform 0.2s ease;
-    }
   </style>
 </head>
 <body>
@@ -129,12 +125,15 @@
   </header>
 
   <div class="game-container">
+    <!-- 左側郵票 -->
     <div class="stamp-container" id="left-stamps"></div>
 
+    <!-- 地圖區 -->
     <div class="map-area">
       <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
     </div>
 
+    <!-- 右側郵票 -->
     <div class="stamp-container" id="right-stamps"></div>
   </div>
 
@@ -152,11 +151,6 @@
       {x: 54.0945, y: 79.6603}, {x: 66.4173, y: 57.6667}, {x: 40.2362, y: 91.6842}
     ];
 
-    const answerKey = {
-      "stamp1": 3, "stamp2": 1, "stamp3": 5, "stamp4": 2, "stamp5": 6, "stamp6": 4,
-      "stamp7": 9, "stamp8": 7, "stamp9": 12, "stamp10": 8, "stamp11": 11, "stamp12": 10
-    };
-
     const mapArea = document.querySelector('.map-area');
 
     // 加入紅框
@@ -169,8 +163,8 @@
       mapArea.appendChild(box);
     });
 
-    // 加入郵票
-    function createStamp(container, start, end) {
+    // 郵票生成函式，含編號
+    function createStamps(container, start, end) {
       for (let i = start; i <= end; i++) {
         const img = document.createElement('img');
         img.src = `game4_assets/stamp${i}.jpg`;
@@ -187,8 +181,9 @@
       }
     }
 
-    createStamp(document.getElementById('left-stamps'), 1, 6);
-    createStamp(document.getElementById('right-stamps'), 7, 12);
+    // 左右兩側各 6 張
+    createStamps(document.getElementById('left-stamps'), 1, 6);
+    createStamps(document.getElementById('right-stamps'), 7, 12);
 
     // 對位校正模式
     let calibrationMode = false;
@@ -199,18 +194,17 @@
 
     // 匯出座標
     document.getElementById('export-coords').addEventListener('click', () => {
-      let result = [];
+      const result = [];
       document.querySelectorAll('.red-box').forEach(box => {
-        result.push({
-          x: parseFloat(box.style.left),
-          y: parseFloat(box.style.top)
-        });
+        result.push({x: parseFloat(box.style.left), y: parseFloat(box.style.top)});
       });
       alert("匯出座標：\n" + JSON.stringify(result, null, 2));
     });
 
     // 紅框拖曳
     let currentBox = null;
+    let offsetX = 0, offsetY = 0;
+
     document.addEventListener('mousedown', e => {
       if (calibrationMode && e.target.classList.contains('red-box')) {
         currentBox = e.target;
@@ -222,59 +216,14 @@
     document.addEventListener('mousemove', e => {
       if (currentBox && calibrationMode) {
         const rect = mapArea.getBoundingClientRect();
-        let x = ((e.clientX - rect.left) / rect.width) * 100;
-        let y = ((e.clientY - rect.top) / rect.height) * 100;
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
         currentBox.style.left = x + '%';
         currentBox.style.top = y + '%';
       }
     });
 
     document.addEventListener('mouseup', () => currentBox = null);
-
-    // 郵票拖曳效果
-    let draggingStamp = null;
-    document.querySelectorAll('.stamp').forEach(stamp => {
-      stamp.addEventListener('dragstart', () => draggingStamp = stamp);
-      stamp.addEventListener('dragend', () => draggingStamp = null);
-    });
-
-    document.querySelectorAll('.red-box').forEach(box => {
-      box.addEventListener('dragover', e => {
-        e.preventDefault();
-        if (draggingStamp) draggingStamp.classList.add('droppable-hover');
-      });
-      box.addEventListener('dragleave', () => {
-        if (draggingStamp) draggingStamp.classList.remove('droppable-hover');
-      });
-      box.addEventListener('drop', e => {
-        e.preventDefault();
-        if (!draggingStamp) return;
-        draggingStamp.classList.remove('droppable-hover');
-        box.appendChild(draggingStamp);
-        draggingStamp.style.width = "100px";
-        draggingStamp.style.height = "100px";
-
-        const stampId = draggingStamp.dataset.id;
-        const boxNumber = parseInt(box.textContent);
-
-        if (answerKey[stampId] === boxNumber) {
-          box.style.borderColor = 'green';
-          playSound(`${stampId}.mp3`);
-        } else {
-          box.style.borderColor = 'red';
-          playSound('wrong.mp3');
-        }
-
-        setTimeout(() => {
-          box.style.borderColor = 'red';
-        }, 1500);
-      });
-    });
-
-    function playSound(filename) {
-      const audio = new Audio(`game4_assets/${filename}`);
-      audio.play();
-    }
   </script>
 </body>
 </html>
