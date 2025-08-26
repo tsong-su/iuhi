@@ -114,16 +114,29 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   cursor: pointer;
 }
 
-textarea#copy-area {
+#copy-area {
   position: absolute;
   left: -9999px;
+}
+
+#victory-text {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 48px;
+  font-weight: bold;
+  color: orange;
+  z-index: 10;
+  pointer-events: none;
+  transition: transform 1s ease;
 }
 </style>
 </head>
 <body>
 <header>
 <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-<p>共郵票 suá 到對應的縣市格仔內</p>
+<p>將郵票拖曳到對應紅框</p>
 </header>
 
 <div class="game-container">
@@ -142,28 +155,40 @@ textarea#copy-area {
 </div>
 
 <textarea id="copy-area"></textarea>
+<div id="victory-text">有夠gâu</div>
 
 <script>
-const mapArea = document.querySelector('.map-area');
+const mapArea=document.querySelector('.map-area');
+const leftStamps=document.getElementById('left-stamps');
+const rightStamps=document.getElementById('right-stamps');
+const victoryText=document.getElementById('victory-text');
 
-// 紅框座標 (可用對位校正微調後匯出)
-const coords = [
-  {x:27.9,y:15.6},{x:54.4,y:8.5},{x:70.3,y:10.2},{x:83.8,y:25.4},
-  {x:22.7,y:37.5},{x:42.1,y:19.3},{x:80.1,y:46.3},{x:15.8,y:59.4},
-  {x:19.6,y:89.9},{x:54.0,y:79.6},{x:66.4,y:57.6},{x:40.2,y:91.6}
+// 紅框座標
+const coords=[
+  {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
+  {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
+  {x:11.2903,y:89.8347},{x:55.2266,y:79.677},{x:71.0698,y:57.33},{x:37.5868,y:91.8662}
 ];
 
-// 加入紅框
+// 紅框對應郵票
+const answerKey={1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
+
+// 記錄已正確配對數
+let correctCount=0;
+
+// 建立紅框
+const redBoxes=[];
 coords.forEach((pt,i)=>{
-  const box = document.createElement('div');
+  const box=document.createElement('div');
   box.className='red-box';
   box.textContent=i+1;
   box.style.left=pt.x+'%';
   box.style.top=pt.y+'%';
   mapArea.appendChild(box);
+  redBoxes.push(box);
 });
 
-// 郵票生成函式，帶編號
+// 郵票生成
 function createStamps(container,start,end){
   for(let i=start;i<=end;i++){
     const wrapper=document.createElement('div');
@@ -172,7 +197,7 @@ function createStamps(container,start,end){
     img.src=`game4_assets/stamp${i}.jpg`;
     img.className='stamp';
     img.draggable=true;
-    img.dataset.id=`stamp${i}`;
+    img.dataset.id=i;
     const label=document.createElement('span');
     label.className='stamp-number';
     label.textContent=i;
@@ -182,23 +207,20 @@ function createStamps(container,start,end){
   }
 }
 
-// 左右各 6 張 2×3 排列
-createStamps(document.getElementById('left-stamps'),1,6);
-createStamps(document.getElementById('right-stamps'),7,12);
+createStamps(leftStamps,1,6);
+createStamps(rightStamps,7,12);
 
 // 對位校正模式
 let calibrationMode=false;
 document.getElementById('toggle-calibration').addEventListener('click',()=>{
   calibrationMode=!calibrationMode;
-  alert(calibrationMode?"進入對位校正模式，可拖曳紅框調整位置":"退出對位校正模式");
+  alert(calibrationMode?"進入對位校正模式，可拖曳紅框":"退出對位校正模式");
 });
 
-// 匯出座標並自動複製
+// 匯出座標自動複製
 document.getElementById('export-coords').addEventListener('click',()=>{
   const result=[];
-  document.querySelectorAll('.red-box').forEach(box=>{
-    result.push({x:parseFloat(box.style.left),y:parseFloat(box.style.top)});
-  });
+  redBoxes.forEach(box=>result.push({x:parseFloat(box.style.left),y:parseFloat(box.style.top)}));
   const textarea=document.getElementById('copy-area');
   textarea.value=JSON.stringify(result,null,2);
   textarea.select();
@@ -208,12 +230,9 @@ document.getElementById('export-coords').addEventListener('click',()=>{
 
 // 紅框拖曳
 let currentBox=null;
-let offsetX=0,offsetY=0;
 document.addEventListener('mousedown',e=>{
   if(calibrationMode && e.target.classList.contains('red-box')){
     currentBox=e.target;
-    offsetX=e.offsetX;
-    offsetY=e.offsetY;
   }
 });
 document.addEventListener('mousemove',e=>{
@@ -226,6 +245,17 @@ document.addEventListener('mousemove',e=>{
   }
 });
 document.addEventListener('mouseup',()=>currentBox=null);
-</script>
-</body>
-</html>
+
+// 郵票拖放功能
+let dragging=null;
+document.addEventListener('dragstart',e=>{
+  if(e.target.classList.contains('stamp')){
+    dragging=e.target.parentElement;
+  }
+});
+document.addEventListener('dragend',e=>{
+  dragging=null;
+});
+
+redBoxes.forEach(box=>{
+  box.addEventListener
