@@ -32,17 +32,13 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 }
 
 .stamp-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 280px; /* 2排直列高度 */
-}
-
-.stamp-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  grid-template-rows: repeat(2, 120px);
   gap: 10px;
+  justify-content: center;
+  align-content: center;
+  margin-top: 60px; /* 往下置中 */
 }
 
 .stamp {
@@ -140,8 +136,6 @@ coords.forEach((pt)=>{ redBoxes.push({left:pt.x,top:pt.y,matched:false}); });
 // 郵票生成 2排×3張
 function createStamps(container,start){
   for(let i=0;i<2;i++){
-    const row=document.createElement('div');
-    row.className='stamp-row';
     for(let j=0;j<3;j++){
       const index=start+i*3+j;
       if(index>12) continue;
@@ -150,9 +144,8 @@ function createStamps(container,start){
       img.className='stamp';
       img.draggable=true;
       img.dataset.id=index;
-      row.appendChild(img);
+      container.appendChild(img);
     }
-    container.appendChild(row);
   }
 }
 
@@ -177,6 +170,7 @@ document.addEventListener('drop',e=>{
   if(!dragging) return;
   const stampId=parseInt(dragging.dataset.id);
   const mapRect=mapArea.getBoundingClientRect();
+  let matchedFlag=false;
   redBoxes.forEach((box,i)=>{
     if(box.matched) return;
     const boxPixel={
@@ -190,18 +184,21 @@ document.addEventListener('drop',e=>{
       if(answerKey[i+1]===stampId){
         box.matched=true;
         correctCount++;
+        matchedFlag=true;
+        // 絕對定位吸附
+        const mapWidth=mapArea.offsetWidth;
+        const mapHeight=mapArea.offsetHeight;
         dragging.style.position='absolute';
-        dragging.style.left=(box.left)+'%';
-        dragging.style.top=(box.top)+'%';
         dragging.style.width='80px';
         dragging.style.height='80px';
+        dragging.style.left=(box.left/100*mapWidth)+'px';
+        dragging.style.top=(box.top/100*mapHeight)+'px';
         mapArea.appendChild(dragging);
         new Audio(`game4_assets/stamp${stampId}.mp3`).play();
-      }else{
-        new Audio('game4_assets/wrong.mp3').play();
       }
     }
   });
+  if(!matchedFlag) new Audio('game4_assets/wrong.mp3').play();
   if(correctCount===12){
     new Audio('game4_assets/victory.mp3').play();
     victoryText.style.transform='translate(-50%,-50%) scale(1)';
