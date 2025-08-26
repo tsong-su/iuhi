@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>臺灣北部地區&注音符號郵票配對遊戲</title>
+<title>臺灣北部地區郵票配對遊戲</title>
 <style>
 body {
   margin: 0;
@@ -37,8 +37,8 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   grid-template-rows: repeat(2, 120px);
   gap: 10px;
   justify-content: center;
-  align-content: center;
-  padding: 10px;
+  align-content: start;
+  margin-top: 50px; /* 往下修至置中 */
 }
 
 .stamp-wrapper {
@@ -56,21 +56,6 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   cursor: grab;
 }
 
-.stamp-number {
-  position: absolute;
-  font-size: 12px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  top: 2px;
-  right: 2px;
-  pointer-events: none;
-}
-
 .map-area {
   position: relative;
   margin: 0 20px;
@@ -82,21 +67,17 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   display: block;
 }
 
-.red-box {
+#victory-text {
   position: absolute;
-  width: 80px;
-  height: 80px;
-  border: 2px dashed red;
-  transform: translate(-50%, -50%);
-  cursor: move;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  font-size: 48px;
   font-weight: bold;
-  color: red;
-  background: transparent;
-  z-index: 5;
+  color: orange;
+  z-index: 10;
+  pointer-events: none;
+  transition: transform 1s ease;
 }
 
 .controls {
@@ -113,30 +94,12 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   font-size: 14px;
   cursor: pointer;
 }
-
-#copy-area {
-  position: absolute;
-  left: -9999px;
-}
-
-#victory-text {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  font-size: 48px;
-  font-weight: bold;
-  color: orange;
-  z-index: 10;
-  pointer-events: none;
-  transition: transform 1s ease;
-}
 </style>
 </head>
 <body>
 <header>
-<h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-<p>將郵票拖曳到對應紅框</p>
+<h1>臺灣北部地區郵票配對遊戲</h1>
+<p>將郵票拖曳到對應位置完成配對</p>
 </header>
 
 <div class="game-container">
@@ -150,11 +113,10 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 </div>
 
 <div class="controls">
-  <button id="toggle-calibration">切換對位校正模式</button>
-  <button id="export-coords">匯出座標</button>
+  <button onclick="location.reload()">閣耍一擺</button>
+  <button onclick="window.location.href='index.html'">回到遊戲首頁</button>
 </div>
 
-<textarea id="copy-area"></textarea>
 <div id="victory-text">有夠gâu</div>
 
 <script>
@@ -163,7 +125,7 @@ const leftStamps=document.getElementById('left-stamps');
 const rightStamps=document.getElementById('right-stamps');
 const victoryText=document.getElementById('victory-text');
 
-// 紅框座標
+// 紅框座標 (隱藏，用於碰撞判斷)
 const coords=[
   {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
   {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
@@ -173,19 +135,16 @@ const coords=[
 // 紅框對應郵票
 const answerKey={1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
 
-// 記錄已正確配對數
 let correctCount=0;
 
-// 建立紅框
+// 建立紅框位置資料 (隱藏)
 const redBoxes=[];
 coords.forEach((pt,i)=>{
-  const box=document.createElement('div');
-  box.className='red-box';
-  box.textContent=i+1;
-  box.style.left=pt.x+'%';
-  box.style.top=pt.y+'%';
-  mapArea.appendChild(box);
-  redBoxes.push(box);
+  redBoxes.push({
+    left: pt.x,
+    top: pt.y,
+    matched: false
+  });
 });
 
 // 郵票生成
@@ -198,11 +157,7 @@ function createStamps(container,start,end){
     img.className='stamp';
     img.draggable=true;
     img.dataset.id=i;
-    const label=document.createElement('span');
-    label.className='stamp-number';
-    label.textContent=i;
     wrapper.appendChild(img);
-    wrapper.appendChild(label);
     container.appendChild(wrapper);
   }
 }
@@ -210,87 +165,67 @@ function createStamps(container,start,end){
 createStamps(leftStamps,1,6);
 createStamps(rightStamps,7,12);
 
-// 對位校正模式
-let calibrationMode=false;
-document.getElementById('toggle-calibration').addEventListener('click',()=>{
-  calibrationMode=!calibrationMode;
-  alert(calibrationMode?"進入對位校正模式，可拖曳紅框":"退出對位校正模式");
-});
-
-// 匯出座標自動複製
-document.getElementById('export-coords').addEventListener('click',()=>{
-  const result=[];
-  redBoxes.forEach(box=>result.push({x:parseFloat(box.style.left),y:parseFloat(box.style.top)}));
-  const textarea=document.getElementById('copy-area');
-  textarea.value=JSON.stringify(result,null,2);
-  textarea.select();
-  document.execCommand('copy');
-  alert("座標已複製到剪貼簿！");
-});
-
-// 紅框拖曳
-let currentBox=null;
-document.addEventListener('mousedown',e=>{
-  if(calibrationMode && e.target.classList.contains('red-box')){
-    currentBox=e.target;
-  }
-});
-document.addEventListener('mousemove',e=>{
-  if(currentBox && calibrationMode){
-    const rect=mapArea.getBoundingClientRect();
-    const x=((e.clientX-rect.left)/rect.width)*100;
-    const y=((e.clientY-rect.top)/rect.height)*100;
-    currentBox.style.left=x+'%';
-    currentBox.style.top=y+'%';
-  }
-});
-document.addEventListener('mouseup',()=>currentBox=null);
-
-// 郵票拖放功能
+// 拖曳功能
 let dragging=null;
 document.addEventListener('dragstart',e=>{
   if(e.target.classList.contains('stamp')){
-    dragging=e.target.parentElement;
+    dragging=e.target;
   }
 });
 document.addEventListener('dragend',e=>{
   dragging=null;
 });
 
-redBoxes.forEach(box=>{
-  box.addEventListener('dragover',e=>{
-    e.preventDefault();
-  });
-  box.addEventListener('drop',e=>{
-    e.preventDefault();
-    if(!dragging) return;
-    const stampId=parseInt(dragging.querySelector('.stamp').dataset.id);
-    const boxNum=parseInt(box.textContent);
-    // 正確性檢查
-    if(answerKey[boxNum]===stampId){
-      box.style.border='2px solid green';
-      const audio=new Audio(`game4_assets/stamp${stampId}.mp3`);
-      audio.play();
-      correctCount++;
-      // 完全答對
-      if(correctCount===12){
-        const victory=new Audio('game4_assets/victory.mp3');
-        victory.play();
-        victoryText.style.transform='translate(-50%,-50%) scale(1)';
-        setTimeout(()=>victoryText.style.transform='translate(-50%,-50%) scale(0)',2000);
+// 判斷碰撞
+function isCollide(stampRect, boxRect){
+  return !(
+    stampRect.right<boxRect.left ||
+    stampRect.left>boxRect.right ||
+    stampRect.bottom<boxRect.top ||
+    stampRect.top>boxRect.bottom
+  );
+}
+
+// 拖曳時判斷是否放到對應位置
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{
+  if(!dragging) return;
+  const stampId=parseInt(dragging.dataset.id);
+  let matched=false;
+  const mapRect=mapArea.getBoundingClientRect();
+  redBoxes.forEach((box,i)=>{
+    if(box.matched) return;
+    const boxPixel={
+      left: mapRect.left + mapRect.width*box.left/100,
+      top: mapRect.top + mapRect.height*box.top/100,
+      right: mapRect.left + mapRect.width*box.left/100 + 80,
+      bottom: mapRect.top + mapRect.height*box.top/100 + 80
+    };
+    const stampRect=dragging.getBoundingClientRect();
+    if(isCollide(stampRect,boxPixel)){
+      // 判斷正確
+      if(answerKey[i+1]===stampId){
+        box.matched=true;
+        correctCount++;
+        dragging.style.position='absolute';
+        dragging.style.left=(box.left)+'%';
+        dragging.style.top=(box.top)+'%';
+        dragging.style.width='80px';
+        dragging.style.height='80px';
+        mapArea.appendChild(dragging);
+        new Audio(`game4_assets/stamp${stampId}.mp3`).play();
+        matched=true;
+      }else{
+        new Audio('game4_assets/wrong.mp3').play();
       }
-    }else{
-      box.style.border='2px solid red';
-      new Audio('game4_assets/wrong.mp3').play();
     }
-    // 放入框中並縮小
-    box.appendChild(dragging);
-    const img=dragging.querySelector('.stamp');
-    img.style.width='80px';
-    img.style.height='80px';
-    // 1.5秒後恢復紅框顏色
-    setTimeout(()=>{box.style.border='2px dashed red';},1500);
   });
+  // 完全答對
+  if(correctCount===12){
+    new Audio('game4_assets/victory.mp3').play();
+    victoryText.style.transform='translate(-50%,-50%) scale(1)';
+    setTimeout(()=>victoryText.style.transform='translate(-50%,-50%) scale(0)',2000);
+  }
 });
 </script>
 </body>
