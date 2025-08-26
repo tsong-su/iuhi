@@ -1,192 +1,258 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <title>臺灣北部地區&注音符號郵票配對遊戲</title>
   <style>
     body {
       margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
-      text-align: center;
-      background: #fff;
-      overflow: hidden; /* 去掉捲軸 */
-    }
-    h1 {
-      margin: 10px 0 5px 0;
-      font-size: 22px;
-    }
-    h2 {
-      margin: 0 0 15px 0;
-      font-size: 16px;
-      font-weight: normal;
-      color: #444;
-    }
-    #game-container {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      height: calc(100vh - 100px);
-      padding: 0 40px; /* 往外推，避免太擠 */
-      box-sizing: border-box;
+      justify-content: flex-start;
+      height: 100vh;
+      overflow: hidden; /* 不要捲軸 */
+      background: #fff;
     }
-    #stamps-left, #stamps-right {
+
+    header {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header p {
+      margin: 4px 0 10px 0;
+      font-size: 14px;
+    }
+
+    .game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      width: 100%;
+    }
+
+    .stamp-container {
       display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(2, 100px);
+      grid-template-columns: repeat(3, 120px);
+      grid-template-rows: repeat(2, 120px);
       gap: 10px;
+      padding: 10px;
     }
+
     .stamp {
-      width: 100px;
-      height: 100px;
-      cursor: grab;
-      border: 1px solid #ccc;
+      width: 120px;
+      height: 120px;
       object-fit: cover;
+      border: 2px solid #333;
+      border-radius: 8px;
+      cursor: grab;
     }
-    #map-container {
+
+    .map-area {
       position: relative;
-      flex: 0 0 auto;
+      margin: 0 20px;
     }
-    #map {
-      width: 500px; /* 固定地圖大小 */
+
+    .map {
+      max-height: 70vh; /* 固定大小 */
       height: auto;
       display: block;
     }
-    .drop-zone {
+
+    .red-box {
       position: absolute;
-      width: 100px;
+      width: 100px; /* 和實線框一樣大小 */
       height: 100px;
       border: 2px dashed red;
+      transform: translate(-50%, -50%);
+      cursor: move;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 12px;
+      font-weight: bold;
       color: red;
-      pointer-events: none;
-      box-sizing: border-box;
+      background: transparent;
+      z-index: 5;
     }
-    #controls {
-      margin-top: 15px;
+
+    .controls {
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+      background: #f8f8f8;
+      border-top: 1px solid #ccc;
     }
-    button {
-      margin: 5px;
-      padding: 8px 16px;
+
+    .controls button {
+      margin: 0 10px;
+      padding: 6px 12px;
       font-size: 14px;
       cursor: pointer;
+    }
+
+    /* 拖曳到正確框時，郵票會縮小 */
+    .droppable-hover {
+      transform: scale(0.83); /* 120px → 100px */
+      transition: transform 0.2s ease;
     }
   </style>
 </head>
 <body>
-  <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-  <h2>共郵票 suá 到對應的縣市格仔內</h2>
+  <header>
+    <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
+    <p>共郵票 suá 到對應的縣市格仔內</p>
+  </header>
 
-  <div id="game-container">
+  <div class="game-container">
     <!-- 左側郵票 -->
-    <div id="stamps-left"></div>
+    <div class="stamp-container" id="left-stamps"></div>
 
-    <!-- 地圖與紅框 -->
-    <div id="map-container">
-      <img id="map" src="game4_assets/north_map.png" alt="地圖">
-      <!-- 紅框 (12個) -->
+    <!-- 地圖區 -->
+    <div class="map-area">
+      <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
+      <!-- 紅框們 (12 個) -->
     </div>
 
     <!-- 右側郵票 -->
-    <div id="stamps-right"></div>
+    <div class="stamp-container" id="right-stamps"></div>
   </div>
 
-  <!-- 控制區 -->
-  <div id="controls">
-    <button onclick="toggleCalibration()">切換對位校正模式</button>
-    <button onclick="exportCoordinates()">匯出座標</button>
+  <!-- 工具列 -->
+  <div class="controls">
+    <button id="toggle-calibration">切換對位校正模式</button>
+    <button id="export-coords">匯出座標</button>
   </div>
 
   <script>
-    const stampContainerLeft = document.getElementById("stamps-left");
-    const stampContainerRight = document.getElementById("stamps-right");
-    const mapContainer = document.getElementById("map-container");
-    let calibrationMode = false;
-    let dropZones = [];
-    const stamps = 12;
-
-    // 初始化郵票 (左右各一組)
-    for (let i = 1; i <= stamps; i++) {
-      const imgLeft = document.createElement("img");
-      imgLeft.src = `game4_assets/stamp${i}.jpg`;
-      imgLeft.className = "stamp";
-      imgLeft.draggable = true;
-      stampContainerLeft.appendChild(imgLeft);
-
-      const imgRight = document.createElement("img");
-      imgRight.src = `game4_assets/stamp${i}.jpg`;
-      imgRight.className = "stamp";
-      imgRight.draggable = true;
-      stampContainerRight.appendChild(imgRight);
-    }
-
-    // 初始化紅框 (12 個)
     const coords = [
-      { x: 28, y: 16 }, { x: 54, y: 9 }, { x: 70, y: 10 }, { x: 84, y: 25 },
-      { x: 23, y: 38 }, { x: 42, y: 19 }, { x: 80, y: 46 }, { x: 16, y: 59 },
-      { x: 20, y: 90 }, { x: 54, y: 80 }, { x: 66, y: 58 }, { x: 40, y: 92 }
+      {x: 27.9921, y: 15.6464},
+      {x: 54.4882, y: 8.5199},
+      {x: 70.3543, y: 10.2262},
+      {x: 83.8583, y: 25.4198},
+      {x: 22.7362, y: 37.5369},
+      {x: 42.1260, y: 19.3719},
+      {x: 80.1378, y: 46.3522},
+      {x: 15.8661, y: 59.4275},
+      {x: 19.6260, y: 89.9254},
+      {x: 54.0945, y: 79.6603},
+      {x: 66.4173, y: 57.6667},
+      {x: 40.2362, y: 91.6842}
     ];
 
-    coords.forEach((c, idx) => {
-      const zone = document.createElement("div");
-      zone.className = "drop-zone";
-      zone.style.left = c.x + "%";
-      zone.style.top = c.y + "%";
-      zone.innerText = idx + 1;
-      mapContainer.appendChild(zone);
-      dropZones.push(zone);
+    const mapArea = document.querySelector('.map-area');
+    const mapImg = document.getElementById('map');
+
+    // 加入紅框
+    coords.forEach((pt, i) => {
+      const box = document.createElement('div');
+      box.className = 'red-box';
+      box.textContent = i + 1;
+      box.style.left = pt.x + '%';
+      box.style.top = pt.y + '%';
+      mapArea.appendChild(box);
     });
 
-    // 切換對位校正模式
-    function toggleCalibration() {
-      calibrationMode = !calibrationMode;
-      alert(calibrationMode ? "進入對位校正模式，可拖曳紅框調整位置" : "退出對位校正模式");
-
-      dropZones.forEach(zone => {
-        zone.style.pointerEvents = calibrationMode ? "auto" : "none";
-        zone.style.cursor = calibrationMode ? "move" : "default";
-
-        if (calibrationMode) {
-          zone.onmousedown = function(e) {
-            const shiftX = e.clientX - zone.getBoundingClientRect().left;
-            const shiftY = e.clientY - zone.getBoundingClientRect().top;
-
-            function moveAt(pageX, pageY) {
-              const rect = mapContainer.getBoundingClientRect();
-              zone.style.left = ((pageX - rect.left - shiftX) / rect.width * 100) + "%";
-              zone.style.top = ((pageY - rect.top - shiftY) / rect.height * 100) + "%";
-            }
-
-            function onMouseMove(e) {
-              moveAt(e.pageX, e.pageY);
-            }
-
-            document.addEventListener("mousemove", onMouseMove);
-
-            zone.onmouseup = function() {
-              document.removeEventListener("mousemove", onMouseMove);
-              zone.onmouseup = null;
-            };
-          };
-
-          zone.ondragstart = () => false;
-        } else {
-          zone.onmousedown = null;
-        }
-      });
+    // 加入郵票
+    const leftStamps = document.getElementById('left-stamps');
+    const rightStamps = document.getElementById('right-stamps');
+    for (let i = 1; i <= 6; i++) {
+      const img = document.createElement('img');
+      img.src = `game4_assets/stamp${i}.jpg`;
+      img.className = 'stamp';
+      img.draggable = true;
+      leftStamps.appendChild(img);
+    }
+    for (let i = 7; i <= 12; i++) {
+      const img = document.createElement('img');
+      img.src = `game4_assets/stamp${i}.jpg`;
+      img.className = 'stamp';
+      img.draggable = true;
+      rightStamps.appendChild(img);
     }
 
     // 匯出座標
-    function exportCoordinates() {
-      let output = "";
-      dropZones.forEach((z, idx) => {
-        output += `${idx + 1} → left:${z.style.left}, top:${z.style.top}\n`;
+    document.getElementById('export-coords').addEventListener('click', () => {
+      let result = [];
+      document.querySelectorAll('.red-box').forEach(box => {
+        const left = parseFloat(box.style.left);
+        const top = parseFloat(box.style.top);
+        result.push({x: left, y: top});
       });
-      // 可直接複製貼回
-      prompt("紅框座標 (可複製)：", output);
-    }
+      alert("匯出座標：\n" + JSON.stringify(result, null, 2));
+    });
+
+    // 對位校正模式
+    let calibrationMode = false;
+    document.getElementById('toggle-calibration').addEventListener('click', () => {
+      calibrationMode = !calibrationMode;
+      alert(calibrationMode ? "進入對位校正模式，可拖曳紅框調整位置" : "退出對位校正模式");
+    });
+
+    // 紅框拖曳
+    let currentBox = null;
+    let offsetX, offsetY;
+
+    document.addEventListener('mousedown', e => {
+      if (calibrationMode && e.target.classList.contains('red-box')) {
+        currentBox = e.target;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+      }
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (currentBox && calibrationMode) {
+        const rect = mapArea.getBoundingClientRect();
+        let x = ((e.clientX - rect.left) / rect.width) * 100;
+        let y = ((e.clientY - rect.top) / rect.height) * 100;
+        currentBox.style.left = x + '%';
+        currentBox.style.top = y + '%';
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      currentBox = null;
+    });
+
+    // 郵票拖曳效果 (hover 縮小)
+    const redBoxes = document.querySelectorAll('.red-box');
+    const stamps = document.querySelectorAll('.stamp');
+
+    stamps.forEach(stamp => {
+      stamp.addEventListener('dragstart', () => {
+        stamp.classList.add('dragging');
+      });
+      stamp.addEventListener('dragend', () => {
+        stamp.classList.remove('dragging');
+      });
+    });
+
+    redBoxes.forEach(box => {
+      box.addEventListener('dragover', e => {
+        e.preventDefault();
+        document.querySelector('.dragging').classList.add('droppable-hover');
+      });
+      box.addEventListener('dragleave', () => {
+        document.querySelector('.dragging').classList.remove('droppable-hover');
+      });
+      box.addEventListener('drop', e => {
+        e.preventDefault();
+        const stamp = document.querySelector('.dragging');
+        stamp.classList.remove('droppable-hover');
+        box.appendChild(stamp);
+        stamp.style.width = "100px";
+        stamp.style.height = "100px";
+      });
+    });
   </script>
 </body>
 </html>
