@@ -258,4 +258,40 @@ document.addEventListener('dragend',e=>{
 });
 
 redBoxes.forEach(box=>{
-  box.addEventListener
+  box.addEventListener('dragover',e=>{
+    e.preventDefault();
+  });
+  box.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(!dragging) return;
+    const stampId=parseInt(dragging.querySelector('.stamp').dataset.id);
+    const boxNum=parseInt(box.textContent);
+    // 正確性檢查
+    if(answerKey[boxNum]===stampId){
+      box.style.border='2px solid green';
+      const audio=new Audio(`game4_assets/stamp${stampId}.mp3`);
+      audio.play();
+      correctCount++;
+      // 完全答對
+      if(correctCount===12){
+        const victory=new Audio('game4_assets/victory.mp3');
+        victory.play();
+        victoryText.style.transform='translate(-50%,-50%) scale(1)';
+        setTimeout(()=>victoryText.style.transform='translate(-50%,-50%) scale(0)',2000);
+      }
+    }else{
+      box.style.border='2px solid red';
+      new Audio('game4_assets/wrong.mp3').play();
+    }
+    // 放入框中並縮小
+    box.appendChild(dragging);
+    const img=dragging.querySelector('.stamp');
+    img.style.width='80px';
+    img.style.height='80px';
+    // 1.5秒後恢復紅框顏色
+    setTimeout(()=>{box.style.border='2px dashed red';},1500);
+  });
+});
+</script>
+</body>
+</html>
