@@ -38,7 +38,7 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
   gap: 10px;
   justify-content: center;
   align-content: center;
-  margin-top: 60px; /* 往下置中 */
+  margin-top: 120px; /* 往下置中 */
 }
 
 .stamp {
@@ -114,24 +114,24 @@ header p { margin: 4px 0 10px 0; font-size: 14px; }
 <div id="victory-text">有夠gâu</div>
 
 <script>
-const leftStamps=document.getElementById('left-stamps');
-const rightStamps=document.getElementById('right-stamps');
-const mapArea=document.querySelector('.map-area');
-const victoryText=document.getElementById('victory-text');
+const leftStamps = document.getElementById('left-stamps');
+const rightStamps = document.getElementById('right-stamps');
+const mapArea = document.querySelector('.map-area');
+const victoryText = document.getElementById('victory-text');
 
 // 紅框座標 (隱藏)
-const coords=[
+const coords = [
   {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
   {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
   {x:11.2903,y:89.8347},{x:55.2266,y:79.677},{x:71.0698,y:57.33},{x:37.5868,y:91.8662}
 ];
 
 // 紅框對應郵票
-const answerKey={1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
+const answerKey = {1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
 
-let correctCount=0;
-const redBoxes=[];
-coords.forEach((pt)=>{ redBoxes.push({left:pt.x,top:pt.y,matched:false}); });
+let correctCount = 0;
+const redBoxes = [];
+coords.forEach(pt => { redBoxes.push({left:pt.x,top:pt.y,matched:false}); });
 
 // 郵票生成 2排×3張
 function createStamps(container,start){
@@ -148,58 +148,61 @@ function createStamps(container,start){
     }
   }
 }
-
 createStamps(leftStamps,1);
 createStamps(rightStamps,7);
 
 // 拖曳事件
-let dragging=null;
+let dragging = null;
 document.addEventListener('dragstart',e=>{
   if(e.target.classList.contains('stamp')) dragging=e.target;
 });
 document.addEventListener('dragend',e=>{ dragging=null; });
 
-// 判斷碰撞
-function isCollide(stampRect, boxRect){
-  return !(stampRect.right<boxRect.left || stampRect.left>boxRect.right ||
-           stampRect.bottom<boxRect.top || stampRect.top>boxRect.bottom);
-}
-
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{
   if(!dragging) return;
-  const stampId=parseInt(dragging.dataset.id);
-  const mapRect=mapArea.getBoundingClientRect();
-  let matchedFlag=false;
+  const stampId = parseInt(dragging.dataset.id);
+  const mapRect = mapArea.getBoundingClientRect();
+  let matchedFlag = false;
+
   redBoxes.forEach((box,i)=>{
     if(box.matched) return;
-    const boxPixel={
-      left: mapRect.left + mapRect.width*box.left/100,
-      top: mapRect.top + mapRect.height*box.top/100,
-      right: mapRect.left + mapRect.width*box.left/100 + 80,
-      bottom: mapRect.top + mapRect.height*box.top/100 + 80
-    };
-    const stampRect=dragging.getBoundingClientRect();
-    if(isCollide(stampRect,boxPixel)){
-      if(answerKey[i+1]===stampId){
-        box.matched=true;
+
+    // 計算紅框像素位置
+    const boxLeft = mapRect.left + mapRect.width * box.left / 100;
+    const boxTop = mapRect.top + mapRect.height * box.top / 100;
+    const boxRight = boxLeft + 80;
+    const boxBottom = boxTop + 80;
+
+    // 郵票中心點
+    const stampRect = dragging.getBoundingClientRect();
+    const centerX = stampRect.left + stampRect.width/2;
+    const centerY = stampRect.top + stampRect.height/2;
+
+    if(centerX>=boxLeft && centerX<=boxRight && centerY>=boxTop && centerY<=boxBottom){
+      if(answerKey[i+1] === stampId){
+        box.matched = true;
+        matchedFlag = true;
         correctCount++;
-        matchedFlag=true;
-        // 絕對定位吸附
-        const mapWidth=mapArea.offsetWidth;
-        const mapHeight=mapArea.offsetHeight;
+
+        // 吸附到紅框
+        const mapWidth = mapArea.offsetWidth;
+        const mapHeight = mapArea.offsetHeight;
         dragging.style.position='absolute';
         dragging.style.width='80px';
         dragging.style.height='80px';
-        dragging.style.left=(box.left/100*mapWidth)+'px';
-        dragging.style.top=(box.top/100*mapHeight)+'px';
+        dragging.style.left = (box.left/100*mapWidth)+'px';
+        dragging.style.top = (box.top/100*mapHeight)+'px';
         mapArea.appendChild(dragging);
+
         new Audio(`game4_assets/stamp${stampId}.mp3`).play();
       }
     }
   });
+
   if(!matchedFlag) new Audio('game4_assets/wrong.mp3').play();
-  if(correctCount===12){
+
+  if(correctCount === 12){
     new Audio('game4_assets/victory.mp3').play();
     victoryText.style.transform='translate(-50%,-50%) scale(1)';
     setTimeout(()=>victoryText.style.transform='translate(-50%,-50%) scale(0)',2000);
