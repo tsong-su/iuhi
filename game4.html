@@ -13,7 +13,7 @@
       align-items: center;
       justify-content: flex-start;
       height: 100vh;
-      overflow: hidden; /* 不要捲軸 */
+      overflow: hidden;
       background: #fff;
     }
 
@@ -45,6 +45,7 @@
       grid-template-rows: repeat(2, 120px);
       gap: 10px;
       padding: 10px;
+      position: relative;
     }
 
     .stamp {
@@ -54,6 +55,22 @@
       border: 2px solid #333;
       border-radius: 8px;
       cursor: grab;
+      position: relative;
+    }
+
+    .stamp-number {
+      position: absolute;
+      font-size: 12px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      top: 2px;
+      right: 2px;
+      pointer-events: none;
     }
 
     .map-area {
@@ -62,14 +79,14 @@
     }
 
     .map {
-      max-height: 70vh; /* 固定大小 */
+      max-height: 70vh;
       height: auto;
       display: block;
     }
 
     .red-box {
       position: absolute;
-      width: 100px; /* 和實線框一樣大小 */
+      width: 100px;
       height: 100px;
       border: 2px dashed red;
       transform: translate(-50%, -50%);
@@ -99,9 +116,8 @@
       cursor: pointer;
     }
 
-    /* 拖曳到正確框時，郵票會縮小 */
     .droppable-hover {
-      transform: scale(0.83); /* 120px → 100px */
+      transform: scale(0.83);
       transition: transform 0.2s ease;
     }
   </style>
@@ -113,43 +129,35 @@
   </header>
 
   <div class="game-container">
-    <!-- 左側郵票 -->
     <div class="stamp-container" id="left-stamps"></div>
 
-    <!-- 地圖區 -->
     <div class="map-area">
       <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
-      <!-- 紅框們 (12 個) -->
     </div>
 
-    <!-- 右側郵票 -->
     <div class="stamp-container" id="right-stamps"></div>
   </div>
 
-  <!-- 工具列 -->
   <div class="controls">
     <button id="toggle-calibration">切換對位校正模式</button>
     <button id="export-coords">匯出座標</button>
   </div>
 
   <script>
+    // 紅框座標
     const coords = [
-      {x: 27.9921, y: 15.6464},
-      {x: 54.4882, y: 8.5199},
-      {x: 70.3543, y: 10.2262},
-      {x: 83.8583, y: 25.4198},
-      {x: 22.7362, y: 37.5369},
-      {x: 42.1260, y: 19.3719},
-      {x: 80.1378, y: 46.3522},
-      {x: 15.8661, y: 59.4275},
-      {x: 19.6260, y: 89.9254},
-      {x: 54.0945, y: 79.6603},
-      {x: 66.4173, y: 57.6667},
-      {x: 40.2362, y: 91.6842}
+      {x: 27.9921, y: 15.6464}, {x: 54.4882, y: 8.5199}, {x: 70.3543, y: 10.2262},
+      {x: 83.8583, y: 25.4198}, {x: 22.7362, y: 37.5369}, {x: 42.1260, y: 19.3719},
+      {x: 80.1378, y: 46.3522}, {x: 15.8661, y: 59.4275}, {x: 19.6260, y: 89.9254},
+      {x: 54.0945, y: 79.6603}, {x: 66.4173, y: 57.6667}, {x: 40.2362, y: 91.6842}
     ];
 
+    const answerKey = {
+      "stamp1": 3, "stamp2": 1, "stamp3": 5, "stamp4": 2, "stamp5": 6, "stamp6": 4,
+      "stamp7": 9, "stamp8": 7, "stamp9": 12, "stamp10": 8, "stamp11": 11, "stamp12": 10
+    };
+
     const mapArea = document.querySelector('.map-area');
-    const mapImg = document.getElementById('map');
 
     // 加入紅框
     coords.forEach((pt, i) => {
@@ -162,33 +170,25 @@
     });
 
     // 加入郵票
-    const leftStamps = document.getElementById('left-stamps');
-    const rightStamps = document.getElementById('right-stamps');
-    for (let i = 1; i <= 6; i++) {
-      const img = document.createElement('img');
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.className = 'stamp';
-      img.draggable = true;
-      leftStamps.appendChild(img);
-    }
-    for (let i = 7; i <= 12; i++) {
-      const img = document.createElement('img');
-      img.src = `game4_assets/stamp${i}.jpg`;
-      img.className = 'stamp';
-      img.draggable = true;
-      rightStamps.appendChild(img);
+    function createStamp(container, start, end) {
+      for (let i = start; i <= end; i++) {
+        const img = document.createElement('img');
+        img.src = `game4_assets/stamp${i}.jpg`;
+        img.className = 'stamp';
+        img.draggable = true;
+        img.dataset.id = `stamp${i}`;
+
+        const label = document.createElement('div');
+        label.className = 'stamp-number';
+        label.textContent = i;
+        img.appendChild(label);
+
+        container.appendChild(img);
+      }
     }
 
-    // 匯出座標
-    document.getElementById('export-coords').addEventListener('click', () => {
-      let result = [];
-      document.querySelectorAll('.red-box').forEach(box => {
-        const left = parseFloat(box.style.left);
-        const top = parseFloat(box.style.top);
-        result.push({x: left, y: top});
-      });
-      alert("匯出座標：\n" + JSON.stringify(result, null, 2));
-    });
+    createStamp(document.getElementById('left-stamps'), 1, 6);
+    createStamp(document.getElementById('right-stamps'), 7, 12);
 
     // 對位校正模式
     let calibrationMode = false;
@@ -197,10 +197,20 @@
       alert(calibrationMode ? "進入對位校正模式，可拖曳紅框調整位置" : "退出對位校正模式");
     });
 
+    // 匯出座標
+    document.getElementById('export-coords').addEventListener('click', () => {
+      let result = [];
+      document.querySelectorAll('.red-box').forEach(box => {
+        result.push({
+          x: parseFloat(box.style.left),
+          y: parseFloat(box.style.top)
+        });
+      });
+      alert("匯出座標：\n" + JSON.stringify(result, null, 2));
+    });
+
     // 紅框拖曳
     let currentBox = null;
-    let offsetX, offsetY;
-
     document.addEventListener('mousedown', e => {
       if (calibrationMode && e.target.classList.contains('red-box')) {
         currentBox = e.target;
@@ -219,40 +229,52 @@
       }
     });
 
-    document.addEventListener('mouseup', () => {
-      currentBox = null;
+    document.addEventListener('mouseup', () => currentBox = null);
+
+    // 郵票拖曳效果
+    let draggingStamp = null;
+    document.querySelectorAll('.stamp').forEach(stamp => {
+      stamp.addEventListener('dragstart', () => draggingStamp = stamp);
+      stamp.addEventListener('dragend', () => draggingStamp = null);
     });
 
-    // 郵票拖曳效果 (hover 縮小)
-    const redBoxes = document.querySelectorAll('.red-box');
-    const stamps = document.querySelectorAll('.stamp');
-
-    stamps.forEach(stamp => {
-      stamp.addEventListener('dragstart', () => {
-        stamp.classList.add('dragging');
-      });
-      stamp.addEventListener('dragend', () => {
-        stamp.classList.remove('dragging');
-      });
-    });
-
-    redBoxes.forEach(box => {
+    document.querySelectorAll('.red-box').forEach(box => {
       box.addEventListener('dragover', e => {
         e.preventDefault();
-        document.querySelector('.dragging').classList.add('droppable-hover');
+        if (draggingStamp) draggingStamp.classList.add('droppable-hover');
       });
       box.addEventListener('dragleave', () => {
-        document.querySelector('.dragging').classList.remove('droppable-hover');
+        if (draggingStamp) draggingStamp.classList.remove('droppable-hover');
       });
       box.addEventListener('drop', e => {
         e.preventDefault();
-        const stamp = document.querySelector('.dragging');
-        stamp.classList.remove('droppable-hover');
-        box.appendChild(stamp);
-        stamp.style.width = "100px";
-        stamp.style.height = "100px";
+        if (!draggingStamp) return;
+        draggingStamp.classList.remove('droppable-hover');
+        box.appendChild(draggingStamp);
+        draggingStamp.style.width = "100px";
+        draggingStamp.style.height = "100px";
+
+        const stampId = draggingStamp.dataset.id;
+        const boxNumber = parseInt(box.textContent);
+
+        if (answerKey[stampId] === boxNumber) {
+          box.style.borderColor = 'green';
+          playSound(`${stampId}.mp3`);
+        } else {
+          box.style.borderColor = 'red';
+          playSound('wrong.mp3');
+        }
+
+        setTimeout(() => {
+          box.style.borderColor = 'red';
+        }, 1500);
       });
     });
+
+    function playSound(filename) {
+      const audio = new Audio(`game4_assets/${filename}`);
+      audio.play();
+    }
   </script>
 </body>
 </html>
