@@ -20,7 +20,7 @@
     .stamp {
       width: 80px;
       cursor: grab;
-      position: absolute;
+      position: relative;
       z-index: 10;
     }
     .target {
@@ -97,7 +97,9 @@
     const mapContainer = document.getElementById("map-container");
     const map = document.getElementById("map");
 
-    // 建立郵票元素
+    let draggedStamp = null;
+    let originalParent = null;
+
     function createStamps() {
       const leftContainer = document.createElement("div");
       leftContainer.id = "stamps-left";
@@ -123,23 +125,21 @@
       });
     }
 
-    // 建立目標區域
     function createTargets() {
       stampsData.forEach(stamp => {
         const div = document.createElement("div");
         div.classList.add("target");
         div.dataset.id = stamp.id;
 
-        const rect = map.getBoundingClientRect();
         div.style.left = (map.width * stamp.target.x / 100) + "px";
         div.style.top = (map.height * stamp.target.y / 100) + "px";
         mapContainer.appendChild(div);
       });
     }
 
-    let draggedStamp = null;
     function dragStart(e) {
       draggedStamp = e.target;
+      originalParent = draggedStamp.parentNode;
     }
 
     mapContainer.addEventListener("dragover", e => {
@@ -168,6 +168,7 @@
             checkVictory();
           } else {
             playSound("game4_assets/wrong.mp3");
+            originalParent.appendChild(draggedStamp);
           }
           placed = true;
         }
@@ -175,6 +176,7 @@
 
       if (!placed) {
         playSound("game4_assets/wrong.mp3");
+        originalParent.appendChild(draggedStamp);
       }
     });
 
