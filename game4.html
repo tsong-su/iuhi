@@ -1,229 +1,211 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>臺灣北部地區&注音符號郵票配對遊戲</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      overflow: hidden;
-      background: #fff;
-    }
+<meta charset="UTF-8">
+<title>臺灣北部地區&注音符號郵票配對遊戲</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+  }
+  header {
+    text-align: center;
+    margin: 10px 0;
+  }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 10px 0; font-size: 14px; }
 
-    header {
-      text-align: center;
-      margin: 10px 0;
-    }
+  .game-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex: 1;
+    width: 100%;
+    padding: 10px;
+  }
 
-    header h1 {
-      margin: 0;
-      font-size: 20px;
-    }
-    header p {
-      margin: 4px 0 10px 0;
-      font-size: 14px;
-    }
+  .stamp-container {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(2, 120px);
+    gap: 10px;
+    padding: 10px;
+  }
 
-    .game-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      flex: 1;
-      width: 100%;
-      padding: 10px;
-    }
+  .stamp {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 2px solid #333;
+    border-radius: 8px;
+    cursor: grab;
+    position: relative;
+  }
 
-    .stamp-container {
-      display: grid;
-      grid-template-columns: repeat(3, 120px);
-      grid-template-rows: repeat(2, 120px);
-      gap: 10px;
-      padding: 10px;
-      position: relative;
-    }
+  .stamp-number {
+    position: absolute;
+    font-size: 12px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 2px;
+    right: 2px;
+    pointer-events: none;
+  }
 
-    .stamp {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border: 2px solid #333;
-      border-radius: 8px;
-      cursor: grab;
-      position: relative;
-    }
+  .map-area {
+    position: relative;
+    margin: 0 20px;
+  }
 
-    .stamp-number {
-      position: absolute;
-      font-size: 12px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      top: 2px;
-      right: 2px;
-      pointer-events: none;
-    }
+  .map {
+    max-height: 70vh;
+    height: auto;
+    display: block;
+  }
 
-    .map-area {
-      position: relative;
-      margin: 0 20px;
-    }
+  .red-box {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 2px dashed red;
+    transform: translate(-50%, -50%);
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: red;
+    background: transparent;
+    z-index: 5;
+  }
 
-    .map {
-      max-height: 70vh;
-      height: auto;
-      display: block;
-    }
+  .controls {
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+    background: #f8f8f8;
+    border-top: 1px solid #ccc;
+  }
 
-    .red-box {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      border: 2px dashed red;
-      transform: translate(-50%, -50%);
-      cursor: move;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      color: red;
-      background: transparent;
-      z-index: 5;
-    }
-
-    .controls {
-      width: 100%;
-      text-align: center;
-      padding: 10px 0;
-      background: #f8f8f8;
-      border-top: 1px solid #ccc;
-    }
-
-    .controls button {
-      margin: 0 10px;
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-  </style>
+  .controls button {
+    margin: 0 10px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
-    <p>共郵票 suá 到對應的縣市格仔內</p>
-  </header>
+<header>
+<h1>臺灣北部地區&注音符號郵票配對遊戲</h1>
+<p>共郵票 suá 到對應的縣市格仔內</p>
+</header>
 
-  <div class="game-container">
-    <!-- 左側郵票 -->
-    <div class="stamp-container" id="left-stamps"></div>
+<div class="game-container">
+  <div class="stamp-container" id="left-stamps"></div>
 
-    <!-- 地圖區 -->
-    <div class="map-area">
-      <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
-    </div>
-
-    <!-- 右側郵票 -->
-    <div class="stamp-container" id="right-stamps"></div>
+  <div class="map-area">
+    <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
   </div>
 
-  <div class="controls">
-    <button id="toggle-calibration">切換對位校正模式</button>
-    <button id="export-coords">匯出座標</button>
-  </div>
+  <div class="stamp-container" id="right-stamps"></div>
+</div>
 
-  <script>
-    // 紅框座標
-    const coords = [
-      {x: 27.9921, y: 15.6464}, {x: 54.4882, y: 8.5199}, {x: 70.3543, y: 10.2262},
-      {x: 83.8583, y: 25.4198}, {x: 22.7362, y: 37.5369}, {x: 42.1260, y: 19.3719},
-      {x: 80.1378, y: 46.3522}, {x: 15.8661, y: 59.4275}, {x: 19.6260, y: 89.9254},
-      {x: 54.0945, y: 79.6603}, {x: 66.4173, y: 57.6667}, {x: 40.2362, y: 91.6842}
-    ];
+<div class="controls">
+  <button id="toggle-calibration">切換對位校正模式</button>
+  <button id="export-coords">匯出座標</button>
+</div>
 
-    const mapArea = document.querySelector('.map-area');
+<script>
+const mapArea = document.querySelector('.map-area');
 
-    // 加入紅框
-    coords.forEach((pt, i) => {
-      const box = document.createElement('div');
-      box.className = 'red-box';
-      box.textContent = i + 1;
-      box.style.left = pt.x + '%';
-      box.style.top = pt.y + '%';
-      mapArea.appendChild(box);
-    });
+// 12 個紅框座標 (百分比)
+// 這裡建議你先用「匯出座標」測量精準位置後替換
+const coords = [
+  {x:27.9,y:15.6},{x:54.4,y:8.5},{x:70.3,y:10.2},{x:83.8,y:25.4},
+  {x:22.7,y:37.5},{x:42.1,y:19.3},{x:80.1,y:46.3},{x:15.8,y:59.4},
+  {x:19.6,y:89.9},{x:54.0,y:79.6},{x:66.4,y:57.6},{x:40.2,y:91.6}
+];
 
-    // 郵票生成函式，含編號
-    function createStamps(container, start, end) {
-      for (let i = start; i <= end; i++) {
-        const img = document.createElement('img');
-        img.src = `game4_assets/stamp${i}.jpg`;
-        img.className = 'stamp';
-        img.draggable = true;
-        img.dataset.id = `stamp${i}`;
+// 加入紅框
+coords.forEach((pt,i)=>{
+  const box = document.createElement('div');
+  box.className='red-box';
+  box.textContent=i+1;
+  box.style.left=pt.x+'%';
+  box.style.top=pt.y+'%';
+  mapArea.appendChild(box);
+});
 
-        const label = document.createElement('div');
-        label.className = 'stamp-number';
-        label.textContent = i;
-        img.appendChild(label);
+// 郵票生成函式，帶編號
+function createStamps(container,start,end){
+  for(let i=start;i<=end;i++){
+    const img=document.createElement('img');
+    img.src=`game4_assets/stamp${i}.jpg`;
+    img.className='stamp';
+    img.draggable=true;
+    img.dataset.id=`stamp${i}`;
+    const label=document.createElement('div');
+    label.className='stamp-number';
+    label.textContent=i;
+    img.appendChild(label);
+    container.appendChild(img);
+  }
+}
 
-        container.appendChild(img);
-      }
-    }
+// 左右各 6 張 2×3 排列
+createStamps(document.getElementById('left-stamps'),1,6);
+createStamps(document.getElementById('right-stamps'),7,12);
 
-    // 左右兩側各 6 張
-    createStamps(document.getElementById('left-stamps'), 1, 6);
-    createStamps(document.getElementById('right-stamps'), 7, 12);
+// 對位校正模式
+let calibrationMode=false;
+document.getElementById('toggle-calibration').addEventListener('click',()=>{
+  calibrationMode=!calibrationMode;
+  alert(calibrationMode?"進入對位校正模式，可拖曳紅框調整位置":"退出對位校正模式");
+});
 
-    // 對位校正模式
-    let calibrationMode = false;
-    document.getElementById('toggle-calibration').addEventListener('click', () => {
-      calibrationMode = !calibrationMode;
-      alert(calibrationMode ? "進入對位校正模式，可拖曳紅框調整位置" : "退出對位校正模式");
-    });
+// 匯出座標
+document.getElementById('export-coords').addEventListener('click',()=>{
+  const result=[];
+  document.querySelectorAll('.red-box').forEach(box=>{
+    result.push({x:parseFloat(box.style.left),y:parseFloat(box.style.top)});
+  });
+  alert("匯出座標：\n"+JSON.stringify(result,null,2));
+});
 
-    // 匯出座標
-    document.getElementById('export-coords').addEventListener('click', () => {
-      const result = [];
-      document.querySelectorAll('.red-box').forEach(box => {
-        result.push({x: parseFloat(box.style.left), y: parseFloat(box.style.top)});
-      });
-      alert("匯出座標：\n" + JSON.stringify(result, null, 2));
-    });
-
-    // 紅框拖曳
-    let currentBox = null;
-    let offsetX = 0, offsetY = 0;
-
-    document.addEventListener('mousedown', e => {
-      if (calibrationMode && e.target.classList.contains('red-box')) {
-        currentBox = e.target;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-      }
-    });
-
-    document.addEventListener('mousemove', e => {
-      if (currentBox && calibrationMode) {
-        const rect = mapArea.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        currentBox.style.left = x + '%';
-        currentBox.style.top = y + '%';
-      }
-    });
-
-    document.addEventListener('mouseup', () => currentBox = null);
-  </script>
+// 紅框拖曳
+let currentBox=null;
+let offsetX=0,offsetY=0;
+document.addEventListener('mousedown',e=>{
+  if(calibrationMode && e.target.classList.contains('red-box')){
+    currentBox=e.target;
+    offsetX=e.offsetX;
+    offsetY=e.offsetY;
+  }
+});
+document.addEventListener('mousemove',e=>{
+  if(currentBox && calibrationMode){
+    const rect=mapArea.getBoundingClientRect();
+    const x=((e.clientX-rect.left)/rect.width)*100;
+    const y=((e.clientY-rect.top)/rect.height)*100;
+    currentBox.style.left=x+'%';
+    currentBox.style.top=y+'%';
+  }
+});
+document.addEventListener('mouseup',()=>currentBox=null);
+</script>
 </body>
 </html>
