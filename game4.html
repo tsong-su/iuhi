@@ -95,21 +95,21 @@
 
   /* 不同的按鈕樣式 */
   .reload-button {
-      background: #FF5722; /* 橘色 */
+      background: #FF5722;
   }
   .reload-button:hover {
       background: #E64A19;
   }
   
   .home-button {
-      background: #4CAF50; /* 綠色 */
+      background: #4CAF50;
   }
   .home-button:hover {
       background: #388E3C;
   }
   
   .next-button {
-      background: #00BCD4; /* 藍綠色 */
+      background: #00BCD4;
   }
   .next-button:hover {
       background: #0097A7;
@@ -144,65 +144,26 @@
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
-  // 紅框座標 (百分比)
   const coords = [
-    {
-      x: 21.9069,
-      y: 15.2772
-    },
-    {
-      x: 55.5533,
-      y: 8.5731
-    },
-    {
-      x: 75.6431,
-      y: 10.4015
-    },
-    {
-      x: 93.1196,
-      y: 25.8412
-    },
-    {
-      x: 15.3736,
-      y: 37.421
-    },
-    {
-      x: 39.8734,
-      y: 19.1371
-    },
-    {
-      x: 87.7297,
-      y: 46.3597
-    },
-    {
-      x: 6.88036,
-      y: 59.1584
-    },
-    {
-      x: 11.2903,
-      y: 89.8347
-    },
-    {
-      x: 55.2266,
-      y: 79.677
-    },
-    {
-      x: 71.0698,
-      y: 57.33
-    },
-    {
-      x: 37.5868,
-      y: 91.8662
-    }
+    { x: 21.9069, y: 15.2772 },
+    { x: 55.5533, y: 8.5731 },
+    { x: 75.6431, y: 10.4015 },
+    { x: 93.1196, y: 25.8412 },
+    { x: 15.3736, y: 37.421 },
+    { x: 39.8734, y: 19.1371 },
+    { x: 87.7297, y: 46.3597 },
+    { x: 6.88036, y: 59.1584 },
+    { x: 11.2903, y: 89.8347 },
+    { x: 55.2266, y: 79.677 },
+    { x: 71.0698, y: 57.33 },
+    { x: 37.5868, y: 91.8662 }
   ];
 
-  // 正解：紅框 n 對應 stampId
   const answerKey = {1:5,2:3,3:2,4:1,5:6,6:4,7:12,8:7,9:8,10:10,11:11,12:9};
 
   let correctCount = 0;
   const redBoxes = coords.map(pt => ({ left: pt.x, top: pt.y, matched: false }));
 
-  // Fisher-Yates 洗牌演算法
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -211,14 +172,11 @@
     return array;
   }
 
-  // 產生並隨機排列郵票
   function createStamps() {
     left.innerHTML = '';
     right.innerHTML = '';
-
     const allStampIds = Array.from({ length: 12 }, (_, i) => i + 1);
     const shuffledIds = shuffle(allStampIds);
-
     for (let i = 0; i < 12; i++) {
       const img = document.createElement('img');
       img.className = 'stamp';
@@ -235,7 +193,6 @@
 
   createStamps();
 
-  // 目前拖曳中的元素
   let dragging = null;
   document.addEventListener('dragstart', e => {
     if(e.target.classList.contains('stamp') && e.target.draggable){
@@ -244,69 +201,58 @@
   });
   document.addEventListener('dragend', () => { dragging = null; });
 
-  // 只允許在地圖區放置
   mapArea.addEventListener('dragover', e => e.preventDefault());
   mapArea.addEventListener('drop', e => {
     e.preventDefault();
     if(!dragging) return;
-
     const stampId = parseInt(dragging.dataset.id, 10);
     const mapRect = mapArea.getBoundingClientRect();
-
     const dropX = e.clientX;
     const dropY = e.clientY;
     const stampCenterX = dropX;
     const stampCenterY = dropY;
-
     let matched = false;
-
     for(let i=0;i<redBoxes.length;i++){
       const box = redBoxes[i];
       if(box.matched) continue;
-
-      const boxLeft   = mapRect.left + (box.left/100) * mapRect.width - 50;
-      const boxTop    = mapRect.top  + (box.top/100)  * mapRect.height - 50;
-      const boxRight  = boxLeft + 100;
-      const boxBottom = boxTop  + 100;
-
+      const boxLeft = mapRect.left + (box.left/100) * mapRect.width - 50;
+      const boxTop = mapRect.top + (box.top/100) * mapRect.height - 50;
+      const boxRight = boxLeft + 100;
+      const boxBottom = boxTop + 100;
       const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
-
       if(inside){
         if(answerKey[i+1] === stampId){
           box.matched = true;
           matched = true;
           correctCount++;
-
           const pxLeft = (box.left/100) * mapArea.clientWidth - 40;
-          const pxTop  = (box.top/100)  * mapArea.clientHeight - 40;
-
+          const pxTop = (box.top/100) * mapArea.clientHeight - 40;
           dragging.style.position = 'absolute';
           dragging.style.width = '80px';
           dragging.style.height = '80px';
           dragging.style.left = pxLeft + 'px';
-          dragging.style.top  = pxTop  + 'px';
+          dragging.style.top = pxTop + 'px';
           dragging.style.cursor = 'default';
           dragging.draggable = false;
           dragging.style.pointerEvents = 'none';
-
           mapArea.appendChild(dragging);
-
           new Audio(`game4_assets/stamp${stampId}.mp3`).play();
         }
         break;
       }
     }
-
     if(!matched){
       new Audio('game4_assets/wrong.mp3').play();
     }
-
     if(correctCount === 12){
-      new Audio('game4_assets/victory.mp3').play();
-      victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
-      setTimeout(()=> {
-        victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
-      }, 4000);
+      // 延遲播放勝利音效
+      setTimeout(() => {
+        new Audio('game4_assets/victory.mp3').play();
+        victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
+        setTimeout(() => {
+          victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
+        }, 4000);
+      }, 1500);
     }
   });
 </script>
