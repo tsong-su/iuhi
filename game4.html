@@ -16,8 +16,8 @@
     background:#fff;
   }
   header{ text-align:center; margin:10px 0; }
-  header h1{ margin:0; font-size:20px; }
-  header p{ margin:4px 0 10px 0; font-size:14px; }
+  header h1{ margin:0; font-size:20px; color: #4CAF50; } /* 標題顏色 */
+  header p{ margin:4px 0 10px 0; font-size:14px; color: #FF9800; } /* 說明文字顏色 */
 
   .game-container{
     display:flex;
@@ -60,19 +60,6 @@
     display:block;
   }
   
-  /* 校正點的樣式 */
-  .calibration-point{
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: yellow;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 99;
-    opacity: 0.8;
-  }
-
   #victory-text{
     position:absolute;
     top:40%;
@@ -96,12 +83,19 @@
   }
   .controls button{
     margin:0 10px;
-    padding:6px 12px;
+    padding:8px 16px; /* 增加按鈕大小 */
     font-size:14px;
     cursor:pointer;
-    border-radius:10px;
-    border:1px solid #ddd;
-    background:#fff;
+    border-radius:20px; /* 圓角更圓滑 */
+    border: none; /* 移除邊框 */
+    background: #FF5722; /* 活潑的背景色 */
+    color: #fff; /* 白色字體 */
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+
+  .controls button:hover {
+    background: #E64A19; /* hover 時顏色變深 */
   }
 </style>
 </head>
@@ -125,8 +119,6 @@
 <div class="controls">
   <button onclick="location.reload()">閣耍一擺</button>
   <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
-  <button onclick="toggleCalibration()">對位校正</button>
-  <button onclick="exportCoords()">匯出座標</button>
 </div>
 
 <script>
@@ -289,43 +281,6 @@
       }, 4000);
     }
   });
-
-  // 對位校正功能
-  let isCalibrating = false;
-  function toggleCalibration() {
-    isCalibrating = !isCalibrating;
-    if (isCalibrating) {
-      coords.forEach(point => {
-        const calPoint = document.createElement('div');
-        calPoint.className = 'calibration-point';
-        calPoint.style.left = `${point.x}%`;
-        calPoint.style.top = `${point.y}%`;
-        mapArea.appendChild(calPoint);
-      });
-      alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px`);
-      mapArea.addEventListener('click', recordCoords);
-    } else {
-      const calPoints = document.querySelectorAll('.calibration-point');
-      calPoints.forEach(point => point.remove());
-      alert('對位校正模式已關閉。');
-      mapArea.removeEventListener('click', recordCoords);
-    }
-  }
-
-  function recordCoords(e) {
-    const mapRect = mapArea.getBoundingClientRect();
-    const x = (e.clientX - mapRect.left) / mapRect.width * 100;
-    const y = (e.clientY - mapRect.top) / mapRect.height * 100;
-    alert(`新座標：{x:${x.toFixed(4)},y:${y.toFixed(4)}}`);
-  }
-
-  // 匯出座標功能
-  function exportCoords() {
-    const coordsStr = JSON.stringify(coords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
-    navigator.clipboard.writeText(`const coords = ${coordsStr};`)
-      .then(() => alert('座標已成功複製到剪貼簿。'))
-      .catch(err => alert('複製失敗，請手動複製。\n' + err));
-  }
 </script>
 </body>
 </html>
