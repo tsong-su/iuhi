@@ -28,16 +28,16 @@
     padding:10px;
   }
 
-  /* 兩側：直排 3 排 × 橫排 2 張，固定寬度避免被擠成 2 欄 */
+  /* 兩側：直排 3 排 × 橫排 2 張 */
   .stamp-container{
     display:grid;
-    grid-template-columns: repeat(2, 120px); /* 修正 */
-    grid-template-rows: repeat(3, 120px); /* 修正 */
+    grid-template-columns: repeat(2, 120px);
+    grid-template-rows: repeat(3, 120px);
     gap:10px;
     justify-content:center;
     align-content:center;
     margin-top:120px;
-    width:250px; /* 修正 */
+    width:250px;
     flex:0 0 auto;
   }
   .stamp{
@@ -58,6 +58,19 @@
     max-height:70vh;
     height:auto;
     display:block;
+  }
+  
+  /* 校正點的樣式 */
+  .calibration-point{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: yellow;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 99;
+    opacity: 0.8;
   }
 
   #victory-text{
@@ -112,15 +125,18 @@
 <div class="controls">
   <button onclick="location.reload()">閣耍一擺</button>
   <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button onclick="toggleCalibration()">對位校正</button>
+  <button onclick="exportCoords()">匯出座標</button>
 </div>
 
 <script>
   const left = document.getElementById('left-stamps');
   const right = document.getElementById('right-stamps');
   const mapArea = document.getElementById('map-area');
+  const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
-  // 紅框座標 (百分比；紅框大小 80×80)
+  // 紅框座標 (百分比)
   const coords = [
     {x:21.9069,y:15.2772},{x:55.5533,y:8.5731},{x:75.6431,y:10.4015},{x:93.1196,y:25.8412},
     {x:15.3736,y:37.421},{x:39.8734,y:19.1371},{x:87.7297,y:46.3597},{x:6.88036,y:59.1584},
@@ -133,7 +149,7 @@
   let correctCount = 0;
   const redBoxes = coords.map(pt => ({ left: pt.x, top: pt.y, matched: false }));
 
-  // 產生郵票（左右各 2×3，總 12）
+  // 產生郵票
   function fill(container, startId){
     for(let i=0;i<6;i++){
       const id = startId + i;
@@ -166,11 +182,11 @@
     const stampId = parseInt(dragging.dataset.id, 10);
     const mapRect = mapArea.getBoundingClientRect();
 
-    // 修正：以郵票的中心點作為投放點
+    // 以郵票的中心點作為投放點
     const dropX = e.clientX;
     const dropY = e.clientY;
-    const stampCenterX = dropX - dragging.offsetWidth / 2;
-    const stampCenterY = dropY - dragging.offsetHeight / 2;
+    const stampCenterX = dropX;
+    const stampCenterY = dropY;
 
     let matched = false;
 
@@ -178,13 +194,13 @@
       const box = redBoxes[i];
       if(box.matched) continue;
 
-      // 修正：將百分比轉成地圖區像素框，並擴大判斷範圍
-      const boxLeft   = mapRect.left + (box.left/100) * mapRect.width - 20;
-      const boxTop    = mapRect.top  + (box.top/100)  * mapRect.height - 20;
-      const boxRight  = boxLeft + 120;
-      const boxBottom = boxTop  + 120;
+      // 判斷區域：以 box 座標為中心，擴大至 100x100 像素
+      const boxLeft   = mapRect.left + (box.left/100) * mapRect.width - 50;
+      const boxTop    = mapRect.top  + (box.top/100)  * mapRect.height - 50;
+      const boxRight  = boxLeft + 100;
+      const boxBottom = boxTop  + 100;
 
-      // 游標是否落在框內
+      // 檢查郵票中心點是否落在目標區域內
       const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
 
       if(inside){
@@ -195,8 +211,8 @@
           correctCount++;
 
           // 吸附定位（相對 mapArea 的絕對像素）
-          const pxLeft = (box.left/100) * mapArea.clientWidth - 20;
-          const pxTop  = (box.top/100)  * mapArea.clientHeight - 20;
+          const pxLeft = (box.left/100) * mapArea.clientWidth - 40; // 郵票寬度一半
+          const pxTop  = (box.top/100)  * mapArea.clientHeight - 40; // 郵票高度一半
 
           dragging.style.position = 'absolute';
           dragging.style.width = '80px';
@@ -225,9 +241,46 @@
       victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
       setTimeout(()=> {
         victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
-      }, 4000); // 修正為 4000 毫秒
+      }, 4000);
     }
   });
+
+  // 對位校正功能
+  let isCalibrating = false;
+  function toggleCalibration() {
+    isCalibrating = !isCalibrating;
+    if (isCalibrating) {
+      coords.forEach(point => {
+        const calPoint = document.createElement('div');
+        calPoint.className = 'calibration-point';
+        calPoint.style.left = `${point.x}%`;
+        calPoint.style.top = `${point.y}%`;
+        mapArea.appendChild(calPoint);
+      });
+      alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px`);
+      mapArea.addEventListener('click', recordCoords);
+    } else {
+      const calPoints = document.querySelectorAll('.calibration-point');
+      calPoints.forEach(point => point.remove());
+      alert('對位校正模式已關閉。');
+      mapArea.removeEventListener('click', recordCoords);
+    }
+  }
+
+  function recordCoords(e) {
+    const mapRect = mapArea.getBoundingClientRect();
+    const x = (e.clientX - mapRect.left) / mapRect.width * 100;
+    const y = (e.clientY - mapRect.top) / mapRect.height * 100;
+    alert(`新座標：{x:${x.toFixed(4)},y:${y.toFixed(4)}}`);
+  }
+
+  // 匯出座標功能
+  function exportCoords() {
+    const coordsStr = JSON.stringify(coords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
+    navigator.clipboard.writeText(`const coords = ${coordsStr};`)
+      .then(() => alert('座標已成功複製到剪貼簿。'))
+      .catch(err => alert('複製失敗，請手動複製。\n' + err));
+  }
 </script>
 </body>
 </html>
