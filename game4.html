@@ -17,7 +17,7 @@
   }
   header{ text-align:center; margin:10px 0; }
   header h1{ margin:0; font-size:20px; color: #4CAF50; }
-  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; } /* 玩法說明文字 */
+  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; font-weight: bold; } /* 玩法說明文字加粗 */
 
   .game-container{
     display:flex;
@@ -67,7 +67,7 @@
     transform:translate(-50%,-50%) scale(0);
     font-size:48px;
     font-weight:bold;
-    color: #FFEB3B; /* 勝利文字顏色 */
+    color: #FFEB3B;
     z-index:10;
     pointer-events:none;
     transition:transform 1s ease;
@@ -94,14 +94,14 @@
   }
 
   .controls button:first-of-type {
-    background: #FF5722; /* 橘色 */
+    background: #FF5722;
   }
   .controls button:first-of-type:hover {
     background: #E64A19;
   }
 
   .controls button:last-of-type {
-    background: #4CAF50; /* 綠色 */
+    background: #4CAF50;
   }
   .controls button:last-of-type:hover {
     background: #388E3C;
@@ -116,12 +116,10 @@
 
 <div class="game-container">
   <div class="stamp-container" id="left-stamps"></div>
-
   <div class="map-area" id="map-area">
     <img src="game4_assets/north_map.png" alt="地圖" class="map" id="map">
     <div id="victory-text">有夠gâu</div>
   </div>
-
   <div class="stamp-container" id="right-stamps"></div>
 </div>
 
@@ -195,20 +193,40 @@
   let correctCount = 0;
   const redBoxes = coords.map(pt => ({ left: pt.x, top: pt.y, matched: false }));
 
-  // 產生郵票
-  function fill(container, startId){
-    for(let i=0;i<6;i++){
-      const id = startId + i;
+  // Fisher-Yates 洗牌演算法
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // 產生並隨機排列郵票
+  function createStamps() {
+    // 清空現有郵票
+    left.innerHTML = '';
+    right.innerHTML = '';
+
+    const allStampIds = Array.from({ length: 12 }, (_, i) => i + 1); // 創建 1-12 的 ID 陣列
+    const shuffledIds = shuffle(allStampIds); // 洗牌
+
+    // 產生郵票並放入容器
+    for (let i = 0; i < 12; i++) {
       const img = document.createElement('img');
       img.className = 'stamp';
       img.draggable = true;
-      img.dataset.id = id;
-      img.src = `game4_assets/stamp${id}.jpg`;
-      container.appendChild(img);
+      img.dataset.id = shuffledIds[i]; // 使用洗牌後的 ID
+      img.src = `game4_assets/stamp${shuffledIds[i]}.jpg`;
+      if (i < 6) {
+        left.appendChild(img);
+      } else {
+        right.appendChild(img);
+      }
     }
   }
-  fill(left, 1);
-  fill(right, 7);
+
+  createStamps(); // 頁面載入時呼叫一次
 
   // 目前拖曳中的元素
   let dragging = null;
