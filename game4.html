@@ -75,23 +75,23 @@
   </div>
   <div class="controls">
     <button onclick="location.reload()">閣耍一擺</button>
-    <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+    <button onclick="window.location.href='index.html'">回到遊戲首頁</button>
   </div>
 
   <script>
     const stampsData = [
-      { id: 1, img: "game4_assets/1.png", target: {x:21.9069, y:15.2772} },
-      { id: 2, img: "game4_assets/2.png", target: {x:55.5533, y:8.5731} },
-      { id: 3, img: "game4_assets/3.png", target: {x:75.6431, y:10.4015} },
-      { id: 4, img: "game4_assets/4.png", target: {x:93.1196, y:25.8412} },
-      { id: 5, img: "game4_assets/5.png", target: {x:15.3736, y:37.421} },
-      { id: 6, img: "game4_assets/6.png", target: {x:39.8734, y:19.1371} },
-      { id: 7, img: "game4_assets/7.png", target: {x:87.7297, y:46.3597} },
-      { id: 8, img: "game4_assets/8.png", target: {x:6.88036, y:59.1584} },
-      { id: 9, img: "game4_assets/9.png", target: {x:11.2903, y:89.8347} },
-      { id: 10, img: "game4_assets/10.png", target: {x:55.2266, y:79.677} },
-      { id: 11, img: "game4_assets/11.png", target: {x:71.0698, y:57.33} },
-      { id: 12, img: "game4_assets/12.png", target: {x:37.5868, y:91.8662} }
+      { id: 1, img: "game4_assets/stamp1.jpg", sound: "game4_assets/stamp1.mp3", target: {x:21.9, y:15.3} },
+      { id: 2, img: "game4_assets/stamp2.jpg", sound: "game4_assets/stamp2.mp3", target: {x:55.6, y:8.6} },
+      { id: 3, img: "game4_assets/stamp3.jpg", sound: "game4_assets/stamp3.mp3", target: {x:75.6, y:10.4} },
+      { id: 4, img: "game4_assets/stamp4.jpg", sound: "game4_assets/stamp4.mp3", target: {x:93.1, y:25.8} },
+      { id: 5, img: "game4_assets/stamp5.jpg", sound: "game4_assets/stamp5.mp3", target: {x:15.4, y:37.4} },
+      { id: 6, img: "game4_assets/stamp6.jpg", sound: "game4_assets/stamp6.mp3", target: {x:39.9, y:19.1} },
+      { id: 7, img: "game4_assets/stamp7.jpg", sound: "game4_assets/stamp7.mp3", target: {x:87.7, y:46.4} },
+      { id: 8, img: "game4_assets/stamp8.jpg", sound: "game4_assets/stamp8.mp3", target: {x:6.9, y:59.2} },
+      { id: 9, img: "game4_assets/stamp9.jpg", sound: "game4_assets/stamp9.mp3", target: {x:11.3, y:89.8} },
+      { id: 10, img: "game4_assets/stamp10.jpg", sound: "game4_assets/stamp10.mp3", target: {x:55.2, y:79.7} },
+      { id: 11, img: "game4_assets/stamp11.jpg", sound: "game4_assets/stamp11.mp3", target: {x:71.1, y:57.3} },
+      { id: 12, img: "game4_assets/stamp12.jpg", sound: "game4_assets/stamp12.mp3", target: {x:37.6, y:91.9} }
     ];
 
     const mapContainer = document.getElementById("map-container");
@@ -99,7 +99,7 @@
 
     let draggedStamp = null;
     let originalParent = null;
-    let originalIndex = null; // 紀錄郵票在容器中的位置
+    let originalIndex = null;
 
     function createStamps() {
       const leftContainer = document.createElement("div");
@@ -131,7 +131,6 @@
         const div = document.createElement("div");
         div.classList.add("target");
         div.dataset.id = stamp.id;
-
         div.style.left = (map.width * stamp.target.x / 100) + "px";
         div.style.top = (map.height * stamp.target.y / 100) + "px";
         mapContainer.appendChild(div);
@@ -144,9 +143,7 @@
       originalIndex = Array.from(originalParent.children).indexOf(draggedStamp);
     }
 
-    mapContainer.addEventListener("dragover", e => {
-      e.preventDefault();
-    });
+    mapContainer.addEventListener("dragover", e => e.preventDefault());
 
     mapContainer.addEventListener("drop", e => {
       e.preventDefault();
@@ -161,37 +158,38 @@
           e.clientY >= rect.top &&
           e.clientY <= rect.bottom
         ) {
+          const stampData = stampsData.find(s => s.id == draggedStamp.dataset.id);
           if (draggedStamp.dataset.id === target.dataset.id) {
-            // 正確 → 吸附到座標
             draggedStamp.style.position = "absolute";
             draggedStamp.style.left = target.style.left;
             draggedStamp.style.top = target.style.top;
             mapContainer.appendChild(draggedStamp);
-            playSound("game4_assets/correct.mp3");
+            playSound(stampData.sound);
             checkVictory();
           } else {
-            // 錯誤 → 彈回原位
             playSound("game4_assets/wrong.mp3");
-            if (originalIndex >= originalParent.children.length) {
-              originalParent.appendChild(draggedStamp);
-            } else {
-              originalParent.insertBefore(draggedStamp, originalParent.children[originalIndex]);
-            }
+            resetStamp();
           }
           placed = true;
         }
       });
 
       if (!placed) {
-        // 沒有放到任何 target → 彈回原位
         playSound("game4_assets/wrong.mp3");
-        if (originalIndex >= originalParent.children.length) {
-          originalParent.appendChild(draggedStamp);
-        } else {
-          originalParent.insertBefore(draggedStamp, originalParent.children[originalIndex]);
-        }
+        resetStamp();
       }
     });
+
+    function resetStamp() {
+      if (originalIndex >= originalParent.children.length) {
+        originalParent.appendChild(draggedStamp);
+      } else {
+        originalParent.insertBefore(draggedStamp, originalParent.children[originalIndex]);
+      }
+      draggedStamp.style.position = "relative";
+      draggedStamp.style.left = "";
+      draggedStamp.style.top = "";
+    }
 
     function playSound(src) {
       const audio = new Audio(src);
