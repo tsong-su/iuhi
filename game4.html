@@ -93,23 +93,23 @@
     transition: background 0.3s ease;
   }
 
-  .controls button:first-of-type {
-    background: #FF5722;
+  /* 不同的按鈕樣式 */
+  .reload-button {
+      background: #FF5722; /* 橘色 */
   }
-  .controls button:first-of-type:hover {
-    background: #E64A19;
-  }
-
-  .controls button:last-of-type {
-    background: #4CAF50;
-  }
-  .controls button:last-of-type:hover {
-    background: #388E3C;
+  .reload-button:hover {
+      background: #E64A19;
   }
   
-  /* 新增的下一回按鈕樣式 */
+  .home-button {
+      background: #4CAF50; /* 綠色 */
+  }
+  .home-button:hover {
+      background: #388E3C;
+  }
+  
   .next-button {
-      background: #00BCD4;
+      background: #00BCD4; /* 藍綠色 */
   }
   .next-button:hover {
       background: #0097A7;
@@ -132,8 +132,8 @@
 </div>
 
 <div class="controls">
-  <button onclick="location.reload()">閣耍一擺</button>
-  <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button class="reload-button" onclick="location.reload()">閣耍一擺</button>
+  <button class="home-button" onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
   <button class="next-button" onclick="alert('中部地區遊戲頁面尚未開放喔！')">下一回</button>
 </div>
 
