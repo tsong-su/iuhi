@@ -17,7 +17,7 @@
   }
   header{ text-align:center; margin:10px 0; }
   header h1{ margin:0; font-size:20px; color: #4CAF50; }
-  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; font-weight: bold; } /* 玩法說明文字加粗 */
+  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; font-weight: bold; }
 
   .game-container{
     display:flex;
@@ -106,6 +106,14 @@
   .controls button:last-of-type:hover {
     background: #388E3C;
   }
+  
+  /* 新增的下一回按鈕樣式 */
+  .next-button {
+      background: #00BCD4;
+  }
+  .next-button:hover {
+      background: #0097A7;
+  }
 </style>
 </head>
 <body>
@@ -126,6 +134,7 @@
 <div class="controls">
   <button onclick="location.reload()">閣耍一擺</button>
   <button onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button class="next-button" onclick="alert('中部地區遊戲頁面尚未開放喔！')">下一回</button>
 </div>
 
 <script>
@@ -204,19 +213,17 @@
 
   // 產生並隨機排列郵票
   function createStamps() {
-    // 清空現有郵票
     left.innerHTML = '';
     right.innerHTML = '';
 
-    const allStampIds = Array.from({ length: 12 }, (_, i) => i + 1); // 創建 1-12 的 ID 陣列
-    const shuffledIds = shuffle(allStampIds); // 洗牌
+    const allStampIds = Array.from({ length: 12 }, (_, i) => i + 1);
+    const shuffledIds = shuffle(allStampIds);
 
-    // 產生郵票並放入容器
     for (let i = 0; i < 12; i++) {
       const img = document.createElement('img');
       img.className = 'stamp';
       img.draggable = true;
-      img.dataset.id = shuffledIds[i]; // 使用洗牌後的 ID
+      img.dataset.id = shuffledIds[i];
       img.src = `game4_assets/stamp${shuffledIds[i]}.jpg`;
       if (i < 6) {
         left.appendChild(img);
@@ -226,7 +233,7 @@
     }
   }
 
-  createStamps(); // 頁面載入時呼叫一次
+  createStamps();
 
   // 目前拖曳中的元素
   let dragging = null;
@@ -246,7 +253,6 @@
     const stampId = parseInt(dragging.dataset.id, 10);
     const mapRect = mapArea.getBoundingClientRect();
 
-    // 以郵票的中心點作為投放點
     const dropX = e.clientX;
     const dropY = e.clientY;
     const stampCenterX = dropX;
@@ -258,25 +264,21 @@
       const box = redBoxes[i];
       if(box.matched) continue;
 
-      // 判斷區域：以 box 座標為中心，擴大至 100x100 像素
       const boxLeft   = mapRect.left + (box.left/100) * mapRect.width - 50;
       const boxTop    = mapRect.top  + (box.top/100)  * mapRect.height - 50;
       const boxRight  = boxLeft + 100;
       const boxBottom = boxTop  + 100;
 
-      // 檢查郵票中心點是否落在目標區域內
       const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
 
       if(inside){
-        // 檢查是否正確的郵票
         if(answerKey[i+1] === stampId){
           box.matched = true;
           matched = true;
           correctCount++;
 
-          // 吸附定位（相對 mapArea 的絕對像素）
-          const pxLeft = (box.left/100) * mapArea.clientWidth - 40; // 郵票寬度一半
-          const pxTop  = (box.top/100)  * mapArea.clientHeight - 40; // 郵票高度一半
+          const pxLeft = (box.left/100) * mapArea.clientWidth - 40;
+          const pxTop  = (box.top/100)  * mapArea.clientHeight - 40;
 
           dragging.style.position = 'absolute';
           dragging.style.width = '80px';
@@ -299,7 +301,6 @@
       new Audio('game4_assets/wrong.mp3').play();
     }
 
-    // 全數完成
     if(correctCount === 12){
       new Audio('game4_assets/victory.mp3').play();
       victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
