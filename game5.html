@@ -22,7 +22,7 @@
   .game-container{
     display:flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; /* 垂直置中 */
     flex:1;
     width: 95%;
     max-width: 1200px;
@@ -34,6 +34,7 @@
     flex: 1 1 600px;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
   .map{
     width: 100%;
@@ -141,6 +142,20 @@
     border-radius: 4px;
     font-size: 12px;
   }
+
+  #coords-output {
+    margin-top: 10px;
+    padding: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    width: 90%;
+    max-width: 600px;
+  }
 </style>
 </head>
 <body>
@@ -165,33 +180,27 @@
   <button class="tool-button" onclick="exportCoords()">匯出座標</button>
 </div>
 
+<div id="coords-output"></div>
+
 <script>
   const left = document.getElementById('left-stamps');
   const right = document.getElementById('right-stamps');
   const mapArea = document.getElementById('map-area');
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
+  const coordsOutput = document.getElementById('coords-output');
 
   // 您匯出座標後請貼到此處
   const coords = [];
   
-  // 這裡已將郵票與方框的對應關係加入
   const answerKey = {
-    // 方框 #1 對應 郵票 #3 -> 'ㄉ' -> stamp15
     1: 15,
-    // 方框 #2 對應 郵票 #5 -> 'ㄣ' -> stamp17
     2: 17,
-    // 方框 #3 對應 郵票 #7 -> 'ㄎ' -> stamp19
     3: 19,
-    // 方框 #4 對應 郵票 #4 -> 'ㄍ' -> stamp16
     4: 16,
-    // 方框 #5 對應 郵票 #1 -> 'ㄐ' -> stamp13
     5: 13,
-    // 方框 #6 對應 郵票 #8 -> 'ㄑ' -> stamp20
     6: 20,
-    // 方框 #7 對應 郵票 #2 -> 'ㄋ' -> stamp14
     7: 14,
-    // 方框 #8 對應 郵票 #6 -> 'ㄌ' -> stamp18
     8: 18
   };
 
@@ -319,7 +328,6 @@
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
-    const allStamps = document.querySelectorAll('.stamp');
 
     if (isCalibrating) {
       toolButtons.forEach(btn => btn.disabled = true);
@@ -350,13 +358,11 @@
         }
       }
       
-      allStamps.forEach(stamp => stamp.style.visibility = 'visible');
       calibrationBoxes.forEach(box => box.style.display = 'block');
       setupCalibrationDrag();
 
     } else {
       toolButtons.forEach(btn => btn.disabled = false);
-      allStamps.forEach(stamp => stamp.style.visibility = 'visible');
       calibrationBoxes.forEach(box => box.style.display = 'none');
       alert('對位校正模式已關閉。');
     }
@@ -407,14 +413,18 @@
         return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
     });
 
-    const coordsStr = JSON.stringify(newCoords, null, 2)
-      .replace(/"x":/g, 'x:')
-      .replace(/"y":/g, 'y:')
-      .replace(/"/g, '');
-      
-    navigator.clipboard.writeText(`const coords = ${coordsStr};`)
-      .then(() => alert('新座標已成功複製到剪貼簿。'))
-      .catch(err => alert('複製失敗，請手動複製。\n' + err));
+    const coordsStr = `const coords = ${JSON.stringify(newCoords, null, 2)};`;
+    
+    coordsOutput.innerText = coordsStr;
+    coordsOutput.style.display = 'block';
+
+    try {
+        navigator.clipboard.writeText(coordsStr);
+        alert('新座標已成功複製到剪貼簿。');
+    } catch (err) {
+        console.error('複製失敗:', err);
+        alert('複製失敗，請手動複製以下座標：\n' + coordsStr);
+    }
   }
 </script>
 </body>
