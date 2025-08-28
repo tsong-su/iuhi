@@ -24,21 +24,26 @@
     justify-content:center;
     align-items:flex-start;
     flex:1;
-    width:80%; /* 調整主容器寬度，使其更具彈性 */
+    width:100%;
+    max-width:1200px; /* 限制最大寬度，避免超寬 */
     padding:10px;
   }
 
   /* 兩側：直排 4 排 × 橫排 2 張 */
   .stamp-container{
     display:grid;
-    grid-template-columns: repeat(2, 120px);
-    grid-template-rows: repeat(4, 120px);
+    grid-template-columns: repeat(2, minmax(100px, 120px));
+    grid-template-rows: repeat(4, minmax(100px, 120px));
     gap:10px;
     justify-content:center;
     align-content:center;
     margin-top:120px;
-    width:250px;
-    flex:0 0 auto;
+    flex:1;
+  }
+  .stamp-wrapper{
+    position: relative;
+    width: 120px;
+    height: 120px;
   }
   .stamp{
     width:120px;
@@ -48,14 +53,27 @@
     border-radius:8px;
     cursor:grab;
   }
+  .stamp-number {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 5;
+  }
 
   .map-area{
     position:relative;
     margin:0 20px;
     flex:0 1 auto;
+    width: 60%; /* 讓地圖佔據更大比例 */
+    max-width: 600px; /* 限制地圖最大寬度 */
   }
   .map{
-    max-height:70vh;
+    max-width: 100%;
     height:auto;
     display:block;
   }
@@ -93,7 +111,6 @@
     transition: background 0.3s ease;
   }
 
-  /* 不同的按鈕樣式 */
   .reload-button { background: #FF5722; }
   .reload-button:hover { background: #E64A19; }
   
@@ -106,17 +123,26 @@
   .tool-button { background: #9E9E9E; }
   .tool-button:hover { background: #757575; }
 
-  /* 校正點的樣式 */
-  .calibration-point{
+  /* 校正模式的方框樣式 */
+  .calibration-box {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: yellow;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 99;
-    opacity: 0.8;
+    width: 80px;
+    height: 80px;
+    border: 2px dashed red;
+    box-sizing: border-box;
+    cursor: grab;
+    display: none; /* 預設隱藏 */
+  }
+  .calibration-box-number {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    color: white;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 12px;
   }
 </style>
 </head>
@@ -149,8 +175,17 @@
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
-  // 匯出座標後請貼到此處，並刪除「對位校正」功能
-  const coords = [];
+  // 您提供的座標，已貼入此處
+  const coords = [
+    { x: 59.6636, y: 7.9636 },
+    { x: 28.4985, y: 15.2772 },
+    { x: 15.842, y: 39.6557 },
+    { x: 8.2208, y: 62.8965 },
+    { x: 30.4038, y: 90.8505 },
+    { x: 59.3914, y: 90.5254 },
+    { x: 90.2843, y: 71.3477 },
+    { x: 93.4144, y: 44.2063 }
+  ];
   
   const answerKey = {
     1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
@@ -175,15 +210,26 @@
     const shuffledIds = shuffle(allStampIds);
 
     for (let i = 0; i < 8; i++) {
+      const stampWrapper = document.createElement('div');
+      stampWrapper.className = 'stamp-wrapper';
+
       const img = document.createElement('img');
       img.className = 'stamp';
       img.draggable = true;
       img.dataset.id = shuffledIds[i];
       img.src = `/iuhi/game4_assets/stamp${shuffledIds[i]}.jpg`;
+
+      const stampNumber = document.createElement('div');
+      stampNumber.className = 'stamp-number';
+      stampNumber.innerText = '#' + (i + 1);
+
+      stampWrapper.appendChild(img);
+      stampWrapper.appendChild(stampNumber);
+
       if (i < 4) {
-        left.appendChild(img);
+        left.appendChild(stampWrapper);
       } else {
-        right.appendChild(img);
+        right.appendChild(stampWrapper);
       }
     }
   }
@@ -221,10 +267,10 @@
     for(let i = 0; i < redBoxes.length; i++){
       const box = redBoxes[i];
       if(box.matched) continue;
-      const boxLeft = mapRect.left + (box.left / 100) * mapRect.width - 50;
-      const boxTop = mapRect.top + (box.top / 100) * mapRect.height - 50;
-      const boxRight = boxLeft + 100;
-      const boxBottom = boxTop + 100;
+      const boxLeft = mapRect.left + (box.left / 100) * mapRect.width - 40;
+      const boxTop = mapRect.top + (box.top / 100) * mapRect.height - 40;
+      const boxRight = boxLeft + 80;
+      const boxBottom = boxTop + 80;
       const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
 
       if(inside){
@@ -264,56 +310,96 @@
     }
   });
 
-  // 這是新版的校正功能
+  // 校正模式功能
   let isCalibrating = false;
-  let calibrationCoords = [];
+  let calibrationBoxes = [];
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
     if (isCalibrating) {
-        calibrationCoords = [];
         toolButtons.forEach(btn => btn.disabled = true);
-        alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px\n請點擊地圖來記錄座標。`);
-        mapArea.addEventListener('click', recordCoords);
+        alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
+        
+        // 建立 8 個可拖曳的校正方框
+        calibrationBoxes = coords.map((point, index) => {
+            const box = document.createElement('div');
+            box.className = 'calibration-box';
+            box.dataset.index = index;
+            box.style.left = `${point.x}%`;
+            box.style.top = `${point.y}%`;
+            box.style.display = 'block';
+            
+            const number = document.createElement('div');
+            number.className = 'calibration-box-number';
+            number.innerText = '#' + (index + 1);
+            box.appendChild(number);
+
+            mapArea.appendChild(box);
+            return box;
+        });
+
+        setupCalibrationDrag();
     } else {
         toolButtons.forEach(btn => btn.disabled = false);
+        calibrationBoxes.forEach(box => box.remove());
+        calibrationBoxes = [];
         alert('對位校正模式已關閉。');
-        mapArea.removeEventListener('click', recordCoords);
     }
   }
 
-  function recordCoords(e) {
-    const mapRect = mapArea.getBoundingClientRect();
-    const x = ((e.clientX - mapRect.left) / mapRect.width) * 100;
-    const y = ((e.clientY - mapRect.top) / mapRect.height) * 100;
-    
-    // 儲存新座標
-    calibrationCoords.push({ x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) });
+  function setupCalibrationDrag() {
+    calibrationBoxes.forEach(box => {
+      let isDragging = false;
+      let offsetX, offsetY;
+      
+      box.addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.clientX - box.getBoundingClientRect().left;
+        offsetY = e.clientY - box.getBoundingClientRect().top;
+        box.style.cursor = 'grabbing';
+      });
 
-    // 在地圖上顯示黃點
-    const calPoint = document.createElement('div');
-    calPoint.className = 'calibration-point';
-    calPoint.style.left = `${x}%`;
-    calPoint.style.top = `${y}%`;
-    mapArea.appendChild(calPoint);
+      document.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const mapRect = mapArea.getBoundingClientRect();
+        let newX = e.clientX - mapRect.left - offsetX;
+        let newY = e.clientY - mapRect.top - offsetY;
 
-    // 彈出視窗顯示已記錄的數量
-    if (calibrationCoords.length < 8) {
-      alert(`已記錄 ${calibrationCoords.length} 個座標。請繼續點擊。`);
-    } else {
-      alert(`已記錄所有 8 個座標！您可以點擊「匯出座標」按鈕來複製結果。`);
-      toggleCalibration(); // 記錄滿後自動關閉校正模式
-    }
+        // 邊界限制
+        newX = Math.max(0, Math.min(newX, mapRect.width - box.offsetWidth));
+        newY = Math.max(0, Math.min(newY, mapRect.height - box.offsetHeight));
+
+        box.style.left = `${(newX / mapRect.width) * 100}%`;
+        box.style.top = `${(newY / mapRect.height) * 100}%`;
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        box.style.cursor = 'grab';
+      });
+    });
   }
 
   function exportCoords() {
-    if(calibrationCoords.length === 0){
-        alert('請先使用對位校正模式，點擊地圖來設定座標！');
+    if(!isCalibrating || calibrationBoxes.length === 0){
+        alert('請先開啟「對位校正」模式，並拖曳方框來設定座標！');
         return;
     }
-    const coordsStr = JSON.stringify(calibrationCoords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
+    const mapRect = mapArea.getBoundingClientRect();
+    const newCoords = calibrationBoxes.map(box => {
+        const boxRect = box.getBoundingClientRect();
+        const x = ((boxRect.left - mapRect.left) / mapRect.width) * 100;
+        const y = ((boxRect.top - mapRect.top) / mapRect.height) * 100;
+        return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
+    });
+
+    const coordsStr = JSON.stringify(newCoords, null, 2)
+      .replace(/"x":/g, 'x:')
+      .replace(/"y":/g, 'y:')
+      .replace(/"/g, '');
+      
     navigator.clipboard.writeText(`const coords = ${coordsStr};`)
-      .then(() => alert('座標已成功複製到剪貼簿。'))
+      .then(() => alert('新座標已成功複製到剪貼簿。'))
       .catch(err => alert('複製失敗，請手動複製。\n' + err));
   }
 </script>
