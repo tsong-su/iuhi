@@ -24,7 +24,7 @@
     justify-content:center;
     align-items:flex-start;
     flex:1;
-    width:100%;
+    width:80%; /* 調整主容器寬度，使其更具彈性 */
     padding:10px;
   }
 
@@ -149,6 +149,7 @@
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
+  // 匯出座標後請貼到此處，並刪除「對位校正」功能
   const coords = [];
   
   const answerKey = {
@@ -263,24 +264,19 @@
     }
   });
 
+  // 這是新版的校正功能
   let isCalibrating = false;
+  let calibrationCoords = [];
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
-    const calPoints = document.querySelectorAll('.calibration-point');
+    const toolButtons = document.querySelectorAll('.tool-button');
     if (isCalibrating) {
-        if(calPoints.length === 0) {
-            coords.forEach(point => {
-                const calPoint = document.createElement('div');
-                calPoint.className = 'calibration-point';
-                calPoint.style.left = `${point.x}%`;
-                calPoint.style.top = `${point.y}%`;
-                mapArea.appendChild(calPoint);
-            });
-        }
-        alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px`);
+        calibrationCoords = [];
+        toolButtons.forEach(btn => btn.disabled = true);
+        alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px\n請點擊地圖來記錄座標。`);
         mapArea.addEventListener('click', recordCoords);
     } else {
-        calPoints.forEach(point => point.remove());
+        toolButtons.forEach(btn => btn.disabled = false);
         alert('對位校正模式已關閉。');
         mapArea.removeEventListener('click', recordCoords);
     }
@@ -288,17 +284,34 @@
 
   function recordCoords(e) {
     const mapRect = mapArea.getBoundingClientRect();
-    const x = (e.clientX - mapRect.left) / mapRect.width * 100;
-    const y = (e.clientY - mapRect.top) / mapRect.height * 100;
-    alert(`新座標：{x:${x.toFixed(4)},y:${y.toFixed(4)}}`);
+    const x = ((e.clientX - mapRect.left) / mapRect.width) * 100;
+    const y = ((e.clientY - mapRect.top) / mapRect.height) * 100;
+    
+    // 儲存新座標
+    calibrationCoords.push({ x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) });
+
+    // 在地圖上顯示黃點
+    const calPoint = document.createElement('div');
+    calPoint.className = 'calibration-point';
+    calPoint.style.left = `${x}%`;
+    calPoint.style.top = `${y}%`;
+    mapArea.appendChild(calPoint);
+
+    // 彈出視窗顯示已記錄的數量
+    if (calibrationCoords.length < 8) {
+      alert(`已記錄 ${calibrationCoords.length} 個座標。請繼續點擊。`);
+    } else {
+      alert(`已記錄所有 8 個座標！您可以點擊「匯出座標」按鈕來複製結果。`);
+      toggleCalibration(); // 記錄滿後自動關閉校正模式
+    }
   }
 
   function exportCoords() {
-    if(coords.length === 0){
+    if(calibrationCoords.length === 0){
         alert('請先使用對位校正模式，點擊地圖來設定座標！');
         return;
     }
-    const coordsStr = JSON.stringify(coords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
+    const coordsStr = JSON.stringify(calibrationCoords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
     navigator.clipboard.writeText(`const coords = ${coordsStr};`)
       .then(() => alert('座標已成功複製到剪貼簿。'))
       .catch(err => alert('複製失敗，請手動複製。\n' + err));
