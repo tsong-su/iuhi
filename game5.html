@@ -424,10 +424,15 @@
   }
 
   function exportCoords() {
-    if(!isCalibrating || calibrationBoxes.length === 0){
-        alert('請先開啟「對位校正」模式，並拖曳方框來設定座標！');
-        return;
+    if(!isCalibrating){
+      alert('請先開啟「對位校正」模式，才能匯出座標！');
+      return;
     }
+    if(calibrationBoxes.length === 0){
+      alert('請先拖曳方框來設定座標！');
+      return;
+    }
+
     const mapRect = mapArea.getBoundingClientRect();
     const newCoords = calibrationBoxes.map(box => {
         const boxRect = box.getBoundingClientRect();
