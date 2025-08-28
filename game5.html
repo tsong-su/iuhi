@@ -418,13 +418,7 @@
     coordsOutput.innerText = coordsStr;
     coordsOutput.style.display = 'block';
 
-    try {
-        navigator.clipboard.writeText(coordsStr);
-        alert('新座標已成功複製到剪貼簿。');
-    } catch (err) {
-        console.error('複製失敗:', err);
-        alert('複製失敗，請手動複製以下座標：\n' + coordsStr);
-    }
+    window.scrollTo(0, document.body.scrollHeight);
   }
 </script>
 </body>
