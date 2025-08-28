@@ -344,7 +344,6 @@
       toolButtons.forEach(btn => btn.disabled = true);
       alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
 
-      // 創建或顯示紅色校正方框
       if (calibrationBoxes.length === 0) {
         const initialCoords = [
           { x: 30, y: 10 }, { x: 70, y: 10 },
@@ -370,7 +369,6 @@
         }
       }
       
-      // 確保郵票可見，但不能拖曳
       allStamps.forEach(stamp => {
         stamp.draggable = false;
         stamp.style.cursor = 'default';
@@ -381,7 +379,6 @@
 
     } else {
       toolButtons.forEach(btn => btn.disabled = false);
-      // 退出校正模式後恢復郵票拖曳功能
       allStamps.forEach(stamp => {
         stamp.draggable = true;
         stamp.style.cursor = 'grab';
