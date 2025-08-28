@@ -22,7 +22,7 @@
   .game-container{
     display:flex;
     justify-content:center;
-    align-items:flex-start;
+    align-items:center; /* 新增：垂直置中 */
     flex:1;
     width:100%;
     max-width:1200px; /* 限制最大寬度，避免超寬 */
@@ -71,6 +71,8 @@
     flex:0 1 auto;
     width: 60%; /* 讓地圖佔據更大比例 */
     max-width: 600px; /* 限制地圖最大寬度 */
+    display: flex; /* 新增：讓地圖置中 */
+    justify-content: center; /* 新增：讓地圖置中 */
   }
   .map{
     max-width: 100%;
@@ -132,6 +134,7 @@
     box-sizing: border-box;
     cursor: grab;
     display: none; /* 預設隱藏 */
+    z-index: 100;
   }
   .calibration-box-number {
     position: absolute;
@@ -175,17 +178,8 @@
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
-  // 您提供的座標，已貼入此處
-  const coords = [
-    { x: 59.6636, y: 7.9636 },
-    { x: 28.4985, y: 15.2772 },
-    { x: 15.842, y: 39.6557 },
-    { x: 8.2208, y: 62.8965 },
-    { x: 30.4038, y: 90.8505 },
-    { x: 59.3914, y: 90.5254 },
-    { x: 90.2843, y: 71.3477 },
-    { x: 93.4144, y: 44.2063 }
-  ];
+  // 您匯出座標後請貼到此處
+  const coords = [];
   
   const answerKey = {
     1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
@@ -310,16 +304,20 @@
     }
   });
 
-  // 校正模式功能
   let isCalibrating = false;
   let calibrationBoxes = [];
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
+    const allStamps = document.querySelectorAll('.stamp');
+
     if (isCalibrating) {
         toolButtons.forEach(btn => btn.disabled = true);
         alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
         
+        // 隱藏郵票，以免干擾拖曳
+        allStamps.forEach(stamp => stamp.style.visibility = 'hidden');
+
         // 建立 8 個可拖曳的校正方框
         calibrationBoxes = coords.map((point, index) => {
             const box = document.createElement('div');
@@ -343,6 +341,7 @@
         toolButtons.forEach(btn => btn.disabled = false);
         calibrationBoxes.forEach(box => box.remove());
         calibrationBoxes = [];
+        allStamps.forEach(stamp => stamp.style.visibility = 'visible');
         alert('對位校正模式已關閉。');
     }
   }
