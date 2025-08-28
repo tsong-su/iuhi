@@ -129,7 +129,7 @@
 <div class="game-container">
   <div class="stamp-container" id="left-stamps"></div>
   <div class="map-area" id="map-area">
-    <img src="../game4_assets/north1_map.png" alt="地圖" class="map" id="map">
+    <img src="/iuhi/game4_assets/north1_map.png" alt="地圖" class="map" id="map">
     <div id="victory-text">有夠gâu</div>
   </div>
   <div class="stamp-container" id="right-stamps"></div>
@@ -137,7 +137,7 @@
 
 <div class="controls">
   <button class="reload-button" onclick="location.reload()">閣耍一擺</button>
-  <button class="home-button" onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button class="home-button" onclick="window.location.href='/iuhi/index.html'">回到遊戲首頁</button>
   <button class="tool-button" onclick="toggleCalibration()">對位校正</button>
   <button class="tool-button" onclick="exportCoords()">匯出座標</button>
 </div>
@@ -178,7 +178,7 @@
       img.className = 'stamp';
       img.draggable = true;
       img.dataset.id = shuffledIds[i];
-      img.src = `../game4_assets/stamp${shuffledIds[i]}.jpg`;
+      img.src = `/iuhi/game4_assets/stamp${shuffledIds[i]}.jpg`;
       if (i < 4) {
         left.appendChild(img);
       } else {
@@ -242,19 +242,19 @@
           dragging.draggable = false;
           dragging.style.pointerEvents = 'none';
           mapArea.appendChild(dragging);
-          new Audio(`../game4_assets/stamp${stampId}.mp3`).play();
+          new Audio(`/iuhi/game4_assets/stamp${stampId}.mp3`).play();
         }
         break;
       }
     }
 
     if(!matched){
-      new Audio('../game4_assets/wrong1.mp3').play();
+      new Audio('/iuhi/game4_assets/wrong1.mp3').play();
     }
 
     if(correctCount === 8){
       setTimeout(() => {
-        new Audio('../game4_assets/victory1.mp3').play();
+        new Audio('/iuhi/game4_assets/victory1.mp3').play();
         victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
         setTimeout(() => {
           victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
