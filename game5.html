@@ -129,7 +129,7 @@
 <div class="game-container">
   <div class="stamp-container" id="left-stamps"></div>
   <div class="map-area" id="map-area">
-    <img src="game4_assets/north1_map.png" alt="地圖" class="map" id="map">
+    <img src="../game4_assets/north1_map.png" alt="地圖" class="map" id="map">
     <div id="victory-text">有夠gâu</div>
   </div>
   <div class="stamp-container" id="right-stamps"></div>
@@ -149,11 +149,8 @@
   const mapImg = document.getElementById('map');
   const victoryText = document.getElementById('victory-text');
 
-  // **請用「匯出座標」按鈕取得座標後，貼到此處**
-  // 為了方便您測試，我先放一個空的陣列
   const coords = [];
   
-  // 請依照新的地圖答案設定
   const answerKey = {
     1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
   };
@@ -161,7 +158,6 @@
   let correctCount = 0;
   let redBoxes = [];
 
-  // Fisher-Yates 洗牌演算法
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -170,12 +166,10 @@
     return array;
   }
 
-  // 產生並隨機排列郵票
   function createStamps() {
     left.innerHTML = '';
     right.innerHTML = '';
     
-    // 這次是 8 張郵票，ID從 13 到 20
     const allStampIds = Array.from({ length: 8 }, (_, i) => i + 13);
     const shuffledIds = shuffle(allStampIds);
 
@@ -184,16 +178,15 @@
       img.className = 'stamp';
       img.draggable = true;
       img.dataset.id = shuffledIds[i];
-      img.src = `game4_assets/stamp${shuffledIds[i]}.jpg`;
-      if (i < 4) { // 左邊放 4 張
+      img.src = `../game4_assets/stamp${shuffledIds[i]}.jpg`;
+      if (i < 4) {
         left.appendChild(img);
-      } else { // 右邊放 4 張
+      } else {
         right.appendChild(img);
       }
     }
   }
 
-  // 地圖載入後再產生 redBoxes
   mapImg.onload = () => {
     redBoxes = coords.map((pt, index) => ({
       left: pt.x,
@@ -249,19 +242,19 @@
           dragging.draggable = false;
           dragging.style.pointerEvents = 'none';
           mapArea.appendChild(dragging);
-          new Audio(`game4_assets/stamp${stampId}.mp3`).play();
+          new Audio(`../game4_assets/stamp${stampId}.mp3`).play();
         }
         break;
       }
     }
 
     if(!matched){
-      new Audio('game4_assets/wrong1.mp3').play();
+      new Audio('../game4_assets/wrong1.mp3').play();
     }
 
-    if(correctCount === 8){ // 這次是 8 張郵票
+    if(correctCount === 8){
       setTimeout(() => {
-        new Audio('game4_assets/victory1.mp3').play();
+        new Audio('../game4_assets/victory1.mp3').play();
         victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
         setTimeout(() => {
           victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
@@ -270,7 +263,6 @@
     }
   });
 
-  // 對位校正功能
   let isCalibrating = false;
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
@@ -301,7 +293,6 @@
     alert(`新座標：{x:${x.toFixed(4)},y:${y.toFixed(4)}}`);
   }
 
-  // 匯出座標功能
   function exportCoords() {
     if(coords.length === 0){
         alert('請先使用對位校正模式，點擊地圖來設定座標！');
