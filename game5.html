@@ -193,14 +193,23 @@
   // 您匯出座標後請貼到此處
   const coords = [];
   
+  // 郵票ID與縣市位置的正確答案對應
   const answerKey = {
+    // 方框 #1 對應 郵票 #3 -> 'ㄉ' -> stamp15
     1: 15,
+    // 方框 #2 對應 郵票 #5 -> 'ㄣ' -> stamp17
     2: 17,
+    // 方框 #3 對應 郵票 #7 -> 'ㄎ' -> stamp19
     3: 19,
+    // 方框 #4 對應 郵票 #4 -> 'ㄍ' -> stamp16
     4: 16,
+    // 方框 #5 對應 郵票 #1 -> 'ㄐ' -> stamp13,
     5: 13,
+    // 方框 #6 對應 郵票 #8 -> 'ㄑ' -> stamp20
     6: 20,
+    // 方框 #7 對應 郵票 #2 -> 'ㄋ' -> stamp14
     7: 14,
+    // 方框 #8 對應 郵票 #6 -> 'ㄌ' -> stamp18
     8: 18
   };
 
@@ -208,6 +217,7 @@
   let redBoxes = [];
   let isCalibrating = false;
   let calibrationBoxes = [];
+  let initialStampPositions = [];
 
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -236,7 +246,7 @@
 
       const stampNumber = document.createElement('div');
       stampNumber.className = 'stamp-number';
-      stampNumber.innerText = '#' + (i + 1);
+      stampNumber.innerText = `#${i + 1}`;
 
       stampWrapper.appendChild(img);
       stampWrapper.appendChild(stampNumber);
@@ -289,7 +299,8 @@
       const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
 
       if(inside){
-        if(answerKey[i+1] === stampId){
+        const correspondingStampId = answerKey[i+1];
+        if(correspondingStampId === stampId){
           box.matched = true;
           matched = true;
           correctCount++;
@@ -328,11 +339,20 @@
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
+    const allStamps = document.querySelectorAll('.stamp');
+    const allStampWrappers = document.querySelectorAll('.stamp-wrapper');
 
     if (isCalibrating) {
       toolButtons.forEach(btn => btn.disabled = true);
       alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
 
+      // 儲存郵票的初始位置
+      initialStampPositions = Array.from(allStampWrappers).map(wrapper => {
+        const rect = wrapper.getBoundingClientRect();
+        return { wrapper: wrapper, left: wrapper.offsetLeft, top: wrapper.offsetTop };
+      });
+
+      // 創建紅色校正方框
       if (calibrationBoxes.length === 0) {
         const initialCoords = [
           { x: 30, y: 10 }, { x: 70, y: 10 },
@@ -347,7 +367,7 @@
           
           const number = document.createElement('div');
           number.className = 'calibration-box-number';
-          number.innerText = '#' + (i + 1);
+          number.innerText = `#${i + 1}`;
           box.appendChild(number);
           
           box.style.left = `${coords[i] ? coords[i].x : initialCoords[i].x}%`;
