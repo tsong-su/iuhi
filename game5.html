@@ -21,7 +21,7 @@
 
   .game-container{
     display:flex;
-    flex-wrap: wrap; /* 允許換行 */
+    flex-wrap: wrap;
     justify-content: center;
     align-items: flex-start;
     flex:1;
@@ -32,7 +32,7 @@
   .map-area{
     position: relative;
     margin: 0 20px 20px;
-    flex: 1 1 600px; /* 讓地圖區域更具彈性 */
+    flex: 1 1 600px;
     display: flex;
     justify-content: center;
   }
@@ -49,7 +49,7 @@
     gap:10px;
     justify-content: center;
     align-content: center;
-    flex: 1 1 250px; /* 讓郵票區域更具彈性 */
+    flex: 1 1 250px;
   }
   .stamp-wrapper{
     position: relative;
@@ -174,16 +174,7 @@
   const victoryText = document.getElementById('victory-text');
 
   // 您匯出座標後請貼到此處
-  const coords = [
-    { x: 30, y: 10 },
-    { x: 70, y: 10 },
-    { x: 10, y: 30 },
-    { x: 90, y: 30 },
-    { x: 20, y: 50 },
-    { x: 80, y: 50 },
-    { x: 40, y: 70 },
-    { x: 60, y: 70 }
-  ];
+  const coords = [];
   
   const answerKey = {
     1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
@@ -191,6 +182,8 @@
 
   let correctCount = 0;
   let redBoxes = [];
+  let isCalibrating = false;
+  let calibrationBoxes = [];
 
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -308,21 +301,15 @@
     }
   });
 
-  let isCalibrating = false;
-  let calibrationBoxes = [];
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
-    const allStamps = document.querySelectorAll('.stamp');
-    const allStampNumbers = document.querySelectorAll('.stamp-number');
 
     if (isCalibrating) {
         toolButtons.forEach(btn => btn.disabled = true);
         alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
         
-        allStamps.forEach(stamp => stamp.style.visibility = 'hidden');
-        allStampNumbers.forEach(num => num.style.display = 'block');
-
+        // 確保校正方框只在需要時才創建
         if (calibrationBoxes.length === 0) {
           const initialCoords = [
             { x: 30, y: 10 }, { x: 70, y: 10 },
@@ -334,29 +321,28 @@
             const box = document.createElement('div');
             box.className = 'calibration-box';
             box.dataset.index = i;
-            box.style.display = 'block';
             
             const number = document.createElement('div');
             number.className = 'calibration-box-number';
             number.innerText = '#' + (i + 1);
             box.appendChild(number);
             
-            box.style.left = `${initialCoords[i].x}%`;
-            box.style.top = `${initialCoords[i].y}%`;
+            box.style.left = `${coords[i] ? coords[i].x : initialCoords[i].x}%`;
+            box.style.top = `${coords[i] ? coords[i].y : initialCoords[i].y}%`;
 
             mapArea.appendChild(box);
             calibrationBoxes.push(box);
           }
-        } else {
-            calibrationBoxes.forEach(box => box.style.display = 'block');
         }
         
+        // 顯示方框
+        calibrationBoxes.forEach(box => box.style.display = 'block');
         setupCalibrationDrag();
+
     } else {
         toolButtons.forEach(btn => btn.disabled = false);
+        // 隱藏方框
         calibrationBoxes.forEach(box => box.style.display = 'none');
-        allStamps.forEach(stamp => stamp.style.visibility = 'visible');
-        allStampNumbers.forEach(num => num.style.display = 'block');
         alert('對位校正模式已關閉。');
     }
   }
