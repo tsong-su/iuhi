@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>臺灣中部地區&注音符號郵票配對遊戲</title>
+<style>
+  body{
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100vh;
+    overflow:hidden;
+    background:#fff;
+  }
+  header{ text-align:center; margin:10px 0; }
+  header h1{ margin:0; font-size:20px; color: #4CAF50; }
+  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; font-weight: bold; }
+
+  .game-container{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    flex:1;
+    width:100%;
+    padding:10px;
+  }
+
+  /* 兩側：直排 4 排 × 橫排 2 張 */
+  .stamp-container{
+    display:grid;
+    grid-template-columns: repeat(2, 120px);
+    grid-template-rows: repeat(4, 120px);
+    gap:10px;
+    justify-content:center;
+    align-content:center;
+    margin-top:120px;
+    width:250px;
+    flex:0 0 auto;
+  }
+  .stamp{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border:2px solid #333;
+    border-radius:8px;
+    cursor:grab;
+  }
+
+  .map-area{
+    position:relative;
+    margin:0 20px;
+    flex:0 1 auto;
+  }
+  .map{
+    max-height:70vh;
+    height:auto;
+    display:block;
+  }
+  
+  #victory-text{
+    position:absolute;
+    top:40%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0);
+    font-size:48px;
+    font-weight:bold;
+    color: #FFEB3B;
+    z-index:10;
+    pointer-events:none;
+    transition:transform 1s ease;
+    text-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+
+  .controls{
+    width:100%;
+    text-align:center;
+    padding:10px 0;
+    background:#f8f8f8;
+    border-top:1px solid #ccc;
+  }
+  .controls button{
+    margin:0 10px;
+    padding:8px 16px;
+    font-size:14px;
+    cursor:pointer;
+    border-radius:20px;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+
+  /* 不同的按鈕樣式 */
+  .reload-button { background: #FF5722; }
+  .reload-button:hover { background: #E64A19; }
+  
+  .home-button { background: #4CAF50; }
+  .home-button:hover { background: #388E3C; }
+  
+  .next-button { background: #00BCD4; }
+  .next-button:hover { background: #0097A7; }
+  
+  .tool-button { background: #9E9E9E; }
+  .tool-button:hover { background: #757575; }
+
+  /* 校正點的樣式 */
+  .calibration-point{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: yellow;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 99;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>臺灣中部地區&注音符號郵票配對遊戲</h1>
+  <p>耍法：kā郵票suá 到對應縣市的格仔內</p>
+</header>
+
+<div class="game-container">
+  <div class="stamp-container" id="left-stamps"></div>
+  <div class="map-area" id="map-area">
+    <img src="game4_assets/north1_map.png" alt="地圖" class="map" id="map">
+    <div id="victory-text">有夠gâu</div>
+  </div>
+  <div class="stamp-container" id="right-stamps"></div>
+</div>
+
+<div class="controls">
+  <button class="reload-button" onclick="location.reload()">閣耍一擺</button>
+  <button class="home-button" onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button class="tool-button" onclick="toggleCalibration()">對位校正</button>
+  <button class="tool-button" onclick="exportCoords()">匯出座標</button>
+</div>
+
+<script>
+  const left = document.getElementById('left-stamps');
+  const right = document.getElementById('right-stamps');
+  const mapArea = document.getElementById('map-area');
+  const mapImg = document.getElementById('map');
+  const victoryText = document.getElementById('victory-text');
+
+  // **請用「匯出座標」按鈕取得座標後，貼到此處**
+  // 為了方便您測試，我先放一個空的陣列
+  const coords = [];
+  
+  // 請依照新的地圖答案設定
+  const answerKey = {
+    1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
+  };
+
+  let correctCount = 0;
+  let redBoxes = [];
+
+  // Fisher-Yates 洗牌演算法
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  // 產生並隨機排列郵票
+  function createStamps() {
+    left.innerHTML = '';
+    right.innerHTML = '';
+    
+    // 這次是 8 張郵票，ID從 13 到 20
+    const allStampIds = Array.from({ length: 8 }, (_, i) => i + 13);
+    const shuffledIds = shuffle(allStampIds);
+
+    for (let i = 0; i < 8; i++) {
+      const img = document.createElement('img');
+      img.className = 'stamp';
+      img.draggable = true;
+      img.dataset.id = shuffledIds[i];
+      img.src = `game4_assets/stamp${shuffledIds[i]}.jpg`;
+      if (i < 4) { // 左邊放 4 張
+        left.appendChild(img);
+      } else { // 右邊放 4 張
+        right.appendChild(img);
+      }
+    }
+  }
+
+  // 地圖載入後再產生 redBoxes
+  mapImg.onload = () => {
+    redBoxes = coords.map((pt, index) => ({
+      left: pt.x,
+      top: pt.y,
+      matched: false
+    }));
+  };
+
+  createStamps();
+
+  let dragging = null;
+  document.addEventListener('dragstart', e => {
+    if(e.target.classList.contains('stamp') && e.target.draggable){
+      dragging = e.target;
+    }
+  });
+  document.addEventListener('dragend', () => { dragging = null; });
+
+  mapArea.addEventListener('dragover', e => e.preventDefault());
+  mapArea.addEventListener('drop', e => {
+    e.preventDefault();
+    if(!dragging) return;
+    const stampId = parseInt(dragging.dataset.id, 10);
+    const mapRect = mapArea.getBoundingClientRect();
+    const dropX = e.clientX;
+    const dropY = e.clientY;
+    const stampCenterX = dropX;
+    const stampCenterY = dropY;
+    let matched = false;
+
+    for(let i = 0; i < redBoxes.length; i++){
+      const box = redBoxes[i];
+      if(box.matched) continue;
+      const boxLeft = mapRect.left + (box.left / 100) * mapRect.width - 50;
+      const boxTop = mapRect.top + (box.top / 100) * mapRect.height - 50;
+      const boxRight = boxLeft + 100;
+      const boxBottom = boxTop + 100;
+      const inside = (stampCenterX >= boxLeft && stampCenterX <= boxRight && stampCenterY >= boxTop && stampCenterY <= boxBottom);
+
+      if(inside){
+        if(answerKey[i+1] === stampId){
+          box.matched = true;
+          matched = true;
+          correctCount++;
+          const pxLeft = (box.left / 100) * mapArea.clientWidth - 40;
+          const pxTop = (box.top / 100) * mapArea.clientHeight - 40;
+          dragging.style.position = 'absolute';
+          dragging.style.width = '80px';
+          dragging.style.height = '80px';
+          dragging.style.left = pxLeft + 'px';
+          dragging.style.top = pxTop + 'px';
+          dragging.style.cursor = 'default';
+          dragging.draggable = false;
+          dragging.style.pointerEvents = 'none';
+          mapArea.appendChild(dragging);
+          new Audio(`game4_assets/stamp${stampId}.mp3`).play();
+        }
+        break;
+      }
+    }
+
+    if(!matched){
+      new Audio('game4_assets/wrong1.mp3').play();
+    }
+
+    if(correctCount === 8){ // 這次是 8 張郵票
+      setTimeout(() => {
+        new Audio('game4_assets/victory1.mp3').play();
+        victoryText.style.transform = 'translate(-50%,-50%) scale(1)';
+        setTimeout(() => {
+          victoryText.style.transform = 'translate(-50%,-50%) scale(0)';
+        }, 4000);
+      }, 1500);
+    }
+  });
+
+  // 對位校正功能
+  let isCalibrating = false;
+  function toggleCalibration() {
+    isCalibrating = !isCalibrating;
+    const calPoints = document.querySelectorAll('.calibration-point');
+    if (isCalibrating) {
+        if(calPoints.length === 0) {
+            coords.forEach(point => {
+                const calPoint = document.createElement('div');
+                calPoint.className = 'calibration-point';
+                calPoint.style.left = `${point.x}%`;
+                calPoint.style.top = `${point.y}%`;
+                mapArea.appendChild(calPoint);
+            });
+        }
+        alert(`對位校正模式已開啟。\n地圖寬度: ${mapImg.clientWidth}px\n地圖高度: ${mapImg.clientHeight}px`);
+        mapArea.addEventListener('click', recordCoords);
+    } else {
+        calPoints.forEach(point => point.remove());
+        alert('對位校正模式已關閉。');
+        mapArea.removeEventListener('click', recordCoords);
+    }
+  }
+
+  function recordCoords(e) {
+    const mapRect = mapArea.getBoundingClientRect();
+    const x = (e.clientX - mapRect.left) / mapRect.width * 100;
+    const y = (e.clientY - mapRect.top) / mapRect.height * 100;
+    alert(`新座標：{x:${x.toFixed(4)},y:${y.toFixed(4)}}`);
+  }
+
+  // 匯出座標功能
+  function exportCoords() {
+    if(coords.length === 0){
+        alert('請先使用對位校正模式，點擊地圖來設定座標！');
+        return;
+    }
+    const coordsStr = JSON.stringify(coords, null, 2).replace(/"x":/g, 'x:').replace(/"y":/g, 'y:').replace(/"/g, '');
+    navigator.clipboard.writeText(`const coords = ${coordsStr};`)
+      .then(() => alert('座標已成功複製到剪貼簿。'))
+      .catch(err => alert('複製失敗，請手動複製。\n' + err));
+  }
+</script>
+</body>
+</html>
