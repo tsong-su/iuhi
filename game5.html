@@ -21,9 +21,8 @@
 
   .game-container{
     display:flex;
-    flex-wrap: wrap;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     flex:1;
     width: 95%;
     max-width: 1200px;
@@ -31,7 +30,7 @@
   }
   .map-area{
     position: relative;
-    margin: 0 20px 20px;
+    margin: 0 20px;
     flex: 1 1 600px;
     display: flex;
     justify-content: center;
@@ -176,8 +175,24 @@
   // 您匯出座標後請貼到此處
   const coords = [];
   
+  // 這裡已將郵票與方框的對應關係加入
   const answerKey = {
-    1: 13, 2: 14, 3: 15, 4: 16, 5: 17, 6: 18, 7: 19, 8: 20
+    // 方框 #1 對應 郵票 #3 -> 'ㄉ' -> stamp15
+    1: 15,
+    // 方框 #2 對應 郵票 #5 -> 'ㄣ' -> stamp17
+    2: 17,
+    // 方框 #3 對應 郵票 #7 -> 'ㄎ' -> stamp19
+    3: 19,
+    // 方框 #4 對應 郵票 #4 -> 'ㄍ' -> stamp16
+    4: 16,
+    // 方框 #5 對應 郵票 #1 -> 'ㄐ' -> stamp13
+    5: 13,
+    // 方框 #6 對應 郵票 #8 -> 'ㄑ' -> stamp20
+    6: 20,
+    // 方框 #7 對應 郵票 #2 -> 'ㄋ' -> stamp14
+    7: 14,
+    // 方框 #8 對應 郵票 #6 -> 'ㄌ' -> stamp18
+    8: 18
   };
 
   let correctCount = 0;
@@ -304,46 +319,46 @@
   function toggleCalibration() {
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
+    const allStamps = document.querySelectorAll('.stamp');
 
     if (isCalibrating) {
-        toolButtons.forEach(btn => btn.disabled = true);
-        alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
-        
-        // 確保校正方框只在需要時才創建
-        if (calibrationBoxes.length === 0) {
-          const initialCoords = [
-            { x: 30, y: 10 }, { x: 70, y: 10 },
-            { x: 10, y: 30 }, { x: 90, y: 30 },
-            { x: 20, y: 50 }, { x: 80, y: 50 },
-            { x: 40, y: 70 }, { x: 60, y: 70 }
-          ];
-          for (let i = 0; i < 8; i++) {
-            const box = document.createElement('div');
-            box.className = 'calibration-box';
-            box.dataset.index = i;
-            
-            const number = document.createElement('div');
-            number.className = 'calibration-box-number';
-            number.innerText = '#' + (i + 1);
-            box.appendChild(number);
-            
-            box.style.left = `${coords[i] ? coords[i].x : initialCoords[i].x}%`;
-            box.style.top = `${coords[i] ? coords[i].y : initialCoords[i].y}%`;
+      toolButtons.forEach(btn => btn.disabled = true);
+      alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
 
-            mapArea.appendChild(box);
-            calibrationBoxes.push(box);
-          }
+      if (calibrationBoxes.length === 0) {
+        const initialCoords = [
+          { x: 30, y: 10 }, { x: 70, y: 10 },
+          { x: 10, y: 30 }, { x: 90, y: 30 },
+          { x: 20, y: 50 }, { x: 80, y: 50 },
+          { x: 40, y: 70 }, { x: 60, y: 70 }
+        ];
+        for (let i = 0; i < 8; i++) {
+          const box = document.createElement('div');
+          box.className = 'calibration-box';
+          box.dataset.index = i;
+          
+          const number = document.createElement('div');
+          number.className = 'calibration-box-number';
+          number.innerText = '#' + (i + 1);
+          box.appendChild(number);
+          
+          box.style.left = `${coords[i] ? coords[i].x : initialCoords[i].x}%`;
+          box.style.top = `${coords[i] ? coords[i].y : initialCoords[i].y}%`;
+
+          mapArea.appendChild(box);
+          calibrationBoxes.push(box);
         }
-        
-        // 顯示方框
-        calibrationBoxes.forEach(box => box.style.display = 'block');
-        setupCalibrationDrag();
+      }
+      
+      allStamps.forEach(stamp => stamp.style.visibility = 'visible');
+      calibrationBoxes.forEach(box => box.style.display = 'block');
+      setupCalibrationDrag();
 
     } else {
-        toolButtons.forEach(btn => btn.disabled = false);
-        // 隱藏方框
-        calibrationBoxes.forEach(box => box.style.display = 'none');
-        alert('對位校正模式已關閉。');
+      toolButtons.forEach(btn => btn.disabled = false);
+      allStamps.forEach(stamp => stamp.style.visibility = 'visible');
+      calibrationBoxes.forEach(box => box.style.display = 'none');
+      alert('對位校正模式已關閉。');
     }
   }
 
