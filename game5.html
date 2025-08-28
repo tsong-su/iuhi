@@ -16,16 +16,16 @@
     background:#fff;
   }
   header{ text-align:center; margin:10px 0; }
-  header h1{ margin:0; font-size:20px; color: #4CAF50; }
-  header p{ margin:4px 0 10px 0; font-size:16px; color: #2196F3; font-weight: bold; }
+  header h1{ margin:0; font-size:28px; color: #4CAF50; } /* 字體加大 */
+  header p{ margin:4px 0 10px 0; font-size:20px; color: #2196F3; font-weight: bold; } /* 字體加大 */
 
   .game-container{
     display:flex;
     justify-content:center;
-    align-items:center; /* 新增：垂直置中 */
+    align-items:center;
     flex:1;
-    width:100%;
-    max-width:1200px; /* 限制最大寬度，避免超寬 */
+    width:95%; /* 調整寬度，確保完整顯示 */
+    max-width:1200px;
     padding:10px;
   }
 
@@ -69,10 +69,11 @@
     position:relative;
     margin:0 20px;
     flex:0 1 auto;
-    width: 60%; /* 讓地圖佔據更大比例 */
-    max-width: 600px; /* 限制地圖最大寬度 */
-    display: flex; /* 新增：讓地圖置中 */
-    justify-content: center; /* 新增：讓地圖置中 */
+    width: 60%;
+    max-width: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .map{
     max-width: 100%;
@@ -125,7 +126,6 @@
   .tool-button { background: #9E9E9E; }
   .tool-button:hover { background: #757575; }
 
-  /* 校正模式的方框樣式 */
   .calibration-box {
     position: absolute;
     width: 80px;
@@ -133,7 +133,7 @@
     border: 2px dashed red;
     box-sizing: border-box;
     cursor: grab;
-    display: none; /* 預設隱藏 */
+    display: none;
     z-index: 100;
   }
   .calibration-box-number {
@@ -310,38 +310,48 @@
     isCalibrating = !isCalibrating;
     const toolButtons = document.querySelectorAll('.tool-button');
     const allStamps = document.querySelectorAll('.stamp');
+    const allStampNumbers = document.querySelectorAll('.stamp-number');
 
     if (isCalibrating) {
         toolButtons.forEach(btn => btn.disabled = true);
         alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
         
-        // 隱藏郵票，以免干擾拖曳
+        // 隱藏郵票，顯示編號
         allStamps.forEach(stamp => stamp.style.visibility = 'hidden');
+        allStampNumbers.forEach(num => num.style.display = 'block');
 
         // 建立 8 個可拖曳的校正方框
-        calibrationBoxes = coords.map((point, index) => {
-            const box = document.createElement('div');
-            box.className = 'calibration-box';
-            box.dataset.index = index;
-            box.style.left = `${point.x}%`;
-            box.style.top = `${point.y}%`;
-            box.style.display = 'block';
-            
-            const number = document.createElement('div');
-            number.className = 'calibration-box-number';
-            number.innerText = '#' + (index + 1);
-            box.appendChild(number);
+        calibrationBoxes = [];
+        for (let i = 0; i < 8; i++) {
+          const box = document.createElement('div');
+          box.className = 'calibration-box';
+          box.dataset.index = i;
+          box.style.display = 'block';
+          
+          const number = document.createElement('div');
+          number.className = 'calibration-box-number';
+          number.innerText = '#' + (i + 1);
+          box.appendChild(number);
 
-            mapArea.appendChild(box);
-            return box;
-        });
-
+          mapArea.appendChild(box);
+          calibrationBoxes.push(box);
+        }
+        
+        // 如果有舊座標，套用舊座標
+        if (coords.length === 8) {
+          coords.forEach((point, index) => {
+            calibrationBoxes[index].style.left = `${point.x}%`;
+            calibrationBoxes[index].style.top = `${point.y}%`;
+          });
+        }
+        
         setupCalibrationDrag();
     } else {
         toolButtons.forEach(btn => btn.disabled = false);
         calibrationBoxes.forEach(box => box.remove());
         calibrationBoxes = [];
         allStamps.forEach(stamp => stamp.style.visibility = 'visible');
+        allStampNumbers.forEach(num => num.style.display = 'block');
         alert('對位校正模式已關閉。');
     }
   }
