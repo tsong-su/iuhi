@@ -440,8 +440,15 @@
 
     const coordsStr = `const coords = ${JSON.stringify(newCoords, null, 2)};`;
     
-    coordsOutput.innerText = coordsStr;
-    coordsOutput.style.display = 'block';
+    // Attempt to copy to clipboard
+    navigator.clipboard.writeText(coordsStr).then(() => {
+        alert('座標已成功複製到剪貼簿！');
+    }).catch(err => {
+        console.error('無法自動複製到剪貼簿:', err);
+        coordsOutput.innerText = coordsStr;
+        coordsOutput.style.display = 'block';
+        alert('自動複製失敗，請手動複製下方顯示的程式碼。');
+    });
 
     window.scrollTo(0, document.body.scrollHeight);
   }
