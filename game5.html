@@ -2,158 +2,159 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>郵票配對遊戲 - 含校正工具</title>
+  <title>郵票配對遊戲 - 校正工具整合版</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      background: #f0f0f0;
     }
+    h1 { margin-top: 20px; }
+
+    /* 遊戲區 */
     #map-container {
       position: relative;
       display: inline-block;
       margin-top: 20px;
+      border: 2px solid #333;
     }
     #map {
-      max-width: 90%;
+      max-width: 90vw;
       height: auto;
-      border: 2px solid #444;
+      display: block;
     }
     .stamp {
       width: 60px;
       height: 60px;
-      background-color: lightblue;
-      border: 1px solid #333;
+      background: #ffcc00;
+      border: 2px solid #333;
+      border-radius: 8px;
       position: absolute;
       cursor: grab;
-      z-index: 5;
     }
-    /* 校正模式的紅框 */
+
+    /* 校正紅框 */
     .calibration-box {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       border: 2px dashed red;
       position: absolute;
       cursor: move;
       z-index: 10;
     }
-    #coords-output {
+
+    /* 工具列 */
+    #toolbar {
+      margin: 20px 0;
+    }
+    #coordsOutput {
       margin-top: 20px;
-      font-family: monospace;
-      white-space: pre;
-      background: #f4f4f4;
-      border: 1px solid #ccc;
       padding: 10px;
-      display: none;
+      border: 1px solid #aaa;
+      background: #fff;
+      white-space: pre-wrap;
       text-align: left;
-      max-width: 90%;
-      overflow-x: auto;
-    }
-    .toolbar {
-      margin-top: 20px;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-      font-size: 14px;
-      cursor: pointer;
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>郵票配對遊戲</h1>
 
-  <!-- 遊戲地圖與郵票 -->
+  <!-- 遊戲區 -->
   <div id="map-container">
-    <img id="map" src="north_map.png" alt="地圖">
-    <div class="stamp" style="left:10%; top:70%;">1</div>
-    <div class="stamp" style="left:20%; top:70%;">2</div>
-    <div class="stamp" style="left:30%; top:70%;">3</div>
-    <div class="stamp" style="left:40%; top:70%;">4</div>
+    <img id="map" src="north_map.png">
+    <div class="stamp" id="stamp1" style="left: 10%; top: 20%;"></div>
+    <div class="stamp" id="stamp2" style="left: 20%; top: 30%;"></div>
+    <div class="stamp" id="stamp3" style="left: 30%; top: 40%;"></div>
   </div>
 
-  <!-- 校正工具 -->
-  <div class="toolbar">
+  <!-- 工具列 -->
+  <div id="toolbar">
     <button onclick="toggleCalibration()">開啟 / 關閉 校正模式</button>
     <button onclick="exportCoords()">匯出座標</button>
+    <button onclick="copyCoords()">複製座標</button>
   </div>
 
-  <pre id="coords-output"></pre>
+  <!-- 匯出結果 -->
+  <pre id="coordsOutput"></pre>
 
   <script>
-    let isCalibrating = false;
+    const mapContainer = document.getElementById('map-container');
+    const coordsOutput = document.getElementById('coordsOutput');
+
     let calibrationBoxes = [];
-    let mapContainer = document.getElementById('map-container');
-    let coordsOutput = document.getElementById('coords-output');
+    let isCalibrating = false;
 
-    // 預設初始座標（可自行修改）
-    const initialCoords = [
-      { x: 30, y: 10 },
-      { x: 50, y: 20 },
-      { x: 70, y: 30 },
-      { x: 40, y: 50 }
-    ];
-
+    // 校正模式切換
     function toggleCalibration() {
       isCalibrating = !isCalibrating;
+
       if (isCalibrating) {
+        alert('已開啟校正模式，拖曳紅框到正確位置！');
+
+        // 建立紅框
         calibrationBoxes = [];
-        initialCoords.forEach(coord => {
-          let box = document.createElement('div');
+        const initialCoords = [
+          { x: 20, y: 20 },
+          { x: 50, y: 50 },
+          { x: 70, y: 30 }
+        ];
+        initialCoords.forEach((pos, i) => {
+          const box = document.createElement('div');
           box.className = 'calibration-box';
-          box.style.left = coord.x + '%';
-          box.style.top = coord.y + '%';
+          box.style.left = `${pos.x}%`;
+          box.style.top = `${pos.y}%`;
+          box.dataset.index = i;
           makeDraggable(box);
           mapContainer.appendChild(box);
           calibrationBoxes.push(box);
         });
-        alert('校正模式已開啟，拖曳紅框來調整位置');
       } else {
+        alert('已關閉校正模式！');
         calibrationBoxes.forEach(box => box.remove());
         calibrationBoxes = [];
-        alert('校正模式已關閉');
       }
     }
 
+    // 拖曳功能
     function makeDraggable(el) {
-      el.onmousedown = function (e) {
-        e.preventDefault();
-        let shiftX = e.clientX - el.getBoundingClientRect().left;
-        let shiftY = e.clientY - el.getBoundingClientRect().top;
+      let offsetX, offsetY, isDragging = false;
 
-        function moveAt(pageX, pageY) {
-          let rect = mapContainer.getBoundingClientRect();
-          let x = ((pageX - rect.left - shiftX) / rect.width) * 100;
-          let y = ((pageY - rect.top - shiftY) / rect.height) * 100;
-          x = Math.min(Math.max(x, 0), 100);
-          y = Math.min(Math.max(y, 0), 100);
-          el.style.left = x + '%';
-          el.style.top = y + '%';
-        }
+      el.addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
+        el.style.cursor = 'grabbing';
+      });
 
-        function onMouseMove(e) {
-          moveAt(e.pageX, e.pageY);
-        }
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const containerRect = mapContainer.getBoundingClientRect();
+        let newLeft = e.clientX - offsetX - containerRect.left;
+        let newTop = e.clientY - offsetY - containerRect.top;
+        const maxX = containerRect.width - el.offsetWidth;
+        const maxY = containerRect.height - el.offsetHeight;
+        newLeft = Math.max(0, Math.min(newLeft, maxX));
+        newTop = Math.max(0, Math.min(newTop, maxY));
+        el.style.left = `${(newLeft / containerRect.width) * 100}%`;
+        el.style.top = `${(newTop / containerRect.height) * 100}%`;
+      });
 
-        document.addEventListener('mousemove', onMouseMove);
-
-        document.onmouseup = function () {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.onmouseup = null;
-        };
-      };
-
-      el.ondragstart = function () {
-        return false;
-      };
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        el.style.cursor = 'move';
+      });
     }
 
+    // 匯出座標
     function exportCoords() {
       if (!isCalibrating) {
-        alert('請先開啟「校正模式」！');
+        alert('請先開啟「校正模式」，才能匯出座標！');
         return;
       }
       if (calibrationBoxes.length === 0) {
-        alert('沒有任何紅框可匯出！');
+        alert('請先拖曳方框設定座標！');
         return;
       }
 
@@ -168,16 +169,26 @@
       coordsOutput.innerText = coordsStr;
       coordsOutput.style.display = 'block';
 
-      // 自動複製到剪貼簿
+      // 自動複製
       navigator.clipboard.writeText(coordsStr).then(() => {
         alert('座標已匯出並自動複製到剪貼簿！');
-      }).catch(err => {
-        console.error('複製失敗', err);
-        alert('座標已匯出，但瀏覽器不支援自動複製，請手動複製。');
+      }).catch(() => {
+        alert('複製失敗，請手動複製下方的座標！');
       });
 
-      // 自動捲動到下方輸出區
       window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // 手動複製
+    function copyCoords() {
+      const text = coordsOutput.innerText;
+      if (!text) {
+        alert('尚未產生座標！');
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        alert('座標已複製到剪貼簿！');
+      });
     }
   </script>
 </body>
