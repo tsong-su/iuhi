@@ -216,7 +216,6 @@
   let correctCount = 0;
   let redBoxes = [];
   let isCalibrating = false;
-  let calibrationBoxes = []; // This array holds the DOM elements
 
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -344,7 +343,7 @@
       toolButtons.forEach(btn => btn.disabled = true);
       alert('對位校正模式已開啟。\n地圖上會出現 8 個紅色方框，請拖曳它們到正確的位置。');
 
-      if (calibrationBoxes.length === 0) {
+      if (document.querySelectorAll('.calibration-box').length === 0) {
         const initialCoords = [
           { x: 30, y: 10 }, { x: 70, y: 10 },
           { x: 10, y: 30 }, { x: 90, y: 30 },
@@ -366,7 +365,6 @@
           box.style.top = `${coords[i] ? coords[i].y : initialCoords[i].y}%`;
 
           mapArea.appendChild(box);
-          calibrationBoxes.push(box); // Add to the array here
           setupCalibrationDrag(box);
         }
       }
@@ -376,7 +374,7 @@
         stamp.style.cursor = 'default';
       });
 
-      calibrationBoxes.forEach(box => box.style.display = 'block');
+      document.querySelectorAll('.calibration-box').forEach(box => box.style.display = 'block');
 
     } else {
       toolButtons.forEach(btn => btn.disabled = false);
@@ -384,7 +382,7 @@
         stamp.draggable = true;
         stamp.style.cursor = 'grab';
       });
-      calibrationBoxes.forEach(box => box.style.display = 'none');
+      document.querySelectorAll('.calibration-box').forEach(box => box.style.display = 'none');
       alert('對位校正模式已關閉。');
     }
   }
@@ -431,13 +429,14 @@
       return;
     }
     
+    const calibrationBoxes = document.querySelectorAll('.calibration-box');
     if(calibrationBoxes.length === 0){
       alert('請先拖曳方框來設定座標！');
       return;
     }
 
     const mapRect = mapArea.getBoundingClientRect();
-    const newCoords = calibrationBoxes.map(box => {
+    const newCoords = Array.from(calibrationBoxes).map(box => {
         const boxRect = box.getBoundingClientRect();
         const x = ((boxRect.left - mapRect.left) / mapRect.width) * 100;
         const y = ((boxRect.top - mapRect.top) / mapRect.height) * 100;
