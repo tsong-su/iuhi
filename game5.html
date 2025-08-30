@@ -435,20 +435,25 @@
       return;
     }
 
-    const mapRect = mapArea.getBoundingClientRect();
     const newCoords = Array.from(calibrationBoxes).map(box => {
-        const boxRect = box.getBoundingClientRect();
-        const x = ((boxRect.left - mapRect.left + boxRect.width / 2) / mapRect.width) * 100;
-        const y = ((boxRect.top - mapRect.top + boxRect.height / 2) / mapRect.height) * 100;
-        return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
+        const leftPercent = parseFloat(box.style.left);
+        const topPercent = parseFloat(box.style.top);
+        return { x: leftPercent, y: topPercent };
     });
 
     const coordsStr = `const coords = ${JSON.stringify(newCoords, null, 2)};`;
     
+    // Display the coordinates
     coordsOutput.innerText = coordsStr;
     coordsOutput.style.display = 'block';
-    
-    alert('座標已顯示在頁面下方，請手動複製！');
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(coordsStr).then(() => {
+        alert('座標已顯示在頁面下方，並自動複製到剪貼簿！');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('座標已顯示在頁面下方，但無法自動複製。請手動複製！');
+    });
 
     window.scrollTo(0, document.body.scrollHeight);
   }
