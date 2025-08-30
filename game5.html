@@ -1,3 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>臺灣中部地區&注音符號郵票配對遊戲</title>
+<style>
+  body{
+    margin:0;
+    padding:0;
+    font-family:Arial, sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100vh;
+    overflow:hidden;
+    background:#fff;
+  }
+  header{ text-align:center; margin:10px 0; }
+  header h1{ margin:0; font-size:28px; color: #4CAF50; }
+  header p{ margin:4px 0 10px 0; font-size:20px; color: #2196F3; font-weight: bold; }
+
+  .game-container{
+    display:flex;
+    justify-content: center;
+    align-items: center; /* 垂直置中 */
+    flex:1;
+    width: 95%;
+    max-width: 1200px;
+    padding: 10px;
+  }
+  .map-area{
+    position: relative;
+    margin: 0 20px;
+    flex: 1 1 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .map{
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .stamp-container{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(100px, 120px));
+    grid-template-rows: repeat(4, minmax(100px, 120px));
+    gap:10px;
+    justify-content: center;
+    align-content: center;
+    flex: 1 1 250px;
+  }
+  .stamp-wrapper{
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+  .stamp{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border:2px solid #333;
+    border-radius:8px;
+    cursor:grab;
+  }
+  .stamp-number {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 5;
+  }
+
+  #victory-text{
+    position:absolute;
+    top:40%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0);
+    font-size:48px;
+    font-weight:bold;
+    color: #FFEB3B;
+    z-index:10;
+    pointer-events:none;
+    transition:transform 1s ease;
+    text-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+
+  .controls{
+    width:100%;
+    text-align:center;
+    padding:10px 0;
+    background:#f8f8f8;
+    border-top:1px solid #ccc;
+  }
+  .controls button{
+    margin:0 10px;
+    padding:8px 16px;
+    font-size:14px;
+    cursor:pointer;
+    border-radius:20px;
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    transition: background 0.3s ease;
+  }
+
+  .reload-button { background: #FF5722; }
+  .reload-button:hover { background: #E64A19; }
+  
+  .home-button { background: #4CAF50; }
+  .home-button:hover { background: #388E3C; }
+  
+  .next-button { background: #00BCD4; }
+  .next-button:hover { background: #0097A7; }
+  
+  .tool-button { background: #9E9E9E; }
+  .tool-button:hover { background: #757575; }
+
+  .calibration-box {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 2px dashed red;
+    box-sizing: border-box;
+    cursor: grab;
+    display: none;
+    z-index: 100;
+  }
+  .calibration-box-number {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    color: white;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  #coords-output {
+    margin-top: 10px;
+    padding: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    width: 90%;
+    max-width: 600px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>臺灣中部地區&注音符號郵票配對遊戲</h1>
+  <p>耍法：kā郵票suá 到對應縣市的格仔內</p>
+</header>
+
+<div class="game-container">
+  <div class="stamp-container" id="left-stamps"></div>
+  <div class="map-area" id="map-area">
+    <img src="https://tsong-su.github.io/iuhi/game4_assets/north1_map.png" alt="地圖" class="map" id="map">
+    <div id="victory-text">有夠gâu</div>
+  </div>
+  <div class="stamp-container" id="right-stamps"></div>
+</div>
+
+<div class="controls">
+  <button class="reload-button" onclick="location.reload()">閣耍一擺</button>
+  <button class="home-button" onclick="window.location.href='https://tsong-su.github.io/iuhi/index.html'">回到遊戲首頁</button>
+  <button class="tool-button" onclick="toggleCalibration()">對位校正</button>
+  <button class="tool-button" onclick="exportCoords()">匯出座標</button>
+</div>
+
+<div id="coords-output"></div>
+
 <script>
   const left = document.getElementById('left-stamps');
   const right = document.getElementById('right-stamps');
@@ -11,8 +195,22 @@
   
   // 郵票ID與縣市位置的正確答案對應
   const answerKey = {
-    1: 15, 2: 17, 3: 19, 4: 16,
-    5: 13, 6: 20, 7: 14, 8: 18
+    // 方框 #1 對應 郵票 #3 -> 'ㄉ' -> stamp15
+    1: 15,
+    // 方框 #2 對應 郵票 #5 -> 'ㄣ' -> stamp17
+    2: 17,
+    // 方框 #3 對應 郵票 #7 -> 'ㄎ' -> stamp19
+    3: 19,
+    // 方框 #4 對應 郵票 #4 -> 'ㄍ' -> stamp16
+    4: 16,
+    // 方框 #5 對應 郵票 #1 -> 'ㄐ' -> stamp13,
+    5: 13,
+    // 方框 #6 對應 郵票 #8 -> 'ㄑ' -> stamp20
+    6: 20,
+    // 方框 #7 對應 郵票 #2 -> 'ㄋ' -> stamp14
+    7: 14,
+    // 方框 #8 對應 郵票 #6 -> 'ㄌ' -> stamp18
+    8: 18
   };
 
   let correctCount = 0;
@@ -191,35 +389,40 @@
 
   function setupCalibrationDrag(box) {
     let isDragging = false;
-    let offsetX, offsetY;
     
+    // Use mousedown to start dragging
     box.addEventListener('mousedown', e => {
-      isDragging = true;
-      offsetX = e.clientX - box.getBoundingClientRect().left;
-      offsetY = e.clientY - box.getBoundingClientRect().top;
-      box.style.cursor = 'grabbing';
-    });
+        isDragging = true;
+        e.preventDefault(); // Prevents default drag behavior
+        const mapRect = mapArea.getBoundingClientRect();
+        const initialMouseX = e.clientX;
+        const initialMouseY = e.clientY;
+        const initialBoxLeft = box.getBoundingClientRect().left - mapRect.left;
+        const initialBoxTop = box.getBoundingClientRect().top - mapRect.top;
 
-    document.addEventListener('mousemove', e => {
-      if (!isDragging) return;
-      const mapRect = mapArea.getBoundingClientRect();
-      let newX = e.clientX - mapRect.left - offsetX;
-      let newY = e.clientY - mapRect.top - offsetY;
+        const onMouseMove = (e) => {
+            if (!isDragging) return;
+            let newX = initialBoxLeft + (e.clientX - initialMouseX);
+            let newY = initialBoxTop + (e.clientY - initialMouseY);
 
-      newX = Math.max(0, Math.min(newX, mapRect.width - box.offsetWidth));
-      newY = Math.max(0, Math.min(newY, mapRect.height - box.offsetHeight));
+            newX = Math.max(0, Math.min(newX, mapRect.width - box.offsetWidth));
+            newY = Math.max(0, Math.min(newY, mapRect.height - box.offsetHeight));
 
-      box.style.left = `${(newX / mapRect.width) * 100}%`;
-      box.style.top = `${(newY / mapRect.height) * 100}%`;
-    });
+            box.style.left = `${(newX / mapRect.width) * 100}%`;
+            box.style.top = `${(newY / mapRect.height) * 100}%`;
+        };
 
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      box.style.cursor = 'grab';
+        const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     });
   }
 
-  // ✅ 匯出座標：自動複製 + 手動複製按鈕
   function exportCoords() {
     if(!isCalibrating){
       alert('請先開啟「對位校正」模式，才能匯出座標！');
@@ -232,42 +435,23 @@
       return;
     }
 
+    const mapRect = mapArea.getBoundingClientRect();
     const newCoords = Array.from(calibrationBoxes).map(box => {
-      const x = parseFloat(box.style.left) || 0;
-      const y = parseFloat(box.style.top) || 0;
-      return { x, y };
+        const boxRect = box.getBoundingClientRect();
+        const x = ((boxRect.left - mapRect.left) / mapRect.width) * 100;
+        const y = ((boxRect.top - mapRect.top) / mapRect.height) * 100;
+        return { x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(4)) };
     });
 
     const coordsStr = `const coords = ${JSON.stringify(newCoords, null, 2)};`;
     
     coordsOutput.innerText = coordsStr;
     coordsOutput.style.display = 'block';
-
-    // 🔥 自動複製到剪貼簿
-    navigator.clipboard.writeText(coordsStr).then(() => {
-      alert('座標已匯出並自動複製到剪貼簿！\n您也可以在頁面下方看到結果。');
-    }).catch(err => {
-      alert('座標已顯示在頁面下方，但自動複製失敗，請用下方「📋 複製座標」按鈕。');
-      console.error(err);
-    });
-
-    // 如果還沒有手動複製按鈕，建立一個
-    if(!document.getElementById('copy-btn')){
-      const copyBtn = document.createElement('button');
-      copyBtn.id = 'copy-btn';
-      copyBtn.innerText = '📋 複製座標';
-      copyBtn.style.marginTop = '10px';
-      copyBtn.style.padding = '6px 12px';
-      copyBtn.style.borderRadius = '6px';
-      copyBtn.style.cursor = 'pointer';
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(coordsStr).then(() => {
-          alert('座標已複製到剪貼簿！');
-        });
-      };
-      coordsOutput.insertAdjacentElement('afterend', copyBtn);
-    }
+    
+    alert('座標已顯示在頁面下方，請手動複製！');
 
     window.scrollTo(0, document.body.scrollHeight);
   }
 </script>
+</body>
+</html>
