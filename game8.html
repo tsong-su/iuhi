@@ -1,238 +1,161 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>咱來撚骰仔</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      height: 100vh;
-      font-family: "Microsoft JhengHei","PingFang TC",sans-serif;
-      background: #f5e6fa;
-      color: #444;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .top-section {
-      padding: 8px 0 0 0;
-      text-align: center;
-    }
-    h1 { margin: 0; font-size: 2em; color: #553c7b; font-weight: 600; }
-    .top-section p { margin:4px 0 8px 0; font-size:17px; color:#666; }
-    .btn-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    button {
-      font-size: 15px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: #fff;
-      font-weight: bold;
-      transition: transform 0.15s ease, opacity 0.2s;
-    }
-    button:hover { transform: scale(1.08); opacity:0.9; }
-    .btn1 { background: #d17b88; }
-    .btn2 { background: #d49b6a; }
-    .btn3 { background: #e6c16a; color:#333; }
-    .btn4 { background: #7cb67c; }
-    .btn5 { background: #6a9ed4; }
-    .btn6 { background: #8a6ad4; }
-    .btn7 { background: #d46aba; }
-    .home-btn { background: #553c7b; margin:6px auto 10px auto; padding:10px 20px; font-size:16px; }
-    .middle-section {
-      flex: 1;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      max-height: calc(100vh - 140px);
-    }
-    #three-container {
-      width:70vmin;
-      max-width:500px;
-      aspect-ratio:1/1;
-      background: linear-gradient(135deg,#fbc2eb,#a6c1ee);
-      border-radius:24px;
-      box-shadow:0 8px 24px rgba(0,0,0,0.2);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      position: relative;
-    }
-    .bottom-section {
-      padding: 6px 0 10px 0;
-      text-align:center;
-    }
-    .hint {
-      font-size:18px;
-      font-weight:500;
-      color:#333;
-      margin: 4px 0 6px 0;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>咱來撚骰仔</title>
+<style>
+* { box-sizing:border-box; }
+body { margin:0; font-family:"Microsoft JhengHei","PingFang TC",sans-serif; background:#f5e6fa; color:#444; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+.top-section { text-align:center; padding:8px 0 0 0; }
+h1 { margin:0; font-size:2em; color:#553c7b; font-weight:600; }
+.top-section p { margin:4px 0 8px 0; font-size:17px; color:#666; }
+.btn-container { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:4px; }
+button { font-size:15px; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; color:#fff; transition: transform 0.15s ease, opacity 0.2s; }
+button:hover { transform:scale(1.08); opacity:0.9; }
+.btn1 { background:#d17b88; } .btn2 { background:#d49b6a; } .btn3 { background:#e6c16a; color:#333; } .btn4 { background:#7cb67c; } .btn5 { background:#6a9ed4; } .btn6 { background:#8a6ad4; } .btn7 { background:#d46aba; }
+.home-btn { background:#553c7b; margin:6px auto 10px auto; padding:10px 20px; font-size:16px; }
+.middle-section { flex:1; display:flex; justify-content:center; align-items:center; max-height: calc(100vh - 140px); }
+#three-container { width:70vmin; max-width:500px; aspect-ratio:1/1; background: linear-gradient(135deg,#fbc2eb,#a6c1ee); border-radius:24px; box-shadow:0 8px 24px rgba(0,0,0,0.2); display:flex; justify-content:center; align-items:center; position: relative; }
+.bottom-section { padding:6px 0 10px 0; text-align:center; }
+.hint { font-size:18px; font-weight:500; color:#333; margin:4px 0 6px 0; }
+</style>
 </head>
 <body>
-  <div class="top-section">
-    <h1>咱來撚骰仔</h1>
-    <p>欲撚幾粒骰仔，在你揀。</p>
-    <div class="btn-container">
-      <button class="btn1" onclick="rollDice(1)">1粒</button>
-      <button class="btn2" onclick="rollDice(2)">2粒</button>
-      <button class="btn3" onclick="rollDice(3)">3粒</button>
-      <button class="btn4" onclick="rollDice(4)">4粒</button>
-      <button class="btn5" onclick="rollDice(5)">5粒</button>
-      <button class="btn6" onclick="rollDice(6)">6粒</button>
-      <button class="btn7" onclick="rollDice(7)">7粒</button>
-    </div>
-  </div>
+<div class="top-section">
+<h1>咱來撚骰仔</h1>
+<p>欲撚幾粒骰仔，在你揀。</p>
+<div class="btn-container">
+  <button class="btn1" onclick="rollDice(1)">1粒</button>
+  <button class="btn2" onclick="rollDice(2)">2粒</button>
+  <button class="btn3" onclick="rollDice(3)">3粒</button>
+  <button class="btn4" onclick="rollDice(4)">4粒</button>
+  <button class="btn5" onclick="rollDice(5)">5粒</button>
+  <button class="btn6" onclick="rollDice(6)">6粒</button>
+  <button class="btn7" onclick="rollDice(7)">7粒</button>
+</div>
+</div>
 
-  <div class="middle-section">
-    <div id="three-container"></div>
-  </div>
+<div class="middle-section">
+<div id="three-container"></div>
+</div>
 
-  <div class="bottom-section">
-    <p class="hint">骰仔若停，請你用台語講看覓這張郵票的地名。</p>
-    <button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
-  </div>
+<div class="bottom-section">
+<p class="hint">骰仔若停，請你用台語講看覓這張郵票的地名。</p>
+<button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script>
-    let scene,camera,renderer,dice=[],rolling=false,spinFrame;
-    let audio=new Audio("game8_assets/Roll the dice.mp3");
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script>
+let scene,camera,renderer,dice=[],rolling=false,spinFrame;
+let audio=new Audio("game8_assets/Roll the dice.mp3");
+let textures=[];
 
-    init();
+// 預加載所有 40 張貼圖
+const loader=new THREE.TextureLoader();
+let loadedCount=0;
+for(let i=1;i<=40;i++){
+  loader.load(`game8_assets/stamp${i}.jpg`, tex=>{
+    textures[i]=tex;
+    loadedCount++;
+  });
+}
 
-    function init(){
-      scene=new THREE.Scene();
-      const box=document.getElementById("three-container");
-      const width=box.clientWidth;
-      const height=box.clientHeight;
-      camera=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
-      camera.position.set(0,5,15);
-      renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-      renderer.setSize(width,height);
-      box.appendChild(renderer.domElement);
+init();
 
-      const light=new THREE.DirectionalLight(0xffffff,1);
-      light.position.set(10,14,10).normalize();
-      scene.add(light);
-      scene.add(new THREE.AmbientLight(0x999999));
+function init(){
+  scene=new THREE.Scene();
+  const box=document.getElementById("three-container");
+  const width=box.clientWidth;
+  const height=box.clientHeight;
+  camera=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
+  camera.position.set(0,5,15);
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setSize(width,height);
+  box.appendChild(renderer.domElement);
 
-      animate();
-      window.addEventListener("resize",onWindowResize,false);
+  const light=new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(10,14,10).normalize();
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x999999));
+
+  animate();
+  window.addEventListener("resize",onWindowResize,false);
+}
+
+function createDice(num){
+  dice.forEach(d=>scene.remove(d));
+  dice=[];
+  const size=2.4, rangeX=6, rangeY=6, rangeZ=3, margin=0.6;
+  const positions=[];
+  for(let i=0;i<num;i++){
+    const mats=[];
+    for(let f=0;f<6;f++){
+      let id=Math.floor(Math.random()*40)+1;
+      mats.push(new THREE.MeshLambertMaterial({map:textures[id]}));
     }
+    const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),mats);
 
-    function createDice(num){
-      if(dice.length>0){
-        dice.forEach(d=>scene.remove(d));
-        dice=[];
-      }
-
-      const loader=new THREE.TextureLoader();
-      const size=2.4,rangeX=6,rangeY=6,rangeZ=3,margin=0.6;
-      const positions=[];
-
-      for(let i=0;i<num;i++){
-        const materials=[];
-        let facesLoaded=0;
-        for(let f=0; f<6; f++){
-          let id=Math.floor(Math.random()*40)+1;
-          loader.load(`game8_assets/stamp${id}.jpg`, (texture)=>{
-            materials[f]=new THREE.MeshLambertMaterial({map:texture});
-            facesLoaded++;
-            if(facesLoaded===6){
-              // 全部貼圖完成
-              const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size), materials);
-
-              let valid=false,pos;
-              while(!valid){
-                pos={
-                  x:(Math.random()-0.5)*(rangeX-margin*2),
-                  y:(Math.random()-0.5)*(rangeY-margin*2),
-                  z:(Math.random()-0.5)*(rangeZ-margin*2)
-                };
-                valid=true;
-                for(let p of positions){
-                  if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){
-                    valid=false; break;
-                  }
-                }
-              }
-              positions.push(pos);
-              cube.position.set(pos.x,pos.y,pos.z);
-              cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
-              scene.add(cube);
-              dice.push(cube);
-            }
-          });
-        }
+    // 隨機位置
+    let valid=false,pos;
+    while(!valid){
+      pos={x:(Math.random()-0.5)*(rangeX-margin*2), y:(Math.random()-0.5)*(rangeY-margin*2), z:(Math.random()-0.5)*(rangeZ-margin*2)};
+      valid=true;
+      for(let p of positions){
+        if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){ valid=false; break; }
       }
     }
+    positions.push(pos);
+    cube.position.set(pos.x,pos.y,pos.z);
+    cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+    scene.add(cube);
+    dice.push(cube);
+  }
+}
 
-    function rollDice(num){
-      if(rolling) return;
+function rollDice(num){
+  if(rolling) return;
+  rolling=true;
+  audio.currentTime=0;
+  audio.play();
+  createDice(num);
 
-      // 停掉上一組動畫
-      if(spinFrame) cancelAnimationFrame(spinFrame);
-      dice.forEach(d=>scene.remove(d));
-      dice=[];
+  const speeds=dice.map(()=>({x:(Math.random()-0.5)*0.6,y:(Math.random()-0.5)*0.6,z:(Math.random()-0.5)*0.6}));
+  let frames=0;
+  function spin(){
+    frames++;
+    dice.forEach((cube,i)=>{
+      cube.rotation.x+=speeds[i].x;
+      cube.rotation.y+=speeds[i].y;
+      cube.rotation.z+=speeds[i].z;
+      cube.position.y += Math.sin(frames*0.1+i)*0.05;
+    });
+    if(frames<100) spinFrame=requestAnimationFrame(spin);
+    else{
+      cancelAnimationFrame(spinFrame);
       rolling=false;
-
-      rolling=true;
-      audio.currentTime=0;
-      audio.play();
-      createDice(num);
-
-      const speeds=dice.map(()=>({
-        x:(Math.random()-0.5)*0.6,
-        y:(Math.random()-0.5)*0.6,
-        z:(Math.random()-0.5)*0.6
-      }));
-
-      let frames=0;
-      function spin(){
-        frames++;
-        dice.forEach((cube,i)=>{
-          cube.rotation.x+=speeds[i].x;
-          cube.rotation.y+=speeds[i].y;
-          cube.rotation.z+=speeds[i].z;
-          cube.position.y += Math.sin(frames*0.1 + i)*0.05;
-        });
-
-        if(frames<100) spinFrame=requestAnimationFrame(spin);
-        else{
-          cancelAnimationFrame(spinFrame);
-          rolling=false;
-          dice.forEach(cube=>{
-            cube.rotation.x=Math.round(cube.rotation.x/(Math.PI/2))*(Math.PI/2);
-            cube.rotation.y=Math.round(cube.rotation.y/(Math.PI/2))*(Math.PI/2);
-            cube.rotation.z=Math.round(cube.rotation.z/(Math.PI/2))*(Math.PI/2);
-          });
-        }
-      }
-      spin();
+      dice.forEach(cube=>{
+        cube.rotation.x=Math.round(cube.rotation.x/(Math.PI/2))*(Math.PI/2);
+        cube.rotation.y=Math.round(cube.rotation.y/(Math.PI/2))*(Math.PI/2);
+        cube.rotation.z=Math.round(cube.rotation.z/(Math.PI/2))*(Math.PI/2);
+      });
     }
+  }
+  spin();
+}
 
-    function animate(){
-      requestAnimationFrame(animate);
-      renderer.render(scene,camera);
-    }
+function animate(){
+  requestAnimationFrame(animate);
+  renderer.render(scene,camera);
+}
 
-    function onWindowResize(){
-      const box=document.getElementById("three-container");
-      const width=box.clientWidth;
-      const height=box.clientHeight;
-      camera.aspect=width/height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width,height);
-    }
-  </script>
+function onWindowResize(){
+  const box=document.getElementById("three-container");
+  const width=box.clientWidth;
+  const height=box.clientHeight;
+  camera.aspect=width/height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width,height);
+}
+</script>
 </body>
 </html>
