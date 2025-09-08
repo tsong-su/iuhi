@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>咱來撚骰仔</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      background: #f8f8f8;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      margin: 20px;
+      color: #333;
+    }
+    .controls {
+      margin: 20px;
+    }
+    .dice-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px;
+    }
+    .dice {
+      width: 100px;
+      height: 100px;
+      perspective: 800px;
+    }
+    .cube {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s;
+    }
+    .cube img {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      backface-visibility: hidden;
+    }
+    .front  { transform: rotateY(0deg) translateZ(50px); }
+    .back   { transform: rotateY(180deg) translateZ(50px); }
+    .right  { transform: rotateY(90deg) translateZ(50px); }
+    .left   { transform: rotateY(-90deg) translateZ(50px); }
+    .top    { transform: rotateX(90deg) translateZ(50px); }
+    .bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    footer {
+      margin: 40px 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎲 咱來撚骰仔 🎲</h1>
+
+  <div class="controls">
+    <p>請選擇要轉動的骰子數量：</p>
+    <button onclick="rollDice(1)">1 顆</button>
+    <button onclick="rollDice(2)">2 顆</button>
+    <button onclick="rollDice(3)">3 顆</button>
+    <button onclick="rollDice(4)">4 顆</button>
+    <button onclick="rollDice(5)">5 顆</button>
+    <button onclick="rollDice(6)">6 顆</button>
+    <button onclick="rollDice(7)">7 顆</button>
+  </div>
+
+  <div class="dice-container" id="diceContainer"></div>
+
+  <footer>
+    <a href="index.html">⬅ 回首頁</a>
+  </footer>
+
+  <audio id="rollSound" src="game8_assets/Roll the dice.mp3" preload="auto"></audio>
+
+  <script>
+    const totalImages = 40; // 40 張圖片
+    const images = [];
+    for (let i = 1; i <= totalImages; i++) {
+      images.push(`game8_assets/stamp${i}.jpg`); // 圖片路徑
+    }
+
+    const container = document.getElementById("diceContainer");
+    const rollSound = document.getElementById("rollSound");
+
+    function createDice() {
+      const dice = document.createElement("div");
+      dice.className = "dice";
+      const cube = document.createElement("div");
+      cube.className = "cube";
+
+      // 隨機取 6 張圖片給骰子
+      const selected = images.sort(() => 0.5 - Math.random()).slice(0, 6);
+      const faces = ["front","back","right","left","top","bottom"];
+      for (let i = 0; i < 6; i++) {
+        const img = document.createElement("img");
+        img.src = selected[i];
+        img.className = faces[i];
+        cube.appendChild(img);
+      }
+      dice.appendChild(cube);
+      return dice;
+    }
+
+    function rollDice(count) {
+      container.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        const dice = createDice();
+        container.appendChild(dice);
+      }
+
+      // 播放音效
+      rollSound.currentTime = 0;
+      rollSound.play();
+
+      // 讓骰子旋轉 5 秒
+      const cubes = document.querySelectorAll(".cube");
+      cubes.forEach(cube => {
+        let x = 0, y = 0;
+        const interval = setInterval(() => {
+          x += Math.floor(Math.random() * 90);
+          y += Math.floor(Math.random() * 90);
+          cube.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+        }, 200);
+
+        setTimeout(() => clearInterval(interval), 5000);
+      });
+    }
+  </script>
+</body>
+</html>
