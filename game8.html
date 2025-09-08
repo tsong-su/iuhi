@@ -4,20 +4,23 @@
 <meta charset="UTF-8">
 <title>咱來撚骰仔</title>
 <style>
-* { box-sizing:border-box; }
-body { margin:0; font-family:"Microsoft JhengHei","PingFang TC",sans-serif; background:#f5e6fa; color:#444; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
-.top-section { text-align:center; padding:8px 0 0 0; }
-h1 { margin:0; font-size:2em; color:#553c7b; font-weight:600; }
-.top-section p { margin:4px 0 8px 0; font-size:17px; color:#666; }
-.btn-container { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:4px; }
-button { font-size:15px; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; color:#fff; transition: transform 0.15s ease, opacity 0.2s; }
-button:hover { transform:scale(1.08); opacity:0.9; }
-.btn1 { background:#d17b88; } .btn2 { background:#d49b6a; } .btn3 { background:#e6c16a; color:#333; } .btn4 { background:#7cb67c; } .btn5 { background:#6a9ed4; } .btn6 { background:#8a6ad4; } .btn7 { background:#d46aba; }
-.home-btn { background:#553c7b; margin:6px auto 10px auto; padding:10px 20px; font-size:16px; }
-.middle-section { flex:1; display:flex; justify-content:center; align-items:center; max-height: calc(100vh - 140px); }
-#three-container { width:70vmin; max-width:500px; aspect-ratio:1/1; background: linear-gradient(135deg,#fbc2eb,#a6c1ee); border-radius:24px; box-shadow:0 8px 24px rgba(0,0,0,0.2); display:flex; justify-content:center; align-items:center; position: relative; }
-.bottom-section { padding:6px 0 10px 0; text-align:center; }
-.hint { font-size:18px; font-weight:500; color:#333; margin:4px 0 6px 0; }
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+     background:#f5e6fa;color:#444;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.top-section{text-align:center;padding:8px 0 0 0;}
+h1{margin:0;font-size:2em;color:#553c7b;font-weight:600;}
+.top-section p{margin:4px 0 8px 0;font-size:17px;color:#666;}
+.btn-container{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:4px;}
+button{font-size:15px;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;color:#fff;transition: transform 0.15s ease, opacity 0.2s;}
+button:hover{transform:scale(1.08);opacity:0.9;}
+.btn1{background:#d17b88;} .btn2{background:#d49b6a;} .btn3{background:#e6c16a;color:#333;}
+.btn4{background:#7cb67c;} .btn5{background:#6a9ed4;} .btn6{background:#8a6ad4;} .btn7{background:#d46aba;}
+.home-btn{background:#553c7b;margin:6px auto 10px auto;padding:10px 20px;font-size:16px;}
+.middle-section{flex:1;display:flex;justify-content:center;align-items:center;max-height:calc(100vh - 140px);}
+#three-container{width:70vmin;max-width:500px;aspect-ratio:1/1;background:#f3dfff;border-radius:24px;
+                box-shadow:0 8px 24px rgba(0,0,0,0.2);display:flex;justify-content:center;align-items:center;position: relative;}
+.bottom-section{padding:6px 0 10px 0;text-align:center;}
+.hint{font-size:18px;font-weight:500;color:#333;margin:4px 0 6px 0;}
 </style>
 </head>
 <body>
@@ -46,18 +49,14 @@ button:hover { transform:scale(1.08); opacity:0.9; }
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
-let scene,camera,renderer,dice=[],rolling=false,spinFrame;
+let scene,camera,renderer,dice=[],rolling=false;
 let audio=new Audio("game8_assets/Roll the dice.mp3");
 let textures=[];
 
-// 預加載所有 40 張貼圖
+// 預加載40張圖片
 const loader=new THREE.TextureLoader();
-let loadedCount=0;
 for(let i=1;i<=40;i++){
-  loader.load(`game8_assets/stamp${i}.jpg`, tex=>{
-    textures[i]=tex;
-    loadedCount++;
-  });
+  textures[i]=loader.load(`game8_assets/stamp${i}.jpg`);
 }
 
 init();
@@ -79,14 +78,22 @@ function init(){
   scene.add(new THREE.AmbientLight(0x999999));
 
   animate();
-  window.addEventListener("resize",onWindowResize,false);
+  window.addEventListener("resize",()=>{ 
+    camera.aspect=box.clientWidth/box.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(box.clientWidth,box.clientHeight);
+  },false);
 }
 
 function createDice(num){
   dice.forEach(d=>scene.remove(d));
   dice=[];
-  const size=2.4, rangeX=6, rangeY=6, rangeZ=3, margin=0.6;
-  const positions=[];
+  const size=2.2;
+  const gap=0.5;
+  const gridCols=Math.ceil(Math.sqrt(num));
+  const gridRows=Math.ceil(num/gridCols);
+  const offsetX=(gridCols-1)*(size+gap)/2;
+  const offsetY=(gridRows-1)*(size+gap)/2;
   for(let i=0;i<num;i++){
     const mats=[];
     for(let f=0;f<6;f++){
@@ -94,18 +101,9 @@ function createDice(num){
       mats.push(new THREE.MeshLambertMaterial({map:textures[id]}));
     }
     const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),mats);
-
-    // 隨機位置
-    let valid=false,pos;
-    while(!valid){
-      pos={x:(Math.random()-0.5)*(rangeX-margin*2), y:(Math.random()-0.5)*(rangeY-margin*2), z:(Math.random()-0.5)*(rangeZ-margin*2)};
-      valid=true;
-      for(let p of positions){
-        if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){ valid=false; break; }
-      }
-    }
-    positions.push(pos);
-    cube.position.set(pos.x,pos.y,pos.z);
+    let row=Math.floor(i/gridCols);
+    let col=i%gridCols;
+    cube.position.set(col*(size+gap)-offsetX, row*(size+gap)-offsetY, 0);
     cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
     scene.add(cube);
     dice.push(cube);
@@ -118,7 +116,6 @@ function rollDice(num){
   audio.currentTime=0;
   audio.play();
   createDice(num);
-
   const speeds=dice.map(()=>({x:(Math.random()-0.5)*0.6,y:(Math.random()-0.5)*0.6,z:(Math.random()-0.5)*0.6}));
   let frames=0;
   function spin(){
@@ -127,11 +124,10 @@ function rollDice(num){
       cube.rotation.x+=speeds[i].x;
       cube.rotation.y+=speeds[i].y;
       cube.rotation.z+=speeds[i].z;
-      cube.position.y += Math.sin(frames*0.1+i)*0.05;
+      cube.position.y += Math.sin(frames*0.1+i)*0.03;
     });
-    if(frames<100) spinFrame=requestAnimationFrame(spin);
+    if(frames<100) requestAnimationFrame(spin);
     else{
-      cancelAnimationFrame(spinFrame);
       rolling=false;
       dice.forEach(cube=>{
         cube.rotation.x=Math.round(cube.rotation.x/(Math.PI/2))*(Math.PI/2);
@@ -146,15 +142,6 @@ function rollDice(num){
 function animate(){
   requestAnimationFrame(animate);
   renderer.render(scene,camera);
-}
-
-function onWindowResize(){
-  const box=document.getElementById("three-container");
-  const width=box.clientWidth;
-  const height=box.clientHeight;
-  camera.aspect=width/height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width,height);
 }
 </script>
 </body>
