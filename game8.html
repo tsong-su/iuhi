@@ -64,11 +64,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      max-height: calc(100vh - 140px);
     }
     #three-container {
+      width: 70vmin;
+      max-width: 500px;
       aspect-ratio:1/1;
-      width: 80vmin;
-      max-width:600px;
       background: linear-gradient(135deg,#fbc2eb,#a6c1ee);
       border-radius:24px;
       box-shadow:0 8px 24px rgba(0,0,0,0.2);
@@ -114,7 +115,6 @@
     <button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
   </div>
 
-  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
   <script>
     let scene,camera,renderer,dice=[],rolling=false;
@@ -129,7 +129,7 @@
       const height=box.clientHeight;
 
       camera=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
-      camera.position.set(0,8,22);
+      camera.position.set(0,5,15);
 
       renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
       renderer.setSize(width,height);
@@ -148,8 +148,8 @@
       dice.forEach(d=>scene.remove(d));
       dice=[];
 
-      const size=2.6;
-      const rangeX=6,rangeY=6,rangeZ=3;
+      const size=2.4; //骰子稍微小一點
+      const rangeX=6,rangeY=5,rangeZ=3;
       const positions=[];
 
       for(let i=0;i<num;i++){
@@ -166,12 +166,12 @@
         while(!valid){
           pos={
             x:(Math.random()-0.5)*rangeX,
-            y:(Math.random()-0.5)*rangeY,
+            y:(Math.random()-0.5)*rangeY + 0.5, // 上浮0.5單位
             z:(Math.random()-0.5)*rangeZ
           };
           valid=true;
           for(let p of positions){
-            if(Math.abs(p.x-pos.x)<3 && Math.abs(p.y-pos.y)<3){
+            if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){
               valid=false; break;
             }
           }
@@ -182,7 +182,6 @@
         scene.add(cube);
         dice.push(cube);
       }
-      camera.position.set(0,6,14+num);
     }
 
     function rollDice(num){
