@@ -7,29 +7,26 @@
     body {
       margin: 0;
       font-family: "Microsoft JhengHei", sans-serif;
-      /* 活潑漸層底色 */
-      background: linear-gradient(135deg, #ffdd55, #ff9966, #66ccff);
-      color: #fff;
+      background: #e8f5e9; /* 清爽底色 */
+      color: #333;
       text-align: center;
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
+      justify-content: space-between;
     }
     h1 {
-      margin-top: 20px;
-      font-size: 2.2em;
-      color: #fff;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+      margin: 10px 0 0 0;
+      font-size: 2em;
+      color: #222;
     }
     .btn-container {
-      margin: 20px;
+      margin: 5px 0;
     }
     button {
-      font-size: 18px;
-      margin: 6px;
-      padding: 10px 18px;
+      font-size: 16px;
+      margin: 4px;
+      padding: 8px 14px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -37,10 +34,8 @@
       font-weight: bold;
       transition: transform 0.15s ease;
     }
-    button:hover {
-      transform: scale(1.1);
-    }
-    /* 不同顏色的骰子數量按鈕 */
+    button:hover { transform: scale(1.08); }
+
     .btn1 { background: #ff4d4d; }
     .btn2 { background: #ff884d; }
     .btn3 { background: #ffcc00; color:#333; }
@@ -48,31 +43,33 @@
     .btn5 { background: #3399ff; }
     .btn6 { background: #9966ff; }
     .btn7 { background: #ff66cc; }
+
     .home-btn {
       background: #333;
-      margin-top: 20px;
+      margin: 5px 0 10px 0;
     }
-    canvas {
-      background: rgba(255,255,255,0.3);
+
+    #diceCanvas {
+      flex: 1;
+      max-height: 50vh;
+      margin: auto;
+      display: block;
+      background: rgba(255,255,255,0.7);
       border-radius: 12px;
-      margin-top: 15px;
     }
+
     .hint {
-      margin-top: 15px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       color: #222;
-      background: rgba(255,255,255,0.6);
-      padding: 6px 12px;
-      border-radius: 8px;
-      display: inline-block;
+      margin: 8px 0;
     }
   </style>
 </head>
 <body>
   <h1>咱來撚骰仔</h1>
   <div class="btn-container">
-    <p style="font-size:20px; font-weight:bold;">欲撚幾粒骰仔，在你揀：</p>
+    <p style="font-size:18px; font-weight:bold; color:#222;">欲撚幾粒骰仔，在你揀。</p>
     <button class="btn1" onclick="rollDice(1)">1粒</button>
     <button class="btn2" onclick="rollDice(2)">2粒</button>
     <button class="btn3" onclick="rollDice(3)">3粒</button>
@@ -81,70 +78,67 @@
     <button class="btn6" onclick="rollDice(6)">6粒</button>
     <button class="btn7" onclick="rollDice(7)">7粒</button>
   </div>
-  <canvas id="diceCanvas" width="600" height="400"></canvas>
+  <canvas id="diceCanvas" width="500" height="250"></canvas>
   <p class="hint">骰仔若停，請你用台語講看覓這張郵票的地名。</p>
   <button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
 
   <script>
     const canvas = document.getElementById("diceCanvas");
     const ctx = canvas.getContext("2d");
-    const diceSize = 60;
+    const diceSize = 70;
     let dice = [];
+    let rollingInterval;
+    let audio = new Audio("game8_assets/Roll the dice.mp3");
+
+    // 預先載入 40 張圖片
+    const diceImages = [];
+    for (let i = 1; i <= 40; i++) {
+      let img = new Image();
+      img.src = `game8_assets/stamp${i}.jpg`;
+      diceImages.push(img);
+    }
 
     function rollDice(count) {
+      clearInterval(rollingInterval);
+      audio.currentTime = 0;
+      audio.play();
+
+      // 設定骰子的位置
       dice = [];
       for (let i = 0; i < count; i++) {
-        // 分散位置避免重疊
         let angle = (i / count) * 2 * Math.PI;
-        let radius = 100 + (count > 3 ? 60 : 0);
+        let radius = 70 + (count > 3 ? 40 : 0);
         let centerX = canvas.width / 2 + radius * Math.cos(angle);
         let centerY = canvas.height / 2 + radius * Math.sin(angle);
         dice.push({
-          x: centerX - diceSize / 2 + (Math.random() * 30 - 15),
-          y: centerY - diceSize / 2 + (Math.random() * 30 - 15),
-          value: Math.ceil(Math.random() * 6)
+          x: centerX - diceSize/2,
+          y: centerY - diceSize/2,
+          index: Math.floor(Math.random() * diceImages.length)
         });
       }
-      drawDice();
+
+      let ticks = 0;
+      rollingInterval = setInterval(() => {
+        ticks++;
+        // 每顆骰子隨機換圖
+        dice.forEach(d => {
+          d.index = Math.floor(Math.random() * diceImages.length);
+        });
+        drawDice();
+        if (ticks > 20) { // 閃 20 次後停
+          clearInterval(rollingInterval);
+        }
+      }, 120);
     }
 
     function drawDice() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       dice.forEach(d => {
-        drawSingleDice(d.x, d.y, d.value);
+        let img = diceImages[d.index];
+        if (img.complete) {
+          ctx.drawImage(img, d.x, d.y, diceSize, diceSize);
+        }
       });
-    }
-
-    function drawSingleDice(x, y, value) {
-      ctx.fillStyle = "#fff";
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 2;
-      ctx.fillRect(x, y, diceSize, diceSize);
-      ctx.strokeRect(x, y, diceSize, diceSize);
-
-      ctx.fillStyle = "#000";
-      const dot = (dx, dy) => {
-        ctx.beginPath();
-        ctx.arc(x + dx, y + dy, 5, 0, Math.PI * 2);
-        ctx.fill();
-      };
-
-      const mid = diceSize / 2;
-      const offset = 15;
-
-      switch (value) {
-        case 1: dot(mid, mid); break;
-        case 2: dot(offset, offset); dot(diceSize - offset, diceSize - offset); break;
-        case 3: dot(offset, offset); dot(mid, mid); dot(diceSize - offset, diceSize - offset); break;
-        case 4: dot(offset, offset); dot(diceSize - offset, offset);
-                dot(offset, diceSize - offset); dot(diceSize - offset, diceSize - offset); break;
-        case 5: dot(offset, offset); dot(diceSize - offset, offset);
-                dot(mid, mid);
-                dot(offset, diceSize - offset); dot(diceSize - offset, diceSize - offset); break;
-        case 6: dot(offset, offset); dot(diceSize - offset, offset);
-                dot(offset, mid); dot(diceSize - offset, mid);
-                dot(offset, diceSize - offset); dot(diceSize - offset, diceSize - offset); break;
-      }
     }
   </script>
 </body>
