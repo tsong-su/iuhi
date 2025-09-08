@@ -117,7 +117,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
   <script>
-    let scene,camera,renderer,dice=[],rolling=false;
+    let scene,camera,renderer,dice=[],rolling=false,spinFrame;
     let audio=new Audio("game8_assets/Roll the dice.mp3");
 
     init();
@@ -148,7 +148,7 @@
       dice.forEach(d=>scene.remove(d));
       dice=[];
 
-      const size=2.4; //骰子稍微小一點
+      const size=2.4;
       const rangeX=6,rangeY=5,rangeZ=3;
       const positions=[];
 
@@ -166,7 +166,7 @@
         while(!valid){
           pos={
             x:(Math.random()-0.5)*rangeX,
-            y:(Math.random()-0.5)*rangeY + 0.5, // 上浮0.5單位
+            y:(Math.random()-0.5)*(rangeY-1) + 1, // 上浮1單位，置中分布
             z:(Math.random()-0.5)*rangeZ
           };
           valid=true;
@@ -200,6 +200,7 @@
       }));
 
       let frames=0;
+
       function spin(){
         frames++;
         dice.forEach((cube,i)=>{
@@ -208,8 +209,10 @@
           cube.rotation.z+=speeds[i].z;
           cube.position.y += Math.sin(frames*0.1 + i)*0.05; // 微浮動
         });
-        if(frames<100) requestAnimationFrame(spin);
+
+        if(frames<100) spinFrame=requestAnimationFrame(spin);
         else{
+          cancelAnimationFrame(spinFrame);
           rolling=false;
           dice.forEach(cube=>{
             cube.rotation.x=Math.round(cube.rotation.x/(Math.PI/2))*(Math.PI/2);
