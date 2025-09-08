@@ -94,6 +94,7 @@ function createDice(num){
   const gridRows=Math.ceil(num/gridCols);
   const offsetX=(gridCols-1)*(size+gap)/2;
   const offsetY=(gridRows-1)*(size+gap)/2;
+  const yBase=0.5; // 往上偏移，避免底部被格子遮住
   for(let i=0;i<num;i++){
     const mats=[];
     for(let f=0;f<6;f++){
@@ -103,7 +104,7 @@ function createDice(num){
     const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),mats);
     let row=Math.floor(i/gridCols);
     let col=i%gridCols;
-    cube.position.set(col*(size+gap)-offsetX, row*(size+gap)-offsetY, 0);
+    cube.position.set(col*(size+gap)-offsetX, row*(size+gap)-offsetY + yBase, 0);
     cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
     scene.add(cube);
     dice.push(cube);
@@ -124,7 +125,6 @@ function rollDice(num){
       cube.rotation.x+=speeds[i].x;
       cube.rotation.y+=speeds[i].y;
       cube.rotation.z+=speeds[i].z;
-      cube.position.y += Math.sin(frames*0.1+i)*0.03;
     });
     if(frames<100) requestAnimationFrame(spin);
     else{
