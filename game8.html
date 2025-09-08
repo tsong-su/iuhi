@@ -13,8 +13,8 @@
       text-align: center;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden; /* 移除捲軸 */
+      justify-content: flex-start;
+      overflow: hidden;
     }
 
     h1 {
@@ -25,12 +25,15 @@
     }
 
     .btn-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
       margin: 6px 0;
     }
 
     button {
       font-size: 15px;
-      margin: 4px;
       padding: 8px 14px;
       border: none;
       border-radius: 8px;
@@ -61,7 +64,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 8px 0;
+      position: relative;
       width: 100%;
     }
 
@@ -75,6 +78,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
 
     .hint {
@@ -88,7 +92,7 @@
 <body>
   <h1>咱來撚骰仔</h1>
   <div class="btn-container">
-    <p style="font-size:17px; font-weight:500; color:#666;">欲撚幾粒骰仔，在你揀。</p>
+    <p style="font-size:17px; font-weight:500; color:#666; width:100%;">欲撚幾粒骰仔，在你揀。</p>
     <button class="btn1" onclick="rollDice(1)">1粒</button>
     <button class="btn2" onclick="rollDice(2)">2粒</button>
     <button class="btn3" onclick="rollDice(3)">3粒</button>
@@ -108,26 +112,26 @@
   <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
   <script>
-    let scene, camera, renderer, dice = [], rolling = false;
-    let audio = new Audio("game8_assets/Roll the dice.mp3");
+    let scene, camera, renderer, dice=[], rolling=false;
+    let audio=new Audio("game8_assets/Roll the dice.mp3");
 
     init();
 
-    function init() {
+    function init(){
       scene = new THREE.Scene();
       const box = document.getElementById("three-container");
       const width = box.clientWidth;
       const height = box.clientHeight;
 
-      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      camera.position.set(0, 8, 22);
+      camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 1000);
+      camera.position.set(0,8,22);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
       renderer.setSize(width, height);
       box.appendChild(renderer.domElement);
 
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(10, 14, 10).normalize();
+      const light = new THREE.DirectionalLight(0xffffff,1);
+      light.position.set(10,14,10).normalize();
       scene.add(light);
       scene.add(new THREE.AmbientLight(0x999999));
 
@@ -135,88 +139,84 @@
       window.addEventListener("resize", onWindowResize, false);
     }
 
-    function createDice(num) {
-      dice.forEach(d => scene.remove(d));
-      dice = [];
+    function createDice(num){
+      dice.forEach(d=>scene.remove(d));
+      dice=[];
 
-      let cols = Math.ceil(Math.sqrt(num));
-      let rows = Math.ceil(num / cols);
-      let size = 2.6;
-      let spacing = 3.2;
+      let size=2.6;
+      let rangeX=6, rangeY=6, rangeZ=3;
 
-      for (let i = 0; i < num; i++) {
-        const materials = [];
-        for (let f = 0; f < 6; f++) {
-          let id = Math.floor(Math.random() * 40) + 1;
-          let texture = new THREE.TextureLoader().load(`game8_assets/stamp${id}.jpg`);
-          materials.push(new THREE.MeshLambertMaterial({ map: texture }));
+      for(let i=0;i<num;i++){
+        const materials=[];
+        for(let f=0;f<6;f++){
+          let id=Math.floor(Math.random()*40)+1;
+          let texture=new THREE.TextureLoader().load(`game8_assets/stamp${id}.jpg`);
+          materials.push(new THREE.MeshLambertMaterial({map:texture}));
         }
-        const geometry = new THREE.BoxGeometry(size, size, size);
-        const cube = new THREE.Mesh(geometry, materials);
-
-        let col = i % cols;
-        let row = Math.floor(i / cols);
-        let offsetX = (col - (cols-1)/2) * spacing;
-        let offsetY = (rows/2 - row) * spacing + 1;
-
-        cube.position.set(offsetX, offsetY, 0);
+        const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size), materials);
+        cube.position.set(
+          (Math.random()-0.5)*rangeX,
+          (Math.random()-0.5)*rangeY,
+          (Math.random()-0.5)*rangeZ
+        );
+        cube.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
         scene.add(cube);
         dice.push(cube);
       }
-
-      camera.position.set(0, 6, 14 + num);
+      camera.position.set(0,6,14+num);
     }
 
-    function rollDice(num) {
-      if (rolling) return;
-      rolling = true;
+    function rollDice(num){
+      if(rolling) return;
+      rolling=true;
 
-      audio.currentTime = 0;
+      audio.currentTime=0;
       audio.play();
 
       createDice(num);
 
-      const speeds = dice.map(() => ({
-        x: (Math.random() - 0.5) * 0.6,
-        y: (Math.random() - 0.5) * 0.6,
-        z: (Math.random() - 0.5) * 0.6
+      const speeds=dice.map(()=>({
+        x:(Math.random()-0.5)*0.6,
+        y:(Math.random()-0.5)*0.6,
+        z:(Math.random()-0.5)*0.6
       }));
 
-      let frames = 0;
-      function spin() {
+      let frames=0;
+      function spin(){
         frames++;
-        dice.forEach((cube, i) => {
-          cube.rotation.x += speeds[i].x;
-          cube.rotation.y += speeds[i].y;
-          cube.rotation.z += speeds[i].z;
+        dice.forEach((cube,i)=>{
+          cube.rotation.x+=speeds[i].x;
+          cube.rotation.y+=speeds[i].y;
+          cube.rotation.z+=speeds[i].z;
+          cube.position.y += Math.sin(frames*0.1 + i)*0.05; // 微浮動
         });
 
-        if (frames < 100) {
+        if(frames<100){
           requestAnimationFrame(spin);
-        } else {
-          rolling = false;
-          dice.forEach(cube => {
-            cube.rotation.x = Math.round(cube.rotation.x / (Math.PI/2)) * (Math.PI/2);
-            cube.rotation.y = Math.round(cube.rotation.y / (Math.PI/2)) * (Math.PI/2);
-            cube.rotation.z = Math.round(cube.rotation.z / (Math.PI/2)) * (Math.PI/2);
+        }else{
+          rolling=false;
+          dice.forEach(cube=>{
+            cube.rotation.x=Math.round(cube.rotation.x/(Math.PI/2))*(Math.PI/2);
+            cube.rotation.y=Math.round(cube.rotation.y/(Math.PI/2))*(Math.PI/2);
+            cube.rotation.z=Math.round(cube.rotation.z/(Math.PI/2))*(Math.PI/2);
           });
         }
       }
       spin();
     }
 
-    function animate() {
+    function animate(){
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
     }
 
-    function onWindowResize() {
-      const box = document.getElementById("three-container");
-      const width = box.clientWidth;
-      const height = box.clientHeight;
-      camera.aspect = width / height;
+    function onWindowResize(){
+      const box=document.getElementById("three-container");
+      const width=box.clientWidth;
+      const height=box.clientHeight;
+      camera.aspect=width/height;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      renderer.setSize(width,height);
     }
   </script>
 </body>
