@@ -6,9 +6,9 @@
   <style>
     body {
       margin: 0;
-      font-family: "Microsoft JhengHei", sans-serif;
-      background: #e8f5e9;
-      color: #222;
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+      background: #f5f0fa; /* 淺紫色系 */
+      color: #444;
       text-align: center;
       height: 100vh;
       display: flex;
@@ -16,15 +16,16 @@
       overflow: hidden;
     }
     h1 {
-      margin: 8px 0 0 0;
+      margin: 10px 0 0 0;
       font-size: 2em;
-      color: #111;
+      color: #553c7b; /* 柔和紫 */
+      font-weight: 600;
     }
     .btn-container {
-      margin: 4px 0;
+      margin: 6px 0;
     }
     button {
-      font-size: 16px;
+      font-size: 15px;
       margin: 4px;
       padding: 8px 14px;
       border: none;
@@ -32,39 +33,50 @@
       cursor: pointer;
       color: #fff;
       font-weight: bold;
-      transition: transform 0.15s ease;
+      transition: transform 0.15s ease, opacity 0.2s;
     }
-    button:hover { transform: scale(1.08); }
+    button:hover { transform: scale(1.08); opacity: 0.9; }
 
-    .btn1 { background: #ff4d4d; }
-    .btn2 { background: #ff884d; }
-    .btn3 { background: #ffcc00; color:#333; }
-    .btn4 { background: #33cc33; }
-    .btn5 { background: #3399ff; }
-    .btn6 { background: #9966ff; }
-    .btn7 { background: #ff66cc; }
+    .btn1 { background: #d17b88; }
+    .btn2 { background: #d49b6a; }
+    .btn3 { background: #e6c16a; color:#333; }
+    .btn4 { background: #7cb67c; }
+    .btn5 { background: #6a9ed4; }
+    .btn6 { background: #8a6ad4; }
+    .btn7 { background: #d46aba; }
 
     .home-btn {
-      background: #333;
-      margin: 4px 0 8px 0;
+      background: #553c7b;
+      margin: 6px 0 12px 0;
     }
 
-    #three-container {
+    #three-wrapper {
       flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #three-container {
+      width: 80vmin;
+      height: 80vmin;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
     }
 
     .hint {
       font-size: 18px;
-      font-weight: bold;
-      color: #222;
-      margin: 6px 0;
+      font-weight: 500;
+      color: #333;
+      margin: 8px 0;
     }
   </style>
 </head>
 <body>
   <h1>咱來撚骰仔</h1>
   <div class="btn-container">
-    <p style="font-size:18px; font-weight:bold;">欲撚幾粒骰仔，在你揀。</p>
+    <p style="font-size:17px; font-weight:500; color:#666;">欲撚幾粒骰仔，在你揀。</p>
     <button class="btn1" onclick="rollDice(1)">1粒</button>
     <button class="btn2" onclick="rollDice(2)">2粒</button>
     <button class="btn3" onclick="rollDice(3)">3粒</button>
@@ -73,7 +85,11 @@
     <button class="btn6" onclick="rollDice(6)">6粒</button>
     <button class="btn7" onclick="rollDice(7)">7粒</button>
   </div>
-  <div id="three-container"></div>
+
+  <div id="three-wrapper">
+    <div id="three-container"></div>
+  </div>
+
   <p class="hint">骰仔若停，請你用台語講看覓這張郵票的地名。</p>
   <button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
 
@@ -87,15 +103,16 @@
 
     function init() {
       scene = new THREE.Scene();
-      const width = window.innerWidth;
-      const height = window.innerHeight * 0.65;
+      const box = document.getElementById("three-container");
+      const width = box.clientWidth;
+      const height = box.clientHeight;
 
       camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      camera.position.set(0, 5, 15);
+      camera.position.set(0, 6, 18);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(width, height);
-      document.getElementById("three-container").appendChild(renderer.domElement);
+      box.appendChild(renderer.domElement);
 
       const light = new THREE.DirectionalLight(0xffffff, 1);
       light.position.set(10, 10, 10).normalize();
@@ -107,12 +124,10 @@
     }
 
     function createDice(num) {
-      // 先清空舊骰子
       dice.forEach(d => scene.remove(d));
       dice = [];
 
       for (let i = 0; i < num; i++) {
-        // 隨機挑 6 張圖片作為骰子六面
         const materials = [];
         for (let f = 0; f < 6; f++) {
           let id = Math.floor(Math.random() * 40) + 1;
@@ -120,10 +135,10 @@
           materials.push(new THREE.MeshLambertMaterial({ map: texture }));
         }
 
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const geometry = new THREE.BoxGeometry(3, 3, 3); // 比之前更大
         const cube = new THREE.Mesh(geometry, materials);
 
-        cube.position.x = (i - num/2) * 3;
+        cube.position.x = (i - num/2) * 4;
         cube.position.y = 1;
         cube.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
 
@@ -141,11 +156,10 @@
 
       createDice(num);
 
-      // 給每顆骰子隨機旋轉速度
       const speeds = dice.map(() => ({
-        x: (Math.random() - 0.5) * 0.4,
-        y: (Math.random() - 0.5) * 0.4,
-        z: (Math.random() - 0.5) * 0.4
+        x: (Math.random() - 0.5) * 0.5,
+        y: (Math.random() - 0.5) * 0.5,
+        z: (Math.random() - 0.5) * 0.5
       }));
 
       let frames = 0;
@@ -157,11 +171,10 @@
           cube.rotation.z += speeds[i].z;
         });
 
-        if (frames < 80) {
+        if (frames < 100) {
           requestAnimationFrame(spin);
         } else {
           rolling = false;
-          // 讓骰子對齊到最近的 90 度角
           dice.forEach(cube => {
             cube.rotation.x = Math.round(cube.rotation.x / (Math.PI/2)) * (Math.PI/2);
             cube.rotation.y = Math.round(cube.rotation.y / (Math.PI/2)) * (Math.PI/2);
@@ -178,8 +191,9 @@
     }
 
     function onWindowResize() {
-      const width = window.innerWidth;
-      const height = window.innerHeight * 0.65;
+      const box = document.getElementById("three-container");
+      const width = box.clientWidth;
+      const height = box.clientHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
