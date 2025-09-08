@@ -94,7 +94,9 @@ function createDice(num){
   const gridRows=Math.ceil(num/gridCols);
   const offsetX=(gridCols-1)*(size+gap)/2;
   const offsetY=(gridRows-1)*(size+gap)/2;
-  const yBase=0.5; // 往上偏移，避免底部被格子遮住
+  const totalHeight = gridRows*(size+gap);
+  const yBase = totalHeight/2 - size/2 + 0.3; // 提升整組骰子高度，避免被遮住
+
   for(let i=0;i<num;i++){
     const mats=[];
     for(let f=0;f<6;f++){
