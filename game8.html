@@ -9,29 +9,18 @@
       margin: 0;
       height: 100vh;
       font-family: "Microsoft JhengHei","PingFang TC",sans-serif;
-      background: #f5e6fa; /* 淺紫 */
+      background: #f5e6fa;
       color: #444;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-
     .top-section {
       padding: 8px 0 0 0;
       text-align: center;
     }
-    h1 {
-      margin: 0;
-      font-size: 2em;
-      color: #553c7b;
-      font-weight: 600;
-    }
-    .top-section p {
-      margin: 4px 0 8px 0;
-      font-size: 17px;
-      color: #666;
-    }
-
+    h1 { margin: 0; font-size: 2em; color: #553c7b; font-weight: 600; }
+    .top-section p { margin:4px 0 8px 0; font-size:17px; color:#666; }
     .btn-container {
       display: flex;
       flex-wrap: wrap;
@@ -49,7 +38,7 @@
       font-weight: bold;
       transition: transform 0.15s ease, opacity 0.2s;
     }
-    button:hover { transform: scale(1.08); opacity: 0.9; }
+    button:hover { transform: scale(1.08); opacity:0.9; }
     .btn1 { background: #d17b88; }
     .btn2 { background: #d49b6a; }
     .btn3 { background: #e6c16a; color:#333; }
@@ -58,17 +47,16 @@
     .btn6 { background: #8a6ad4; }
     .btn7 { background: #d46aba; }
     .home-btn { background: #553c7b; margin:6px auto 10px auto; padding:10px 20px; font-size:16px; }
-
     .middle-section {
       flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      display:flex;
+      justify-content:center;
+      align-items:center;
       max-height: calc(100vh - 140px);
     }
     #three-container {
-      width: 70vmin;
-      max-width: 500px;
+      width:70vmin;
+      max-width:500px;
       aspect-ratio:1/1;
       background: linear-gradient(135deg,#fbc2eb,#a6c1ee);
       border-radius:24px;
@@ -78,15 +66,14 @@
       align-items:center;
       position: relative;
     }
-
     .bottom-section {
       padding: 6px 0 10px 0;
-      text-align: center;
+      text-align:center;
     }
     .hint {
-      font-size: 18px;
-      font-weight: 500;
-      color: #333;
+      font-size:18px;
+      font-weight:500;
+      color:#333;
       margin: 4px 0 6px 0;
     }
   </style>
@@ -127,10 +114,8 @@
       const box=document.getElementById("three-container");
       const width=box.clientWidth;
       const height=box.clientHeight;
-
       camera=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
       camera.position.set(0,5,15);
-
       renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
       renderer.setSize(width,height);
       box.appendChild(renderer.domElement);
@@ -149,8 +134,9 @@
       dice=[];
 
       const size=2.4;
-      const rangeX=6,rangeY=5,rangeZ=3;
+      const rangeX=6,rangeY=6,rangeZ=3; 
       const positions=[];
+      const margin=0.6;
 
       for(let i=0;i<num;i++){
         const materials=[];
@@ -161,13 +147,12 @@
         }
         const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),materials);
 
-        // 隨機不重疊位置
         let valid=false,pos;
         while(!valid){
           pos={
-            x:(Math.random()-0.5)*rangeX,
-            y:(Math.random()-0.5)*(rangeY-1) + 1, // 上浮1單位，置中分布
-            z:(Math.random()-0.5)*rangeZ
+            x:(Math.random()-0.5)*(rangeX-margin*2),
+            y:(Math.random()-0.5)*(rangeY-margin*2),
+            z:(Math.random()-0.5)*(rangeZ-margin*2)
           };
           valid=true;
           for(let p of positions){
@@ -186,11 +171,16 @@
 
     function rollDice(num){
       if(rolling) return;
-      rolling=true;
 
+      // 停掉上一組動畫
+      if(spinFrame) cancelAnimationFrame(spinFrame);
+      dice.forEach(d=>scene.remove(d));
+      dice=[];
+      rolling=false;
+
+      rolling=true;
       audio.currentTime=0;
       audio.play();
-
       createDice(num);
 
       const speeds=dice.map(()=>({
@@ -200,14 +190,13 @@
       }));
 
       let frames=0;
-
       function spin(){
         frames++;
         dice.forEach((cube,i)=>{
           cube.rotation.x+=speeds[i].x;
           cube.rotation.y+=speeds[i].y;
           cube.rotation.z+=speeds[i].z;
-          cube.position.y += Math.sin(frames*0.1 + i)*0.05; // 微浮動
+          cube.position.y += Math.sin(frames*0.1 + i)*0.05;
         });
 
         if(frames<100) spinFrame=requestAnimationFrame(spin);
