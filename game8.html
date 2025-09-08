@@ -25,7 +25,7 @@
     width: 90%;
     max-width: 700px;
     height: 350px;
-    background-color: #9575CD; /* 深紫色格子 */
+    background-color: #7E57C2; /* 深一點的紫色格子 */
     border-radius: 20px;
     display: flex;
     flex-wrap: wrap;
@@ -80,10 +80,10 @@
     background-size: cover;
     border-radius: 10px;
     position: absolute;
-    animation: roll 1s infinite linear;
+    animation: spin 1s infinite linear;
   }
 
-  @keyframes roll {
+  @keyframes spin {
     0% { transform: rotateX(0) rotateY(0); }
     25% { transform: rotateX(180deg) rotateY(0); }
     50% { transform: rotateX(180deg) rotateY(180deg); }
@@ -131,22 +131,30 @@ function rollDice(count){
   rollAudio.currentTime=0;
   rollAudio.play();
 
+  const usedPositions = [];
+
   for(let i=0;i<count;i++){
     const dice = document.createElement('div');
     dice.className = 'dice';
     const imgIndex = Math.floor(Math.random()*diceImages.length);
     dice.style.backgroundImage = `url(${diceImages[imgIndex]})`;
 
-    // 隨機位置（往上移，避免下方被遮）
-    const containerWidth = diceContainer.clientWidth - 90;
-    const containerHeight = diceContainer.clientHeight - 140; // 上移位置
-    dice.style.left = Math.random()*containerWidth + 'px';
-    dice.style.top = Math.random()*containerHeight + 'px';
+    // 避免重疊：檢查距離
+    let x,y,tries=0;
+    do {
+      x = Math.random()*(diceContainer.clientWidth-90);
+      y = Math.random()*(diceContainer.clientHeight-120); // 上移，避免太低
+      tries++;
+    } while(usedPositions.some(p=>Math.hypot(p.x-x,p.y-y)<90) && tries<50);
+
+    usedPositions.push({x,y});
+    dice.style.left = x+'px';
+    dice.style.top = y+'px';
 
     diceContainer.appendChild(dice);
     currentDice.push(dice);
 
-    // 停止時隨機一面
+    // 停止動畫
     setTimeout(()=>{
       dice.style.animation = "none";
       dice.style.transform = `rotateX(${Math.floor(Math.random()*4)*90}deg) rotateY(${Math.floor(Math.random()*4)*90}deg)`;
