@@ -6,24 +6,28 @@
   <style>
     body {
       margin: 0;
+      height: 100vh;
       font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
-      background: #f5f0fa; /* 淺紫底色 */
+      background: #f5e6fa; /* 淺紫色底 */
       color: #444;
       text-align: center;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      justify-content: space-between;
+      overflow: hidden; /* 移除捲軸 */
     }
+
     h1 {
-      margin: 12px 0 6px 0;
+      margin: 10px 0 6px 0;
       font-size: 2em;
       color: #553c7b;
       font-weight: 600;
     }
+
     .btn-container {
       margin: 6px 0;
     }
+
     button {
       font-size: 15px;
       margin: 4px;
@@ -63,9 +67,9 @@
 
     #three-container {
       aspect-ratio: 1 / 1;
-      width: 90vmin;
+      width: 80vmin;
       max-width: 600px;
-      background: linear-gradient(135deg, #f9c5d1, #fbc8e2, #d7c5f9);
+      background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
       border-radius: 24px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.2);
       display: flex;
@@ -135,7 +139,11 @@
       dice.forEach(d => scene.remove(d));
       dice = [];
 
-      const perRow = 3;
+      let cols = Math.ceil(Math.sqrt(num));
+      let rows = Math.ceil(num / cols);
+      let size = 2.6;
+      let spacing = 3.2;
+
       for (let i = 0; i < num; i++) {
         const materials = [];
         for (let f = 0; f < 6; f++) {
@@ -143,20 +151,20 @@
           let texture = new THREE.TextureLoader().load(`game8_assets/stamp${id}.jpg`);
           materials.push(new THREE.MeshLambertMaterial({ map: texture }));
         }
-
-        const geometry = new THREE.BoxGeometry(4, 4, 4); // 放大骰子
+        const geometry = new THREE.BoxGeometry(size, size, size);
         const cube = new THREE.Mesh(geometry, materials);
 
-        // 讓骰子分行排版
-        let row = Math.floor(i / perRow);
-        let col = i % perRow;
-        cube.position.x = (col - (Math.min(num, perRow)-1)/2) * 6;
-        cube.position.y = 6 - row * 6;
-        cube.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+        let col = i % cols;
+        let row = Math.floor(i / cols);
+        let offsetX = (col - (cols-1)/2) * spacing;
+        let offsetY = (rows/2 - row) * spacing + 1;
 
+        cube.position.set(offsetX, offsetY, 0);
         scene.add(cube);
         dice.push(cube);
       }
+
+      camera.position.set(0, 6, 14 + num);
     }
 
     function rollDice(num) {
