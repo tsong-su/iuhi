@@ -130,42 +130,49 @@
     }
 
     function createDice(num){
-      dice.forEach(d=>scene.remove(d));
-      dice=[];
+      if(dice.length>0){
+        dice.forEach(d=>scene.remove(d));
+        dice=[];
+      }
 
-      const size=2.4;
-      const rangeX=6,rangeY=6,rangeZ=3; 
+      const loader=new THREE.TextureLoader();
+      const size=2.4,rangeX=6,rangeY=6,rangeZ=3,margin=0.6;
       const positions=[];
-      const margin=0.6;
 
       for(let i=0;i<num;i++){
         const materials=[];
-        for(let f=0;f<6;f++){
+        let facesLoaded=0;
+        for(let f=0; f<6; f++){
           let id=Math.floor(Math.random()*40)+1;
-          let texture=new THREE.TextureLoader().load(`game8_assets/stamp${id}.jpg`);
-          materials.push(new THREE.MeshLambertMaterial({map:texture}));
-        }
-        const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),materials);
+          loader.load(`game8_assets/stamp${id}.jpg`, (texture)=>{
+            materials[f]=new THREE.MeshLambertMaterial({map:texture});
+            facesLoaded++;
+            if(facesLoaded===6){
+              // 全部貼圖完成
+              const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size), materials);
 
-        let valid=false,pos;
-        while(!valid){
-          pos={
-            x:(Math.random()-0.5)*(rangeX-margin*2),
-            y:(Math.random()-0.5)*(rangeY-margin*2),
-            z:(Math.random()-0.5)*(rangeZ-margin*2)
-          };
-          valid=true;
-          for(let p of positions){
-            if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){
-              valid=false; break;
+              let valid=false,pos;
+              while(!valid){
+                pos={
+                  x:(Math.random()-0.5)*(rangeX-margin*2),
+                  y:(Math.random()-0.5)*(rangeY-margin*2),
+                  z:(Math.random()-0.5)*(rangeZ-margin*2)
+                };
+                valid=true;
+                for(let p of positions){
+                  if(Math.abs(p.x-pos.x)<size*1.2 && Math.abs(p.y-pos.y)<size*1.2){
+                    valid=false; break;
+                  }
+                }
+              }
+              positions.push(pos);
+              cube.position.set(pos.x,pos.y,pos.z);
+              cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+              scene.add(cube);
+              dice.push(cube);
             }
-          }
+          });
         }
-        positions.push(pos);
-        cube.position.set(pos.x,pos.y,pos.z);
-        cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
-        scene.add(cube);
-        dice.push(cube);
       }
     }
 
