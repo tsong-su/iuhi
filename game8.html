@@ -1,172 +1,140 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>咱來撚骰仔</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    background-color: #E1BEE7; /* 淺紫底色 */
-    color: #333;
-  }
+  <meta charset="UTF-8">
+  <title>咱來撚骰仔</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fef9e7;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
 
-  h1 {
-    margin-top: 1em;
-    font-size: 2em;
-    font-weight: bold;
-  }
+    h2 {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: blue; /* 藍色 */
+      margin: 10px 0;
+    }
 
-  #dice-container {
-    margin: 1em auto;
-    width: 90%;
-    max-width: 700px;
-    height: 350px;
-    background-color: #7E57C2; /* 深一點的紫色格子 */
-    border-radius: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
+    #controls {
+      margin: 20px;
+    }
 
-  .dice-btn {
-    margin: 0.3em;
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    color: white;
-  }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 8px;
+      justify-content: center;
+      margin-top: 20px;
+    }
 
-  .dice-btn:nth-child(1){background:#f44336;}
-  .dice-btn:nth-child(2){background:#e91e63;}
-  .dice-btn:nth-child(3){background:#9c27b0;}
-  .dice-btn:nth-child(4){background:#673ab7;}
-  .dice-btn:nth-child(5){background:#3f51b5;}
-  .dice-btn:nth-child(6){background:#2196f3;}
-  .dice-btn:nth-child(7){background:#00bcd4;}
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #cfd8dc; /* 灰藍色加深 */
+      border: 2px solid #37474f;
+      position: relative;
+    }
 
-  #instruction, #tip {
-    font-weight: bold;
-    color: #1565C0; /* 藍色文字 */
-    margin: 0.5em 0;
-    font-size: 1.2em;
-  }
+    .dice {
+      width: 80px;
+      height: 80px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      animation: spin3D 1s infinite linear;
+    }
 
-  #home-btn {
-    margin: 1em;
-    padding: 0.5em 1.2em;
-    font-size: 1em;
-    font-weight: bold;
-    border-radius: 12px;
-    border: none;
-    background-color: #4caf50;
-    color: white;
-    cursor: pointer;
-  }
+    .face {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: white;
+      border: 2px solid #333;
+    }
 
-  .dice {
-    width: 80px;
-    height: 80px;
-    margin: 5px;
-    background-size: cover;
-    border-radius: 10px;
-    position: absolute;
-    animation: spin 1s infinite linear;
-  }
+    /* 六面體位置 */
+    .front  { transform: rotateY(0deg) translateZ(40px); }
+    .back   { transform: rotateY(180deg) translateZ(40px); }
+    .right  { transform: rotateY(90deg) translateZ(40px); }
+    .left   { transform: rotateY(-90deg) translateZ(40px); }
+    .top    { transform: rotateX(90deg) translateZ(40px); }
+    .bottom { transform: rotateX(-90deg) translateZ(40px); }
 
-  @keyframes spin {
-    0% { transform: rotateX(0) rotateY(0); }
-    25% { transform: rotateX(180deg) rotateY(0); }
-    50% { transform: rotateX(180deg) rotateY(180deg); }
-    75% { transform: rotateX(0) rotateY(180deg); }
-    100% { transform: rotateX(360deg) rotateY(360deg); }
-  }
-</style>
+    .face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes spin3D {
+      0%   { transform: rotateX(0deg) rotateY(0deg); }
+      50%  { transform: rotateX(180deg) rotateY(180deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <h1>咱來撚骰仔</h1>
-  <div id="instruction">欲撚幾粒骰仔，在你揀。</div>
-  <div id="dice-btns">
-    <button class="dice-btn">1粒</button>
-    <button class="dice-btn">2粒</button>
-    <button class="dice-btn">3粒</button>
-    <button class="dice-btn">4粒</button>
-    <button class="dice-btn">5粒</button>
-    <button class="dice-btn">6粒</button>
-    <button class="dice-btn">7粒</button>
+  <h2>欲撚幾粒骰仔，在你揀。</h2>
+  <div id="controls">
+    <button onclick="rollDice(1)">1粒</button>
+    <button onclick="rollDice(2)">2粒</button>
+    <button onclick="rollDice(3)">3粒</button>
+    <button onclick="rollDice(4)">4粒</button>
+    <button onclick="rollDice(5)">5粒</button>
+    <button onclick="rollDice(6)">6粒</button>
   </div>
+  <h2>骰仔若停，請你用台語講看覓這張郵票的地名。</h2>
 
-  <div id="dice-container"></div>
+  <div id="grid"></div>
 
-  <div id="tip">骰仔若停，請你用台語講看覓這張郵票的地名。</div>
-  <button id="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+  <script>
+    const stamps = [
+      "https://i.imgur.com/8Km9tLL.jpg",
+      "https://i.imgur.com/IdaNw7E.jpg",
+      "https://i.imgur.com/v0JXau2.jpg",
+      "https://i.imgur.com/DvpvklR.png"
+    ];
 
-<script>
-const diceContainer = document.getElementById('dice-container');
-const diceButtons = document.querySelectorAll('.dice-btn');
-const diceImages = [];
-for(let i=1;i<=40;i++){
-  diceImages.push('game8_assets/stamp'+i+'.jpg');
-}
+    function rollDice(n) {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
 
-let currentDice = [];
-let rollAudio = new Audio('game8_assets/Roll the dice.mp3');
+      for (let i = 0; i < n; i++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
 
-function clearDice() {
-  currentDice.forEach(d=>d.remove());
-  currentDice = [];
-}
+        const dice = document.createElement("div");
+        dice.className = "dice";
 
-function rollDice(count){
-  clearDice();
-  rollAudio.currentTime=0;
-  rollAudio.play();
+        // 六面體
+        ["front", "back", "right", "left", "top", "bottom"].forEach(side => {
+          const face = document.createElement("div");
+          face.className = "face " + side;
+          dice.appendChild(face);
+        });
 
-  const usedPositions = [];
+        cell.appendChild(dice);
+        grid.appendChild(cell);
 
-  for(let i=0;i<count;i++){
-    const dice = document.createElement('div');
-    dice.className = 'dice';
-    const imgIndex = Math.floor(Math.random()*diceImages.length);
-    dice.style.backgroundImage = `url(${diceImages[imgIndex]})`;
-
-    // 避免重疊：檢查距離
-    let x,y,tries=0;
-    do {
-      x = Math.random()*(diceContainer.clientWidth-90);
-      y = Math.random()*(diceContainer.clientHeight-120); // 上移，避免太低
-      tries++;
-    } while(usedPositions.some(p=>Math.hypot(p.x-x,p.y-y)<90) && tries<50);
-
-    usedPositions.push({x,y});
-    dice.style.left = x+'px';
-    dice.style.top = y+'px';
-
-    diceContainer.appendChild(dice);
-    currentDice.push(dice);
-
-    // 停止動畫
-    setTimeout(()=>{
-      dice.style.animation = "none";
-      dice.style.transform = `rotateX(${Math.floor(Math.random()*4)*90}deg) rotateY(${Math.floor(Math.random()*4)*90}deg)`;
-    },1500);
-  }
-}
-
-diceButtons.forEach((btn,index)=>{
-  btn.addEventListener('click',()=>{
-    rollDice(index+1);
-  });
-});
-</script>
+        // 動畫停止後，顯示隨機郵票
+        setTimeout(() => {
+          dice.style.animation = "none";
+          const faces = dice.querySelectorAll(".face");
+          faces.forEach(f => f.innerHTML = ""); // 清空
+          const img = document.createElement("img");
+          img.src = stamps[Math.floor(Math.random() * stamps.length)];
+          faces[0].appendChild(img); // 貼在 front
+          dice.style.transform = "rotateX(0deg) rotateY(0deg)";
+        }, 2000);
+      }
+    }
+  </script>
 </body>
 </html>
