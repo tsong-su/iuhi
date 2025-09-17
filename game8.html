@@ -29,10 +29,14 @@
   #dice-container {
     flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
-    perspective: 1200px;
+  }
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .dice {
     width: var(--dice-size, 100px);
@@ -116,31 +120,60 @@ document.getElementById("dice-count").addEventListener("change", (e) => {
   createDice();
 });
 
+function getLayout(count) {
+  switch(count) {
+    case 3: return [1,2];
+    case 4: return [2,2];
+    case 5: return [2,3];
+    case 6: return [3,3];
+    case 7: return [3,4];
+    default: return [count];
+  }
+}
+
+function calcDiceSize(rows, maxPerRow) {
+  const w = window.innerWidth;
+  const h = window.innerHeight * 0.6; // 中間區塊高度
+  const sizeByWidth = w / (maxPerRow + 1);
+  const sizeByHeight = h / (rows + 1);
+  return Math.min(sizeByWidth, sizeByHeight, 150);
+}
+
 function createDice() {
   container.innerHTML = "";
   diceElements = [];
-  const size = Math.max(50, 120 - diceCount * 10); // 自動縮放
-  for (let i = 0; i < diceCount; i++) {
-    const dice = document.createElement("div");
-    dice.className = "dice";
-    dice.style.setProperty("--dice-size", size + "px");
 
-    // 隨機挑 6 張郵票貼圖
-    const used = new Set();
-    for (let face of ["front","back","right","left","top","bottom"]) {
-      let imgIndex;
-      do {
-        imgIndex = Math.floor(Math.random() * 40) + 1;
-      } while (used.has(imgIndex));
-      used.add(imgIndex);
-      const faceDiv = document.createElement("div");
-      faceDiv.className = "face " + face;
-      faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
-      dice.appendChild(faceDiv);
+  const layout = getLayout(diceCount);
+  const diceSize = calcDiceSize(layout.length, Math.max(...layout));
+
+  let created = 0;
+  layout.forEach(rowCount => {
+    const row = document.createElement("div");
+    row.className = "row";
+    for (let i = 0; i < rowCount; i++) {
+      created++;
+      const dice = document.createElement("div");
+      dice.className = "dice";
+      dice.style.setProperty("--dice-size", diceSize + "px");
+
+      // 隨機挑 6 張郵票貼圖
+      const used = new Set();
+      for (let face of ["front","back","right","left","top","bottom"]) {
+        let imgIndex;
+        do {
+          imgIndex = Math.floor(Math.random() * 40) + 1;
+        } while (used.has(imgIndex));
+        used.add(imgIndex);
+        const faceDiv = document.createElement("div");
+        faceDiv.className = "face " + face;
+        faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
+        dice.appendChild(faceDiv);
+      }
+      row.appendChild(dice);
+      diceElements.push(dice);
     }
-    container.appendChild(dice);
-    diceElements.push(dice);
-  }
+    container.appendChild(row);
+  });
 }
 
 function rollDice() {
@@ -179,6 +212,9 @@ function reroll() {
 function goHome() {
   window.location.href = "index.html";
 }
+
+// 視窗縮放時自動更新大小
+window.addEventListener("resize", () => createDice());
 
 // 初始建立
 createDice();
