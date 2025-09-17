@@ -1,143 +1,142 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>咱來撚骰仔</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f9f9f9;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  header {
-    text-align: center;
-    padding: 10px;
-  }
-  header h1 {
-    font-size: 2.2em;
-    color: #d6336c;
-  }
-  #top-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-    margin: 10px;
-    gap: 15px;
-  }
-  #controls {
-    text-align: center;
-  }
-  #controls button, #controls select {
-    font-size: 1.1em;
-    padding: 8px 16px;
-    margin: 5px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  #controls button {
-    background: linear-gradient(45deg, #ff6b6b, #feca57);
-    color: #fff;
-    font-weight: bold;
-  }
-  #controls button:hover {
-    background: linear-gradient(45deg, #ff4757, #ffa502);
-  }
-  #controls select {
-    background: #ffeaa7;
-    color: #2d3436;
-  }
-  #instructions {
-    border: 2px solid #444;
-    background: #fffbea;
-    padding: 10px 15px;
-    border-radius: 10px;
-    font-size: 1em;
-    color: #333;
-    line-height: 1.5em;
-    min-width: 180px;
-    max-width: 220px;
-  }
-  #instructions strong {
-    display: block;
-    margin-bottom: 5px;
-    color: #d6336c;
-  }
-  #dice-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  .row {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .dice {
-    width: var(--dice-size, 100px);
-    height: var(--dice-size, 100px);
-    position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(0deg) rotateY(0deg);
-    margin: 10px;
-    transition: transform 1s ease-out;
-  }
-  .face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    border: 2px solid #333;
-    border-radius: 8px;
-  }
-  .front  { transform: rotateY(0deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
-  .back   { transform: rotateY(180deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
-  .right  { transform: rotateY(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
-  .left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
-  .top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
-  .bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  <meta charset="UTF-8">
+  <title>咱來撚骰仔</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      text-align: center;
+      margin: 0;
+      background: #f8f8f8;
+      overflow-x: hidden;
+    }
+    h1 {
+      margin: 10px 0;
+      font-size: 2.2em;
+      background: linear-gradient(90deg, #ff7b00, #ff0066);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      background: #ff9800;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    select {
+      padding: 5px;
+      font-size: 1em;
+    }
+    #instructionBox {
+      position: absolute;
+      top: 65px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.9em;
+      text-align: left;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    #dice-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 15px auto;
+      gap: 12px;
+      max-width: 95vw;
+    }
+    .dice-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: nowrap;
+    }
+    .dice-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .dice-label {
+      margin-top: 4px;
+      font-size: 0.9em;
+      font-weight: bold;
+      color: #333;
+    }
+    .dice {
+      width: var(--dice-size, 80px);
+      height: var(--dice-size, 80px);
+      transform-style: preserve-3d;
+      transform: rotateX(0deg) rotateY(0deg);
+      transition: transform 1s ease-out;
+      cursor: pointer;
+      position: relative;
+    }
+    .face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .front  { transform: rotateY(0deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
+    .back   { transform: rotateY(180deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
+    .right  { transform: rotateY(90deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
+    .left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
+    .top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
+    .bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size, 80px) / 2)); }
 
-  footer {
-    text-align: center;
-    padding: 15px;
-  }
-  footer p {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-    color: #333;
-    font-weight: bold;
-  }
-  #home-btn {
-    font-size: 1.5em;
-    padding: 15px 30px;
-    background: #0078D7;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
-  #home-btn:hover {
-    background: #005ea6;
-  }
-</style>
+    #result {
+      margin: 10px auto;
+      font-size: 1em;
+      padding: 6px;
+      max-width: 95%;
+      text-align: center;
+    }
+    #footer-hint {
+      margin: 12px 0;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #444;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>🎲 咱來撚骰仔 🎲</h1>
-</header>
-
-<div id="top-bar">
+  <h1>咱來撚骰仔 🎲</h1>
   <div id="controls">
-    <label for="dice-count">骰仔數量：</label>
-    <select id="dice-count">
+    <label for="diceCount">骰仔粒數：</label>
+    <select id="diceCount">
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
@@ -147,133 +146,129 @@
       <option value="7">7</option>
     </select>
     <button onclick="rollDice()">撚骰仔</button>
-    <button onclick="reroll()">重撚一擺</button>
+    <button onclick="rollDice()">閣撚一擺</button>
+    <button onclick="location.href='index.html'">轉去遊戲頭頁</button>
   </div>
-  <div id="instructions">
-    <strong>🎯 操作說明</strong>
-    1. 選數量 → 撚骰仔<br>
-    2. 停止後講出地名<br>
-    3. 點骰仔 = 重撚
+
+  <div id="instructionBox">
+    <strong>操作說明</strong><br>
+    1. 選數量 → 撚骰仔
   </div>
-</div>
 
-<div id="dice-container"></div>
+  <div id="dice-container"></div>
+  <div id="result"></div>
 
-<footer>
-  <p>骰仔停止後，請講出郵票骰仔的地名。</p>
-  <button id="home-btn" onclick="goHome()">轉去遊戲頭頁</button>
-</footer>
+  <div id="footer-hint">骰仔若停，請講出郵票骰仔的台語地名。</div>
 
-<audio id="roll-sound" src="game8_assets/Roll the dice.mp3"></audio>
-<audio id="ding-sound" src="game8_assets/ding1.mp3"></audio>
+  <audio id="roll-sound" src="game8_assets/Roll the dice.mp3"></audio>
+  <audio id="ding-sound" src="game8_assets/ding1.mp3"></audio>
 
-<script>
-const container = document.getElementById("dice-container");
-const rollSound = document.getElementById("roll-sound");
-const dingSound = document.getElementById("ding-sound");
-let diceCount = 1;
-let diceElements = [];
+  <script>
+    const diceContainer = document.getElementById("dice-container");
+    const resultDiv = document.getElementById("result");
+    const rollSound = document.getElementById("roll-sound");
+    const dingSound = document.getElementById("ding-sound");
 
-document.getElementById("dice-count").addEventListener("change", (e) => {
-  diceCount = parseInt(e.target.value);
-  createDice();
-});
+    const stampImages = [
+      "game8_assets/stamp1.jpg",
+      "game8_assets/stamp2.jpg",
+      "game8_assets/stamp3.jpg",
+      "game8_assets/stamp4.jpg",
+      "game8_assets/stamp5.jpg",
+      "game8_assets/stamp6.jpg"
+    ];
 
-function getLayout(count) {
-  switch(count) {
-    case 3: return [1,2];
-    case 4: return [2,2];
-    case 5: return [2,3];
-    case 6: return [3,3];
-    case 7: return [3,4];
-    default: return [count];
-  }
-}
+    function createDie(id, size) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "dice-wrapper";
 
-function calcDiceSize(rows, maxPerRow) {
-  const w = window.innerWidth;
-  const h = window.innerHeight * 0.6;
-  const sizeByWidth = w / (maxPerRow + 1);
-  const sizeByHeight = h / (rows + 1);
-  return Math.min(sizeByWidth, sizeByHeight, 150);
-}
+      const die = document.createElement("div");
+      die.className = "dice";
+      die.style.setProperty("--dice-size", size + "px");
 
-function createDice() {
-  container.innerHTML = "";
-  diceElements = [];
-
-  const layout = getLayout(diceCount);
-  const diceSize = calcDiceSize(layout.length, Math.max(...layout));
-
-  layout.forEach(rowCount => {
-    const row = document.createElement("div");
-    row.className = "row";
-    for (let i = 0; i < rowCount; i++) {
-      const dice = document.createElement("div");
-      dice.className = "dice";
-      dice.style.setProperty("--dice-size", diceSize + "px");
-
-      const used = new Set();
-      for (let face of ["front","back","right","left","top","bottom"]) {
-        let imgIndex;
-        do {
-          imgIndex = Math.floor(Math.random() * 40) + 1;
-        } while (used.has(imgIndex));
-        used.add(imgIndex);
-        const faceDiv = document.createElement("div");
-        faceDiv.className = "face " + face;
-        faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
-        dice.appendChild(faceDiv);
+      const faces = ["front","back","right","left","top","bottom"];
+      for (let i=0;i<6;i++){
+        const face=document.createElement("div");
+        face.className="face "+faces[i];
+        const img=document.createElement("img");
+        img.src=stampImages[i % stampImages.length];
+        face.appendChild(img);
+        die.appendChild(face);
       }
-      row.appendChild(dice);
-      diceElements.push(dice);
 
-      // 手機點擊骰仔也能重新撚
-      dice.addEventListener("click", rollDice);
+      const label=document.createElement("div");
+      label.className="dice-label";
+      label.innerText="玩家 "+id;
+
+      wrapper.appendChild(die);
+      wrapper.appendChild(label);
+
+      die.addEventListener("click", rollDice);
+      return wrapper;
     }
-    container.appendChild(row);
-  });
-}
 
-function rollDice() {
-  rollSound.currentTime = 0;
-  rollSound.play();
-  diceElements.forEach(dice => {
-    let spin = 0;
-    const interval = setInterval(() => {
-      spin += 30;
-      dice.style.transform = `rotateX(${spin}deg) rotateY(${spin * 1.5}deg)`;
-    }, 50);
+    function arrangeDice(count){
+      diceContainer.innerHTML="";
+      const baseSize=100, minSize=50;
+      const size=Math.max(minSize, baseSize - count*6);
 
-    setTimeout(() => {
-      clearInterval(interval);
-      const rotations = [
-        [0,0],
-        [0,180],
-        [0,90],
-        [0,-90],
-        [90,0],
-        [-90,0]
-      ];
-      const choice = rotations[Math.floor(Math.random() * rotations.length)];
-      dice.style.transform = `rotateX(${choice[0]}deg) rotateY(${choice[1]}deg)`;
-      dingSound.currentTime = 0;
-      dingSound.play();
-    }, 2000 + Math.random() * 2000);
-  });
-}
+      let rows=[];
+      if(count===1) rows=[1];
+      else if(count===2) rows=[1,1];
+      else if(count===3) rows=[1,2];
+      else if(count===4) rows=[2,2];
+      else if(count===5) rows=[2,3];
+      else if(count===6) rows=[3,3];
+      else if(count===7) rows=[3,4];
 
-function reroll() {
-  rollDice();
-}
+      let player=1;
+      rows.forEach(r=>{
+        const row=document.createElement("div");
+        row.className="dice-row";
+        for(let i=0;i<r;i++){
+          row.appendChild(createDie(player++,size));
+        }
+        diceContainer.appendChild(row);
+      });
+    }
 
-function goHome() {
-  window.location.href = "index.html";
-}
+    function rollDice(){
+      const count=parseInt(document.getElementById("diceCount").value);
+      arrangeDice(count);
+      resultDiv.innerHTML="";
+      rollSound.currentTime=0; rollSound.play();
 
-window.addEventListener("resize", () => createDice());
+      const dice=document.querySelectorAll(".dice");
+      dice.forEach((die,idx)=>{
+        let xRand=720+Math.floor(Math.random()*360);
+        let yRand=720+Math.floor(Math.random()*360);
+        die.style.transition="transform 1.5s cubic-bezier(.25,1,.3,1)";
+        die.style.transform=`rotateX(${xRand}deg) rotateY(${yRand}deg)`;
+      });
 
-createDice();
-</script>
+      setTimeout(()=>{
+        dingSound.play();
+        let resHTML="<strong>結果：</strong><br>";
+        dice.forEach((die,i)=>{
+          const face=Math.ceil(Math.random()*6);
+          let rotation;
+          switch(face){
+            case 1: rotation="rotateX(0deg) rotateY(0deg)"; break;
+            case 2: rotation="rotateY(180deg)"; break;
+            case 3: rotation="rotateY(-90deg)"; break;
+            case 4: rotation="rotateY(90deg)"; break;
+            case 5: rotation="rotateX(-90deg)"; break;
+            case 6: rotation="rotateX(90deg)"; break;
+          }
+          die.style.transform=rotation;
+
+          resHTML+=`玩家 ${i+1} → <img src="${stampImages[face-1]}" width="40"> 郵票<br>`;
+        });
+        resultDiv.innerHTML=resHTML;
+      },1600);
+    }
+
+    arrangeDice(1);
+  </script>
 </body>
 </html>
