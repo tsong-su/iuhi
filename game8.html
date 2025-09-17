@@ -18,33 +18,7 @@
     padding: 10px;
     font-size: 2em;
     color: #553c7b;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
   }
-  .header-dice {
-    width: 50px;
-    height: 50px;
-    transform-style: preserve-3d;
-    transform: rotateX(30deg) rotateY(30deg);
-    display: inline-block;
-  }
-  .header-dice .face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 1px solid #333;
-    background-size: cover;
-    background-position: center;
-  }
-  .front  { transform: rotateY(0deg) translateZ(25px); }
-  .back   { transform: rotateY(180deg) translateZ(25px); }
-  .right  { transform: rotateY(90deg) translateZ(25px); }
-  .left   { transform: rotateY(-90deg) translateZ(25px); }
-  .top    { transform: rotateX(90deg) translateZ(25px); }
-  .bottom { transform: rotateX(-90deg) translateZ(25px); }
-
   #controls {
     text-align: center;
     margin: 10px;
@@ -127,9 +101,7 @@
 </head>
 <body>
 <header>
-  <div class="header-dice" id="left-dice"></div>
   🎲 咱來撚骰仔 🎲
-  <div class="header-dice" id="right-dice"></div>
 </header>
 
 <div id="controls">
@@ -167,21 +139,6 @@ document.getElementById("dice-count").addEventListener("change", (e) => {
   diceCount = parseInt(e.target.value);
   createDice();
 });
-
-// Header 兩側立體骰子
-function createHeaderDice(id) {
-  const dice = document.getElementById(id);
-  dice.innerHTML = "";
-  for (let face of ["front","back","right","left","top","bottom"]) {
-    const faceDiv = document.createElement("div");
-    faceDiv.className = "face " + face;
-    const imgIndex = Math.floor(Math.random() * 40) + 1;
-    faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
-    dice.appendChild(faceDiv);
-  }
-}
-createHeaderDice("left-dice");
-createHeaderDice("right-dice");
 
 function getLayout(count) {
   switch(count) {
