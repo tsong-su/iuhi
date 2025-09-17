@@ -36,7 +36,14 @@
   .row {
     display: flex;
     justify-content: center;
+    align-items: flex-end; /* 讓骰子和標籤一起置底對齊 */
+    margin: 5px 0;
+  }
+  .dice-wrapper {
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    margin: 5px;
   }
   .dice {
     width: var(--dice-size, 100px);
@@ -44,7 +51,6 @@
     position: relative;
     transform-style: preserve-3d;
     transform: rotateX(0deg) rotateY(0deg);
-    margin: 10px;
     transition: transform 1s ease-out;
   }
   .face {
@@ -61,6 +67,14 @@
   .left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
   .top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
   .bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+
+  .player-label {
+    margin-top: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+  }
 
   footer {
     text-align: center;
@@ -131,12 +145,16 @@ function getLayout(count) {
   }
 }
 
-function calcDiceSize(rows, maxPerRow) {
+function calcDiceSize(rows, maxPerRow, count) {
   const w = window.innerWidth;
-  const h = window.innerHeight * 0.6; // 中間區塊高度
-  const sizeByWidth = w / (maxPerRow + 1);
-  const sizeByHeight = h / (rows + 1);
-  return Math.min(sizeByWidth, sizeByHeight, 150);
+  const h = window.innerHeight * 0.6; 
+  const sizeByWidth = w / (maxPerRow + 0.5);
+  const sizeByHeight = h / (rows + 0.5);
+  let base = Math.min(sizeByWidth, sizeByHeight, 200);
+
+  // 顆數越少 → 顯示越大
+  const scale = 1 + (1 - count/7) * 0.8; 
+  return base * scale;
 }
 
 function createDice() {
@@ -144,7 +162,7 @@ function createDice() {
   diceElements = [];
 
   const layout = getLayout(diceCount);
-  const diceSize = calcDiceSize(layout.length, Math.max(...layout));
+  const diceSize = calcDiceSize(layout.length, Math.max(...layout), diceCount);
 
   let created = 0;
   layout.forEach(rowCount => {
@@ -152,6 +170,9 @@ function createDice() {
     row.className = "row";
     for (let i = 0; i < rowCount; i++) {
       created++;
+      const wrapper = document.createElement("div");
+      wrapper.className = "dice-wrapper";
+
       const dice = document.createElement("div");
       dice.className = "dice";
       dice.style.setProperty("--dice-size", diceSize + "px");
@@ -169,7 +190,16 @@ function createDice() {
         faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
         dice.appendChild(faceDiv);
       }
-      row.appendChild(dice);
+
+      // 玩家標籤
+      const label = document.createElement("div");
+      label.className = "player-label";
+      label.textContent = "玩家 " + created;
+
+      wrapper.appendChild(dice);
+      wrapper.appendChild(label);
+      row.appendChild(wrapper);
+
       diceElements.push(dice);
     }
     container.appendChild(row);
@@ -201,7 +231,7 @@ function rollDice() {
       dice.style.transform = `rotateX(${choice[0]}deg) rotateY(${choice[1]}deg)`;
       dingSound.currentTime = 0;
       dingSound.play();
-    }, 2000 + Math.random() * 2000); // 2-4秒隨機停
+    }, 2000 + Math.random() * 2000);
   });
 }
 
