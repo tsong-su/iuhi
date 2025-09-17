@@ -21,13 +21,20 @@
     font-size: 2.2em;
     color: #d6336c;
   }
+  #top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 10px;
+    gap: 15px;
+  }
   #controls {
     text-align: center;
-    margin: 10px;
   }
   #controls button, #controls select {
-    font-size: 1.2em;
-    padding: 10px 20px;
+    font-size: 1.1em;
+    padding: 8px 16px;
     margin: 5px;
     border: none;
     border-radius: 8px;
@@ -46,12 +53,20 @@
     color: #2d3436;
   }
   #instructions {
-    text-align: center;
-    margin: 10px auto;
-    font-size: 1.1em;
-    color: #444;
-    max-width: 90%;
-    line-height: 1.6em;
+    border: 2px solid #444;
+    background: #fffbea;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 1em;
+    color: #333;
+    line-height: 1.5em;
+    min-width: 180px;
+    max-width: 220px;
+  }
+  #instructions strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #d6336c;
   }
   #dice-container {
     flex: 1;
@@ -119,28 +134,27 @@
   <h1>🎲 咱來撚骰仔 🎲</h1>
 </header>
 
-<div id="controls">
-  <label for="dice-count">骰仔數量：</label>
-  <select id="dice-count">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-  </select>
-  <button onclick="rollDice()">撚骰仔</button>
-  <button onclick="reroll()">重撚一擺</button>
-</div>
-
-<div id="instructions">
-  👉 操作說明：<br>
-  1️⃣ 選擇要撚幾粒骰仔。<br>
-  2️⃣ 按下「撚骰仔」，骰仔就會滾動。<br>
-  3️⃣ 等骰仔停落來，看正面朝上的郵票。<br>
-  4️⃣ 玩家請講出郵票上的地名！📍<br>
-  💡 小技巧：手機用戶直接點骰仔也能重撚一擺。
+<div id="top-bar">
+  <div id="controls">
+    <label for="dice-count">骰仔數量：</label>
+    <select id="dice-count">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+    </select>
+    <button onclick="rollDice()">撚骰仔</button>
+    <button onclick="reroll()">重撚一擺</button>
+  </div>
+  <div id="instructions">
+    <strong>🎯 操作說明</strong>
+    1. 選數量 → 撚骰仔<br>
+    2. 停止後講出地名<br>
+    3. 點骰仔 = 重撚
+  </div>
 </div>
 
 <div id="dice-container"></div>
