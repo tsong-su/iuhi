@@ -1,194 +1,223 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>郵票骰子遊戲</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f0f0f0;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    h1 {
-      margin: 10px 0;
-    }
-    .controls {
-      margin: 10px 0;
-    }
-    #dice-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      width: 100%;
-      height: 65vh;
-    }
-    .row {
-      display: flex;
-      justify-content: center;
-      margin: 5px 0;
-    }
-    .dice-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 5px;
-    }
-    .dice {
-      background-size: cover;
-      background-position: center;
-      border-radius: 12px;
-      box-shadow: 4px 6px 12px rgba(0,0,0,0.3);
-      cursor: pointer;
-      transform-style: preserve-3d;
-      transition: transform 1s ease-out;
-    }
-    .player-label {
-      margin-top: 5px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    #results {
-      margin: 10px;
-      padding: 10px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      display: inline-block;
-      max-height: 20vh;
-      overflow-y: auto;
-    }
-    button {
-      margin: 5px;
-      padding: 8px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background: #007BFF;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>郵票骰子遊戲</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f9f9f9;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 10px;
+  }
+  #controls {
+    text-align: center;
+    margin: 10px;
+  }
+  #controls button, #controls select {
+    font-size: 1.2em;
+    padding: 10px 20px;
+    margin: 5px;
+  }
+  #dice-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .dice {
+    width: var(--dice-size, 100px);
+    height: var(--dice-size, 100px);
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    margin: 10px;
+    transition: transform 1s ease-out;
+  }
+  .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #333;
+  }
+  .front  { transform: rotateY(0deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .back   { transform: rotateY(180deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .right  { transform: rotateY(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+
+  footer {
+    text-align: center;
+    padding: 15px;
+  }
+  #home-btn {
+    font-size: 1.5em;
+    padding: 15px 30px;
+    background: #0078D7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+  }
+  #home-btn:hover {
+    background: #005ea6;
+  }
+</style>
 </head>
 <body>
-  <h1>郵票骰子遊戲</h1>
+<header>
+  <h1>🎲 郵票骰子遊戲 🎲</h1>
+</header>
 
-  <div class="controls">
-    <label>選擇骰子數量：</label>
-    <select id="dice-count">
-      <option value="1">1 顆</option>
-      <option value="2">2 顆</option>
-      <option value="3">3 顆</option>
-      <option value="4">4 顆</option>
-      <option value="5">5 顆</option>
-      <option value="6">6 顆</option>
-      <option value="7">7 顆</option>
-    </select>
-    <button onclick="rollDice()">丟骰子</button>
-    <button onclick="goHome()">轉去遊戲頭頁</button>
-  </div>
+<div id="controls">
+  <label for="dice-count">骰子數量：</label>
+  <select id="dice-count">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+  </select>
+  <button onclick="rollDice()">丟骰子</button>
+  <button onclick="reroll()">重新丟一次</button>
+</div>
 
-  <div id="dice-container"></div>
-  <div id="results"></div>
+<div id="dice-container"></div>
 
-  <!-- 簡單叮聲 -->
-  <audio id="ding-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+<footer>
+  <button id="home-btn" onclick="goHome()">轉去遊戲頭頁</button>
+</footer>
 
-  <script>
-    const diceImages = [
-      "https://upload.wikimedia.org/wikipedia/commons/3/32/World%27s_first_postage_stamp.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/0/01/Penny_red_plate_1.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/3/3c/Two_Penny_Blue.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/d/d3/Penny_Lilac_stamp.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/6/6d/US_1_Cent_stamp_1847.jpg",
-      "https://upload.wikimedia.org/wikipedia/commons/9/9b/US_10_Cent_stamp_1847.jpg"
-    ];
+<audio id="roll-sound" src="game8_assets/Roll the dice.mp3"></audio>
+<audio id="ding-sound" src="game8_assets/ding1.mp3"></audio>
 
-    function layoutDice(num) {
-      const container = document.getElementById("dice-container");
-      container.innerHTML = "";
+<script>
+const container = document.getElementById("dice-container");
+const rollSound = document.getElementById("roll-sound");
+const dingSound = document.getElementById("ding-sound");
+let diceCount = 1;
+let diceElements = [];
 
-      let baseSize = 160 - num * 12; // 自動縮放
-      let rows = [];
+document.getElementById("dice-count").addEventListener("change", (e) => {
+  diceCount = parseInt(e.target.value);
+  createDice();
+});
 
-      // 設定排列矩陣
-      if (num === 1) rows = [[1]];
-      if (num === 2) rows = [[1],[1]];
-      if (num === 3) rows = [[1],[2]];
-      if (num === 4) rows = [[2],[2]];
-      if (num === 5) rows = [[2],[3]];
-      if (num === 6) rows = [[3],[3]];
-      if (num === 7) rows = [[3],[4]];
+function getLayout(count) {
+  switch(count) {
+    case 3: return [1,2];
+    case 4: return [2,2];
+    case 5: return [2,3];
+    case 6: return [3,3];
+    case 7: return [3,4];
+    default: return [count];
+  }
+}
 
-      let player = 1;
-      rows.forEach(r => {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "row";
-        for (let i = 0; i < r; i++) {
-          const wrapper = document.createElement("div");
-          wrapper.className = "dice-wrapper";
+function calcDiceSize(rows, maxPerRow) {
+  const w = window.innerWidth;
+  const h = window.innerHeight * 0.6; // 中間區塊高度
+  const sizeByWidth = w / (maxPerRow + 1);
+  const sizeByHeight = h / (rows + 1);
+  return Math.min(sizeByWidth, sizeByHeight, 150);
+}
 
-          const dice = document.createElement("div");
-          dice.className = "dice";
-          dice.style.width = baseSize + "px";
-          dice.style.height = baseSize + "px";
-          dice.style.backgroundImage = `url(${diceImages[0]})`; // 預設有圖
-          dice.dataset.index = player;
-          dice.onclick = rollDice;
+function createDice() {
+  container.innerHTML = "";
+  diceElements = [];
 
-          const label = document.createElement("div");
-          label.className = "player-label";
-          label.textContent = "玩家 " + player;
+  const layout = getLayout(diceCount);
+  const diceSize = calcDiceSize(layout.length, Math.max(...layout));
 
-          wrapper.appendChild(dice);
-          wrapper.appendChild(label);
-          rowDiv.appendChild(wrapper);
-          player++;
-        }
-        container.appendChild(rowDiv);
-      });
+  let created = 0;
+  layout.forEach(rowCount => {
+    const row = document.createElement("div");
+    row.className = "row";
+    for (let i = 0; i < rowCount; i++) {
+      created++;
+      const dice = document.createElement("div");
+      dice.className = "dice";
+      dice.style.setProperty("--dice-size", diceSize + "px");
+
+      // 隨機挑 6 張郵票貼圖
+      const used = new Set();
+      for (let face of ["front","back","right","left","top","bottom"]) {
+        let imgIndex;
+        do {
+          imgIndex = Math.floor(Math.random() * 40) + 1;
+        } while (used.has(imgIndex));
+        used.add(imgIndex);
+        const faceDiv = document.createElement("div");
+        faceDiv.className = "face " + face;
+        faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
+        dice.appendChild(faceDiv);
+      }
+      row.appendChild(dice);
+      diceElements.push(dice);
     }
+    container.appendChild(row);
+  });
+}
 
-    function rollDice() {
-      const dices = document.querySelectorAll(".dice");
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "";
-      const sound = document.getElementById("ding-sound");
+function rollDice() {
+  rollSound.currentTime = 0;
+  rollSound.play();
+  diceElements.forEach(dice => {
+    let spin = 0;
+    const interval = setInterval(() => {
+      spin += 30;
+      dice.style.transform = `rotateX(${spin}deg) rotateY(${spin * 1.5}deg)`;
+    }, 50);
 
-      dices.forEach(dice => {
-        const result = Math.floor(Math.random() * diceImages.length);
-        const image = diceImages[result];
+    setTimeout(() => {
+      clearInterval(interval);
+      // 隨機固定某一面
+      const rotations = [
+        [0,0],     // front
+        [0,180],   // back
+        [0,90],    // right
+        [0,-90],   // left
+        [90,0],    // top
+        [-90,0]    // bottom
+      ];
+      const choice = rotations[Math.floor(Math.random() * rotations.length)];
+      dice.style.transform = `rotateX(${choice[0]}deg) rotateY(${choice[1]}deg)`;
+      dingSound.currentTime = 0;
+      dingSound.play();
+    }, 2000 + Math.random() * 2000); // 2-4秒隨機停
+  });
+}
 
-        // 模擬 3D 滾動
-        const rotX = 720 + Math.floor(Math.random()*360);
-        const rotY = 720 + Math.floor(Math.random()*360);
-        dice.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+function reroll() {
+  rollDice();
+}
 
-        setTimeout(() => {
-          dice.style.backgroundImage = `url(${image})`;
-          dice.style.transform = "rotateX(0deg) rotateY(0deg)";
-          const player = dice.dataset.index;
-          resultsDiv.innerHTML += `玩家 ${player} → <img src="${image}" width="40"><br>`;
-          sound.play();
-        }, 1000);
-      });
-    }
+function goHome() {
+  window.location.href = "index.html";
+}
 
-    function goHome() {
-      alert("返回首頁功能尚未設定，可以連結到遊戲首頁！");
-    }
+// 視窗縮放時自動更新大小
+window.addEventListener("resize", () => createDice());
 
-    // 預設顯示 1 顆
-    layoutDice(1);
-    document.getElementById("dice-count").addEventListener("change", (e) => {
-      layoutDice(parseInt(e.target.value));
-    });
-  </script>
+// 初始建立
+createDice();
+</script>
 </body>
 </html>
