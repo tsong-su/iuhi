@@ -1,111 +1,226 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>咱來撚骰仔</title>
-  <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    h1 {
-      margin: 20px;
-      font-size: 2.5em;
-      color: #d2691e;
-      text-shadow: 2px 2px 4px #aaa;
-    }
-    .controls {
-      margin: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-      margin: 5px;
-      cursor: pointer;
-      border-radius: 8px;
-      border: none;
-      background-color: #87ceeb;
-      color: #fff;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #4682b4;
-    }
-    #dice-container {
-      display: flex;
-      justify-content: center;
-      margin: 20px;
-      flex-wrap: wrap;
-    }
-    .dice {
-      width: 100px;
-      height: 100px;
-      margin: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #333;
-      border-radius: 12px;
-      background-color: #fff;
-      font-size: 2em;
-      font-weight: bold;
-      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-    }
-    #message {
-      margin-top: 30px;
-      font-size: 1.2em;
-      color: #333;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>咱來撚骰仔</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f9f9f9;
+    font-family: "Microsoft JhengHei", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 10px;
+    font-size: 2em;
+    color: #553c7b;
+  }
+  #controls {
+    text-align: center;
+    margin: 10px;
+  }
+  #controls button, #controls select {
+    font-size: 1.2em;
+    padding: 12px 24px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  #dice-count {
+    background: #ffe066;
+    color: #333;
+  }
+  #roll-btn {
+    background: #ff6b81;
+    color: #fff;
+  }
+  #reroll-btn {
+    background: #1e90ff;
+    color: #fff;
+  }
+  #dice-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .dice {
+    width: var(--dice-size, 100px);
+    height: var(--dice-size, 100px);
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    margin: 10px;
+    transition: transform 1s ease-out;
+    cursor: pointer;
+  }
+  .face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid #333;
+  }
+  .front  { transform: rotateY(0deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .back   { transform: rotateY(180deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .right  { transform: rotateY(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .left   { transform: rotateY(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .top    { transform: rotateX(90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+  .bottom { transform: rotateX(-90deg) translateZ(calc(var(--dice-size, 100px) / 2)); }
+
+  footer {
+    text-align: center;
+    padding: 15px;
+  }
+  #home-btn {
+    font-size: 1.5em;
+    padding: 15px 30px;
+    background: #ffb347;
+    color: #333333; /* 文字改深色 */
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+  #home-btn:hover {
+    background: #ffa500;
+  }
+</style>
 </head>
 <body>
-  <h1>咱來撚骰仔</h1>
-  <div class="controls">
-    <label for="diceCount">揀骰仔數量：</label>
-    <select id="diceCount">
-      <option value="1">1 顆</option>
-      <option value="2">2 顆</option>
-      <option value="3">3 顆</option>
-    </select>
-    <button onclick="rollDice()">撚骰仔</button>
-  </div>
-  <div id="dice-container"></div>
-  <div id="message">骰仔停，請講出郵票骰仔的台語地名。</div>
-  <div style="margin-top: 40px;">
-    <button onclick="goHome()">轉去遊戲頭頁</button>
-  </div>
+<header>
+  🎲 咱來撚骰仔 🎲
+</header>
 
-  <script>
-    function rollDice() {
-      const diceContainer = document.getElementById('dice-container');
-      diceContainer.innerHTML = '';
-      const diceCount = document.getElementById('diceCount').value;
+<div id="controls">
+  <label for="dice-count">骰子數量：</label>
+  <select id="dice-count">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+  </select>
+  <button id="roll-btn" onclick="rollDice()">撚骰仔</button>
+  <button id="reroll-btn" onclick="reroll()">重撚一擺</button>
+</div>
 
-      for (let i = 0; i < diceCount; i++) {
-        const dice = document.createElement('div');
-        dice.className = 'dice';
-        dice.textContent = '🎲';
-        diceContainer.appendChild(dice);
+<div id="dice-container"></div>
 
-        let rolls = 20; // 動畫次數
-        const interval = setInterval(() => {
-          const num = Math.floor(Math.random() * 6) + 1;
-          dice.textContent = num;
-          rolls--;
-          if (rolls === 0) {
-            clearInterval(interval);
-          }
-        }, 100);
+<footer>
+  <button id="home-btn" onclick="goHome()">轉去遊戲頭頁</button>
+</footer>
+
+<audio id="roll-sound" src="game8_assets/Roll the dice.mp3"></audio>
+<audio id="ding-sound" src="game8_assets/ding1.mp3"></audio>
+
+<script>
+const container = document.getElementById("dice-container");
+const rollSound = document.getElementById("roll-sound");
+const dingSound = document.getElementById("ding-sound");
+let diceCount = 1;
+let diceElements = [];
+
+document.getElementById("dice-count").addEventListener("change", (e) => {
+  diceCount = parseInt(e.target.value);
+  createDice();
+});
+
+function getLayout(count) {
+  switch(count) {
+    case 3: return [1,2];
+    case 4: return [2,2];
+    case 5: return [2,3];
+    case 6: return [3,3];
+    case 7: return [3,4];
+    default: return [count];
+  }
+}
+
+function calcDiceSize(rows, maxPerRow) {
+  const w = window.innerWidth;
+  const h = window.innerHeight * 0.6;
+  const sizeByWidth = w / (maxPerRow + 1);
+  const sizeByHeight = h / (rows + 1);
+  return Math.min(sizeByWidth, sizeByHeight, 150);
+}
+
+function createDice() {
+  container.innerHTML = "";
+  diceElements = [];
+
+  const layout = getLayout(diceCount);
+  const diceSize = calcDiceSize(layout.length, Math.max(...layout));
+
+  layout.forEach(rowCount => {
+    const row = document.createElement("div");
+    row.className = "row";
+    for (let i = 0; i < rowCount; i++) {
+      const dice = document.createElement("div");
+      dice.className = "dice";
+      dice.style.setProperty("--dice-size", diceSize + "px");
+
+      const used = new Set();
+      for (let face of ["front","back","right","left","top","bottom"]) {
+        let imgIndex;
+        do { imgIndex = Math.floor(Math.random() * 40) + 1; } while (used.has(imgIndex));
+        used.add(imgIndex);
+        const faceDiv = document.createElement("div");
+        faceDiv.className = "face " + face;
+        faceDiv.style.backgroundImage = `url('game8_assets/stamp${imgIndex}.jpg')`;
+        dice.appendChild(faceDiv);
       }
-    }
+      row.appendChild(dice);
+      diceElements.push(dice);
 
-    function goHome() {
-      window.location.href = "index.html"; // 修改為實際遊戲首頁檔案
+      dice.addEventListener("click", rollDice);
     }
-  </script>
+    container.appendChild(row);
+  });
+}
+
+function rollDice() {
+  rollSound.currentTime = 0;
+  rollSound.play();
+  diceElements.forEach(dice => {
+    let spin = 0;
+    const interval = setInterval(() => {
+      spin += 30;
+      dice.style.transform = `rotateX(${spin}deg) rotateY(${spin * 1.5}deg)`;
+    }, 50);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      const rotations = [
+        [0,0],[0,180],[0,90],[0,-90],[90,0],[-90,0]
+      ];
+      const choice = rotations[Math.floor(Math.random() * rotations.length)];
+      dice.style.transform = `rotateX(${choice[0]}deg) rotateY(${choice[1]}deg)`;
+      dingSound.currentTime = 0;
+      dingSound.play();
+    }, 2000 + Math.random() * 2000);
+  });
+}
+
+function reroll() { rollDice(); }
+function goHome() { window.location.href = "index.html"; }
+window.addEventListener("resize", () => createDice());
+
+createDice();
+</script>
 </body>
 </html>
