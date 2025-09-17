@@ -10,7 +10,7 @@
       background: #f0f0f0;
       margin: 0;
       padding: 0;
-      overflow: hidden; /* 移除捲軸 */
+      overflow: hidden;
     }
     h1 {
       margin: 10px 0;
@@ -22,27 +22,29 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
       width: 100%;
-      height: 60vh;
-      margin: auto;
+      height: 65vh;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
     }
     .dice-wrapper {
       display: flex;
-      justify-content: center;
-      align-items: center;
       flex-direction: column;
+      align-items: center;
       margin: 5px;
     }
     .dice {
-      width: 120px;
-      height: 120px;
       background-size: cover;
       background-position: center;
       border-radius: 12px;
       box-shadow: 4px 6px 12px rgba(0,0,0,0.3);
-      transition: transform 1s ease-out;
       cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 1s ease-out;
     }
     .player-label {
       margin-top: 5px;
@@ -56,6 +58,8 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       display: inline-block;
+      max-height: 20vh;
+      overflow-y: auto;
     }
     button {
       margin: 5px;
@@ -93,6 +97,7 @@
   <div id="dice-container"></div>
   <div id="results"></div>
 
+  <!-- 簡單叮聲 -->
   <audio id="ding-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
   <script>
@@ -105,49 +110,71 @@
       "https://upload.wikimedia.org/wikipedia/commons/9/9b/US_10_Cent_stamp_1847.jpg"
     ];
 
-    function createDice(num) {
+    function layoutDice(num) {
       const container = document.getElementById("dice-container");
       container.innerHTML = "";
-      let baseSize = 150 - num * 12; // 自動縮小，數量越多骰子越小
 
-      for (let i = 0; i < num; i++) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "dice-wrapper";
+      let baseSize = 160 - num * 12; // 自動縮放
+      let rows = [];
 
-        const dice = document.createElement("div");
-        dice.className = "dice";
-        dice.style.width = baseSize + "px";
-        dice.style.height = baseSize + "px";
-        dice.dataset.index = i + 1;
-        dice.onclick = rollDice;
+      // 設定排列矩陣
+      if (num === 1) rows = [[1]];
+      if (num === 2) rows = [[1],[1]];
+      if (num === 3) rows = [[1],[2]];
+      if (num === 4) rows = [[2],[2]];
+      if (num === 5) rows = [[2],[3]];
+      if (num === 6) rows = [[3],[3]];
+      if (num === 7) rows = [[3],[4]];
 
-        const label = document.createElement("div");
-        label.className = "player-label";
-        label.textContent = "玩家 " + (i + 1);
+      let player = 1;
+      rows.forEach(r => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "row";
+        for (let i = 0; i < r; i++) {
+          const wrapper = document.createElement("div");
+          wrapper.className = "dice-wrapper";
 
-        wrapper.appendChild(dice);
-        wrapper.appendChild(label);
-        container.appendChild(wrapper);
-      }
+          const dice = document.createElement("div");
+          dice.className = "dice";
+          dice.style.width = baseSize + "px";
+          dice.style.height = baseSize + "px";
+          dice.style.backgroundImage = `url(${diceImages[0]})`; // 預設有圖
+          dice.dataset.index = player;
+          dice.onclick = rollDice;
+
+          const label = document.createElement("div");
+          label.className = "player-label";
+          label.textContent = "玩家 " + player;
+
+          wrapper.appendChild(dice);
+          wrapper.appendChild(label);
+          rowDiv.appendChild(wrapper);
+          player++;
+        }
+        container.appendChild(rowDiv);
+      });
     }
 
     function rollDice() {
-      const num = parseInt(document.getElementById("dice-count").value);
       const dices = document.querySelectorAll(".dice");
       const resultsDiv = document.getElementById("results");
       resultsDiv.innerHTML = "";
       const sound = document.getElementById("ding-sound");
 
       dices.forEach(dice => {
-        // 模擬隨機骰子面
         const result = Math.floor(Math.random() * diceImages.length);
         const image = diceImages[result];
-        dice.style.transform = "rotate(720deg)";
+
+        // 模擬 3D 滾動
+        const rotX = 720 + Math.floor(Math.random()*360);
+        const rotY = 720 + Math.floor(Math.random()*360);
+        dice.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+
         setTimeout(() => {
           dice.style.backgroundImage = `url(${image})`;
-          dice.style.transform = "rotate(0deg)";
+          dice.style.transform = "rotateX(0deg) rotateY(0deg)";
           const player = dice.dataset.index;
-          resultsDiv.innerHTML += `玩家 ${player} → <img src="${image}" width="40"> <br>`;
+          resultsDiv.innerHTML += `玩家 ${player} → <img src="${image}" width="40"><br>`;
           sound.play();
         }, 1000);
       });
@@ -158,9 +185,9 @@
     }
 
     // 預設顯示 1 顆
-    createDice(1);
+    layoutDice(1);
     document.getElementById("dice-count").addEventListener("change", (e) => {
-      createDice(parseInt(e.target.value));
+      layoutDice(parseInt(e.target.value));
     });
   </script>
 </body>
