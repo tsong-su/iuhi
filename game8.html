@@ -1,462 +1,188 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>郵票骰子遊戲（完整版）</title>
+<meta charset="UTF-8">
+<title>咱來撚骰仔</title>
 <style>
-  :root{--bg:#f5eff8;--card:#f3dfff;--accent:#553c7b;}
-  html,body{height:100%;margin:0; padding:0; font-family:"Microsoft JhengHei","PingFang TC",sans-serif; background:var(--bg); overflow:hidden;}
-  .app{min-height:100%;display:flex;flex-direction:column;}
-  header{padding:12px 10px 6px 10px;text-align:center;}
-  h1{margin:0;font-size:1.4rem;color:var(--accent);}
-  .controls{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:8px 12px;}
-  .controls select,.controls button{font-size:1rem;padding:8px 14px;border-radius:10px;border:none;cursor:pointer;}
-  .controls button.primary{background:var(--accent);color:#fff;}
-  .middle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 10px;gap:10px;}
-  /* 中間容器：固定區域（避免出現縱向捲軸） */
-  .play-area{width:100%;max-width:980px;background:var(--card);border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,0.12);
-            padding:14px; display:flex; flex-direction:column; align-items:center; gap:8px; box-sizing:border-box;}
-  /* 上方提示 */
-  .hint{font-size:1rem;color:#333;margin-bottom:2px;}
-  /* 骰子容器：會放多行 .row */
-  #dice-container{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;}
-  .row{display:flex;justify-content:center;align-items:flex-end;gap:12px;flex-wrap:nowrap;}
-  .dice-wrapper{display:flex;flex-direction:column;align-items:center;}
-  .dice{
-    width:120px;height:120px;position:relative;transform-style:preserve-3d;
-    transition:transform 800ms cubic-bezier(.17,.67,.83,.67);
-    border-radius:10px;overflow:visible;
-  }
-  .face{
-    position:absolute;left:0;top:0;width:100%;height:100%;background-size:cover;background-position:center;
-    border-radius:8px;border:2px solid rgba(0,0,0,0.12);box-sizing:border-box;
-    backface-visibility:hidden;
-  }
-  /* face transforms use translateZ(var(--s)/2) via inline style */
-  .player-label{margin-top:8px;font-weight:700;color:#222;font-size:0.95rem;}
-  /* 結果區 */
-  #result-area{width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding-top:6px;}
-  .result-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.85);padding:6px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.04);}
-  .result-thumb{width:44px;height:44px;background-size:cover;background-position:center;border-radius:6px;border:1px solid #ddd;}
-  .result-text{font-size:0.95rem;color:#111;}
-  footer{padding:12px 10px 18px 10px;text-align:center;}
-  #home-btn{font-size:1.05rem;padding:12px 26px;border-radius:12px;border:none;background:var(--accent);color:#fff;cursor:pointer;}
-  /* responsive tweaks */
-  @media (max-width:640px){
-    .dice{width:88px;height:88px;}
-    .controls select,.controls button{font-size:0.95rem;padding:8px 10px;}
-    .player-label{font-size:0.95rem;}
-    #home-btn{font-size:1.05rem;padding:12px 20px;}
-    .play-area{padding:12px;}
-  }
+*{box-sizing:border-box;}
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+  background:#f5e6fa;
+  color:#444;
+  overflow:hidden; /* 🚫 禁止捲軸 */
+  display:flex;
+  flex-direction:column;
+}
+.top-section{text-align:center;padding:8px 0 0 0;}
+h1{margin:0;font-size:2em;color:#553c7b;font-weight:600;}
+.top-section p{margin:4px 0 8px 0;font-size:17px;color:#666;}
+.btn-container{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:4px;}
+button{font-size:15px;padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;color:#fff;transition: transform 0.15s ease, opacity 0.2s;}
+button:hover{transform:scale(1.08);opacity:0.9;}
+.btn1{background:#d17b88;} .btn2{background:#d49b6a;} .btn3{background:#e6c16a;color:#333;}
+.btn4{background:#7cb67c;} .btn5{background:#6a9ed4;} .btn6{background:#8a6ad4;} .btn7{background:#d46aba;}
+.home-btn{background:#553c7b;margin:10px auto 12px auto;padding:14px 28px;font-size:20px;border-radius:10px;display:block;}
+
+.middle-section{
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  max-height:100%;
+}
+#three-container{
+  width:80vmin;
+  max-width:520px;
+  aspect-ratio:1/1;
+  background:#f3dfff;
+  border-radius:24px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position: relative;
+  overflow:hidden; /* 確保骰子不超出 */
+}
+.bottom-section{padding:6px 0 10px 0;text-align:center;}
+.hint{font-size:18px;font-weight:500;color:#333;margin:4px 0 6px 0;}
+.label{
+  position:absolute;
+  color:#222;
+  font-weight:bold;
+  font-size:18px;
+  text-shadow:1px 1px 2px #fff;
+}
 </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>咱來撚骰仔 — 郵票材質</h1>
-    </header>
+<div class="top-section">
+<h1>咱來撚骰仔</h1>
+<p>欲撚幾粒骰仔，在你揀。</p>
+<div class="btn-container">
+  <button class="btn1" onclick="rollDice(1)">1粒</button>
+  <button class="btn2" onclick="rollDice(2)">2粒</button>
+  <button class="btn3" onclick="rollDice(3)">3粒</button>
+  <button class="btn4" onclick="rollDice(4)">4粒</button>
+  <button class="btn5" onclick="rollDice(5)">5粒</button>
+  <button class="btn6" onclick="rollDice(6)">6粒</button>
+  <button class="btn7" onclick="rollDice(7)">7粒</button>
+</div>
+</div>
 
-    <div class="controls" aria-hidden="false">
-      <label for="dice-count">骰子數量：</label>
-      <select id="dice-count" aria-label="骰子數量">
-        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-        <option value="7">7</option>
-      </select>
-      <button id="roll-btn" class="primary">丟骰子</button>
-      <button id="reroll-btn" style="display:none">重新丟一次</button>
-    </div>
+<div class="middle-section">
+  <div id="three-container"></div>
+</div>
 
-    <main class="middle">
-      <div class="play-area" id="play-area">
-        <div class="hint">選好顆數後，點「丟骰子」。骰子會滾動並自然停下，停下時固定一面朝上。</div>
-        <div id="dice-container" role="region" aria-live="polite"></div>
-        <div id="result-area" aria-hidden="false"></div>
-      </div>
-    </main>
+<div class="bottom-section">
+  <button class="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+</div>
 
-    <footer>
-      <button id="home-btn" onclick="location.href='index.html'">轉去遊戲頭頁</button>
-    </footer>
-  </div>
-
-  <!-- 音效 -->
-  <audio id="roll-audio" src="game8_assets/Roll the dice.mp3" preload="auto"></audio>
-  <audio id="ding-audio" src="game8_assets/ding1.mp3" preload="auto"></audio>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script>
-/* ---------- 參數與資源 ---------- */
-const STAMP_COUNT = 40; // stamp1.jpg..stamp40.jpg
-const stampPath = i => `game8_assets/stamp${i}.jpg`;
-const diceCountSelect = document.getElementById('dice-count');
-const rollBtn = document.getElementById('roll-btn');
-const rerollBtn = document.getElementById('reroll-btn');
-const diceContainer = document.getElementById('dice-container');
-const resultArea = document.getElementById('result-area');
-const rollAudio = document.getElementById('roll-audio');
-const dingAudio = document.getElementById('ding-audio');
-let diceCount = parseInt(diceCountSelect.value,10);
-let diceModels = []; // {wrapper, diceEl, faces: [img...], currentRot:{x,y}, speed:{x,y}, targetFace}
+let scene,camera,renderer,dice=[],rolling=false;
+let rollAudio=new Audio("game8_assets/Roll the dice.mp3");
+let dingAudio=new Audio("game8_assets/ding1.mp3");
+let textures=[];
 
-/* ---------- 排列規則（回傳每列的顆數陣列） ---------- */
-function getLayout(n){
-  switch(n){
-    case 1: return [1];
-    case 2: return [1,1];
-    case 3: return [1,2];
-    case 4: return [2,2];
-    case 5: return [2,3];
-    case 6: return [3,3];
-    case 7: return [3,4];
-    default: return [n];
-  }
+const loader=new THREE.TextureLoader();
+for(let i=1;i<=40;i++){
+  textures[i]=loader.load(`game8_assets/stamp${i}.jpg`);
 }
 
-/* ---------- 計算骰子大小（依視窗與盤面） ---------- */
-function calcDiceSize(layout){
-  const playArea = document.getElementById('play-area');
-  const padH = 40; // play-area 裡預留空間 (controls+hint)
-  const maxWidth = Math.min(playArea.clientWidth, window.innerWidth - 20);
-  // 估算可用高度：playArea 高度減提示和結果區（大約）
-  const maxHeight = Math.max( (window.innerHeight * 0.6) , 220);
-  const rows = layout.length;
-  const maxPerRow = Math.max(...layout);
-  // 留 gap 與 label 空間
-  const gap = 12 * (maxPerRow - 1);
-  const availW = maxWidth - 40; // 兩側內距
-  const sizeByWidth = (availW - gap) / Math.max(1, maxPerRow);
-  const sizeByHeight = (maxHeight - (rows * 40)) / Math.max(1, rows); // 每列約留 40px label/間距
-  let base = Math.floor(Math.min(sizeByWidth, sizeByHeight, 220));
-  // 顆數越少 → 顯示越大（scale）
-  const total = diceCount;
-  const scale = 1 + (1 - total/7) * 0.9; // 1顆會約放大近1.9倍，7顆 scale≈1
-  base = Math.max(56, Math.floor(base * scale)); // 設定最小 56px，避免太小
-  // 做上下限制，避免超出畫面
-  const maxAllowed = Math.floor(Math.min(availW, maxHeight) * 0.9);
-  base = Math.min(base, maxAllowed);
-  return base;
+init();
+
+function init(){
+  scene=new THREE.Scene();
+  const box=document.getElementById("three-container");
+  const width=box.clientWidth;
+  const height=box.clientHeight;
+  camera=new THREE.PerspectiveCamera(45,width/height,0.1,1000);
+  camera.position.set(0,5,15);
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setSize(width,height);
+  box.appendChild(renderer.domElement);
+
+  const light=new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(10,14,10).normalize();
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x999999));
+
+  animate();
+  window.addEventListener("resize",onWindowResize,false);
 }
 
-/* ---------- 產生一顆骰子的 DOM 與資料結構 ---------- */
-function createSingleDice(faceImgs, sizePx, playerIndex){
-  const wrapper = document.createElement('div');
-  wrapper.className = 'dice-wrapper';
-  // dice element
-  const dice = document.createElement('div');
-  dice.className = 'dice';
-  dice.style.width = sizePx + 'px';
-  dice.style.height = sizePx + 'px';
-  // faces: front, back, right, left, top, bottom
-  const transforms = [
-    `translateZ(${sizePx/2}px) rotateY(0deg)`,       // front
-    `translateZ(${sizePx/2}px) rotateY(180deg)`,     // back
-    `translateZ(${sizePx/2}px) rotateY(90deg)`,      // right
-    `translateZ(${sizePx/2}px) rotateY(-90deg)`,     // left
-    `translateZ(${sizePx/2}px) rotateX(90deg)`,      // top
-    `translateZ(${sizePx/2}px) rotateX(-90deg)`      // bottom
-  ];
-  for(let i=0;i<6;i++){
-    const f = document.createElement('div');
-    f.className = 'face';
-    f.style.transform = transforms[i];
-    f.style.backgroundImage = `url("${faceImgs[i]}")`;
-    dice.appendChild(f);
-  }
-  // player label
-  const label = document.createElement('div');
-  label.className = 'player-label';
-  label.textContent = `玩家 ${playerIndex}`;
-
-  wrapper.appendChild(dice);
-  wrapper.appendChild(label);
-  return {wrapper, dice, label, faces: faceImgs};
+function onWindowResize(){
+  const box=document.getElementById("three-container");
+  camera.aspect=box.clientWidth/box.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(box.clientWidth,box.clientHeight);
 }
 
-/* ---------- 生成整體骰子區塊 ---------- */
-function buildDiceLayout(){
-  diceContainer.innerHTML = '';
-  resultArea.innerHTML = '';
-  diceModels = [];
-  const layout = getLayout(diceCount);
-  const size = calcDiceSize(layout);
-  let playerIndex = 0;
-  layout.forEach(rowCount => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    for(let i=0;i<rowCount;i++){
-      playerIndex++;
-      // 隨機挑 6 張不同郵票
-      const used = new Set();
-      const faceImgs = [];
-      while(faceImgs.length < 6){
-        const idx = Math.floor(Math.random() * STAMP_COUNT) + 1;
-        if(!used.has(idx)){ used.add(idx); faceImgs.push(stampPath(idx)); }
-      }
-      const model = createSingleDice(faceImgs, size, playerIndex);
-      row.appendChild(model.wrapper);
-      diceContainer.appendChild(row); // append row many times ok (we append same row while loop)
-      diceModels.push({
-        wrapper: model.wrapper,
-        diceEl: model.dice,
-        faces: model.faces,
-        current: {x: degRandom(0,360), y: degRandom(0,360)},
-        speed: {x:0, y:0},
-        targetFace: null,
-        player: playerIndex
-      });
+function createDice(num){
+  dice.forEach(d=>scene.remove(d.mesh));
+  dice=[];
+  const container=document.getElementById("three-container");
+  [...container.querySelectorAll(".label")].forEach(l=>l.remove());
+
+  // 動態縮放大小
+  const baseSize=3;
+  const size=baseSize*(1.2-Math.min(num,7)/10); 
+
+  // 排列方式 (像玩家桌面)
+  let rows,cols;
+  if(num===1){rows=1;cols=1;}
+  else if(num===2){rows=2;cols=1;}
+  else if(num===3){rows=2;cols=2;}
+  else if(num===4){rows=2;cols=2;}
+  else if(num===5){rows=2;cols=3;}
+  else if(num===6){rows=2;cols=3;}
+  else if(num===7){rows=2;cols=4;}
+
+  const gap=0.5*size;
+  const offsetX=(cols-1)*(size+gap)/2;
+  const offsetY=(rows-1)*(size+gap)/2;
+
+  for(let i=0;i<num;i++){
+    const mats=[];
+    for(let f=0;f<6;f++){
+      let id=Math.floor(Math.random()*40)+1;
+      mats.push(new THREE.MeshLambertMaterial({map:textures[id]}));
     }
-    // NOTE: we appended row repeatedly; ensure only one row appended (fix)
-    // To avoid duplicate append, remove the last extra row append
-    // But simpler: build rows first, then append — above we appended each time; correct below by removing duplicates:
-    // We'll rebuild properly: clear and reconstruct below to avoid DOM duplication.
+    const cube=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),mats);
+    let row=Math.floor(i/cols);
+    let col=i%cols;
+    cube.position.set(col*(size+gap)-offsetX, -row*(size+gap)+offsetY, 0);
+    cube.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+    scene.add(cube);
+
+    // 標籤
+    const label=document.createElement("div");
+    label.className="label";
+    label.innerText=(i+1);
+    container.appendChild(label);
+    dice.push({mesh:cube,label:label});
   }
+  updateLabels();
+}
 
-  // Because above logic appended row inside loop wrongly, rebuild properly:
-  diceContainer.innerHTML = '';
-  diceModels = [];
-  playerIndex = 0;
-  layout.forEach(rowCount => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    for(let i=0;i<rowCount;i++){
-      playerIndex++;
-      const used = new Set();
-      const faceImgs = [];
-      while(faceImgs.length < 6){
-        const idx = Math.floor(Math.random() * STAMP_COUNT) + 1;
-        if(!used.has(idx)){ used.add(idx); faceImgs.push(stampPath(idx)); }
-      }
-      const model = createSingleDice(faceImgs, size, playerIndex);
-      row.appendChild(model.wrapper);
-      diceModels.push({
-        wrapper: model.wrapper,
-        diceEl: model.dice,
-        faces: model.faces,
-        current: {x: degRandom(0,360), y: degRandom(0,360)},
-        speed: {x:0, y:0},
-        targetFace: null,
-        player: playerIndex
-      });
-    }
-    diceContainer.appendChild(row);
-  });
-
-  // set dice sizes and face translateZ updated (in case)
-  diceModels.forEach(m=>{
-    m.diceEl.style.width = size + 'px';
-    m.diceEl.style.height = size + 'px';
-    // update each face translateZ value to half of size
-    const faceEls = m.diceEl.querySelectorAll('.face');
-    faceEls.forEach((fe, idx)=>{
-      // compute corresponding transform (same order)
-      const t = [
-        `translateZ(${size/2}px) rotateY(0deg)`,
-        `translateZ(${size/2}px) rotateY(180deg)`,
-        `translateZ(${size/2}px) rotateY(90deg)`,
-        `translateZ(${size/2}px) rotateY(-90deg)`,
-        `translateZ(${size/2}px) rotateX(90deg)`,
-        `translateZ(${size/2}px) rotateX(-90deg)`
-      ][idx];
-      fe.style.transform = t;
-    });
+function updateLabels(){
+  const box=document.getElementById("three-container");
+  dice.forEach(d=>{
+    const vector=d.mesh.position.clone().project(camera);
+    const x=(vector.x*0.5+0.5)*box.clientWidth;
+    const y=(-vector.y*0.5+0.5)*box.clientHeight;
+    d.label.style.left=`${x}px`;
+    d.label.style.top=`${y+40}px`;
   });
 }
 
-/* ---------- 工具函數 ---------- */
-function degRandom(a,b){ return a + Math.random()*(b-a); }
-function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
+function rollDice(num){
+  if(rolling) return;
+  rolling=true;
+  rollAudio.currentTime=0; rollAudio.play();
+  createDice(num);
 
-/* ---------- 丟骰動畫（使用 requestAnimationFrame） ---------- */
-/*
-  流程：
-  1. 建立初始速度（隨機）並開始播放 rollAudio（loop）
-  2. 每幀速度乘 damping，並把 rotation 加上速度
-  3. 到達指定「減速階段」後（由時間與速度綜合判定），決定 target face 並平滑轉到對應角度
-  4. 停穩後播放 dingAudio，並顯示結果
-*/
-let animating = false;
-function startRoll(){
-  if(animating) return;
-  animating = true;
-  resultArea.innerHTML = '';
-  rerollBtn.style.display = 'none';
-  rollBtn.disabled = true;
-
-  // 初始化速度
-  diceModels.forEach(m=>{
-    m.speed.x = (Math.random()*18 + 18) * (Math.random()<0.5?1:-1); // deg/frame * some factor
-    m.speed.y = (Math.random()*14 + 14) * (Math.random()<0.5?1:-1);
-    // randomize a bit in z? (we use only x,y)
-    m.current.x = degRandom(0,360);
-    m.current.y = degRandom(0,360);
-    m.targetFace = null; // not decided yet
-  });
-
-  // audio
-  try{ rollAudio.currentTime = 0; rollAudio.play(); }catch(e){}
-
-  const startTime = performance.now();
-  const maxRollingMs = 2400 + Math.random()*1200; // 2.4s - 3.6s random
-  const damping = 0.96; // speed damping per frame
-  let lastTime = startTime;
-
-  function frame(now){
-    const dt = now - lastTime;
-    lastTime = now;
-    // update each dice
-    let allDecided = true;
-    diceModels.forEach(m=>{
-      // apply speeds (scale with dt)
-      // speeds are in deg per frame unit ~ assume 16ms baseline → scale factor:
-      const scale = dt / 16.6667;
-      m.current.x += m.speed.x * scale;
-      m.current.y += m.speed.y * scale;
-      // apply damping
-      m.speed.x *= Math.pow(damping, scale);
-      m.speed.y *= Math.pow(damping, scale);
-
-      // update transform immediately
-      m.diceEl.style.transform = `rotateX(${m.current.x}deg) rotateY(${m.current.y}deg)`;
-
-      // check if time to decide target face
-      if(m.targetFace === null){
-        // decide when speeds are low or time passed
-        const speedMag = Math.hypot(m.speed.x, m.speed.y);
-        if(now - startTime > maxRollingMs || speedMag < 6){ // threshold
-          // pick a random face to be up
-          m.targetFace = randInt(0,5);
-          // compute target rotation (choose nearest equivalent)
-          // target rotations (deg): front [0,0], back [0,180], right [0,90], left [0,-90], top [90,0], bottom [-90,0]
-          const targets = [
-            {x:0,y:0},{x:0,y:180},{x:0,y:90},{x:0,y:-90},{x:90,y:0},{x:-90,y:0}
-          ][m.targetFace];
-          // normalize current to range near target by adding multiples of 360 for smooth transition
-          // compute minimal delta to rotate to target: we want to animate from current to target by shortest path
-          m.startRot = {x: m.current.x, y: m.current.y};
-          m.endRot = {
-            x: chooseClosestAngle(m.current.x, targets.x),
-            y: chooseClosestAngle(m.current.y, targets.y)
-          };
-          // Over-rotate a bit for realism (add some extra spins) — optional
-          const extraSpins = 360 * (1 + Math.random()*1); // 360 ~ 720 deg extra
-          m.endRot.y += extraSpins * (Math.random()<0.5 ? 1 : -1);
-          m.decelStart = now;
-          m.decelDuration = 700 + Math.random()*400; // ms to reach final
-        } else {
-          allDecided = false;
-        }
-      } else {
-        // already decided, but we need to animate toward endRot until reach
-        allDecided = allDecided && (Math.abs(normalizeDeg(m.current.x - m.endRot.x)) < 0.8 && Math.abs(normalizeDeg(m.current.y - m.endRot.y)) < 0.8);
-      }
-    });
-
-    // After deciding targets, handle per-dice interpolation to endRot
-    diceModels.forEach(m=>{
-      if(m.targetFace !== null && m.decelStart){
-        const t = Math.min(1, (now - m.decelStart) / m.decelDuration);
-        const eased = easeOutCubic(t);
-        const newX = lerpAngle(m.startRot.x, m.endRot.x, eased);
-        const newY = lerpAngle(m.startRot.y, m.endRot.y, eased);
-        m.current.x = newX;
-        m.current.y = newY;
-        m.diceEl.style.transform = `rotateX(${m.current.x}deg) rotateY(${m.current.y}deg)`;
-      }
-    });
-
-    // If all dice have decided and close to end, finish
-    const allSettled = diceModels.every(m => m.targetFace !== null && Math.abs(normalizeDeg(m.current.x - m.endRot.x)) < 0.8 && Math.abs(normalizeDeg(m.current.y - m.endRot.y)) < 0.8);
-    if(!allSettled){
-      requestAnimationFrame(frame);
-    } else {
-      // play ding, stop roll audio
-      try{ rollAudio.pause(); }catch(e){}
-      try{ dingAudio.currentTime = 0; dingAudio.play(); }catch(e){}
-      animating = false;
-      rollBtn.disabled = false;
-      rerollBtn.style.display = 'inline-block';
-      // show results
-      showResults();
-    }
-  }
-
-  requestAnimationFrame(frame);
-}
-
-/* ---------- 輔助數學函式 ---------- */
-function normalizeDeg(a){
-  // wrap to -180..180
-  let v = ((a + 180) % 360) - 180;
-  if(v < -180) v += 360;
-  return v;
-}
-function chooseClosestAngle(current, target){
-  // find angle (target + 360*k) that's closest to current
-  const base = target;
-  let best = base;
-  let bestDiff = Math.abs(normalizeDeg(current - base));
-  for(let k=-2;k<=2;k++){
-    const cand = base + 360*k;
-    const d = Math.abs(normalizeDeg(current - cand));
-    if(d < bestDiff){ best = cand; bestDiff = d; }
-  }
-  return best;
-}
-function lerpAngle(a,b,t){
-  // linear interpolation on angles, a and b can be large. We interpolate numerically.
-  return a + (b - a) * t;
-}
-function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-
-/* ---------- 顯示結果（每顆朝上那面的小縮圖 + 玩家編號） ---------- */
-function showResults(){
-  resultArea.innerHTML = '';
-  diceModels.forEach(m=>{
-    const idx = m.targetFace; // 0..5
-    const img = m.faces[idx];
-    const it = document.createElement('div');
-    it.className = 'result-item';
-    const thumb = document.createElement('div');
-    thumb.className = 'result-thumb';
-    thumb.style.backgroundImage = `url('${img}')`;
-    const txt = document.createElement('div');
-    txt.className = 'result-text';
-    txt.textContent = `玩家 ${m.player}`;
-    it.appendChild(thumb);
-    it.appendChild(txt);
-    resultArea.appendChild(it);
-  });
-}
-
-/* ---------- 事件處理與初始化 ---------- */
-diceCountSelect.addEventListener('change', ()=> {
-  diceCount = parseInt(diceCountSelect.value,10);
-  buildDiceLayout();
-});
-
-rollBtn.addEventListener('click', ()=>{
-  // if not built yet or changed, ensure layout exists
-  if(diceModels.length === 0) buildDiceLayout();
-  startRoll();
-});
-rerollBtn.addEventListener('click', ()=>{
-  if(diceModels.length === 0) buildDiceLayout();
-  startRoll();
-});
-
-// Respond to resize: rebuild layout to recalc sizes and avoid overflow
-let resizeTimer = null;
-window.addEventListener('resize', ()=>{
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(()=>{ buildDiceLayout(); }, 120);
-});
-
-// initial build
-buildDiceLayout();
-
-/* ---------- End of script ---------- */
-</script>
-</body>
-</html>
+  const speeds=dice.map
