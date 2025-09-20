@@ -1,1 +1,220 @@
 
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>華台水果語詞配對</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #fff7e6; /* 活潑亮色 */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      color: #d35400;
+      margin-top: 20px;
+    }
+    p {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #game {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+    }
+    .column {
+      width: 40%;
+      min-height: 400px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    #chinese {
+      background-color: #ffeaa7;
+    }
+    #taiwanese {
+      background-color: #a8e6cf;
+    }
+    .word {
+      background-color: white;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: grab;
+      font-size: 18px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+    .matched {
+      background-color: #55efc4 !important;
+      color: white !important;
+      cursor: default;
+    }
+    .buttons {
+      margin: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+    #restartBtn { background-color: #0984e3; }
+    #nextBtn { background-color: #6c5ce7; }
+    #homeBtn { background-color: #d63031; }
+    #result {
+      font-size: 32px;
+      color: #e67e22;
+      margin-top: 20px;
+      font-weight: bold;
+      animation: grow 2s forwards;
+      display: none;
+    }
+    @keyframes grow {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1.5); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h1>華台水果語詞配對</h1>
+  <p>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</p>
+  
+  <div id="menu">
+    <button onclick="startGame('part1')">開始 Part 1</button>
+    <button onclick="startGame('part2')">開始 Part 2</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <div id="chinese" class="column"></div>
+    <div id="taiwanese" class="column"></div>
+  </div>
+
+  <div id="result">有夠 gâu！</div>
+
+  <div class="buttons" style="display:none;" id="buttons">
+    <button id="restartBtn" onclick="restartGame()">重新開始</button>
+    <button id="nextBtn" onclick="nextPart()">下一部份</button>
+    <button id="homeBtn" onclick="location.href='index.html'">回首頁</button>
+  </div>
+
+  <audio id="successSound" src="game9_assets/victory1.mp3"></audio>
+  <audio id="errorSound" src="game9_assets/wrong2.mp3"></audio>
+
+  <script>
+    let currentPart = "";
+    let words = [];
+    let matchedCount = 0;
+
+    async function startGame(part) {
+      currentPart = part;
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("game").style.display = "flex";
+      document.getElementById("buttons").style.display = "block";
+      document.getElementById("result").style.display = "none";
+      matchedCount = 0;
+
+      const response = await fetch(`game9_assets/fruits_${part}.json`);
+      words = await response.json();
+
+      renderGame();
+    }
+
+    function renderGame() {
+      const chineseCol = document.getElementById("chinese");
+      const taiwaneseCol = document.getElementById("taiwanese");
+      chineseCol.innerHTML = "";
+      taiwaneseCol.innerHTML = "";
+
+      let chineseWords = [...words];
+      let taiwaneseWords = [...words];
+      shuffle(chineseWords);
+      shuffle(taiwaneseWords);
+
+      chineseWords.forEach(word => {
+        const div = document.createElement("div");
+        div.className = "word";
+        div.textContent = word.chinese;
+        div.draggable = true;
+        div.dataset.id = word.id;
+        div.ondragstart = drag;
+        chineseCol.appendChild(div);
+      });
+
+      taiwaneseWords.forEach(word => {
+        const div = document.createElement("div");
+        div.className = "word";
+        div.textContent = word.taiwanese;
+        div.dataset.id = word.id;
+        div.dataset.audio = word.audio;
+        div.dataset.link = word.link;
+        div.ondrop = drop;
+        div.ondragover = allowDrop;
+        div.onclick = () => {
+          window.open(word.link, "_blank");
+          playAudio(word.audio);
+        };
+        taiwaneseCol.appendChild(div);
+      });
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.dataset.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      let chineseId = ev.dataTransfer.getData("text");
+      let taiwaneseId = ev.target.dataset.id;
+
+      if (chineseId === taiwaneseId) {
+        ev.target.classList.add("matched");
+        let chineseDiv = document.querySelector(`#chinese .word[data-id='${chineseId}']`);
+        chineseDiv.classList.add("matched");
+        playAudio(ev.target.dataset.audio);
+        matchedCount++;
+        if (matchedCount === words.length) {
+          document.getElementById("successSound").play();
+          document.getElementById("result").style.display = "block";
+        }
+      } else {
+        document.getElementById("errorSound").play();
+      }
+    }
+
+    function playAudio(url) {
+      const audio = new Audio(url);
+      audio.play();
+    }
+
+    function restartGame() {
+      startGame(currentPart);
+    }
+
+    function nextPart() {
+      if (currentPart === "part1") {
+        startGame("part2");
+      } else {
+        startGame("part1");
+      }
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+  </script>
+</body>
+</html>
