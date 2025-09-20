@@ -9,86 +9,48 @@ body {
   margin: 0; padding: 0;
   font-family: "Microsoft JhengHei", sans-serif;
   background-color: #fff8e7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center;
   min-height: 100vh;
 }
 header {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; justify-content: center; align-items: center;
   margin: 20px 0 10px;
 }
 header img {
-  height: 60px;
-  margin: 0 20px;
+  height: 60px; margin: 0 20px;
 }
 h1 {
-  color: #d35400;
-  font-size: 2em;
-  margin: 0;
+  color: #d35400; font-size: 2em; margin: 0;
 }
 h2 {
-  color: #2c3e50;
-  font-size: 1em;
-  margin: 5px 0 15px;
+  color: #2c3e50; font-size: 1em; margin: 5px 0 15px;
 }
 main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 1000px;
-  padding: 10px;
+  flex: 1; display: flex; justify-content: center; align-items: flex-start;
+  width: 100%; max-width: 1000px; padding: 10px;
 }
 .column {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
+  flex: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px;
 }
 .word {
-  border: 2px solid #333;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 1em;
-  cursor: pointer;
-  user-select: none;
-  text-align: center;
-  background-color: #fefefe;
-  min-width: 70px;
+  border: 2px solid #333; border-radius: 8px; padding: 8px 12px;
+  font-size: 1em; cursor: pointer; user-select: none; text-align: center; background-color: #fefefe;
 }
 .hua { background-color: #ffeb99; }
 .tai { background-color: #c5eff7; }
 .selected { border: 3px solid #e74c3c; }
-.matched { color:white; pointer-events: none; }
-footer {
-  margin: 15px 0;
+.matched { color: white; pointer-events: none; }
+#message {
+  font-size: 1.5em; color: #27ae60; margin: 10px; font-weight: bold; transition: all 1s ease;
 }
+footer { margin: 15px 0; }
 button {
-  padding: 8px 16px;
-  margin: 0 5px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1em;
-  color: white;
+  padding: 8px 16px; margin: 0 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 1em; color: white;
 }
 #restart { background-color: #3498db; }
 #next { background-color: #e67e22; }
 #home { background-color: #2ecc71; }
-#message {
-  font-size: 1.5em;
-  color: #27ae60;
-  margin: 10px;
-  font-weight: bold;
-  transition: font-size 1s;
-}
 @media (max-width: 768px) {
   main { flex-direction: column; align-items: center; }
   .column { flex-direction: row; flex-wrap: wrap; }
@@ -97,9 +59,9 @@ button {
 </head>
 <body>
 <header>
-  <img id="left-fruit" src="game9_assets/fruit_left.png" alt="fruit left">
+  <img id="left-fruit" src="" alt="fruit left">
   <h1>華台水果語詞配對</h1>
-  <img id="right-fruit" src="game9_assets/fruit_right.png" alt="fruit right">
+  <img id="right-fruit" src="" alt="fruit right">
 </header>
 <h2>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</h2>
 <main>
@@ -112,7 +74,6 @@ button {
   <button id="next">後一部份</button>
   <button id="home" onclick="location.href='index.html'">轉去頭頁</button>
 </footer>
-
 <audio id="audio-player"></audio>
 <audio id="effect-correct" src="game9_assets/victory1.mp3"></audio>
 <audio id="effect-wrong" src="game9_assets/wrong2.mp3"></audio>
@@ -122,59 +83,60 @@ let huaData=[], taiData=[];
 let selectedHua=null, selectedTai=null;
 let matchedCount=0;
 let currentPart=1;
-let colors = ["#e74c3c","#8e44ad","#3498db","#16a085","#f39c12","#d35400","#2c3e50","#c0392b","#27ae60","#2980b9","#f1c40f","#d35400","#1abc9c","#9b59b6","#e67e22","#2ecc71","#34495e"];
 
-function shuffleArray(array){
-  for(let i=array.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [array[i],array[j]]=[array[j],array[i]];
-  }
+// 成功配對顏色
+const colors=[
+"#e6194b","#3cb44b","#ffe119","#0082c8","#f58231","#911eb4","#46f0f0",
+"#f032e6","#d2f53c","#fabebe","#008080","#e6beff","#aa6e28","#fffac8",
+"#800000","#aaffc3","#808000"
+];
+
+const fruits=["fruit_left.png","fruit_left1.png","fruit_right.png","fruit_right1.png"];
+
+function randomFruit(id){
+  document.getElementById(id).src="game9_assets/"+fruits[Math.floor(Math.random()*fruits.length)];
 }
 
 async function loadPart(part){
   currentPart=part;
-  // 隨機左右水果圖
-  document.getElementById("left-fruit").src = Math.random()>0.5 ? "game9_assets/fruit_left.png":"game9_assets/fruit_left1.png";
-  document.getElementById("right-fruit").src = Math.random()>0.5 ? "game9_assets/fruit_right.png":"game9_assets/fruit_right1.png";
+  randomFruit("left-fruit");
+  randomFruit("right-fruit");
   const res = await fetch(`game9_assets/fruits_part${part}.json`);
   const data = await res.json();
   setupGame(data);
 }
 
 function setupGame(data){
-  huaData = data.map(item=>({id:item.id,text:item.chinese,audio:item.audio,link:item.link}));
-  taiData = data.map(item=>({id:item.id,text:item.taiwanese,audio:item.audio,link:item.link}));
+  huaData=data.map(item=>({id:item.id,text:item.chinese}));
+  taiData=data.map(item=>({id:item.id,text:item.taiwanese,link:item.link,audio:item.audio}));
 
   shuffleArray(huaData);
   shuffleArray(taiData);
 
   const huaCol=document.getElementById("hua-col");
   const taiCol=document.getElementById("tai-col");
-  huaCol.innerHTML="";
-  taiCol.innerHTML="";
+  huaCol.innerHTML=""; taiCol.innerHTML="";
   matchedCount=0;
   document.getElementById("message").textContent="";
 
-  huaData.forEach((item,index)=>{
+  huaData.forEach((item,i)=>{
     const div=document.createElement("div");
     div.className="word hua";
     div.textContent=item.text;
     div.dataset.id=item.id;
-    div.dataset.audio=item.audio;
-    div.dataset.link=item.link;
-    div.dataset.color=colors[index % colors.length];
+    div.dataset.color=colors[i%colors.length];
     div.onclick=()=>selectHua(div);
     huaCol.appendChild(div);
   });
 
-  taiData.forEach((item,index)=>{
+  taiData.forEach((item,i)=>{
     const div=document.createElement("div");
     div.className="word tai";
     div.textContent=item.text;
     div.dataset.id=item.id;
+    div.dataset.color=colors[i%colors.length];
     div.dataset.audio=item.audio;
     div.dataset.link=item.link;
-    div.dataset.color=colors[index % colors.length];
     div.onclick=()=>selectTai(div);
     taiCol.appendChild(div);
   });
@@ -198,22 +160,22 @@ function selectTai(el){
 
 function checkMatch(){
   if(!selectedHua || !selectedTai) return;
-  if(selectedHua.dataset.id === selectedTai.dataset.id){
+  if(selectedHua.dataset.id===selectedTai.dataset.id){
     const color=selectedHua.dataset.color;
     selectedHua.classList.add("matched");
     selectedTai.classList.add("matched");
     selectedHua.style.backgroundColor=color;
     selectedTai.style.backgroundColor=color;
 
-    // 播放台語音檔
     playAudio(selectedTai.dataset.audio);
-
-    // 台語詞加上教典連結
     selectedTai.innerHTML=`<a href="${selectedTai.dataset.link}" target="_blank" style="color:white;text-decoration:underline;">${selectedTai.textContent}</a>`;
 
     matchedCount++;
-    animateMessage("有夠 gâu！");
     resetSelection();
+    if(matchedCount===huaData.length){
+      animateMessage("有夠 gâu！");
+      document.getElementById("effect-correct").play();
+    }
   } else {
     document.getElementById("effect-wrong").play();
     resetSelection();
@@ -233,17 +195,24 @@ function resetSelection(){
   selectedTai=null;
 }
 
-function animateMessage(text){
-  const msg=document.getElementById("message");
-  msg.textContent=text;
-  msg.style.fontSize="1.5em";
-  document.getElementById("effect-correct").play();
-  let size=24;
+function shuffleArray(array){
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+}
+
+function animateMessage(msg){
+  const el=document.getElementById("message");
+  el.textContent=msg;
+  el.style.fontSize="1em";
+  el.style.opacity="1";
+  let size=1;
   const interval=setInterval(()=>{
-    if(size>=48){ clearInterval(interval); return;}
-    size++;
-    msg.style.fontSize=size+"px";
-  },20);
+    size+=0.05;
+    el.style.fontSize=size+"em";
+    if(size>=3){ clearInterval(interval); }
+  },50);
 }
 
 document.getElementById("restart").onclick=()=>loadPart(currentPart);
