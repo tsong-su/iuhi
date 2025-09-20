@@ -23,7 +23,7 @@
       margin: 20px 0 10px;
     }
     header img {
-      height: 60px;
+      height: 70px;
       margin: 0 20px;
     }
     h1 {
@@ -39,7 +39,7 @@
     main {
       flex: 1;
       display: flex;
-      justify-content: center;
+      justify-content: space-around;
       align-items: flex-start;
       width: 100%;
       max-width: 1000px;
@@ -50,17 +50,19 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       padding: 10px;
     }
     .word {
       border: 2px solid #333;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 1em;
+      border-radius: 6px;
+      width: 70px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      font-size: 0.9em;
       cursor: pointer;
       user-select: none;
-      text-align: center;
       background-color: #fefefe;
     }
     .hua { background-color: #ffeb99; }
@@ -91,14 +93,15 @@
     @media (max-width: 768px) {
       main { flex-direction: column; align-items: center; }
       .column { flex-direction: row; flex-wrap: wrap; }
+      .word { width: 30%; }
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="game9_assets/fruit_left.png" alt="fruit left">
+    <img id="fruit-left" src="game9_assets/fruit_left.png" alt="fruit left">
     <h1>華台水果語詞配對</h1>
-    <img src="game9_assets/fruit_right.png" alt="fruit right">
+    <img id="fruit-right" src="game9_assets/fruit_right.png" alt="fruit right">
   </header>
   <h2>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</h2>
 
@@ -125,11 +128,22 @@
     let matchedCount = 0;
     let currentPart = 1;
 
+    // 水果圖隨機
+    function setRandomFruits() {
+      const leftImages = ["fruit_left.png", "fruit_left1.png"];
+      const rightImages = ["fruit_right.png", "fruit_right1.png"];
+      document.getElementById("fruit-left").src =
+        "game9_assets/" + leftImages[Math.floor(Math.random() * leftImages.length)];
+      document.getElementById("fruit-right").src =
+        "game9_assets/" + rightImages[Math.floor(Math.random() * rightImages.length)];
+    }
+
     async function loadPart(part) {
       currentPart = part;
       const res = await fetch(`game9_assets/fruits_part${part}.json`);
       const data = await res.json();
       setupGame(data);
+      setRandomFruits();
     }
 
     function setupGame(data) {
