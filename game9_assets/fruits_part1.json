@@ -1,1 +1,19 @@
-
+[
+  {"id":"fruit1","chinese":"芒果","taiwanese":"檨仔","link":"https://sutian.moe.edu.tw/und-hani/su/12189/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/12189.mp3"},
+  {"id":"fruit2","chinese":"橘子","taiwanese":"柑仔","link":"https://sutian.moe.edu.tw/und-hani/su/5084/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/5084.mp3"},
+  {"id":"fruit3","chinese":"香蕉","taiwanese":"弓蕉","link":"https://sutian.moe.edu.tw/und-hani/su/529/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/529.mp3"},
+  {"id":"fruit4","chinese":"番石榴","taiwanese":"林菝仔","link":"https://sutian.moe.edu.tw/und-hani/su/4237/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/4237.mp3"},
+  {"id":"fruit5","chinese":"鳳梨","taiwanese":"王梨","link":"https://sutian.moe.edu.tw/und-hani/su/1260/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3"},
+  {"id":"fruit6","chinese":"百香果","taiwanese":"時計果","link":"https://sutian.moe.edu.tw/und-hani/su/14205/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/14205.mp3"},
+  {"id":"fruit7","chinese":"香瓜","taiwanese":"芳瓜","link":"https://sutian.moe.edu.tw/und-hani/su/4434/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/4434.mp3"},
+  {"id":"fruit8","chinese":"葡萄","taiwanese":"葡萄","link":"https://sutian.moe.edu.tw/und-hani/su/9985/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/9985.mp3"},
+  {"id":"fruit9","chinese":"蓮霧","taiwanese":"蓮霧","link":"https://sutian.moe.edu.tw/und-hani/su/11322/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/11322.mp3"},
+  {"id":"fruit10","chinese":"柳丁","taiwanese":"柳丁","link":"https://sutian.moe.edu.tw/und-hani/su/5078/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/5078.mp3"},
+  {"id":"fruit11","chinese":"木瓜","taiwanese":"木瓜","link":"https://sutian.moe.edu.tw/und-hani/su/877/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/877.mp3"},
+  {"id":"fruit12","chinese":"梨子","taiwanese":"梨仔","link":"https://sutian.moe.edu.tw/und-hani/su/7478/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/7478.mp3"},
+  {"id":"fruit13","chinese":"棗子","taiwanese":"棗仔","link":"https://sutian.moe.edu.tw/und-hani/su/8491/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/8491.mp3"},
+  {"id":"fruit14","chinese":"柚子","taiwanese":"柚仔","link":"https://sutian.moe.edu.tw/und-hani/su/8491/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/8491.mp3"},
+  {"id":"fruit15","chinese":"李子","taiwanese":"李仔","link":"https://sutian.moe.edu.tw/und-hani/su/3227/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/3227.mp3"},
+  {"id":"fruit16","chinese":"柿子","taiwanese":"柿仔","link":"https://sutian.moe.edu.tw/und-hani/su/5087/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/5087.mp3"},
+  {"id":"fruit17","chinese":"荔枝","taiwanese":"荔枝","link":"https://sutian.moe.edu.tw/und-hani/su/6646/","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/6646.mp3"}
+]
