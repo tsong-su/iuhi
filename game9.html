@@ -6,8 +6,7 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: "Microsoft JhengHei", sans-serif;
       background-color: #fff8e7;
       display: flex;
@@ -24,7 +23,7 @@
     }
     header img {
       height: 60px;
-      margin: 0 10px;
+      margin: 0 20px;
     }
     h1 {
       color: #d35400;
@@ -56,7 +55,7 @@
     .word {
       border: 2px solid #333;
       border-radius: 8px;
-      padding: 6px 10px;
+      padding: 8px 12px;
       font-size: 1em;
       cursor: pointer;
       user-select: none;
@@ -97,9 +96,9 @@
 </head>
 <body>
   <header>
-    <img id="fruit-left" src="game9_assets/fruit_left.png" alt="fruit left">
+    <img id="fruit-left" src="" alt="fruit left">
     <h1>華台水果語詞配對</h1>
-    <img id="fruit-right" src="game9_assets/fruit_right.png" alt="fruit right">
+    <img id="fruit-right" src="" alt="fruit right">
   </header>
   <h2>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</h2>
 
@@ -112,7 +111,7 @@
 
   <footer>
     <button id="restart">重新開始</button>
-    <button id="next">下一部份</button>
+    <button id="next">後一部份</button>
     <button id="home" onclick="location.href='index.html'">回首頁</button>
   </footer>
 
@@ -121,26 +120,29 @@
   <audio id="effect-wrong" src="game9_assets/wrong2.mp3"></audio>
 
   <script>
+    const leftImages = ['fruit_left.png','fruit_left1.png'];
+    const rightImages = ['fruit_right.png','fruit_right1.png'];
+
     let huaData = [], taiData = [];
     let selectedHua = null, selectedTai = null;
     let matchedCount = 0;
     let currentPart = 1;
 
-    async function loadPart(part) {
+    async function loadPart(part){
       currentPart = part;
+
+      // 更新左右水果圖片
+      document.getElementById('fruit-left').src = `game9_assets/${leftImages[Math.floor(Math.random()*leftImages.length)]}`;
+      document.getElementById('fruit-right').src = `game9_assets/${rightImages[Math.floor(Math.random()*rightImages.length)]}`;
+
       const res = await fetch(`game9_assets/fruits_part${part}.json`);
       const data = await res.json();
       setupGame(data);
-      // 隨機水果圖片
-      document.getElementById('fruit-left').src = `game9_assets/fruit_left${Math.floor(Math.random()*2)+'.png'}`;
-      document.getElementById('fruit-right').src = `game9_assets/fruit_right${Math.floor(Math.random()*2)+'.png'}`;
     }
 
-    function setupGame(data) {
-      huaData = data.map(item => ({id: item.id, text: item.chinese}));
-      taiData = data.map(item => ({
-        id: item.id, text: item.taiwanese, link: item.link, audio: item.audio
-      }));
+    function setupGame(data){
+      huaData = data.map(item=>({id:item.id,text:item.chinese}));
+      taiData = data.map(item=>({id:item.id,text:item.taiwanese,link:item.link,audio:item.audio}));
 
       shuffleArray(huaData);
       shuffleArray(taiData);
@@ -152,87 +154,87 @@
       matchedCount = 0;
       document.getElementById("message").textContent = "";
 
-      huaData.forEach(item => {
+      huaData.forEach(item=>{
         const div = document.createElement("div");
-        div.className = "word hua";
-        div.textContent = item.text;
-        div.dataset.id = item.id;
-        div.onclick = () => selectHua(div);
+        div.className="word hua";
+        div.textContent=item.text;
+        div.dataset.id=item.id;
+        div.onclick = ()=>selectHua(div);
         huaCol.appendChild(div);
       });
 
-      taiData.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "word tai";
-        div.textContent = item.text;
-        div.dataset.id = item.id;
-        div.onclick = () => selectTai(div, item.link, item.audio);
+      taiData.forEach(item=>{
+        const div=document.createElement("div");
+        div.className="word tai";
+        div.textContent=item.text;
+        div.dataset.id=item.id;
+        div.dataset.audio=item.audio;
+        div.dataset.link=item.link;
+        div.onclick = ()=>selectTai(div);
         taiCol.appendChild(div);
       });
     }
 
-    function selectHua(el) {
-      if (el.classList.contains("matched")) return;
-      if (selectedHua) selectedHua.classList.remove("selected");
-      selectedHua = el;
+    function selectHua(el){
+      if(el.classList.contains("matched")) return;
+      if(selectedHua) selectedHua.classList.remove("selected");
+      selectedHua=el;
       el.classList.add("selected");
       checkMatch();
     }
 
-    function selectTai(el, link, audioUrl) {
-      if (el.classList.contains("matched")) return;
-      if (selectedTai) selectedTai.classList.remove("selected");
-      selectedTai = el;
+    function selectTai(el){
+      if(el.classList.contains("matched")) return;
+      if(selectedTai) selectedTai.classList.remove("selected");
+      selectedTai=el;
       el.classList.add("selected");
-      checkMatch(link, audioUrl);
+      checkMatch();
     }
 
-    function checkMatch(link, audioUrl) {
-      if (!selectedHua || !selectedTai) return;
-      if (selectedHua.dataset.id === selectedTai.dataset.id) {
+    function checkMatch(){
+      if(!selectedHua || !selectedTai) return;
+      if(selectedHua.dataset.id===selectedTai.dataset.id){
         selectedHua.classList.add("matched");
         selectedTai.classList.add("matched");
 
-        // 播放該台語音檔
-        playAudio(audioUrl);
+        // 播放音檔
+        const audioUrl = selectedTai.dataset.audio;
+        const player=document.getElementById("audio-player");
+        player.src=audioUrl;
+        player.play();
 
         // 台語詞可點擊教典
-        selectedTai.innerHTML = `<a href="${link}" target="_blank" style="color:white; text-decoration:underline;">${selectedTai.textContent}</a>`;
+        const link = selectedTai.dataset.link;
+        selectedTai.innerHTML=`<a href="${link}" target="_blank" style="color:white;text-decoration:underline;">${selectedTai.textContent}</a>`;
 
         matchedCount++;
         resetSelection();
-        if (matchedCount === huaData.length) {
-          document.getElementById("message").textContent = "有夠 gâu！";
+        if(matchedCount===huaData.length){
+          document.getElementById("message").textContent="有夠 gâu！";
           document.getElementById("effect-correct").play();
         }
-      } else {
+      }else{
         document.getElementById("effect-wrong").play();
         resetSelection();
       }
     }
 
-    function playAudio(url) {
-      const player = document.getElementById("audio-player");
-      player.src = url;
-      player.play();
+    function resetSelection(){
+      if(selectedHua) selectedHua.classList.remove("selected");
+      if(selectedTai) selectedTai.classList.remove("selected");
+      selectedHua=null;
+      selectedTai=null;
     }
 
-    function resetSelection() {
-      if (selectedHua) selectedHua.classList.remove("selected");
-      if (selectedTai) selectedTai.classList.remove("selected");
-      selectedHua = null;
-      selectedTai = null;
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+    function shuffleArray(array){
+      for(let i=array.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
       }
     }
 
-    document.getElementById("restart").onclick = () => loadPart(currentPart);
-    document.getElementById("next").onclick = () => loadPart(currentPart === 1 ? 2 : 1);
+    document.getElementById("restart").onclick = ()=>loadPart(currentPart);
+    document.getElementById("next").onclick = ()=>loadPart(currentPart===1?2:1);
 
     // 預設載入 Part1
     loadPart(1);
