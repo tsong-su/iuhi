@@ -1,142 +1,271 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
-<title>華台水果語詞配對</title>
-<style>
-  body { font-family: Arial, sans-serif; background:#dff0d8; text-align:center; margin:0; padding:0; }
-  h1 { margin-top:20px; display:flex; justify-content:center; align-items:center; }
-  h1 img { width:50px; height:50px; margin:0 10px; }
-  #hint { margin:10px; font-size:14px; color:#555; }
-  #game-container { display:flex; justify-content:center; margin:20px; flex-wrap:wrap; }
-  .column { display:flex; flex-direction:column; margin:0 20px; }
-  .fruit-box { width:100px; height:40px; margin:5px; line-height:40px; color:white; font-weight:bold; cursor:pointer; border-radius:6px; user-select:none; }
-  #message { font-size:24px; color:#e74c3c; margin:20px; transition: font-size 1s; }
-  #buttons { margin:20px; }
-  button { padding:10px 20px; font-size:16px; margin:5px; cursor:pointer; border-radius:6px; }
-</style>
+  <meta charset="UTF-8">
+  <title>華台水果語詞配對</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #fff8e7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0 10px;
+    }
+    header img {
+      height: 60px;
+      margin: 0 20px;
+    }
+    h1 {
+      color: #d35400;
+      font-size: 2em;
+      margin: 0;
+    }
+    h2 {
+      color: #2c3e50;
+      font-size: 1em;
+      margin: 5px 0 15px;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 1000px;
+      padding: 10px;
+    }
+    .column {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+    }
+    .word {
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 1em;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      background-color: #fefefe;
+    }
+    .hua { background-color: #ffeb99; }
+    .tai { background-color: #c5eff7; }
+    .selected { border: 3px solid #e74c3c; }
+    footer {
+      margin: 15px 0;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      color: white;
+    }
+    #restart { background-color: #3498db; }
+    #next { background-color: #e67e22; }
+    #home { background-color: #2ecc71; }
+    #message {
+      font-size: 1.5em;
+      color: #27ae60;
+      margin: 10px;
+      font-weight: bold;
+      transition: font-size 1s ease;
+    }
+    @media (max-width: 768px) {
+      main { flex-direction: column; align-items: center; }
+      .column { flex-direction: row; flex-wrap: wrap; }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <img src="game9_assets/fruit_left.png" alt="fruit left">
+    <h1>華台水果語詞配對</h1>
+    <img src="game9_assets/fruit_right.png" alt="fruit right">
+  </header>
+  <h2>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</h2>
 
-<h1>
-  <img src="game9_assets/fruit_left.png" alt="">
-  華台水果語詞配對
-  <img src="game9_assets/fruit_right.png" alt="">
-</h1>
-<div id="hint">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+  <main>
+    <div class="column" id="hua-col"></div>
+    <div class="column" id="tai-col"></div>
+  </main>
 
-<div id="game-container">
-  <div class="column" id="chinese-column"></div>
-  <div class="column" id="taiwanese-column"></div>
-</div>
+  <div id="message"></div>
 
-<div id="message"></div>
+  <footer>
+    <button id="restart">重新開始</button>
+    <button id="next">後一部份</button>
+    <button id="home" onclick="location.href='index.html'">轉去頭頁</button>
+  </footer>
 
-<div id="buttons">
-  <button id="next-part">後一部份</button>
-  <button onclick="window.location.href='index.html'">轉去頭頁</button>
-</div>
+  <audio id="audio-player"></audio>
+  <audio id="effect-correct" src="game9_assets/victory1.mp3"></audio>
+  <audio id="effect-wrong" src="game9_assets/wrong2.mp3"></audio>
 
-<script>
-let currentPart = 1;
-let chineseColumn = document.getElementById('chinese-column');
-let taiwaneseColumn = document.getElementById('taiwanese-column');
-let messageEl = document.getElementById('message');
-let nextPartBtn = document.getElementById('next-part');
-let selectedChinese = null;
-let selectedTaiwanese = null;
-let matched = 0;
-let partData = {};
+  <script>
+    let huaData = [], taiData = [];
+    let selectedHua = null, selectedTai = null;
+    let matchedCount = 0;
+    let currentPart = 1;
 
-async function loadPart(part) {
-  const response = await fetch(`game9_assets/fruits_part${part}.json`);
-  partData = await response.json();
-  matched = 0;
-  messageEl.textContent = '';
-  chineseColumn.innerHTML = '';
-  taiwaneseColumn.innerHTML = '';
+    const successColors = [
+      "#f94144","#f3722c","#f8961e","#f9844a","#f9c74f",
+      "#90be6d","#43aa8b","#4d908e","#577590","#277da1",
+      "#6a4c93","#ff6d00","#ff8c42","#d00000","#9b2226",
+      "#005f73","#0a9396"
+    ];
 
-  // 隨機顏色陣列
-  const colors = ["#e74c3c","#e67e22","#f1c40f","#2ecc71","#3498db","#9b59b6","#1abc9c",
-                  "#c0392b","#d35400","#f39c12","#27ae60","#2980b9","#8e44ad","#16a085","#c0392b","#d35400","#f39c12"];
-
-  partData.forEach((item, index) => {
-    let cBox = document.createElement('div');
-    cBox.className = 'fruit-box';
-    cBox.textContent = item.chinese;
-    cBox.style.backgroundColor = '#34495e';
-    cBox.dataset.index = index;
-    cBox.addEventListener('click',()=>select('chinese',index));
-    chineseColumn.appendChild(cBox);
-
-    let tBox = document.createElement('div');
-    tBox.className = 'fruit-box';
-    tBox.innerHTML = `<a href="${item.link}" target="_blank" style="color:white;text-decoration:none;">${item.taiwanese}</a>`;
-    tBox.style.backgroundColor = '#34495e';
-    tBox.dataset.index = index;
-    tBox.addEventListener('click',()=>select('taiwanese',index));
-    taiwaneseColumn.appendChild(tBox);
-  });
-}
-
-function select(type,index) {
-  if(type==='chinese') selectedChinese = index;
-  if(type==='taiwanese') selectedTaiwanese = index;
-
-  if(selectedChinese!==null && selectedTaiwanese!==null) checkMatch();
-}
-
-function checkMatch() {
-  let cBox = chineseColumn.children[selectedChinese];
-  let tBox = taiwaneseColumn.children[selectedTaiwanese];
-  if(selectedChinese===selectedTaiwanese) {
-    let color = generateColor(selectedChinese);
-    cBox.style.backgroundColor = color;
-    tBox.style.backgroundColor = color;
-    // 播放音檔
-    let audio = new Audio(partData[selectedChinese].audio);
-    audio.play();
-
-    matched++;
-    if(matched===partData.length){
-      // 勝利動畫
-      let victoryAudio = new Audio('game9_assets/victory.mp3');
-      victoryAudio.play();
-      messageEl.style.fontSize = '24px';
-      messageEl.textContent = '有夠 gâu';
-      let size=24;
-      let interval = setInterval(()=>{
-        if(size>=60) clearInterval(interval);
-        messageEl.style.fontSize = size+'px';
-        size+=2;
-      },50);
+    async function loadPart(part) {
+      currentPart = part;
+      const res = await fetch(`game9_assets/fruits_part${part}.json`);
+      const data = await res.json();
+      setupGame(data);
+      // 重新載入水果圖片
+      document.querySelector('header img:first-child').src = `game9_assets/fruit_left${Math.floor(Math.random()*2||1)}.png`;
+      document.querySelector('header img:last-child').src = `game9_assets/fruit_right${Math.floor(Math.random()*2||1)}.png`;
     }
-  } else {
-    // 配對錯誤
-    cBox.style.backgroundColor = '#7f8c8d';
-    tBox.style.backgroundColor = '#7f8c8d';
-  }
-  selectedChinese = null;
-  selectedTaiwanese = null;
-}
 
-function generateColor(index){
-  const palette = ["#e74c3c","#e67e22","#f1c40f","#2ecc71","#3498db","#9b59b6","#1abc9c",
-                  "#c0392b","#d35400","#f39c12","#27ae60","#2980b9","#8e44ad","#16a085","#9b59b6","#e67e22","#f1c40f","#2ecc71"];
-  return palette[index % palette.length];
-}
+    function setupGame(data) {
+      huaData = data.map(item => ({id: item.id, text: item.chinese}));
+      taiData = data.map(item => ({
+        id: item.id, text: item.taiwanese, link: item.link, audio: item.audio
+      }));
 
-nextPartBtn.addEventListener('click',()=>{
-  if(currentPart===1){
-    currentPart=2;
-    loadPart(2);
-  } else {
-    alert('已經是最後一部份了');
-  }
-});
+      shuffleArray(huaData);
+      shuffleArray(taiData);
 
-// 初始載入第一部份
-loadPart(1);
-</script>
+      const huaCol = document.getElementById("hua-col");
+      const taiCol = document.getElementById("tai-col");
+      huaCol.innerHTML = "";
+      taiCol.innerHTML = "";
+      matchedCount = 0;
+      const messageEl = document.getElementById("message");
+      messageEl.textContent = "";
+      messageEl.style.fontSize = "1.5em";
+
+      huaData.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "word hua";
+        div.textContent = item.text;
+        div.dataset.id = item.id;
+        div.onclick = () => selectHua(div);
+        huaCol.appendChild(div);
+      });
+
+      taiData.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "word tai";
+        div.textContent = item.text;
+        div.dataset.id = item.id;
+        div.dataset.link = item.link; // 保存教典連結
+        div.dataset.audio = item.audio;
+        div.onclick = () => selectTai(div);
+        taiCol.appendChild(div);
+      });
+    }
+
+    function selectHua(el) {
+      if (el.classList.contains("matched")) return;
+      if (selectedHua) selectedHua.classList.remove("selected");
+      selectedHua = el;
+      el.classList.add("selected");
+      checkMatch();
+    }
+
+    function selectTai(el) {
+      if (el.classList.contains("matched")) return;
+      if (selectedTai) selectedTai.classList.remove("selected");
+      selectedTai = el;
+      el.classList.add("selected");
+      checkMatch();
+    }
+
+    function checkMatch() {
+      if (!selectedHua || !selectedTai) return;
+      const audioUrl = selectedTai.dataset.audio;
+      const linkUrl = selectedTai.dataset.link;
+
+      if (selectedHua.dataset.id === selectedTai.dataset.id) {
+        selectedHua.classList.add("matched");
+        selectedTai.classList.add("matched");
+
+        // 播放正確音檔
+        playAudio(audioUrl);
+
+        // 點台語詞可以開啟教典
+        selectedTai.innerHTML = `<a href="${linkUrl}" target="_blank" style="color:white; text-decoration:underline;">${selectedTai.textContent}</a>`;
+
+        // 配對成功格子顏色
+        const color = successColors[(matchedCount) % successColors.length];
+        selectedHua.style.backgroundColor = color;
+        selectedTai.style.backgroundColor = color;
+
+        matchedCount++;
+        resetSelection();
+
+        if (matchedCount === huaData.length) {
+          const messageEl = document.getElementById("message");
+          messageEl.textContent = "有夠 gâu！";
+          messageEl.style.fontSize = "1.5em";
+          document.getElementById("effect-correct").play();
+          let size = 1.5;
+          const interval = setInterval(() => {
+            if (size < 3.0) {
+              size += 0.1;
+              messageEl.style.fontSize = size + "em";
+            } else {
+              clearInterval(interval);
+            }
+          }, 50);
+        }
+      } else {
+        document.getElementById("effect-wrong").play();
+        resetSelection();
+      }
+    }
+
+    function playAudio(url) {
+      const player = document.getElementById("audio-player");
+      player.src = url;
+      player.play();
+    }
+
+    function resetSelection() {
+      if (selectedHua) selectedHua.classList.remove("selected");
+      if (selectedTai) selectedTai.classList.remove("selected");
+      selectedHua = null;
+      selectedTai = null;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    document.getElementById("restart").onclick = () => loadPart(currentPart);
+    document.getElementById("next").onclick = () => loadPart(currentPart === 1 ? 2 : 1);
+
+    // 初始載入第一部分
+    loadPart(1);
+  </script>
 </body>
 </html>
