@@ -181,10 +181,18 @@ function checkMatch(){
     const color=colors[matchedCount%colors.length];
     selectedHua.classList.add("matched"); selectedHua.style.backgroundColor=color; selectedHua.style.color="white";
     selectedTai.classList.add("matched"); selectedTai.style.backgroundColor=color; selectedTai.style.color="white";
-    
-    // 台語詞可點擊教典連結
-    selectedTai.innerHTML=`<a href="${selectedTai.dataset.link}" target="_blank" style="color:white;text-decoration:underline;">${selectedTai.textContent}</a>`;
-    
+
+    // 台語詞包裹 <a> 並保留連結
+    const link = selectedTai.dataset.link;
+    const a = document.createElement("a");
+    a.href = link;
+    a.target = "_blank";
+    a.style.color = "white";
+    a.style.textDecoration = "underline";
+    a.textContent = selectedTai.textContent;
+    selectedTai.textContent = "";
+    selectedTai.appendChild(a);
+
     // 播放音檔
     const audioPlayer=document.getElementById("audio-player");
     audioPlayer.src=selectedTai.dataset.audio;
