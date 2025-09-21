@@ -129,7 +129,7 @@ async function loadPart(part){
 
 function setupGame(data){
   huaData=data.map(item=>({id:item.id,text:item.chinese}));
-  taiData=data.map(item=>({id:item.id,text:item.taiwanese,link:item.link,audio:item.audio}));
+  taiData=data.map(item=>({id:item.id,text:item.taiwanese,audio:item.audio}));
 
   shuffleArray(huaData);
   shuffleArray(taiData);
@@ -154,7 +154,6 @@ function setupGame(data){
     div.className="word tai";
     div.textContent=item.text;
     div.dataset.id=item.id;
-    div.dataset.link=item.link;
     div.dataset.audio=item.audio;
     div.onclick=()=>selectTai(div);
     taiCol.appendChild(div);
@@ -181,17 +180,6 @@ function checkMatch(){
     const color=colors[matchedCount%colors.length];
     selectedHua.classList.add("matched"); selectedHua.style.backgroundColor=color; selectedHua.style.color="white";
     selectedTai.classList.add("matched"); selectedTai.style.backgroundColor=color; selectedTai.style.color="white";
-
-    // 台語詞包裹 <a> 並保留連結
-    const link = selectedTai.dataset.link;
-    const a = document.createElement("a");
-    a.href = link;
-    a.target = "_blank";
-    a.style.color = "white";
-    a.style.textDecoration = "underline";
-    a.textContent = selectedTai.textContent;
-    selectedTai.textContent = "";
-    selectedTai.appendChild(a);
 
     // 播放音檔
     const audioPlayer=document.getElementById("audio-player");
