@@ -1,168 +1,158 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8" />
-  <title>水果配對遊戲</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #f9f7e8, #f1e6d6);
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    h1 {
-      background-color: #f8b400;
-      color: white;
-      padding: 20px;
-      margin: 0;
-      position: relative;
-    }
-    #game-container {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-      max-width: 1000px;
-      margin: 30px auto;
-    }
-    .card {
-      background-color: #ffefd5;
-      border: 2px solid #f8b400;
-      border-radius: 10px;
-      padding: 20px;
-      font-size: 20px;
-      cursor: pointer;
-      transition: transform 0.2s, background-color 0.3s;
-      user-select: none;
-      color: black;
-    }
-    .card:hover {
-      transform: scale(1.05);
-      background-color: #ffe4b5;
-    }
-    .matched {
-      background-color: #4caf50 !important;
-      color: white !important;
-      cursor: default;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 24px;
-      color: green;
-      font-weight: bold;
-      opacity: 0;
-      transition: opacity 0.5s, transform 0.5s;
-    }
-    #message.show {
-      opacity: 1;
-      transform: scale(1.2);
-    }
-  </style>
+<meta charset="UTF-8">
+<title>水果配對遊戲</title>
+<style>
+body { background-color: #FDF6E3; font-family: Arial, sans-serif; margin:0; padding:0; }
+header { display:flex; justify-content: center; align-items: center; margin:10px 0; }
+header img { width:50px; height:50px; margin:0 10px; }
+h1 { text-align:center; color:#333; }
+#gameBoard { display:flex; justify-content: space-around; flex-wrap: wrap; max-width: 1000px; margin:20px auto; }
+.card { width:120px; height:60px; margin:5px; display:flex; justify-content:center; align-items:center; background-color:#1E90FF; color:white; cursor:pointer; border-radius:8px; user-select:none; font-size:16px; text-align:center; transition: background-color 0.3s, transform 0.3s; }
+.card.matched { cursor: default; }
+#message { text-align:center; font-size:24px; color:#E91E63; margin-top:20px; display:none; }
+#controls { text-align:center; margin:20px; }
+button { margin:0 10px; padding:8px 16px; font-size:16px; border:none; border-radius:6px; cursor:pointer; background-color:#FF9800; color:white; }
+a { color:white; text-decoration: underline; }
+</style>
 </head>
 <body>
-  <h1>水果配對遊戲</h1>
-  <div id="game-container"></div>
-  <div id="message">有夠 gâu！</div>
 
-  <audio id="success-sound" src="game9_assets/success.mp3"></audio>
-  <script>
-    let fruits = [];
-    let selectedHua = null;
-    let selectedTai = null;
+<header>
+<img src="game9_assets/fruit_left.png" alt="fruit left">
+<h1>水果配對遊戲</h1>
+<img src="game9_assets/fruit_right.png" alt="fruit right">
+</header>
 
-    async function loadData() {
-      const part1 = await fetch("game9_assets/fruits_part1.json").then(res => res.json());
-      const part2 = await fetch("game9_assets/fruits_part2.json").then(res => res.json());
-      fruits = [...part1, ...part2];
-      initGame();
+<div id="gameBoard"></div>
+<div id="message">有夠 gâu</div>
+
+<div id="controls">
+<button id="restartBtn">重新開始</button>
+<button id="nextPartBtn">後一部份</button>
+<button id="homeBtn">轉去頭頁</button>
+</div>
+
+<script>
+// 載入水果資料
+const fruits = [];
+const part1 = fetch('game9_assets/fruits_part1.json').then(r=>r.json());
+const part2 = fetch('game9_assets/fruits_part2.json').then(r=>r.json());
+
+Promise.all([part1, part2]).then(values=>{
+  fruits.push(...values[0], ...values[1]);
+  initGame();
+});
+
+let firstCard = null, secondCard = null;
+let matchedCount = 0;
+
+const colors = ['#FF5722','#4CAF50','#2196F3','#9C27B0','#FFC107','#E91E63','#00BCD4','#FF9800','#8BC34A','#CDDC39','#673AB7','#3F51B5','#009688','#F44336','#795548','#607D8B','#FFEB3B'];
+
+function initGame() {
+  const gameBoard = document.getElementById('gameBoard');
+  gameBoard.innerHTML = '';
+
+  // 每個水果生成中文卡 + 台語卡
+  const cards = [];
+  fruits.forEach((f,i)=>{
+    cards.push({id:f.id, type:'chinese', text:f.chinese, audio:f.audio, link:f.link});
+    cards.push({id:f.id, type:'taiwanese', text:f.taiwanese, audio:f.audio, link:f.link});
+  });
+
+  shuffle(cards);
+
+  cards.forEach((card, index)=>{
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.dataset.id = card.id;
+    div.dataset.type = card.type;
+    div.dataset.text = card.text;
+    div.dataset.audio = card.audio;
+    div.dataset.link = card.link;
+    div.style.backgroundColor = '#1E90FF';
+    div.textContent = card.text;
+    div.addEventListener('click', ()=>selectCard(div));
+    gameBoard.appendChild(div);
+  });
+}
+
+function shuffle(array) {
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function selectCard(card) {
+  if(card.classList.contains('matched') || card===firstCard) return;
+  card.style.transform='scale(1.1)';
+  setTimeout(()=>card.style.transform='scale(1)',150);
+
+  if(!firstCard) {
+    firstCard = card;
+    return;
+  }
+  secondCard = card;
+
+  if(firstCard.dataset.id === secondCard.dataset.id && firstCard.dataset.type !== secondCard.dataset.type){
+    // 配對成功
+    firstCard.classList.add('matched');
+    secondCard.classList.add('matched');
+
+    // 配對格子上色
+    const colorIndex = matchedCount % colors.length;
+    firstCard.style.backgroundColor = colors[colorIndex];
+    secondCard.style.backgroundColor = colors[colorIndex];
+
+    // 播放音檔
+    const audio = new Audio(firstCard.dataset.audio);
+    audio.play();
+
+    matchedCount++;
+    if(matchedCount === fruits.length){
+      showVictory();
     }
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    // 將台語詞變成連結
+    if(firstCard.dataset.type==='taiwanese'){
+      firstCard.innerHTML = `<a href="${firstCard.dataset.link}" target="_blank">${firstCard.dataset.text}</a>`;
+    }
+    if(secondCard.dataset.type==='taiwanese'){
+      secondCard.innerHTML = `<a href="${secondCard.dataset.link}" target="_blank">${secondCard.dataset.text}</a>`;
     }
 
-    function initGame() {
-      const gameContainer = document.getElementById("game-container");
-      gameContainer.innerHTML = "";
+    firstCard = null;
+    secondCard = null;
+  } else {
+    setTimeout(()=>{
+      firstCard = null;
+      secondCard = null;
+    },500);
+  }
+}
 
-      let huaCards = fruits.map(fruit => ({
-        text: fruit.hua,
-        type: "hua",
-        pair: fruit.tai,
-        audio: fruit.audio,
-        link: fruit.link
-      }));
+function showVictory(){
+  const message = document.getElementById('message');
+  message.style.display='block';
+  message.style.fontSize='10px';
+  let size = 10;
+  const interval = setInterval(()=>{
+    size+=2;
+    message.style.fontSize=size+'px';
+    if(size>=60) clearInterval(interval);
+  },100);
+  // 勝利音效
+  const victoryAudio = new Audio('game9_assets/victory.mp3');
+  victoryAudio.play();
+}
 
-      let taiCards = fruits.map(fruit => ({
-        text: fruit.tai,
-        type: "tai",
-        pair: fruit.hua,
-        audio: fruit.audio,
-        link: fruit.link
-      }));
+// 控制按鈕
+document.getElementById('restartBtn').addEventListener('click', ()=>{ matchedCount=0; initGame(); document.getElementById('message').style.display='none'; });
+document.getElementById('nextPartBtn').addEventListener('click', ()=>{ alert('切換下一部份'); });
+document.getElementById('homeBtn').addEventListener('click', ()=>{ window.location.href='index.html'; });
 
-      let cards = shuffle([...huaCards, ...taiCards]);
-
-      cards.forEach(card => {
-        const div = document.createElement("div");
-        div.classList.add("card");
-        div.textContent = card.text;
-        div.dataset.type = card.type;
-        div.dataset.pair = card.pair;
-        div.dataset.audio = card.audio;
-        div.dataset.link = card.link;
-        div.addEventListener("click", () => handleCardClick(div));
-        gameContainer.appendChild(div);
-      });
-    }
-
-    function handleCardClick(card) {
-      if (card.classList.contains("matched")) return;
-
-      if (card.dataset.type === "hua") {
-        selectedHua = card;
-      } else {
-        selectedTai = card;
-      }
-
-      if (selectedHua && selectedTai) {
-        if (selectedHua.dataset.pair === selectedTai.textContent &&
-            selectedTai.dataset.pair === selectedHua.textContent) {
-          // ✅ 配對成功
-          selectedHua.classList.add("matched");
-          selectedTai.classList.add("matched");
-
-          // 🎵 播放正確音檔
-          let audio = new Audio(selectedHua.dataset.audio);
-          audio.play();
-
-          // 🔗 加入教典連結
-          const link = selectedTai.dataset.link;
-          selectedTai.innerHTML =
-            `<a href="${link}" target="_blank" style="color:white;text-decoration:underline;">${selectedTai.textContent}</a>`;
-
-          // ✨ 顯示動畫文字
-          const message = document.getElementById("message");
-          message.classList.add("show");
-          setTimeout(() => message.classList.remove("show"), 1000);
-
-          // 🔔 播放勝利音效
-          document.getElementById("success-sound").play();
-
-          selectedHua = null;
-          selectedTai = null;
-        } else {
-          selectedHua = null;
-          selectedTai = null;
-        }
-      }
-    }
-
-    loadData();
-  </script>
+</script>
 </body>
 </html>
