@@ -1,1 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>果子圖片&台語果子名配對 - 第1回</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0; padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff9f0;
+    }
+    h1 {
+      margin: 10px;
+      color: #d2691e;
+    }
+    .game-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 950px;
+    }
+    .images, .names {
+      display: grid;
+      gap: 10px;
+    }
+    .images {
+      grid-template-columns: repeat(2, 120px);
+    }
+    .images img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border: 3px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .images img.selected {
+      border: 3px solid #ff6600;
+      transform: scale(1.1);
+    }
+    .images img.matched {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .names {
+      grid-template-columns: repeat(1, 180px);
+    }
+    .name-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .names button {
+      flex: 1;
+      margin-right: 5px;
+      padding: 8px;
+      background: #ffe4b5;
+      border: 2px solid #d2691e;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 16px;
+    }
+    .names button:hover {
+      background: #ffdead;
+    }
+    .names button.matched {
+      background: #ccc;
+      pointer-events: none;
+    }
+    .dict-link {
+      font-size: 14px;
+      text-decoration: none;
+      background: #f08080;
+      color: white;
+      padding: 6px;
+      border-radius: 6px;
+    }
+    #victory {
+      font-size: 48px;
+      color: green;
+      margin-top: 20px;
+      display: none;
+      animation: grow 2s forwards;
+    }
+    @keyframes grow {
+      from { transform: scale(0.2); opacity: 0; }
+      to   { transform: scale(1.5); opacity: 1; }
+    }
+    #nextRound {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #ffa500;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>果子圖片&台語果子名配對 - 第1回</h1>
+  <div class="game-container">
+    <div class="images" id="images"></div>
+    <div class="names" id="names"></div>
+  </div>
+  <div id="victory">有夠 gâu！</div>
+  <button id="nextRound" onclick="alert('這裡切換到第2回程式，稍後可擴充')">下一回合 ▶</button>
+
+  <audio id="wrong-sound" src="game9_assets/wrong1.mp3"></audio>
+  <audio id="victory-sound" src="game9_assets/victory2.mp3"></audio>
+
+  <script>
+    const imageContainer = document.getElementById("images");
+    const nameContainer = document.getElementById("names");
+    const wrongSound = document.getElementById("wrong-sound");
+    const victorySound = document.getElementById("victory-sound");
+    const victoryText = document.getElementById("victory");
+    const nextRoundBtn = document.getElementById("nextRound");
+
+    let selectedImage = null;
+    let matchedCount = 0;
+    let fruits = [];
+
+    // 打亂陣列
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // 載入 JSON 前8筆
+    fetch("game9_assets/fruits_part1.json")
+      .then(res => res.json())
+      .then(data => {
+        fruits = data.slice(0, 8); // 第1回 8筆
+        initGame(fruits);
+      });
+
+    function initGame(fruits) {
+      // 清空
+      imageContainer.innerHTML = "";
+      nameContainer.innerHTML = "";
+      matchedCount = 0;
+      selectedImage = null;
+
+      // 建立圖片
+      fruits.forEach(fruit => {
+        const img = document.createElement("img");
+        img.src = `game9_assets/${fruit.id}.png`;
+        img.dataset.id = fruit.id;
+        img.addEventListener("click", () => selectImage(img));
+        imageContainer.appendChild(img);
+      });
+
+      // 建立名稱按鈕 (打亂)
+      shuffle([...fruits]).forEach(fruit => {
+        const div = document.createElement("div");
+        div.className = "name-item";
+
+        const btn = document.createElement("button");
+        btn.textContent = fruit.taiwanese;
+        btn.dataset.id = fruit.id;
+        btn.addEventListener("click", () => selectName(btn, fruit.audio));
+
+        const link = document.createElement("a");
+        link.href = fruit.link;
+        link.target = "_blank";
+        link.className = "dict-link";
+        link.textContent = "🔗";
+
+        div.appendChild(btn);
+        div.appendChild(link);
+        nameContainer.appendChild(div);
+      });
+    }
+
+    function selectImage(img) {
+      if (img.classList.contains("matched")) return;
+      document.querySelectorAll(".images img").forEach(i => i.classList.remove("selected"));
+      img.classList.add("selected");
+      selectedImage = img;
+    }
+
+    function selectName(btn, audioUrl) {
+      if (!selectedImage) return;
+      const imgId = selectedImage.dataset.id;
+      const nameId = btn.dataset.id;
+
+      if (imgId === nameId) {
+        // 正確
+        selectedImage.classList.add("matched");
+        btn.classList.add("matched");
+        selectedImage.classList.remove("selected");
+
+        new Audio(audioUrl).play();
+
+        matchedCount++;
+        if (matchedCount === fruits.length) {
+          victorySound.play();
+          victoryText.style.display = "block";
+          nextRoundBtn.style.display = "inline-block";
+        }
+      } else {
+        wrongSound.play();
+        selectedImage.classList.remove("selected");
+      }
+      selectedImage = null;
+    }
+  </script>
+</body>
+</html>
 
