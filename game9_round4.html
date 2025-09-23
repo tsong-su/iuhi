@@ -2,154 +2,146 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>果子圖片&台語果子名配對 第四回</title>
 <style>
-  body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #fff8f0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    margin-top: 10px;
-    font-size: 1.4rem;
-    text-align: center;
-  }
-  .note {
-    font-size: 1rem;
-    color: #d9534f;
-    margin-bottom: 5px;
-  }
-  .grid-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-gap: 8px;
-    width: 95%;
-    max-width: 600px;
-    margin-bottom: 10px;
-  }
-  .grid-item {
-    background: #fefefe;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    text-align: center;
-    padding: 10px 5px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s;
-    height: 80px;
-  }
-  .grid-item img {
-    max-height: 50px;
-    margin-bottom: 5px;
-  }
-  .matched {
-    color: #fff;
-    font-weight: bold;
-  }
-  .buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .buttons button {
-    padding: 10px 15px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #fff;
-    background-color: #ff7f50;
-    transition: all 0.2s;
-  }
-  .buttons button:hover {
-    opacity: 0.8;
-  }
-  #victory {
-    font-size: 2rem;
-    color: #ff4500;
-    font-weight: bold;
-    display: none;
-    margin-top: 15px;
-    animation: popUp 0.6s ease forwards;
-  }
-  @keyframes popUp {
-    0% { transform: scale(0.2); opacity: 0; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-  }
+body {
+  font-family: Arial, sans-serif;
+  margin:0; padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+h1 { text-align:center; margin-top:10px; }
+#hint { font-size:1.2em; margin:5px; color:#d33; text-align:center; }
+#grid {
+  display:grid;
+  grid-template-columns: repeat(4, 80px);
+  grid-gap:10px;
+  justify-content:center;
+  margin:20px 0;
+}
+.cell {
+  width:80px; height:80px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #ccc;
+  cursor:pointer;
+  user-select:none;
+}
+.cell img {
+  max-width:70%;
+  max-height:50%;
+}
+.cell span {
+  margin-top:5px;
+  font-size:0.7em;
+  text-align:center;
+  word-break: break-word;
+}
+.buttons {
+  display:flex; justify-content:center; gap:10px; margin-bottom:20px;
+}
+button {
+  padding:5px 15px; font-size:1em; cursor:pointer; border:none; border-radius:5px;
+  background-color:#f39c12; color:#fff;
+}
 </style>
 </head>
 <body>
-
-<h1>果子圖片 & 台語果子名配對 第四回</h1>
-<div class="note">📱 建議直式觀看效果最佳</div>
-
-<div class="grid-container" id="grid"></div>
-
-<div id="victory">有夠gau5！</div>
-
+<h1>果子圖片&台語果子名配對 第四回</h1>
+<div id="hint">📱 建議直式觀看效果最佳</div>
+<div id="grid"></div>
 <div class="buttons">
-  <button onclick="restartGame()">閣耍一擺</button>
-  <button onclick="nextRound()">後一回</button>
-  <button onclick="goHome()">轉去遊戲頭頁</button>
+  <button id="restartBtn">閣耍一擺</button>
+  <button id="nextBtn">後一回</button>
+  <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="audio-correct"></audio>
-<audio id="audio-wrong" src="game9_assets/wrong1.mp3"></audio>
-<audio id="audio-victory" src="game9_assets/victory2.mp3"></audio>
+<audio id="correctAudio"></audio>
+<audio id="wrongAudio" src="game9_assets/wrong1.mp3"></audio>
+<audio id="victoryAudio" src="game9_assets/victory2.mp3"></audio>
 
 <script>
 const fruits = [
-  {id:"fruit10", chinese:"柳丁", taiwanese:"柳丁", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
-  {id:"fruit11", chinese:"木瓜", taiwanese:"木瓜", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
-  {id:"fruit12", chinese:"梨子", taiwanese:"梨仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"},
-  {id:"fruit13", chinese:"棗子", taiwanese:"棗仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3"},
-  {id:"fruit14", chinese:"柚子", taiwanese:"柚仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3"},
-  {id:"fruit16", chinese:"柿子", taiwanese:"柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3"},
-  {id:"fruit17", chinese:"荔枝", taiwanese:"荔枝", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3"},
-  {id:"fruit34", chinese:"番茄", taiwanese:"臭柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6575.mp3"}
+  {"id":"fruit10","taiwanese":"柳丁","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
+  {"id":"fruit11","taiwanese":"木瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
+  {"id":"fruit12","taiwanese":"梨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"},
+  {"id":"fruit13","taiwanese":"棗仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3"},
+  {"id":"fruit14","taiwanese":"柚仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3"},
+  {"id":"fruit16","taiwanese":"柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3"},
+  {"id":"fruit17","taiwanese":"荔枝","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3"},
+  {"id":"fruit34","taiwanese":"臭柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6575.mp3"}
 ];
 
-// 8 種不同底色
-const colors = ["#FFB6C1","#87CEFA","#98FB98","#FFD700","#FFA07A","#DA70D6","#40E0D0","#F08080"];
+// 打亂陣列
+function shuffle(array){return array.sort(()=>Math.random()-0.5);}
 
-let selectedImage = null;
-let selectedText = null;
+let grid = document.getElementById("grid");
+let firstSelection = null;
+let matchedCount = 0;
+let cellColors = ["#FADBD8","#D6EAF8","#FCF3CF","#D5F5E3","#FAD7A0","#E8DAEF","#D1F2EB","#F5B7B1"];
 
-function shuffle(array) {
-  for (let i = array.length -1; i>0; i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [array[i], array[j]] = [array[j], array[i]];
+function createGrid(){
+  grid.innerHTML="";
+  let items = shuffle([...fruits, ...fruits]); // 重複配對
+  items.forEach((item,i)=>{
+    let div = document.createElement("div");
+    div.className="cell";
+    div.dataset.taiwanese=item.taiwanese;
+    div.dataset.audio=item.audio;
+    let img = document.createElement("img");
+    img.src="game9_assets/"+item.id+".png";
+    let span = document.createElement("span");
+    span.textContent=item.taiwanese;
+    div.appendChild(img);
+    div.appendChild(span);
+    div.addEventListener("click",()=>selectCell(div));
+    grid.appendChild(div);
+  });
+}
+function selectCell(div){
+  if(div.classList.contains("matched") || div===firstSelection) return;
+  div.style.border="2px solid #555";
+  let audio=document.getElementById("correctAudio");
+  audio.src=div.dataset.audio;
+  audio.play();
+
+  if(!firstSelection){
+    firstSelection=div;
+  }else{
+    if(firstSelection.dataset.taiwanese===div.dataset.taiwanese){
+      // 配對成功
+      let color=cellColors[matchedCount%cellColors.length];
+      firstSelection.style.background=color;
+      div.style.background=color;
+      firstSelection.classList.add("matched");
+      div.classList.add("matched");
+      matchedCount++;
+      firstSelection=null;
+
+      // 若完成最後一組，先播放正確音檔，再延遲播放勝利音效
+      if(matchedCount===fruits.length){
+        setTimeout(()=>{document.getElementById("victoryAudio").play();},1000);
+      }
+    }else{
+      // 配對錯誤
+      document.getElementById("wrongAudio").play();
+      setTimeout(()=>{
+        firstSelection.style.border="1px solid #ccc";
+        div.style.border="1px solid #ccc";
+        firstSelection=null;
+      },500);
+    }
   }
 }
 
-function setupGame() {
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
+document.getElementById("restartBtn").onclick=createGrid;
+document.getElementById("nextBtn").onclick=()=>alert("後一回還未建立");
+document.getElementById("homeBtn").onclick=()=>window.location.href="game9.html";
 
-  let items = [];
-
-  fruits.forEach((fruit,index)=>{
-    items.push({type:"img", ...fruit});
-    items.push({type:"text", ...fruit});
-  });
-
-  shuffle(items);
-
-  items.forEach((item, index)=>{
-    const div = document.createElement("div");
-    div.classList.add("grid-item");
-    div.dataset.id = item.id;
-    div.dataset.type = item.type;
-    div.dataset.index = index;
-    if(i
+createGrid();
+</script>
+</body>
+</html>
