@@ -18,54 +18,53 @@
     }
     #game {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 手機直式: 4格 */
+      grid-template-columns: repeat(4, 1fr); /* 固定4列 */
+      grid-template-rows: repeat(4, 1fr);   /* 固定4行 */
       gap: 6px;
       padding: 8px;
-      max-width: 100%;
-      margin: auto;
-    }
-    @media(min-width: 600px) {
-      #game {
-        grid-template-columns: repeat(5, 1fr); /* 平板以上: 5格 */
-      }
+      height: calc(100vh - 140px); /* 扣掉標題+按鈕 */
+      box-sizing: border-box;
     }
     .card {
       background: #fff;
       border: 2px solid #ccc;
       border-radius: 10px;
-      padding: 6px;
       cursor: pointer;
-      font-size: 1.5em;
+      font-size: 1.8em;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100px;
+      user-select: none;
     }
     .card img {
-      max-width: 70px;
-      height: auto;
+      max-width: 70%;
+      max-height: 70%;
       border-radius: 6px;
     }
     .matched {
+      background: #28a745;
+      color: white;
       border-color: #28a745;
-      animation: pop 0.5s ease;
       pointer-events: none;
+      animation: pop 0.4s ease;
     }
     @keyframes pop {
       0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
+      50% { transform: scale(1.15); }
       100% { transform: scale(1); }
     }
     #message {
       font-size: 2.5em;
       color: #e63946;
-      margin: 10px;
       display: none;
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.3);
       animation: grow 1s forwards;
     }
     @keyframes grow {
-      from { transform: scale(0.3); opacity: 0; }
-      to { transform: scale(1.5); opacity: 1; }
+      to { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
     }
     #buttons {
       position: fixed;
