@@ -1,178 +1,203 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>果子圖片&台語果子名配對 - 第1回</title>
   <style>
     body {
-      font-family: sans-serif;
       margin: 0;
-      padding: 0;
-      background: #fffbe6;
+      font-family: Arial, sans-serif;
       text-align: center;
+      background: #f8f8f8;
     }
-    h1 {
+    h2 {
+      margin: 10px 0 5px;
       font-size: 1.4em;
-      margin: 8px 0;
-      color: #cc5500;
     }
-    #game {
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 固定4列 */
-      grid-template-rows: repeat(4, 1fr);   /* 固定4行 */
+      grid-template-columns: repeat(4, 1fr);
       gap: 6px;
-      padding: 8px;
-      height: calc(100vh - 140px); /* 扣掉標題+按鈕 */
-      box-sizing: border-box;
+      padding: 6px;
+      max-width: 95vw;
+      margin: 0 auto;
     }
     .card {
       background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1.8em;
+      border-radius: 8px;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
       user-select: none;
+      overflow: hidden;
     }
     .card img {
-      max-width: 70%;
-      max-height: 70%;
-      border-radius: 6px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .matched {
-      background: #28a745;
       color: white;
-      border-color: #28a745;
-      pointer-events: none;
-      animation: pop 0.4s ease;
     }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
-      100% { transform: scale(1); }
+    .buttons {
+      margin-top: 10px;
     }
-    #message {
-      font-size: 2.5em;
-      color: #e63946;
-      display: none;
+    .buttons button {
+      background: #004d80;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin: 5px;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .buttons button:hover {
+      background: #003355;
+    }
+    #victory {
       position: fixed;
       top: 40%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.3);
-      animation: grow 1s forwards;
+      transform: translate(-50%, -50%) scale(0.2);
+      font-size: 3em;
+      font-weight: bold;
+      color: #e60000;
+      opacity: 0;
+      transition: all 1s ease;
+      z-index: 1000;
     }
-    @keyframes grow {
-      to { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
-    }
-    #buttons {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff8dc;
-      padding: 8px;
-      display: flex;
-      justify-content: space-around;
-      border-top: 2px solid #ccc;
-    }
-    #buttons button {
-      padding: 8px 12px;
-      font-size: 1em;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #ffb347;
-      color: white;
-    }
-    #buttons button:hover {
-      background: #ff8800;
+    #victory.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.5);
     }
   </style>
 </head>
 <body>
-  <h1>果子圖片 & 台語果子名配對 - 第1回</h1>
-  <div id="game"></div>
-  <div id="message">有夠 gâu！</div>
+  <h2>果子圖片&台語果子名配對 - 第1回</h2>
+  <div class="note">📱 建議直式觀看效果最佳</div>
+  <div class="grid" id="gameGrid"></div>
 
-  <div id="buttons">
-    <button onclick="location.reload()">🔄 再玩一次</button>
-    <button onclick="location.href='game9_round2.html'">⏭ 下一回</button>
-    <button onclick="location.href='index.html'">⬅ 回首頁</button>
+  <div id="victory">有夠 gâu！</div>
+
+  <div class="buttons">
+    <button onclick="restartGame()">再玩一次</button>
+    <button onclick="nextRound()">下一回</button>
+    <button onclick="goHome()">回首頁</button>
   </div>
 
   <audio id="wrongSound" src="game9_assets/wrong1.mp3"></audio>
   <audio id="victorySound" src="game9_assets/victory2.mp3"></audio>
 
   <script>
-    const data = [
-      {"id":"fruit1","chinese":"芒果","taiwanese":"檨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3"},
-      {"id":"fruit2","chinese":"橘子","taiwanese":"柑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3"},
-      {"id":"fruit3","chinese":"香蕉","taiwanese":"弓蕉","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3"},
-      {"id":"fruit4","chinese":"西瓜","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14437.mp3"},
-      {"id":"fruit5","chinese":"蓮霧","taiwanese":"蓮霧","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9454.mp3"},
-      {"id":"fruit6","chinese":"李子","taiwanese":"李仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9120.mp3"},
-      {"id":"fruit7","chinese":"柿子","taiwanese":"柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13808.mp3"},
-      {"id":"fruit8","chinese":"蘋果","taiwanese":"蘋果","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11819.mp3"}
-    ];
+    const colors = ["#28a745", "#ff5733", "#007bff", "#8e44ad", "#d35400", "#2c3e50", "#16a085", "#b03a2e"];
 
-    let selected = [];
+    let data = [];
+    let firstPick = null;
     let matchedCount = 0;
-    const gameDiv = document.getElementById('game');
 
-    // 準備卡牌：圖片 + 名稱
-    let cards = [];
-    data.forEach(f => {
-      cards.push({type:"img", id:f.id, content:`<img src="game9_assets/${f.id}.png" alt="${f.chinese}">`, audio:f.audio});
-      cards.push({type:"text", id:f.id, content:`${f.taiwanese}`, audio:f.audio});
-    });
+    async function loadData() {
+      const res = await fetch("game9_assets/fruits_part1.json");
+      const json = await res.json();
+      data = json.slice(0, 8); // 第1回只取前8筆
+      initGame();
+    }
 
-    // 洗牌
-    cards.sort(() => Math.random() - 0.5);
+    function initGame() {
+      matchedCount = 0;
+      firstPick = null;
+      const grid = document.getElementById("gameGrid");
+      grid.innerHTML = "";
 
-    // 顯示卡牌
-    cards.forEach(card => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = card.content;
-      div.onclick = () => selectCard(div, card);
-      gameDiv.appendChild(div);
-    });
+      let cards = [];
+      data.forEach((item, idx) => {
+        cards.push({
+          id: item.id,
+          type: "img",
+          content: `<img src="game9_assets/${item.id}.png">`
+        });
+        cards.push({
+          id: item.id,
+          type: "text",
+          content: item.taiwanese
+        });
+      });
 
-    function selectCard(div, card) {
-      if (div.classList.contains('matched') || selected.length === 2) return;
-      div.style.borderColor = "#007bff";
-      selected.push({div, card});
+      cards.sort(() => Math.random() - 0.5);
 
-      if (selected.length === 2) {
-        const [c1, c2] = selected;
-        if (c1.card.id === c2.card.id && c1.card.type !== c2.card.type) {
-          // ✅ 配對成功
-          c1.div.classList.add('matched');
-          c2.div.classList.add('matched');
-          playAudio(c1.card.audio);
+      cards.forEach(card => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.dataset.id = card.id;
+        div.dataset.type = card.type;
+        div.innerHTML = card.content;
+        div.onclick = () => handleClick(div);
+        grid.appendChild(div);
+      });
+    }
+
+    function handleClick(card) {
+      if (card.classList.contains("matched")) return;
+
+      if (!firstPick) {
+        firstPick = card;
+        card.style.outline = "3px solid #ff9800";
+      } else {
+        if (firstPick === card) return;
+
+        if (firstPick.dataset.id === card.dataset.id &&
+            firstPick.dataset.type !== card.dataset.type) {
+          // ✅ 成功配對
+          let color = colors[Math.floor(Math.random() * colors.length)];
+          [firstPick, card].forEach(c => {
+            c.classList.add("matched");
+            c.style.background = color;
+            c.style.color = "white";
+            c.style.outline = "none";
+          });
+
           matchedCount++;
+          // 播放正確音檔
+          const item = data.find(d => d.id === card.dataset.id);
+          if (item && item.audio) {
+            new Audio(item.audio).play();
+          }
+
           if (matchedCount === data.length) {
-            document.getElementById('message').style.display = "block";
-            document.getElementById('victorySound').play();
+            document.getElementById("victorySound").play();
+            const v = document.getElementById("victory");
+            v.classList.add("show");
+            setTimeout(() => v.classList.remove("show"), 2000);
           }
         } else {
-          // ❌ 配對失敗
-          document.getElementById('wrongSound').play();
-          setTimeout(() => {
-            c1.div.style.borderColor = "#ccc";
-            c2.div.style.borderColor = "#ccc";
-          }, 800);
+          // ❌ 錯誤配對
+          document.getElementById("wrongSound").play();
+          firstPick.style.outline = "none";
         }
-        selected = [];
+        firstPick = null;
       }
     }
 
-    function playAudio(src) {
-      let audio = new Audio(src);
-      audio.play();
+    function restartGame() {
+      initGame();
     }
+    function nextRound() {
+      window.location.href = "game9_round2.html";
+    }
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    loadData();
   </script>
 </body>
 </html>
