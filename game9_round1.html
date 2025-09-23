@@ -1,182 +1,322 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>果子圖片 & 台語果子名配對 - 第1回</title>
   <style>
-    body {
-      font-family: "Noto Sans TC", sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
+    :root{
+      --card-h: 140px; /* 固定格子高度（可視需求微調） */
+      --grid-gap: 8px;
+      --max-grid-width: 980px;
     }
-    h2 {
-      margin: 10px 0;
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      background:#ffffff; color:#222; text-align:center;
     }
-    .note {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #d35400;
-      margin-bottom: 10px;
+    header{ padding:10px 12px 0; }
+    h1{ margin:0; font-size:1.2rem; color:#cc5500; }
+    .hint{
+      margin:10px 0 8px;
+      font-size:1.45rem; /* 更醒目 */
+      color:#d35400; font-weight:700;
     }
+
+    /* Grid 固定 4x4（16 格） */
     .grid {
-      display: grid;
+      display:grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 10px;
-      max-width: 600px;
-      margin: auto;
+      gap: var(--grid-gap);
+      max-width: var(--max-grid-width);
+      margin: 0 auto 16px;
+      padding: 6px;
     }
+
     .card {
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      background: #fff;
-      padding: 5px;
-      cursor: pointer;
-      min-height: 80px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: clamp(16px, 6vw, 28px); /* 文字大小佔格子60–70% */
-      font-weight: bold;
-      color: #000;
-      overflow: hidden;
+      background:#fafafa;
+      border:1.4px solid #ddd;
+      border-radius:10px;
+      height: var(--card-h);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .12s ease;
+      padding:6px;
     }
+    .card:active{ transform: scale(.995); }
+
+    /* 圖片 */
     .card img {
-      max-width: 90%;
-      max-height: 90%;
+      max-width:78%;
+      max-height:68%;
+      object-fit:contain;
+      display:block;
+      border-radius:6px;
     }
-    .matched {
-      color: #000 !important;
+
+    /* 文字（佔格子 60–70%）    */
+    .fruit-text {
+      font-weight:800;
+      color:#111; /* 統一深色文字，配淺底更清楚 */
+      line-height:1;
+      /* 使用 clamp 與卡片高度計算，避免文字超出 */
+      font-size: clamp(18px, calc(var(--card-h) * 0.55), 72px);
+      text-align:center;
+      padding:0 6px;
+      word-break:break-word;
     }
-    #message {
-      font-size: 2em;
-      color: green;
-      margin: 10px;
+
+    /* 選取 / 錯誤提示 */
+    .selected { outline: 3px solid #ffd28a; outline-offset:-6px; }
+    .wrong { outline: 3px solid #e66; outline-offset:-6px; }
+
+    /* 已配對：淺色底（文字仍深色），但背景顏色由 JS 指派 */
+    .matched { pointer-events: none; }
+
+    /* 勝利文字 */
+    #victory {
+      position: fixed;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(.4);
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: #e74c3c;
       opacity: 0;
-      transform: scale(0.5);
-      transition: all 0.5s ease-in-out;
+      z-index: 2000;
+      transition: transform .45s ease, opacity .35s ease;
+      pointer-events:none;
     }
-    #message.show {
-      opacity: 1;
-      transform: scale(1.5);
+    #victory.show { transform: translate(-50%, -50%) scale(1.4); opacity:1; }
+
+    /* 底部按鈕（您要求保留原樣） */
+    .bottom {
+      position: fixed;
+      left:0; right:0; bottom:0;
+      background:#fff8dc;
+      border-top:1px solid #e6ddd0;
+      padding: 10px 8px;
+      display:flex;
+      justify-content:space-around;
+      gap:8px;
+      z-index:1200;
     }
-    .buttons {
-      margin-top: 15px;
+    .bottom button {
+      background:#ff9800;
+      color:#fff;
+      border:none;
+      padding:10px 14px;
+      border-radius:8px;
+      font-size:1rem;
+      cursor:pointer;
+      min-width:88px;
     }
-    button {
-      padding: 10px 18px;
-      margin: 5px;
-      font-size: 1em;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background-color: #ff7043;
-      color: white;
-      font-weight: bold;
+
+    /* 小螢幕微調 */
+    @media(max-width:480px){
+      :root{ --card-h: 120px; }
+      .hint { font-size: 1.25rem; }
     }
-    button:hover {
-      background-color: #e64a19;
+    @media(min-width:900px){
+      :root{ --card-h:160px; }
     }
   </style>
 </head>
 <body>
-  <h2>果子圖片 & 台語果子名配對 - 第1回</h2>
-  <div class="note">📱 建議直式觀看效果最佳</div>
-  <div id="game" class="grid"></div>
-  <div id="message">有夠 gâu！</div>
-  <div class="buttons">
-    <button onclick="location.reload()">再玩一次</button>
-    <button onclick="window.location.href='game9_round2.html'">下一回</button>
-    <button onclick="window.location.href='index.html'">回首頁</button>
+  <header>
+    <h1>果子圖片 & 台語果子名配對 — 第1回</h1>
+    <div class="hint">📱 建議直式觀看效果最佳</div>
+  </header>
+
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div id="victory">有夠 gâu！</div>
+
+  <div class="bottom">
+    <button onclick="location.reload()">🔄 再玩一次</button>
+    <button onclick="location.href='game9_round2.html'">⏭ 下一回</button>
+    <button onclick="location.href='index.html'">⬅ 回首頁</button>
   </div>
 
-  <audio id="wrongSound" src="game9_assets/wrong1.mp3"></audio>
-  <audio id="victorySound" src="game9_assets/victory2.mp3"></audio>
+  <audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
+  <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 
   <script>
-    const successColors = [
-      "#FFEB99","#B5EAD7","#C7CEEA","#FFDAC1",
-      "#E2F0CB","#FFB7B2","#AEDFF7","#D5E8D4"
+    // 顏色調色盤：淺色且差異明顯（保證文字深色可讀）
+    const palette = [
+      "#FFF1B8", // 淡黃
+      "#DFF8E2", // 淡綠
+      "#E8E8FF", // 淡紫
+      "#FFEFD6", // 淡蜜橘
+      "#DFF4F4", // 淡青
+      "#FFD6E0", // 淡粉
+      "#CDE7FF", // 淡藍
+      "#F0F7E6"  // 淡灰綠
     ];
 
-    const data = [
-      {"id":"fruit1","taiwanese":"檨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3"},
-      {"id":"fruit2","taiwanese":"柑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3"},
-      {"id":"fruit3","taiwanese":"弓蕉","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3"},
-      {"id":"fruit4","taiwanese":"蓮霧","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7064.mp3"},
-      {"id":"fruit5","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/15/15026.mp3"},
-      {"id":"fruit6","taiwanese":"李仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9019.mp3"},
-      {"id":"fruit7","taiwanese":"番石榴","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3043.mp3"},
-      {"id":"fruit8","taiwanese":"旺梨","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/15/15123.mp3"}
-    ];
+    const GRID_JSON = 'game9_assets/fruits_part1.json';
+    const ROUND_COUNT = 8; // 第1回取前 8 筆
+    const grid = document.getElementById('grid');
+    const wrongAudio = document.getElementById('wrongAudio');
+    const victoryAudio = document.getElementById('victoryAudio');
+    const victoryEl = document.getElementById('victory');
 
-    const gameContainer = document.getElementById("game");
-    let cards = [];
+    let fruits = [];    // 來源 JSON（前8筆）
+    let cards = [];     // 將包含 16 張卡：8 圖 + 8 文
+    let selected = null;
+    let lock = false;
+    let matched = 0;
+    let colorMap = {};  // id -> bgColor (唯一)
 
-    data.forEach((fruit, index) => {
-      cards.push({
-        id: fruit.id,
-        content: `<img src="game9_assets/${fruit.id}.png" alt="${fruit.taiwanese}">`,
-        type: "image",
-        taiwanese: fruit.taiwanese,
-        audio: fruit.audio
-      });
-      cards.push({
-        id: fruit.id,
-        content: fruit.taiwanese,
-        type: "text",
-        taiwanese: fruit.taiwanese,
-        audio: fruit.audio
-      });
-    });
-
-    cards = cards.sort(() => 0.5 - Math.random());
-
-    let firstCard = null;
-    let matchedPairs = 0;
-
-    cards.forEach((card, i) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = card.content;
-      div.dataset.id = card.id;
-      div.dataset.type = card.type;
-      div.onclick = () => selectCard(div, card);
-      gameContainer.appendChild(div);
-    });
-
-    function selectCard(div, card) {
-      if (div.classList.contains("matched")) return;
-
-      if (!firstCard) {
-        firstCard = { div, card };
-        div.style.borderColor = "blue";
-      } else {
-        if (firstCard.card.id === card.id && firstCard.card.type !== card.type) {
-          const color = successColors[matchedPairs % successColors.length];
-          firstCard.div.classList.add("matched");
-          div.classList.add("matched");
-          firstCard.div.style.backgroundColor = color;
-          div.style.backgroundColor = color;
-          playAudio(card.audio);
-          matchedPairs++;
-          if (matchedPairs === data.length) {
-            document.getElementById("victorySound").play();
-            const msg = document.getElementById("message");
-            msg.classList.add("show");
-          }
-        } else {
-          document.getElementById("wrongSound").play();
-        }
-        firstCard.div.style.borderColor = "#ccc";
-        firstCard = null;
+    // 小工具：Fisher-Yates shuffle（就地）
+    function shuffle(arr){
+      for(let i = arr.length -1; i>0; i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
+      return arr;
     }
 
-    function playAudio(src) {
-      const audio = new Audio(src);
-      audio.play();
+    // 載入 JSON 並初始化
+    fetch(GRID_JSON)
+      .then(r => {
+        if(!r.ok) throw new Error('無法讀取 fruits_part1.json');
+        return r.json();
+      })
+      .then(all => {
+        if(!Array.isArray(all)) throw new Error('fruits_part1.json 格式非陣列');
+        fruits = all.slice(0, ROUND_COUNT);
+        init();
+      })
+      .catch(err => {
+        console.error('讀 JSON 錯誤：', err);
+        alert('無法讀取水果資料 (fruits_part1.json)。請確認檔案在 game9_assets/。');
+      });
+
+    function init(){
+      grid.innerHTML = '';
+      cards = [];
+      selected = null;
+      lock = false;
+      matched = 0;
+      colorMap = {};
+
+      // 為每個 id 指派唯一淺色（先打亂 palette，再依序給 fruits）
+      const colors = shuffle(palette.slice());
+      fruits.forEach((f,i) => { colorMap[f.id] = colors[i % colors.length]; });
+
+      // 建立 cards
+      fruits.forEach(f => {
+        cards.push({ id: f.id, type:'img', data: f });
+        cards.push({ id: f.id, type:'text', data: f });
+      });
+
+      shuffle(cards);
+
+      // 建 DOM
+      cards.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.dataset.id = c.id;
+        el.dataset.type = c.type;
+        el.setAttribute('role','button');
+        el.setAttribute('tabindex','0');
+
+        if(c.type === 'img'){
+          const img = document.createElement('img');
+          img.src = `game9_assets/${c.id}.png`;
+          img.alt = c.data.chinese || c.data.taiwanese || c.id;
+          img.onerror = () => { img.style.opacity = 0.6; img.alt = '圖片載入失敗'; };
+          el.appendChild(img);
+        } else {
+          const span = document.createElement('span');
+          span.className = 'fruit-text';
+          span.textContent = c.data.taiwanese || c.data.chinese || c.id;
+          el.appendChild(span);
+        }
+
+        // 互動：click / keyboard
+        el.addEventListener('click', () => pick(el));
+        el.addEventListener('keydown', e => {
+          if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(el); }
+        });
+
+        grid.appendChild(el);
+      });
+    }
+
+    function pick(el){
+      if(lock) return;
+      if(el.classList.contains('matched')) return;
+
+      // 第一張
+      if(!selected){
+        selected = el;
+        el.classList.add('selected');
+        return;
+      }
+
+      // 如果選到同一張 -> 取消
+      if(selected === el){
+        selected.classList.remove('selected');
+        selected = null;
+        return;
+      }
+
+      // 選到第二張
+      el.classList.add('selected');
+
+      const idA = selected.dataset.id;
+      const idB = el.dataset.id;
+      const typeA = selected.dataset.type;
+      const typeB = el.dataset.type;
+
+      // 成功條件：id 相同且 type 不同（圖對字）
+      if(idA === idB && typeA !== typeB){
+        const bg = colorMap[idA] || '#eaf7e8';
+        [selected, el].forEach(node => {
+          node.classList.remove('selected');
+          node.classList.add('matched');
+          node.style.backgroundColor = bg;
+          node.style.borderColor = '#ddd';
+          // 文字（若有）保持深色，圖片仍清晰
+          node.style.color = '#111';
+        });
+
+        // 播放正確音檔（JSON 的 audio 欄位）
+        const fruitObj = fruits.find(f => f.id === idA);
+        if(fruitObj && fruitObj.audio){
+          try { new Audio(fruitObj.audio).play(); } catch(e){ console.warn('播放 audio 錯誤', e); }
+        }
+
+        matched++;
+        selected = null;
+
+        if(matched === fruits.length){
+          // 全部完成
+          try { victoryAudio.currentTime = 0; victoryAudio.play(); } catch(e){}
+          victoryEl.classList.add('show');
+          setTimeout(()=> victoryEl.classList.remove('show'), 2200);
+        }
+      } else {
+        // 錯誤：提示並回復
+        try { wrongAudio.currentTime = 0; wrongAudio.play(); } catch(e){}
+        selected.classList.add('wrong');
+        el.classList.add('wrong');
+        lock = true;
+        setTimeout(()=> {
+          selected.classList.remove('selected','wrong');
+          el.classList.remove('selected','wrong');
+          selected = null;
+          lock = false;
+        }, 650);
+      }
     }
   </script>
 </body>
