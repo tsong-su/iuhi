@@ -1,182 +1,352 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>果子圖片 & 台語果子名配對 - 第1回</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      background: #fefefe;
+    :root{
+      --card-size: 120px; /* Will be overridden by JS based on screen width */
+      --gap: 8px;
+      --max-width: 1000px;
     }
-    h1 {
-      margin: 10px 0 5px 0;
-      font-size: 22px;
-      text-align: center;
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      background:#ffffff; color:#222; text-align:center;
     }
-    .note {
-      font-size: 20px;
-      color: #d9534f;
-      margin-bottom: 10px;
-      font-weight: bold;
+    header{ padding:12px; }
+    h1{ margin:0; font-size:18px; color:#cc5500; }
+    .hint{
+      margin-top:8px;
+      margin-bottom:10px;
+      font-size:1.3rem;
+      color:#d35400;
+      font-weight:700;
     }
-    .game-container {
-      display: grid;
+
+    /* container: keep full width but cap max width so cards look stable */
+    .wrap{ width: calc(100% - 16px); max-width: var(--max-width); margin: 0 auto; }
+
+    /* grid: always 4 columns for Round1 */
+    .grid{
+      display:grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      width: 95vw;
-      max-width: 500px;
-      margin-bottom: 15px;
+      gap: var(--gap);
+      padding: 6px;
+      width:100%;
     }
-    .card {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      background: #fff;
-      overflow: hidden;
-      font-size: 60%;
+
+    /* card: use CSS variable --card-size for stable sizing */
+    .card{
+      width:100%;
+      height: var(--card-size);
+      border-radius:10px;
+      border:1.4px solid #ddd;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fafafa;
+      overflow:hidden;
+      cursor:pointer;
+      padding:6px;
+      transition: transform .08s ease, border-color .12s ease, background .12s ease;
     }
-    .card img {
-      max-width: 80%;
-      max-height: 80%;
-      object-fit: contain;
-      pointer-events: none;
+    .card:active{ transform: scale(.995); }
+
+    /* image inside */
+    .card img{
+      max-width:78%;
+      max-height:72%;
+      object-fit:contain;
+      display:block;
+      border-radius:6px;
+      pointer-events:none;
     }
-    .card span {
-      font-size: 1.6em; /* 大約是格子高度 60% */
-      font-weight: bold;
-      text-align: center;
-      color: #333;
+
+    /* text inside - font sized relative to card-size via JS-set CSS var --font-size */
+    .fruit-text{
+      font-weight:800;
+      color:#111; /* always deep color for readability */
+      text-align:center;
+      line-height:1;
+      padding:4px;
+      word-break:break-word;
+      user-select:none;
+      font-size: var(--font-size);
     }
-    .matched {
-      color: #000 !important;
-      font-weight: bold;
-    }
-    .buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background: #ff9800;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #e68900;
-    }
-    #message {
-      font-size: 32px;
-      font-weight: bold;
-      color: green;
-      margin-top: 20px;
+
+    /* matched: background is set by JS from palette; keep text deep color */
+    .matched{ pointer-events:none; }
+
+    /* selected and wrong visual */
+    .selected { outline: 3px solid #ffd28a; outline-offset: -6px; }
+    .wrong { outline: 3px solid rgba(230,57,70,0.9); outline-offset: -6px; }
+
+    /* Victory floating */
+    #victory{
+      position: fixed;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(.4);
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #d64545;
       opacity: 0;
-      transition: transform 0.5s ease, opacity 0.5s ease;
-      transform: scale(0.5);
+      z-index: 2200;
+      transition: transform .45s ease, opacity .35s ease;
+      pointer-events:none;
+      background: transparent;
     }
-    #message.show {
-      opacity: 1;
-      transform: scale(1.4);
+    #victory.show{ transform: translate(-50%, -50%) scale(1.4); opacity: 1; }
+
+    /* bottom buttons unchanged visually */
+    .bottom{
+      position: fixed;
+      left:0; right:0; bottom:0;
+      background:#fff8dc;
+      border-top:1px solid #e6ddd0;
+      padding: 10px 8px;
+      display:flex;
+      justify-content:space-around;
+      gap:8px;
+      z-index:1200;
+    }
+    .bottom button{
+      background:#ff9800;
+      color:#fff;
+      border:none;
+      padding:10px 14px;
+      border-radius:8px;
+      font-size:1rem;
+      cursor:pointer;
+      min-width:88px;
+      font-weight:700;
+    }
+
+    /* small adjustments */
+    @media (max-width:480px){
+      :root { --card-size: 120px; }
+      .hint{ font-size:1.15rem; }
+    }
+    @media (min-width:900px){
+      :root { --card-size: 150px; }
     }
   </style>
 </head>
 <body>
-  <h1>果子圖片 & 台語果子名配對 - 第1回</h1>
-  <div class="note">📱 建議直式觀看效果最佳</div>
-  <div class="game-container" id="game"></div>
-  <div class="buttons">
-    <button onclick="location.reload()">重新開始</button>
-    <button onclick="window.location.href='game9.html'">回首頁</button>
+  <header class="wrap">
+    <h1>果子圖片 & 台語果子名配對 — 第1回</h1>
+    <div class="hint">📱 建議直式觀看效果最佳</div>
+  </header>
+
+  <main class="wrap">
+    <div id="grid" class="grid" aria-live="polite"></div>
+  </main>
+
+  <div id="victory">有夠 gâu！</div>
+
+  <div class="bottom">
+    <button onclick="location.reload()">🔄 再玩一次</button>
+    <button onclick="location.href='game9_round2.html'">⏭ 下一回</button>
+    <button onclick="location.href='index.html'">⬅ 回首頁</button>
   </div>
-  <div id="message">有夠 gâu！</div>
+
+  <audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
+  <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 
   <script>
-    const fruits = [
-      {"id":"fruit1","chinese":"芒果","taiwanese":"檨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3"},
-      {"id":"fruit2","chinese":"橘子","taiwanese":"柑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3"},
-      {"id":"fruit3","chinese":"香蕉","taiwanese":"弓蕉","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3"},
-      {"id":"fruit4","chinese":"鳳梨","taiwanese":"鳳梨","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/812.mp3"},
-      {"id":"fruit5","chinese":"西瓜","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/1461.mp3"},
-      {"id":"fruit6","chinese":"木瓜","taiwanese":"木瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/745.mp3"},
-      {"id":"fruit7","chinese":"柿子","taiwanese":"柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5285.mp3"},
-      {"id":"fruit8","chinese":"李子","taiwanese":"李仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/731.mp3"}
+    /* --- configuration --- */
+    const JSON_PATH = 'game9_assets/fruits_part1.json';
+    const ROUND_COUNT = 8; // first 8
+    // shallow, distinct palette for backgrounds
+    const PALETTE = [
+      "#FFF7D6","#DFF3E6","#E9E8FF","#FFEFE6",
+      "#E8F7F7","#FFEFF2","#E8F0FF","#F6FFF1"
     ];
 
-    const colors = ["#FFCDD2", "#F8BBD0", "#E1BEE7", "#BBDEFB", "#C8E6C9", "#FFF9C4", "#FFE0B2", "#D7CCC8"];
-    let selected = [];
-    let matchedCount = 0;
+    const grid = document.getElementById('grid');
+    const wrongAudio = document.getElementById('wrongAudio');
+    const victoryAudio = document.getElementById('victoryAudio');
+    const victoryEl = document.getElementById('victory');
 
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
+    let fruits = [];   // will be loaded from JSON
+    let deck = [];     // cards
+    let firstPick = null;
+    let lock = false;
+    let matched = 0;
+    let colorMap = {}; // id -> bg color
+
+    // compute card size and font size based on window width, set CSS variables
+    function computeSizes(){
+      const wrapPad = 20; // account for margins
+      const columns = 4;
+      const availableW = Math.min(window.innerWidth - wrapPad, 980);
+      // compute card width (floor)
+      const cardW = Math.floor((availableW - (columns-1)*8) / columns);
+      // enforce reasonable min/max
+      const final = Math.max(100, Math.min(160, cardW));
+      document.documentElement.style.setProperty('--card-size', final + 'px');
+      // set font size to ~60% of card height
+      const fontPx = Math.floor(final * 0.55);
+      document.documentElement.style.setProperty('--font-size', fontPx + 'px');
+      // also set inline variable for JS usage
+      return { card: final, font: fontPx };
     }
 
-    function createCards() {
-      const container = document.getElementById("game");
-      let cards = [];
-      fruits.forEach((f, i) => {
-        cards.push({id: f.id, type: "img", content: `<img src="game9_assets/${f.id}.png">`, pair: f.id, idx: i});
-        cards.push({id: f.id, type: "txt", content: `<span>${f.taiwanese}</span>`, pair: f.id, idx: i});
-      });
-      shuffle(cards).forEach(c => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.dataset.id = c.id;
-        div.dataset.type = c.type;
-        div.dataset.idx = c.idx;
-        div.innerHTML = c.content;
-        div.addEventListener("click", () => selectCard(div));
-        container.appendChild(div);
-      });
+    // call on load and resize
+    function setupResponsive(){
+      computeSizes();
+      window.addEventListener('resize', () => computeSizes());
     }
 
-    function selectCard(card) {
-      if (card.classList.contains("matched") || selected.includes(card)) return;
-      selected.push(card);
-      card.style.border = "2px solid blue";
-      if (selected.length === 2) {
-        const [c1, c2] = selected;
-        if (c1.dataset.id === c2.dataset.id && c1.dataset.type !== c2.dataset.type) {
-          const idx = c1.dataset.idx;
-          const color = colors[idx % colors.length];
-          [c1, c2].forEach(c => {
-            c.classList.add("matched");
-            c.style.background = color;
-            c.style.border = "2px solid " + color;
-          });
-          new Audio(fruits[idx].audio).play();
-          matchedCount++;
-          if (matchedCount === fruits.length) {
-            setTimeout(() => {
-              new Audio("game9_assets/victory2.mp3").play();
-              document.getElementById("message").classList.add("show");
-            }, 300);
-          }
+    // shuffle in-place
+    function shuffle(arr){
+      for (let i = arr.length-1; i>0; i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // load JSON then init
+    fetch(JSON_PATH)
+      .then(r => { if(!r.ok) throw new Error('JSON load fail'); return r.json(); })
+      .then(all => {
+        if(!Array.isArray(all)) throw new Error('fruits_part1.json not array');
+        fruits = all.slice(0, ROUND_COUNT);
+        setupResponsive();
+        initGame();
+      })
+      .catch(e => {
+        console.error('load json err', e);
+        alert('無法讀取 fruits_part1.json，請確認檔案在 game9_assets/。');
+      });
+
+    function initGame(){
+      grid.innerHTML = '';
+      deck = [];
+      firstPick = null;
+      lock = false;
+      matched = 0;
+      colorMap = {};
+
+      // assign unique palette color per id (shuffled)
+      const colors = shuffle(PALETTE.slice());
+      fruits.forEach((f,idx) => {
+        colorMap[f.id] = colors[idx % colors.length];
+      });
+
+      // build deck: for each fruit create an img card and a text card
+      fruits.forEach(f => {
+        deck.push({ id: f.id, type: 'img', data: f });
+        deck.push({ id: f.id, type: 'text', data: f });
+      });
+
+      shuffle(deck);
+
+      // create DOM
+      const sizes = computeSizes();
+      deck.forEach((cardObj, idx) => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.dataset.id = cardObj.id;
+        el.dataset.type = cardObj.type;
+        el.setAttribute('role','button');
+        el.setAttribute('tabindex','0');
+
+        if (cardObj.type === 'img'){
+          const img = document.createElement('img');
+          img.src = `game9_assets/${cardObj.id}.png`;
+          img.alt = cardObj.data.chinese || cardObj.data.taiwanese || cardObj.id;
+          img.onerror = () => { img.style.opacity = 0.6; img.alt='圖片載入失敗'; };
+          el.appendChild(img);
         } else {
-          new Audio("game9_assets/wrong1.mp3").play();
-          setTimeout(() => {
-            selected.forEach(c => c.style.border = "2px solid #ccc");
-          }, 500);
+          const span = document.createElement('span');
+          span.className = 'fruit-text';
+          span.textContent = cardObj.data.taiwanese || cardObj.data.chinese || cardObj.id;
+          // ensure font-size reflects computed size
+          span.style.fontSize = getComputedStyle(document.documentElement).getPropertyValue('--font-size') || (Math.floor(sizes.font) + 'px');
+          el.appendChild(span);
         }
-        selected = [];
+
+        el.addEventListener('click', () => onPick(el));
+        el.addEventListener('keydown', ev => { if(ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onPick(el); } });
+
+        grid.appendChild(el);
+      });
+    }
+
+    function onPick(el){
+      if (lock) return;
+      if (el.classList.contains('matched')) return;
+
+      // pick first
+      if (!firstPick){
+        firstPick = el;
+        el.classList.add('selected');
+        return;
+      }
+
+      // clicking same card cancels
+      if (firstPick === el){
+        firstPick.classList.remove('selected');
+        firstPick = null;
+        return;
+      }
+
+      // pick second
+      el.classList.add('selected');
+
+      const idA = firstPick.dataset.id;
+      const idB = el.dataset.id;
+      const typeA = firstPick.dataset.type;
+      const typeB = el.dataset.type;
+
+      if (idA === idB && typeA !== typeB){
+        // match success: set shallow background color for both (from colorMap)
+        const bg = colorMap[idA] || '#f0f7ee';
+        [firstPick, el].forEach(node => {
+          node.classList.remove('selected');
+          node.classList.add('matched');
+          node.style.backgroundColor = bg;
+          node.style.borderColor = '#ddd';
+        });
+
+        // play audio if exists
+        const fruitObj = fruits.find(f => f.id === idA);
+        if (fruitObj && fruitObj.audio){
+          try { new Audio(fruitObj.audio).play(); } catch(e){ console.warn('audio play err', e); }
+        }
+
+        matched++;
+        firstPick = null;
+
+        if (matched === fruits.length){
+          try { victoryAudio.currentTime = 0; victoryAudio.play(); } catch(e){}
+          victoryEl.classList.add('show');
+          setTimeout(()=> victoryEl.classList.remove('show'), 2200);
+        }
+
+      } else {
+        // mismatch
+        try { wrongAudio.currentTime = 0; wrongAudio.play(); } catch(e){}
+        firstPick.classList.add('wrong');
+        el.classList.add('wrong');
+        lock = true;
+        setTimeout(()=> {
+          firstPick.classList.remove('wrong','selected');
+          el.classList.remove('wrong','selected');
+          firstPick = null;
+          lock = false;
+        }, 700);
       }
     }
 
-    createCards();
+    /* helpful note: if you replace images on GitHub and still see old ones, do a hard refresh (Ctrl/Cmd+Shift+R)
+       or clear browser cache on mobile to ensure new images load. */
+
   </script>
 </body>
 </html>
