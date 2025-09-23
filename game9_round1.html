@@ -80,7 +80,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <script>
 const JSON_PATH='game9_assets/fruits_part1.json';
 const ROUND_COUNT=8;
-const PALETTE=["#FFF3E0","#81D4FA","#E8F5E9","#FFFDE7","#F3E5F5","#B3E5FC","#FFF0F5","#F9FBE7"];
+const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
 const grid=document.getElementById('grid');
 const wrongAudio=document.getElementById('wrongAudio');
 const victoryAudio=document.getElementById('victoryAudio');
@@ -139,7 +139,6 @@ function onPick(el){
       try{new Audio(fruitObj.audio).play();}catch(e){console.warn('audio play err',e);}
       matched++; firstPick=null;
       if(matched===fruits.length){
-        // 最後一組成功只播放勝利音效，水果音檔已播放
         setTimeout(()=>{victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200);},1000);
       }
     }
