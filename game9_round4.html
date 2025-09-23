@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>果子圖片 & 台語果子名配對 - 第4回</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>果子圖片 & 台語果子名配對 - 第4回 (25–32)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -26,9 +26,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   padding:6px;transition: transform .08s ease,border-color .12s ease, background .12s ease;
 }
 .card:active{transform: scale(.995);}
-.card img{
-  max-width:78%; max-height:72%; object-fit:contain; display:block; border-radius:6px; pointer-events:none;
-}
+.card img{ max-width:78%; max-height:72%; object-fit:contain; display:block; border-radius:6px; pointer-events:none; }
 .fruit-text{
   font-weight:700;color:#111;text-align:center;line-height:1.1;
   padding:2px 4px;user-select:none;
@@ -63,106 +61,224 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 </head>
 <body>
 <header class="wrap">
-<h1>果子圖片 & 台語果子名配對 — 第4回</h1>
-<div class="hint">📱 建議直式觀看效果最佳</div>
+  <h1>果子圖片 & 台語果子名配對 — 第4回（第25–32筆）</h1>
+  <div class="hint">📱 建議直式觀看效果最佳</div>
 </header>
+
 <main class="wrap">
-<div id="grid" class="grid" aria-live="polite"></div>
+  <div id="grid" class="grid" aria-live="polite"></div>
 </main>
+
 <div id="victory">有夠 gâu！</div>
+
 <div class="bottom">
   <button class="btn1" onclick="location.reload()">閣耍一擺</button>
-  <button class="btn2" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+  <button class="btn3" onclick="location.href='index.html'">轉去遊戲頭頁</button>
 </div>
+
 <audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
-<script>
-const JSON_PATH='game9_assets/fruits_part2.json';
-const ROUND_START=16; // 16–23 in fruits_part2.json → fruit25–32
-const ROUND_COUNT=8;
-const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
-const grid=document.getElementById('grid');
-const wrongAudio=document.getElementById('wrongAudio');
-const victoryAudio=document.getElementById('victoryAudio');
-const victoryEl=document.getElementById('victory');
-let fruits=[], deck=[], firstPick=null, lock=false, matched=0, colorMap={};
 
+<script>
+/*
+  這支檔案會：
+  1) 把 fruits_part1.json 與 fruits_part2.json 讀出並合併
+  2) 以全域絕對編號選取第 25–32 筆（1-based）
+  3) 產生 8 種水果的圖片+文字卡片（共 16 格）
+  4) 對應配對、音效、勝利行為（最後一組：播完水果音再播勝利音）
+*/
+
+const JSON1 = 'game9_assets/fruits_part1.json';
+const JSON2 = 'game9_assets/fruits_part2.json';
+
+// 目標：第 25 ~ 32 筆（包含）
+const TARGET_START_1BASED = 25;
+const TARGET_COUNT = 8;
+
+const PALETTE = ["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
+
+const grid = document.getElementById('grid');
+const wrongAudio = document.getElementById('wrongAudio');
+const victoryAudio = document.getElementById('victoryAudio');
+const victoryEl = document.getElementById('victory');
+
+let allData = [];   // 合併後的所有水果資料 (1-based index = position in this array +1)
+let fruits = [];    // 本回要用的 8 筆
+let deck = [];
+let firstPick = null;
+let lock = false;
+let matched = 0;
+let colorMap = {};
+
+// helper: load both JSON and merge preserving order (part1 then part2)
+async function loadAll() {
+  const [r1, r2] = await Promise.all([fetch(JSON1), fetch(JSON2)]);
+  if (!r1.ok || !r2.ok) throw new Error('無法讀取 JSON');
+  const a1 = await r1.json();
+  const a2 = await r2.json();
+  allData = a1.concat(a2); // 合併：fruits_part1 (1..N) 接 fruits_part2 (N+1..)
+}
+
+// init
+(async function init(){
+  try {
+    await loadAll();
+    // compute start index (0-based) from 1-based target
+    const start0 = TARGET_START_1BASED - 1;
+    fruits = allData.slice(start0, start0 + TARGET_COUNT);
+    if (!Array.isArray(fruits) || fruits.length < TARGET_COUNT) {
+      alert('找不到足夠的水果資料 (25–32)。請確認 fruits_part1.json / fruits_part2.json 的內容。');
+      return;
+    }
+    setupResponsive();
+    buildGame();
+  } catch (e) {
+    console.error(e);
+    alert('讀取水果資料失敗，請確認 game9_assets 裡的 JSON 是否存在且格式正確。');
+  }
+})();
+
+// responsive sizing
 function computeSizes(){
   const wrapPad=20, columns=4;
-  const availableW=Math.min(window.innerWidth-wrapPad,980);
-  const cardW=Math.floor((availableW-(columns-1)*8)/columns);
-  const final=Math.max(100, Math.min(160, cardW));
-  document.documentElement.style.setProperty('--card-size', final+'px');
-  const chars=3;
-  const fontPx=Math.floor((final*0.65)/chars);
-  document.documentElement.style.setProperty('--font-size', fontPx+'px');
-  return {card:final,font:fontPx};
+  const availableW = Math.min(window.innerWidth - wrapPad, 980);
+  const cardW = Math.floor((availableW - (columns-1)*8) / columns);
+  const final = Math.max(100, Math.min(160, cardW));
+  document.documentElement.style.setProperty('--card-size', final + 'px');
+  const chars = 3;
+  const fontPx = Math.floor((final * 0.65) / chars);
+  document.documentElement.style.setProperty('--font-size', fontPx + 'px');
 }
-function setupResponsive(){computeSizes(); window.addEventListener('resize',()=>computeSizes());}
-function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
+function setupResponsive(){ computeSizes(); window.addEventListener('resize', computeSizes); }
 
-fetch(JSON_PATH).then(r=>r.json())
-.then(all=>{
-  fruits=all.slice(ROUND_START,ROUND_START+ROUND_COUNT);
-  setupResponsive(); initGame();
-}).catch(e=>{console.error('load json err',e); alert('無法讀取 JSON');});
+// build deck and DOM
+function buildGame(){
+  grid.innerHTML = '';
+  deck = [];
+  matched = 0;
+  firstPick = null;
+  lock = false;
+  colorMap = {};
 
-function initGame(){
-grid.innerHTML=''; deck=[]; firstPick=null; lock=false; matched=0; colorMap={};
-const colors=shuffle(PALETTE.slice());
-fruits.forEach((f,idx)=>{colorMap[f.id]=colors[idx%colors.length];});
-fruits.forEach(f=>{
-  deck.push({id:f.id,type:'img',data:f});
-  deck.push({id:f.id,type:'text',data:f});
-});
-shuffle(deck);
-deck.forEach(cardObj=>{
-  const el=document.createElement('div'); el.className='card';
-  el.dataset.id=cardObj.id; el.dataset.type=cardObj.type;
-  el.setAttribute('role','button'); el.setAttribute('tabindex','0');
-  if(cardObj.type==='img'){
-    const img=document.createElement('img'); img.src=`game9_assets/${cardObj.id}.png`; img.alt=cardObj.data.chinese||cardObj.data.taiwanese||cardObj.id;
-    img.onerror=()=>{img.style.opacity=0.6; img.alt='圖片載入失敗';}; el.appendChild(img);
-  } else {
-    const span=document.createElement('span'); span.className='fruit-text'; span.textContent=cardObj.data.taiwanese||cardObj.data.chinese||cardObj.id; el.appendChild(span);
-  }
-  el.addEventListener('click',()=>onPick(el));
-  el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onPick(el);}});
-  grid.appendChild(el);
-});
+  // assign colors
+  const colors = shuffle(PALETTE.slice());
+  fruits.forEach((f, idx) => {
+    colorMap[f.id] = colors[idx % colors.length];
+  });
+
+  // build card objects (img + text)
+  fruits.forEach(f => {
+    deck.push({id: f.id, type: 'img', data: f});
+    deck.push({id: f.id, type: 'text', data: f});
+  });
+  shuffle(deck);
+
+  // create DOM cards
+  deck.forEach(cardObj => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.id = cardObj.id;
+    el.dataset.type = cardObj.type;
+    el.setAttribute('role','button');
+    el.setAttribute('tabindex','0');
+
+    if (cardObj.type === 'img') {
+      const img = document.createElement('img');
+      img.src = `game9_assets/${cardObj.id}.png`;
+      img.alt = cardObj.data.chinese || cardObj.data.taiwanese || cardObj.id;
+      img.onerror = () => { img.style.opacity = 0.6; img.alt = '圖片載入失敗'; };
+      el.appendChild(img);
+    } else {
+      const span = document.createElement('span');
+      span.className = 'fruit-text';
+      span.textContent = cardObj.data.taiwanese || cardObj.data.chinese || cardObj.id;
+      el.appendChild(span);
+    }
+
+    el.addEventListener('click', () => onPick(el));
+    el.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onPick(el); }});
+    grid.appendChild(el);
+  });
 }
 
 function onPick(el){
-  if(lock) return; if(el.classList.contains('matched')) return;
-  if(!firstPick){firstPick=el; el.classList.add('selected'); return;}
-  if(firstPick===el){firstPick.classList.remove('selected'); firstPick=null; return;}
+  if (lock) return;
+  if (el.classList.contains('matched')) return;
+
+  if (!firstPick) {
+    firstPick = el;
+    el.classList.add('selected');
+    return;
+  }
+
+  if (firstPick === el) {
+    firstPick.classList.remove('selected');
+    firstPick = null;
+    return;
+  }
+
   el.classList.add('selected');
-  const idA=firstPick.dataset.id; const idB=el.dataset.id;
-  const typeA=firstPick.dataset.type; const typeB=el.dataset.type;
-  if(idA===idB && typeA!==typeB){
-    const bg=colorMap[idA]||'#f0f7ee';
-    [firstPick,el].forEach(node=>{node.classList.remove('selected'); node.classList.add('matched'); node.style.backgroundColor=bg; node.style.borderColor='#ddd';});
-    const fruitObj=fruits.find(f=>f.id===idA);
-    if(fruitObj && fruitObj.audio){
+  const idA = firstPick.dataset.id;
+  const idB = el.dataset.id;
+  const typeA = firstPick.dataset.type;
+  const typeB = el.dataset.type;
+
+  if (idA === idB && typeA !== typeB) {
+    // matched
+    const bg = colorMap[idA] || '#f0f7ee';
+    [firstPick, el].forEach(node => {
+      node.classList.remove('selected');
+      node.classList.add('matched');
+      node.style.backgroundColor = bg;
+      node.style.borderColor = '#ddd';
+    });
+
+    // play fruit audio
+    const fruitObj = fruits.find(f => f.id === idA);
+    if (fruitObj && fruitObj.audio) {
       const audio = new Audio(fruitObj.audio);
-      audio.play();
-      matched++; firstPick=null;
-      if(matched===fruits.length){
-        audio.onended = ()=>{
-          setTimeout(()=>{
-            victoryAudio.currentTime=0; victoryAudio.play();
-            victoryEl.classList.add('show');
-            setTimeout(()=>victoryEl.classList.remove('show'),2200);
-          },500);
+      // play fruit audio; if last match, wait audio end then play victory
+      audio.play().catch(()=>{ /* ignore play errors */ });
+      matched++;
+      firstPick = null;
+
+      if (matched === fruits.length) {
+        // last match: wait audio end (or fallback 1s) then play victory
+        let fired = false;
+        audio.onended = () => {
+          if (fired) return; fired = true;
+          setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); }, 800);
         };
+        // fallback if onended doesn't fire (some mobile browsers): play victory after 1.2s
+        setTimeout(()=>{ if (!fired) { fired = true; victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); } }, 1200);
+      }
+    } else {
+      // no audio: just mark matched and check victory
+      matched++;
+      firstPick = null;
+      if (matched === fruits.length) {
+        setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); }, 500);
       }
     }
-  }else{
-    try{wrongAudio.currentTime=0; wrongAudio.play();}catch(e){}
-    firstPick.classList.add('wrong'); el.classList.add('wrong'); lock=true;
-    setTimeout(()=>{firstPick.classList.remove('wrong','selected'); el.classList.remove('wrong','selected'); firstPick=null; lock=false;},700);
+
+  } else {
+    // wrong
+    try { wrongAudio.currentTime = 0; wrongAudio.play(); } catch(e){}
+    firstPick.classList.add('wrong');
+    el.classList.add('wrong');
+    lock = true;
+    setTimeout(()=> {
+      firstPick.classList.remove('wrong','selected');
+      el.classList.remove('wrong','selected');
+      firstPick = null;
+      lock = false;
+    }, 700);
   }
 }
+
+// small util
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
 </script>
 </body>
 </html>
