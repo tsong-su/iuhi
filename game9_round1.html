@@ -12,10 +12,10 @@
   --max-width: 1000px;
 }
 *{box-sizing:border-box}
-body{margin:0;padding:0;font-family:'Noto Sans TC','Source Han Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
+body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
 header{padding:12px;}
 h1{margin:0;font-size:18px;color:#cc5500;}
-.hint{margin-top:8px;margin-bottom:10px;font-size:1.8rem;color:#d35400;font-weight:700;}
+.hint{margin-top:8px;margin-bottom:10px;font-weight:700;color:#d35400;}
 .wrap{width: calc(100% - 16px); max-width: var(--max-width); margin:0 auto;}
 .grid{display:grid;grid-template-columns: repeat(4, 1fr);gap: var(--gap);padding:6px;width:100%;}
 .card{
@@ -34,7 +34,6 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   padding:2px 4px;user-select:none;
   font-size: var(--font-size);
   word-break: break-word;
-  white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .matched{pointer-events:none;}
 .selected{outline:3px solid #ffd28a;outline-offset:-6px;}
@@ -58,7 +57,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 .btn1{background:#3498db;}
 .btn2{background:#2ecc71;}
 .btn3{background:#e67e22;}
-@media (max-width:480px){:root {--card-size:120px;} .hint{font-size:2rem;}}
+@media (max-width:480px){.hint{font-size:1.8rem;}}
 @media (min-width:900px){:root {--card-size:150px;}}
 </style>
 </head>
@@ -94,8 +93,9 @@ function computeSizes(){
   const cardW=Math.floor((availableW-(columns-1)*8)/columns);
   const final=Math.max(100, Math.min(160, cardW));
   document.documentElement.style.setProperty('--card-size', final+'px');
-  // 動態字體：手機直式縮小，平板/桌面維持大字
-  const fontPx=Math.min(Math.floor(final*0.32), final*0.9/3); 
+  // 動態字體：寬度/文字長度自動縮放，確保最多3字一行
+  const chars=3; // 最多字數
+  const fontPx=Math.floor((final*0.9)/chars);
   document.documentElement.style.setProperty('--font-size', fontPx+'px');
   return {card:final,font:fontPx};
 }
@@ -104,7 +104,7 @@ function setupResponsive(){computeSizes(); window.addEventListener('resize',()=>
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
 
 fetch(JSON_PATH).then(r=>{if(!r.ok) throw new Error('JSON load fail'); return r.json();})
-.then(all=>{if(!Array.isArray(all)) throw new Error('fruits_part1.json not array'); fruits=all.slice(0,ROUND_COUNT); setupResponsive(); initGame();})
+.then(all=>{fruits=all.slice(0,ROUND_COUNT); setupResponsive(); initGame();})
 .catch(e=>{console.error('load json err',e); alert('無法讀取 fruits_part1.json');});
 
 function initGame(){
