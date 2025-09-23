@@ -1,284 +1,155 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>果子圖片 & 台語果子名配對 - 第4回 (25–32)</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果子圖片&台語果子名配對 第四回</title>
 <style>
-:root{
-  --card-size:120px;
-  --gap:8px;
-  --max-width:1000px;
-}
-*{box-sizing:border-box}
-body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
-header{padding:12px;}
-h1{margin:0;font-size:18px;color:#cc5500;}
-.hint{margin-top:8px;margin-bottom:10px;font-weight:700;color:#d35400;}
-.wrap{width: calc(100% - 16px); max-width: var(--max-width); margin:0 auto;}
-.grid{display:grid;grid-template-columns: repeat(4, 1fr);gap: var(--gap);padding:6px;width:100%;}
-.card{
-  width:100%; height: var(--card-size);
-  border-radius:10px;border:1.4px solid #ddd;
-  display:flex;align-items:center;justify-content:center;
-  background:#fafafa;overflow:hidden;cursor:pointer;
-  padding:6px;transition: transform .08s ease,border-color .12s ease, background .12s ease;
-}
-.card:active{transform: scale(.995);}
-.card img{ max-width:78%; max-height:72%; object-fit:contain; display:block; border-radius:6px; pointer-events:none; }
-.fruit-text{
-  font-weight:700;color:#111;text-align:center;line-height:1.1;
-  padding:2px 4px;user-select:none;
-  font-size: var(--font-size);
-  word-break: break-word;
-}
-.matched{pointer-events:none;}
-.selected{outline:3px solid #ffd28a;outline-offset:-6px;}
-.wrong{outline:3px solid rgba(230,57,70,0.9);outline-offset:-6px;}
-#victory{
-  position: fixed; top:42%; left:50%;
-  transform: translate(-50%, -50%) scale(.4);
-  font-size:2.4rem;font-weight:900;color:#d64545;
-  opacity:0; z-index:2200;
-  transition: transform .45s ease, opacity .35s ease; pointer-events:none; background:transparent;
-}
-#victory.show{transform: translate(-50%, -50%) scale(1.4);opacity:1;}
-.bottom{
-  position: fixed; left:0; right:0; bottom:0;
-  background:#fff8dc;border-top:1px solid #e6ddd0;
-  padding:10px 8px; display:flex; justify-content:space-around; gap:8px; z-index:1200;
-}
-.bottom button{
-  color:#fff; border:none; padding:10px 14px; border-radius:8px; font-size:1rem; cursor:pointer; min-width:88px; font-weight:700;
-}
-.btn1{background:#3498db;}
-.btn2{background:#2ecc71;}
-.btn3{background:#e67e22;}
-@media (max-width:480px){.hint{font-size:1.8rem;}}
-@media (min-width:900px){:root {--card-size:150px;}}
+  body {
+    font-family: "Microsoft JhengHei", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fff8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin-top: 10px;
+    font-size: 1.4rem;
+    text-align: center;
+  }
+  .note {
+    font-size: 1rem;
+    color: #d9534f;
+    margin-bottom: 5px;
+  }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 8px;
+    width: 95%;
+    max-width: 600px;
+    margin-bottom: 10px;
+  }
+  .grid-item {
+    background: #fefefe;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    text-align: center;
+    padding: 10px 5px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s;
+    height: 80px;
+  }
+  .grid-item img {
+    max-height: 50px;
+    margin-bottom: 5px;
+  }
+  .matched {
+    color: #fff;
+    font-weight: bold;
+  }
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .buttons button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #ff7f50;
+    transition: all 0.2s;
+  }
+  .buttons button:hover {
+    opacity: 0.8;
+  }
+  #victory {
+    font-size: 2rem;
+    color: #ff4500;
+    font-weight: bold;
+    display: none;
+    margin-top: 15px;
+    animation: popUp 0.6s ease forwards;
+  }
+  @keyframes popUp {
+    0% { transform: scale(0.2); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 </style>
 </head>
 <body>
-<header class="wrap">
-  <h1>果子圖片 & 台語果子名配對 — 第4回（第25–32筆）</h1>
-  <div class="hint">📱 建議直式觀看效果最佳</div>
-</header>
 
-<main class="wrap">
-  <div id="grid" class="grid" aria-live="polite"></div>
-</main>
+<h1>果子圖片 & 台語果子名配對 第四回</h1>
+<div class="note">📱 建議直式觀看效果最佳</div>
 
-<div id="victory">有夠 gâu！</div>
+<div class="grid-container" id="grid"></div>
 
-<div class="bottom">
-  <button class="btn1" onclick="location.reload()">閣耍一擺</button>
-  <button class="btn3" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+<div id="victory">有夠gau5！</div>
+
+<div class="buttons">
+  <button onclick="restartGame()">閣耍一擺</button>
+  <button onclick="nextRound()">後一回</button>
+  <button onclick="goHome()">轉去遊戲頭頁</button>
 </div>
 
-<audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
-<audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
+<audio id="audio-correct"></audio>
+<audio id="audio-wrong" src="game9_assets/wrong1.mp3"></audio>
+<audio id="audio-victory" src="game9_assets/victory2.mp3"></audio>
 
 <script>
-/*
-  這支檔案會：
-  1) 把 fruits_part1.json 與 fruits_part2.json 讀出並合併
-  2) 以全域絕對編號選取第 25–32 筆（1-based）
-  3) 產生 8 種水果的圖片+文字卡片（共 16 格）
-  4) 對應配對、音效、勝利行為（最後一組：播完水果音再播勝利音）
-*/
+const fruits = [
+  {id:"fruit10", chinese:"柳丁", taiwanese:"柳丁", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
+  {id:"fruit11", chinese:"木瓜", taiwanese:"木瓜", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
+  {id:"fruit12", chinese:"梨子", taiwanese:"梨仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"},
+  {id:"fruit13", chinese:"棗子", taiwanese:"棗仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3"},
+  {id:"fruit14", chinese:"柚子", taiwanese:"柚仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3"},
+  {id:"fruit16", chinese:"柿子", taiwanese:"柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3"},
+  {id:"fruit17", chinese:"荔枝", taiwanese:"荔枝", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3"},
+  {id:"fruit34", chinese:"番茄", taiwanese:"臭柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6575.mp3"}
+];
 
-const JSON1 = 'game9_assets/fruits_part1.json';
-const JSON2 = 'game9_assets/fruits_part2.json';
+// 8 種不同底色
+const colors = ["#FFB6C1","#87CEFA","#98FB98","#FFD700","#FFA07A","#DA70D6","#40E0D0","#F08080"];
 
-// 目標：第 25 ~ 32 筆（包含）
-const TARGET_START_1BASED = 25;
-const TARGET_COUNT = 8;
+let selectedImage = null;
+let selectedText = null;
 
-const PALETTE = ["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
-
-const grid = document.getElementById('grid');
-const wrongAudio = document.getElementById('wrongAudio');
-const victoryAudio = document.getElementById('victoryAudio');
-const victoryEl = document.getElementById('victory');
-
-let allData = [];   // 合併後的所有水果資料 (1-based index = position in this array +1)
-let fruits = [];    // 本回要用的 8 筆
-let deck = [];
-let firstPick = null;
-let lock = false;
-let matched = 0;
-let colorMap = {};
-
-// helper: load both JSON and merge preserving order (part1 then part2)
-async function loadAll() {
-  const [r1, r2] = await Promise.all([fetch(JSON1), fetch(JSON2)]);
-  if (!r1.ok || !r2.ok) throw new Error('無法讀取 JSON');
-  const a1 = await r1.json();
-  const a2 = await r2.json();
-  allData = a1.concat(a2); // 合併：fruits_part1 (1..N) 接 fruits_part2 (N+1..)
-}
-
-// init
-(async function init(){
-  try {
-    await loadAll();
-    // compute start index (0-based) from 1-based target
-    const start0 = TARGET_START_1BASED - 1;
-    fruits = allData.slice(start0, start0 + TARGET_COUNT);
-    if (!Array.isArray(fruits) || fruits.length < TARGET_COUNT) {
-      alert('找不到足夠的水果資料 (25–32)。請確認 fruits_part1.json / fruits_part2.json 的內容。');
-      return;
-    }
-    setupResponsive();
-    buildGame();
-  } catch (e) {
-    console.error(e);
-    alert('讀取水果資料失敗，請確認 game9_assets 裡的 JSON 是否存在且格式正確。');
+function shuffle(array) {
+  for (let i = array.length -1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
-})();
-
-// responsive sizing
-function computeSizes(){
-  const wrapPad=20, columns=4;
-  const availableW = Math.min(window.innerWidth - wrapPad, 980);
-  const cardW = Math.floor((availableW - (columns-1)*8) / columns);
-  const final = Math.max(100, Math.min(160, cardW));
-  document.documentElement.style.setProperty('--card-size', final + 'px');
-  const chars = 3;
-  const fontPx = Math.floor((final * 0.65) / chars);
-  document.documentElement.style.setProperty('--font-size', fontPx + 'px');
 }
-function setupResponsive(){ computeSizes(); window.addEventListener('resize', computeSizes); }
 
-// build deck and DOM
-function buildGame(){
-  grid.innerHTML = '';
-  deck = [];
-  matched = 0;
-  firstPick = null;
-  lock = false;
-  colorMap = {};
+function setupGame() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
 
-  // assign colors
-  const colors = shuffle(PALETTE.slice());
-  fruits.forEach((f, idx) => {
-    colorMap[f.id] = colors[idx % colors.length];
+  let items = [];
+
+  fruits.forEach((fruit,index)=>{
+    items.push({type:"img", ...fruit});
+    items.push({type:"text", ...fruit});
   });
 
-  // build card objects (img + text)
-  fruits.forEach(f => {
-    deck.push({id: f.id, type: 'img', data: f});
-    deck.push({id: f.id, type: 'text', data: f});
-  });
-  shuffle(deck);
+  shuffle(items);
 
-  // create DOM cards
-  deck.forEach(cardObj => {
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.dataset.id = cardObj.id;
-    el.dataset.type = cardObj.type;
-    el.setAttribute('role','button');
-    el.setAttribute('tabindex','0');
-
-    if (cardObj.type === 'img') {
-      const img = document.createElement('img');
-      img.src = `game9_assets/${cardObj.id}.png`;
-      img.alt = cardObj.data.chinese || cardObj.data.taiwanese || cardObj.id;
-      img.onerror = () => { img.style.opacity = 0.6; img.alt = '圖片載入失敗'; };
-      el.appendChild(img);
-    } else {
-      const span = document.createElement('span');
-      span.className = 'fruit-text';
-      span.textContent = cardObj.data.taiwanese || cardObj.data.chinese || cardObj.id;
-      el.appendChild(span);
-    }
-
-    el.addEventListener('click', () => onPick(el));
-    el.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onPick(el); }});
-    grid.appendChild(el);
-  });
-}
-
-function onPick(el){
-  if (lock) return;
-  if (el.classList.contains('matched')) return;
-
-  if (!firstPick) {
-    firstPick = el;
-    el.classList.add('selected');
-    return;
-  }
-
-  if (firstPick === el) {
-    firstPick.classList.remove('selected');
-    firstPick = null;
-    return;
-  }
-
-  el.classList.add('selected');
-  const idA = firstPick.dataset.id;
-  const idB = el.dataset.id;
-  const typeA = firstPick.dataset.type;
-  const typeB = el.dataset.type;
-
-  if (idA === idB && typeA !== typeB) {
-    // matched
-    const bg = colorMap[idA] || '#f0f7ee';
-    [firstPick, el].forEach(node => {
-      node.classList.remove('selected');
-      node.classList.add('matched');
-      node.style.backgroundColor = bg;
-      node.style.borderColor = '#ddd';
-    });
-
-    // play fruit audio
-    const fruitObj = fruits.find(f => f.id === idA);
-    if (fruitObj && fruitObj.audio) {
-      const audio = new Audio(fruitObj.audio);
-      // play fruit audio; if last match, wait audio end then play victory
-      audio.play().catch(()=>{ /* ignore play errors */ });
-      matched++;
-      firstPick = null;
-
-      if (matched === fruits.length) {
-        // last match: wait audio end (or fallback 1s) then play victory
-        let fired = false;
-        audio.onended = () => {
-          if (fired) return; fired = true;
-          setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); }, 800);
-        };
-        // fallback if onended doesn't fire (some mobile browsers): play victory after 1.2s
-        setTimeout(()=>{ if (!fired) { fired = true; victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); } }, 1200);
-      }
-    } else {
-      // no audio: just mark matched and check victory
-      matched++;
-      firstPick = null;
-      if (matched === fruits.length) {
-        setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200); }, 500);
-      }
-    }
-
-  } else {
-    // wrong
-    try { wrongAudio.currentTime = 0; wrongAudio.play(); } catch(e){}
-    firstPick.classList.add('wrong');
-    el.classList.add('wrong');
-    lock = true;
-    setTimeout(()=> {
-      firstPick.classList.remove('wrong','selected');
-      el.classList.remove('wrong','selected');
-      firstPick = null;
-      lock = false;
-    }, 700);
-  }
-}
-
-// small util
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-
-</script>
-</body>
-</html>
+  items.forEach((item, index)=>{
+    const div = document.createElement("div");
+    div.classList.add("grid-item");
+    div.dataset.id = item.id;
+    div.dataset.type = item.type;
+    div.dataset.index = index;
+    if(i
