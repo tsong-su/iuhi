@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --card-size: 120px;
-  --gap: 8px;
-  --max-width: 1000px;
+  --card-size:120px;
+  --gap:8px;
+  --max-width:1000px;
 }
 *{box-sizing:border-box}
 body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
@@ -17,7 +17,7 @@ header{padding:12px;}
 h1{margin:0;font-size:18px;color:#cc5500;}
 .hint{margin-top:8px;margin-bottom:10px;font-weight:700;color:#d35400;}
 .wrap{width: calc(100% - 16px); max-width: var(--max-width); margin:0 auto;}
-.grid{display:grid;grid-template-columns: repeat(6, 1fr);gap: var(--gap);padding:6px;width:100%;}
+.grid{display:grid;grid-template-columns: repeat(4, 1fr);gap: var(--gap);padding:6px;width:100%;}
 .card{
   width:100%; height: var(--card-size);
   border-radius:10px;border:1.4px solid #ddd;
@@ -78,10 +78,10 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 <script>
-const JSON_PATH='game9_assets/fruits_part1.json'; // 或 fruits_part2.json 視實際第2回水果範圍
-const ROUND_START=8; // 9–17 筆對應index 8–16
-const ROUND_COUNT=9;
-const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65","#BA68C8"];
+const JSON_PATH='game9_assets/fruits_part2.json';
+const ROUND_START=0; // 0-7 in fruits_part2.json → fruit9–16
+const ROUND_COUNT=8;
+const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
 const grid=document.getElementById('grid');
 const wrongAudio=document.getElementById('wrongAudio');
 const victoryAudio=document.getElementById('victoryAudio');
@@ -89,13 +89,13 @@ const victoryEl=document.getElementById('victory');
 let fruits=[], deck=[], firstPick=null, lock=false, matched=0, colorMap={};
 
 function computeSizes(){
-  const wrapPad=20, columns=6;
+  const wrapPad=20, columns=4;
   const availableW=Math.min(window.innerWidth-wrapPad,980);
   const cardW=Math.floor((availableW-(columns-1)*8)/columns);
   const final=Math.max(100, Math.min(160, cardW));
   document.documentElement.style.setProperty('--card-size', final+'px');
-  const chars=3; //最多字數
-  const fontPx=Math.floor((final*0.9)/chars);
+  const chars=3;
+  const fontPx=Math.floor((final*0.65)/chars);
   document.documentElement.style.setProperty('--font-size', fontPx+'px');
   return {card:final,font:fontPx};
 }
@@ -167,4 +167,3 @@ function onPick(el){
 </script>
 </body>
 </html>
-
