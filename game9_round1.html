@@ -12,11 +12,12 @@
     }
     h2 {
       margin: 10px 0 5px;
-      font-size: 1.4em;
+      font-size: 1.6em;
     }
     .note {
-      font-size: 0.9em;
-      color: #555;
+      font-size: 1.2em;
+      color: #e65c00;
+      font-weight: bold;
       margin-bottom: 10px;
     }
     .grid {
@@ -34,7 +35,7 @@
       justify-content: center;
       align-items: center;
       aspect-ratio: 1 / 1;
-      font-size: 1.2em;
+      font-size: 2em;
       font-weight: bold;
       cursor: pointer;
       user-select: none;
@@ -46,24 +47,26 @@
       object-fit: cover;
     }
     .matched {
-      color: white;
+      color: white !important;
     }
     .buttons {
       margin-top: 10px;
     }
     .buttons button {
-      background: #004d80;
-      color: white;
       border: none;
       padding: 10px 18px;
       margin: 5px;
       border-radius: 6px;
       font-size: 1em;
       cursor: pointer;
+      color: white;
     }
-    .buttons button:hover {
-      background: #003355;
-    }
+    .btn-green { background: #28c76f; }
+    .btn-orange { background: #ff9f43; }
+    .btn-blue { background: #00cfe8; }
+    .btn-green:hover { background: #20a65d; }
+    .btn-orange:hover { background: #e68a2d; }
+    .btn-blue:hover { background: #00a8c6; }
     #victory {
       position: fixed;
       top: 40%;
@@ -90,31 +93,36 @@
   <div id="victory">有夠 gâu！</div>
 
   <div class="buttons">
-    <button onclick="restartGame()">再玩一次</button>
-    <button onclick="nextRound()">下一回</button>
-    <button onclick="goHome()">回首頁</button>
+    <button class="btn-green" onclick="restartGame()">再玩一次</button>
+    <button class="btn-orange" onclick="nextRound()">下一回</button>
+    <button class="btn-blue" onclick="goHome()">回首頁</button>
   </div>
 
   <audio id="wrongSound" src="game9_assets/wrong1.mp3"></audio>
   <audio id="victorySound" src="game9_assets/victory2.mp3"></audio>
 
   <script>
-    const colors = ["#28a745", "#ff5733", "#007bff", "#8e44ad", "#d35400", "#2c3e50", "#16a085", "#b03a2e"];
+    const groupColors = ["#28a745","#ff5733","#007bff","#8e44ad",
+                         "#d35400","#2c3e50","#16a085","#b03a2e"];
+    const textColors = ["#e60000","#007bff","#28a745","#ff33cc",
+                        "#ff6600","#009999","#663399","#cc9900"];
 
     let data = [];
     let firstPick = null;
     let matchedCount = 0;
+    let colorMap = {};
 
     async function loadData() {
       const res = await fetch("game9_assets/fruits_part1.json");
       const json = await res.json();
-      data = json.slice(0, 8); // 第1回只取前8筆
+      data = json.slice(0, 8); // 第1回取前8筆
       initGame();
     }
 
     function initGame() {
       matchedCount = 0;
       firstPick = null;
+      colorMap = {};
       const grid = document.getElementById("gameGrid");
       grid.innerHTML = "";
 
@@ -128,7 +136,7 @@
         cards.push({
           id: item.id,
           type: "text",
-          content: item.taiwanese
+          content: `<span style="color:${textColors[idx % textColors.length]}">${item.taiwanese}</span>`
         });
       });
 
@@ -157,7 +165,7 @@
         if (firstPick.dataset.id === card.dataset.id &&
             firstPick.dataset.type !== card.dataset.type) {
           // ✅ 成功配對
-          let color = colors[Math.floor(Math.random() * colors.length)];
+          let color = groupColors[matchedCount % groupColors.length];
           [firstPick, card].forEach(c => {
             c.classList.add("matched");
             c.style.background = color;
