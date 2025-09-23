@@ -4,144 +4,193 @@
 <meta charset="UTF-8">
 <title>果子圖片&台語果子名配對 第四回</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin:0; padding:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-h1 { text-align:center; margin-top:10px; }
-#hint { font-size:1.2em; margin:5px; color:#d33; text-align:center; }
-#grid {
-  display:grid;
-  grid-template-columns: repeat(4, 80px);
-  grid-gap:10px;
-  justify-content:center;
-  margin:20px 0;
-}
-.cell {
-  width:80px; height:80px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  border:1px solid #ccc;
-  cursor:pointer;
-  user-select:none;
-}
-.cell img {
-  max-width:70%;
-  max-height:50%;
-}
-.cell span {
-  margin-top:5px;
-  font-size:0.7em;
-  text-align:center;
-  word-break: break-word;
-}
-.buttons {
-  display:flex; justify-content:center; gap:10px; margin-bottom:20px;
-}
-button {
-  padding:5px 15px; font-size:1em; cursor:pointer; border:none; border-radius:5px;
-  background-color:#f39c12; color:#fff;
-}
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fffbe6;
+    text-align: center;
+  }
+  h1 {
+    margin-top: 10px;
+    font-size: 1.5em;
+  }
+  .note {
+    margin: 5px 0 10px 0;
+    font-size: 1.2em;
+    color: #ff4500;
+  }
+  .game-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px;
+  }
+  .grid-item {
+    width: 23%;
+    max-width: 100px;
+    height: 100px;
+    background: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+  .grid-item img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .button-container {
+    margin: 15px 0;
+  }
+  .btn {
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 1em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+  }
+  .play-again {background-color: #f08080;}
+  .next-round {background-color: #6a5acd;}
+  .home {background-color: #20b2aa;}
 </style>
 </head>
 <body>
 <h1>果子圖片&台語果子名配對 第四回</h1>
-<div id="hint">📱 建議直式觀看效果最佳</div>
-<div id="grid"></div>
-<div class="buttons">
-  <button id="restartBtn">閣耍一擺</button>
-  <button id="nextBtn">後一回</button>
-  <button id="homeBtn">轉去遊戲頭頁</button>
+<div class="note">📱 建議直式觀看效果最佳</div>
+
+<div id="image-grid" class="game-container"></div>
+<div id="word-grid" class="game-container"></div>
+
+<div class="button-container">
+  <button class="btn play-again" onclick="restartGame()">閣耍一擺</button>
+  <button class="btn next-round" onclick="nextRound()">後一回</button>
+  <button class="btn home" onclick="goHome()">轉去遊戲頭頁</button>
 </div>
 
-<audio id="correctAudio"></audio>
-<audio id="wrongAudio" src="game9_assets/wrong1.mp3"></audio>
-<audio id="victoryAudio" src="game9_assets/victory2.mp3"></audio>
+<audio id="audioCorrect"></audio>
+<audio id="audioWrong" src="game9_assets/wrong1.mp3"></audio>
+<audio id="audioVictory" src="game9_assets/victory2.mp3"></audio>
 
 <script>
-const fruits = [
-  {"id":"fruit10","taiwanese":"柳丁","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
-  {"id":"fruit11","taiwanese":"木瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
-  {"id":"fruit12","taiwanese":"梨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"},
-  {"id":"fruit13","taiwanese":"棗仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3"},
-  {"id":"fruit14","taiwanese":"柚仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3"},
-  {"id":"fruit16","taiwanese":"柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3"},
-  {"id":"fruit17","taiwanese":"荔枝","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3"},
-  {"id":"fruit34","taiwanese":"臭柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6575.mp3"}
+const fruitsRound4 = [
+  {id: "fruit10", name: "柳丁", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3", img:"game9_assets/fruit10.png", color:"#FFB347"},
+  {id: "fruit11", name: "木瓜", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3", img:"game9_assets/fruit11.png", color:"#FFD700"},
+  {id: "fruit12", name: "梨仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3", img:"game9_assets/fruit12.png", color:"#ADFF2F"},
+  {id: "fruit13", name: "棗仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3", img:"game9_assets/fruit13.png", color:"#FF69B4"},
+  {id: "fruit14", name: "柚仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3", img:"game9_assets/fruit14.png", color:"#87CEFA"},
+  {id: "fruit16", name: "柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3", img:"game9_assets/fruit16.png", color:"#FF6347"},
+  {id: "fruit17", name: "荔枝", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3", img:"game9_assets/fruit17.png", color:"#EE82EE"},
+  {id: "fruit34", name: "臭柿仔", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6575.mp3", img:"game9_assets/fruit34.png", color:"#40E0D0"}
 ];
 
-// 打亂陣列
-function shuffle(array){return array.sort(()=>Math.random()-0.5);}
+let selectedImage = null;
+let selectedWord = null;
 
-let grid = document.getElementById("grid");
-let firstSelection = null;
-let matchedCount = 0;
-let cellColors = ["#FADBD8","#D6EAF8","#FCF3CF","#D5F5E3","#FAD7A0","#E8DAEF","#D1F2EB","#F5B7B1"];
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
 
-function createGrid(){
-  grid.innerHTML="";
-  let items = shuffle([...fruits, ...fruits]); // 重複配對
-  items.forEach((item,i)=>{
-    let div = document.createElement("div");
-    div.className="cell";
-    div.dataset.taiwanese=item.taiwanese;
-    div.dataset.audio=item.audio;
-    let img = document.createElement("img");
-    img.src="game9_assets/"+item.id+".png";
-    let span = document.createElement("span");
-    span.textContent=item.taiwanese;
+function initGame() {
+  const imageGrid = document.getElementById('image-grid');
+  const wordGrid = document.getElementById('word-grid');
+  imageGrid.innerHTML = '';
+  wordGrid.innerHTML = '';
+
+  const shuffledImages = shuffle([...fruitsRound4]);
+  const shuffledWords = shuffle([...fruitsRound4]);
+
+  shuffledImages.forEach(fruit => {
+    const div = document.createElement('div');
+    div.className = 'grid-item';
+    const img = document.createElement('img');
+    img.src = fruit.img;
+    img.alt = fruit.name;
     div.appendChild(img);
-    div.appendChild(span);
-    div.addEventListener("click",()=>selectCell(div));
-    grid.appendChild(div);
+    div.dataset.id = fruit.id;
+    div.onclick = () => selectImage(div, fruit);
+    imageGrid.appendChild(div);
+  });
+
+  shuffledWords.forEach(fruit => {
+    const div = document.createElement('div');
+    div.className = 'grid-item';
+    div.textContent = fruit.name;
+    div.dataset.id = fruit.id;
+    div.style.fontSize = '1em';
+    div.onclick = () => selectWord(div, fruit);
+    wordGrid.appendChild(div);
   });
 }
-function selectCell(div){
-  if(div.classList.contains("matched") || div===firstSelection) return;
-  div.style.border="2px solid #555";
-  let audio=document.getElementById("correctAudio");
-  audio.src=div.dataset.audio;
-  audio.play();
 
-  if(!firstSelection){
-    firstSelection=div;
-  }else{
-    if(firstSelection.dataset.taiwanese===div.dataset.taiwanese){
-      // 配對成功
-      let color=cellColors[matchedCount%cellColors.length];
-      firstSelection.style.background=color;
-      div.style.background=color;
-      firstSelection.classList.add("matched");
-      div.classList.add("matched");
-      matchedCount++;
-      firstSelection=null;
+function selectImage(div, fruit) {
+  if(selectedImage) selectedImage.style.border = '';
+  selectedImage = div;
+  div.style.border = '2px solid #000';
+  checkMatch();
+}
 
-      // 若完成最後一組，先播放正確音檔，再延遲播放勝利音效
-      if(matchedCount===fruits.length){
-        setTimeout(()=>{document.getElementById("victoryAudio").play();},1000);
+function selectWord(div, fruit) {
+  if(selectedWord) selectedWord.style.border = '';
+  selectedWord = div;
+  div.style.border = '2px solid #000';
+  checkMatch();
+}
+
+function checkMatch() {
+  if(selectedImage && selectedWord) {
+    if(selectedImage.dataset.id === selectedWord.dataset.id) {
+      const color = fruitsRound4.find(f => f.id === selectedImage.dataset.id).color;
+      selectedImage.style.background = color;
+      selectedWord.style.background = color;
+      playAudio(fruitsRound4.find(f => f.id === selectedImage.dataset.id).audio);
+      selectedImage.onclick = null;
+      selectedWord.onclick = null;
+      selectedImage.style.border = '';
+      selectedWord.style.border = '';
+      selectedImage = null;
+      selectedWord = null;
+      if(document.querySelectorAll('#image-grid .grid-item[onclick]').length === 0) {
+        setTimeout(() => document.getElementById('audioVictory').play(), 1000);
       }
-    }else{
-      // 配對錯誤
-      document.getElementById("wrongAudio").play();
-      setTimeout(()=>{
-        firstSelection.style.border="1px solid #ccc";
-        div.style.border="1px solid #ccc";
-        firstSelection=null;
-      },500);
+    } else {
+      document.getElementById('audioWrong').play();
+      setTimeout(() => {
+        if(selectedImage) selectedImage.style.border = '';
+        if(selectedWord) selectedWord.style.border = '';
+        selectedImage = null;
+        selectedWord = null;
+      }, 500);
     }
   }
 }
 
-document.getElementById("restartBtn").onclick=createGrid;
-document.getElementById("nextBtn").onclick=()=>alert("後一回還未建立");
-document.getElementById("homeBtn").onclick=()=>window.location.href="game9.html";
+function playAudio(url) {
+  const audio = document.getElementById('audioCorrect');
+  audio.src = url;
+  audio.play();
+}
 
-createGrid();
+function restartGame() {
+  initGame();
+}
+
+function nextRound() {
+  alert('這是最後一回囉！');
+}
+
+function goHome() {
+  window.location.href = 'game9.html';
+}
+
+window.onload = initGame;
 </script>
 </body>
 </html>
