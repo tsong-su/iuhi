@@ -11,7 +11,7 @@
   --gap:8px;
   --max-width:1000px;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
 header{padding:12px;}
 h1{margin:0;font-size:18px;color:#cc5500;}
@@ -50,6 +50,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   position: fixed; left:0; right:0; bottom:0;
   background:#fff8dc;border-top:1px solid #e6ddd0;
   padding:10px 8px; display:flex; justify-content:space-around; gap:8px; z-index:1200;
+  flex-wrap: wrap;
 }
 .bottom button{
   color:#fff; border:none; padding:10px 14px; border-radius:8px; font-size:1rem; cursor:pointer; min-width:88px; font-weight:700;
@@ -57,6 +58,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 .btn1{background:#3498db;}
 .btn2{background:#2ecc71;}
 .btn3{background:#e67e22;}
+.btn4{background:#9b59b6;}
 @media (max-width:480px){.hint{font-size:1.8rem;}}
 @media (min-width:900px){:root {--card-size:150px;}}
 </style>
@@ -70,6 +72,9 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <div id="grid" class="grid" aria-live="polite"></div>
 </main>
 <div id="victory">有夠 gâu！</div>
+<div class="wrap" style="margin:8px 0;">
+  <button class="btn4" onclick="window.open('https://sutian.moe.edu.tw/und-hani/su/6575/','_blank')">臭柿仔教典</button>
+</div>
 <div class="bottom">
   <button class="btn1" onclick="location.reload()">閣耍一擺</button>
   <button class="btn2" onclick="location.href='game9_round3.html'">前一回</button>
@@ -79,7 +84,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 <script>
 const JSON_PATH='game9_assets/fruits_part2.json';
-const ROUND_START=24; // 第25–32筆水果
+const ROUND_START=24; // 第4回 25-32 → index 24-31
 const ROUND_COUNT=8;
 const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
 const grid=document.getElementById('grid');
@@ -105,12 +110,6 @@ function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.ra
 fetch(JSON_PATH).then(r=>r.json())
 .then(all=>{
   fruits=all.slice(ROUND_START,ROUND_START+ROUND_COUNT);
-  // 針對臭柿仔附上教典連結
-  fruits.forEach(f=>{
-    if(f.taiwanese==='臭柿仔'){
-      f.link='https://sutian.moe.edu.tw/und-hani/su/6575/';
-    }
-  });
   setupResponsive(); initGame();
 }).catch(e=>{console.error('load json err',e); alert('無法讀取 JSON');});
 
@@ -129,17 +128,9 @@ deck.forEach(cardObj=>{
   el.setAttribute('role','button'); el.setAttribute('tabindex','0');
   if(cardObj.type==='img'){
     const img=document.createElement('img'); img.src=`game9_assets/${cardObj.id}.png`; img.alt=cardObj.data.chinese||cardObj.data.taiwanese||cardObj.id;
-    img.onerror=()=>{img.style.opacity=0.6; img.alt='圖片載入失敗';};
-    el.appendChild(img);
+    img.onerror=()=>{img.style.opacity=0.6; img.alt='圖片載入失敗';}; el.appendChild(img);
   } else {
-    const span=document.createElement('span'); span.className='fruit-text';
-    if(cardObj.data.link){
-      const a=document.createElement('a'); a.href=cardObj.data.link; a.textContent=cardObj.data.taiwanese; a.target="_blank"; a.style.color='#111'; a.style.textDecoration='underline';
-      span.appendChild(a);
-    } else {
-      span.textContent=cardObj.data.taiwanese||cardObj.data.chinese||cardObj.id;
-    }
-    el.appendChild(span);
+    const span=document.createElement('span'); span.className='fruit-text'; span.textContent=cardObj.data.taiwanese||cardObj.data.chinese||cardObj.id; el.appendChild(span);
   }
   el.addEventListener('click',()=>onPick(el));
   el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onPick(el);}});
@@ -164,7 +155,11 @@ function onPick(el){
       matched++; firstPick=null;
       if(matched===fruits.length){
         audio.onended = ()=>{
-          setTimeout(()=>{victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200);},500);
+          setTimeout(()=>{
+            victoryAudio.currentTime=0; victoryAudio.play();
+            victoryEl.classList.add('show');
+            setTimeout(()=>victoryEl.classList.remove('show'),2200);
+          },500);
         };
       }
     }
