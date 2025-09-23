@@ -12,17 +12,22 @@
       background: #fffbe6;
     }
     h1 {
-      font-size: 1.5em;
+      font-size: 1.4em;
       margin: 10px 0;
       color: #cc5500;
     }
     #game {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px; /* 縮小間距 */
+      grid-template-columns: repeat(3, 1fr); /* 手機顯示 3 列 */
+      gap: 8px;
       padding: 10px;
       max-width: 95%;
       margin: auto;
+    }
+    @media(min-width: 600px) {
+      #game {
+        grid-template-columns: repeat(4, 1fr); /* 平板以上顯示 4 列 */
+      }
     }
     .card {
       background: #fff;
@@ -30,11 +35,13 @@
       border-radius: 10px;
       padding: 6px;
       cursor: pointer;
-      font-size: 0.9em;
+      font-size: 1.2em;
+      word-break: break-word;
     }
     .card img {
-      width: 100%;
-      border-radius: 8px;
+      max-width: 80px;
+      height: auto;
+      border-radius: 6px;
     }
     .matched {
       background: #d4edda;
@@ -64,7 +71,7 @@
       border-top: 2px solid #ccc;
     }
     #buttons button {
-      padding: 10px 15px;
+      padding: 8px 12px;
       font-size: 1em;
       border: none;
       border-radius: 8px;
@@ -96,10 +103,10 @@
       {"id":"fruit1","chinese":"芒果","taiwanese":"檨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3"},
       {"id":"fruit2","chinese":"橘子","taiwanese":"柑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3"},
       {"id":"fruit3","chinese":"香蕉","taiwanese":"弓蕉","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3"},
-      {"id":"fruit4","chinese":"鳳梨","taiwanese":"旺梨","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13450.mp3"},
-      {"id":"fruit5","chinese":"西瓜","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14437.mp3"},
-      {"id":"fruit6","chinese":"葡萄","taiwanese":"蒲萄","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11538.mp3"},
-      {"id":"fruit7","chinese":"番茄","taiwanese":"蕃薑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7700.mp3"},
+      {"id":"fruit4","chinese":"西瓜","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14437.mp3"},
+      {"id":"fruit5","chinese":"蓮霧","taiwanese":"蓮霧","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9454.mp3"},
+      {"id":"fruit6","chinese":"李子","taiwanese":"李仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9120.mp3"},
+      {"id":"fruit7","chinese":"柿子","taiwanese":"柿仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13808.mp3"},
       {"id":"fruit8","chinese":"蘋果","taiwanese":"蘋果","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11819.mp3"}
     ];
 
