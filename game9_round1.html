@@ -1,220 +1,165 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
   <title>果子圖片&台語果子名配對 - 第1回</title>
   <style>
     body {
       font-family: sans-serif;
-      margin: 0; padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #fff9f0;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: #fffbe6;
     }
     h1 {
-      margin: 10px;
-      color: #d2691e;
+      font-size: 1.5em;
+      margin: 10px 0;
+      color: #cc5500;
     }
-    .game-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 30px;
-      flex-wrap: wrap;
-      width: 100%;
-      max-width: 950px;
-    }
-    .images, .names {
+    #game {
       display: grid;
-      gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px; /* 縮小間距 */
+      padding: 10px;
+      max-width: 95%;
+      margin: auto;
     }
-    .images {
-      grid-template-columns: repeat(2, 120px);
-    }
-    .images img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border: 3px solid transparent;
+    .card {
+      background: #fff;
+      border: 2px solid #ccc;
       border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .images img.selected {
-      border: 3px solid #ff6600;
-      transform: scale(1.1);
-    }
-    .images img.matched {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .names {
-      grid-template-columns: repeat(1, 180px);
-    }
-    .name-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .names button {
-      flex: 1;
-      margin-right: 5px;
-      padding: 8px;
-      background: #ffe4b5;
-      border: 2px solid #d2691e;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      font-size: 16px;
-    }
-    .names button:hover {
-      background: #ffdead;
-    }
-    .names button.matched {
-      background: #ccc;
-      pointer-events: none;
-    }
-    .dict-link {
-      font-size: 14px;
-      text-decoration: none;
-      background: #f08080;
-      color: white;
       padding: 6px;
-      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
     }
-    #victory {
-      font-size: 48px;
-      color: green;
-      margin-top: 20px;
+    .card img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .matched {
+      background: #d4edda;
+      border-color: #28a745;
+      pointer-events: none;
+    }
+    #message {
+      font-size: 2em;
+      color: #e63946;
+      margin: 10px;
       display: none;
-      animation: grow 2s forwards;
+      animation: grow 1s forwards;
     }
     @keyframes grow {
-      from { transform: scale(0.2); opacity: 0; }
-      to   { transform: scale(1.5); opacity: 1; }
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1.3); opacity: 1; }
     }
-    #nextRound {
-      display: none;
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #ffa500;
-      color: white;
+    #buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff8dc;
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+      border-top: 2px solid #ccc;
+    }
+    #buttons button {
+      padding: 10px 15px;
+      font-size: 1em;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      background: #ffb347;
+      color: white;
+    }
+    #buttons button:hover {
+      background: #ff8800;
     }
   </style>
 </head>
 <body>
-  <h1>果子圖片&台語果子名配對 - 第1回</h1>
-  <div class="game-container">
-    <div class="images" id="images"></div>
-    <div class="names" id="names"></div>
-  </div>
-  <div id="victory">有夠 gâu！</div>
-  <button id="nextRound" onclick="alert('這裡切換到第2回程式，稍後可擴充')">下一回合 ▶</button>
+  <h1>果子圖片 & 台語果子名配對 - 第1回</h1>
+  <div id="game"></div>
+  <div id="message">有夠 gâu！</div>
 
-  <audio id="wrong-sound" src="game9_assets/wrong1.mp3"></audio>
-  <audio id="victory-sound" src="game9_assets/victory2.mp3"></audio>
+  <div id="buttons">
+    <button onclick="location.reload()">🔄 再玩一次</button>
+    <button onclick="location.href='game9_round2.html'">⏭ 下一回</button>
+    <button onclick="location.href='index.html'">⬅ 回首頁</button>
+  </div>
+
+  <audio id="wrongSound" src="game9_assets/wrong1.mp3"></audio>
+  <audio id="victorySound" src="game9_assets/victory2.mp3"></audio>
 
   <script>
-    const imageContainer = document.getElementById("images");
-    const nameContainer = document.getElementById("names");
-    const wrongSound = document.getElementById("wrong-sound");
-    const victorySound = document.getElementById("victory-sound");
-    const victoryText = document.getElementById("victory");
-    const nextRoundBtn = document.getElementById("nextRound");
+    const data = [
+      {"id":"fruit1","chinese":"芒果","taiwanese":"檨仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3"},
+      {"id":"fruit2","chinese":"橘子","taiwanese":"柑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3"},
+      {"id":"fruit3","chinese":"香蕉","taiwanese":"弓蕉","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3"},
+      {"id":"fruit4","chinese":"鳳梨","taiwanese":"旺梨","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13450.mp3"},
+      {"id":"fruit5","chinese":"西瓜","taiwanese":"西瓜","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14437.mp3"},
+      {"id":"fruit6","chinese":"葡萄","taiwanese":"蒲萄","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11538.mp3"},
+      {"id":"fruit7","chinese":"番茄","taiwanese":"蕃薑仔","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7700.mp3"},
+      {"id":"fruit8","chinese":"蘋果","taiwanese":"蘋果","audio":"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11819.mp3"}
+    ];
 
-    let selectedImage = null;
+    let selected = [];
     let matchedCount = 0;
-    let fruits = [];
 
-    // 打亂陣列
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
+    const gameDiv = document.getElementById('game');
 
-    // 載入 JSON 前8筆
-    fetch("game9_assets/fruits_part1.json")
-      .then(res => res.json())
-      .then(data => {
-        fruits = data.slice(0, 8); // 第1回 8筆
-        initGame(fruits);
-      });
+    // 準備卡牌：圖片 + 名稱
+    let cards = [];
+    data.forEach(f => {
+      cards.push({type:"img", id:f.id, content:`<img src="game9_assets/${f.id}.png" alt="${f.chinese}">`, audio:f.audio});
+      cards.push({type:"text", id:f.id, content:`${f.taiwanese}`, audio:f.audio});
+    });
 
-    function initGame(fruits) {
-      // 清空
-      imageContainer.innerHTML = "";
-      nameContainer.innerHTML = "";
-      matchedCount = 0;
-      selectedImage = null;
+    // 洗牌
+    cards.sort(() => Math.random() - 0.5);
 
-      // 建立圖片
-      fruits.forEach(fruit => {
-        const img = document.createElement("img");
-        img.src = `game9_assets/${fruit.id}.png`;
-        img.dataset.id = fruit.id;
-        img.addEventListener("click", () => selectImage(img));
-        imageContainer.appendChild(img);
-      });
+    // 顯示卡牌
+    cards.forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = card.content;
+      div.onclick = () => selectCard(div, card);
+      gameDiv.appendChild(div);
+    });
 
-      // 建立名稱按鈕 (打亂)
-      shuffle([...fruits]).forEach(fruit => {
-        const div = document.createElement("div");
-        div.className = "name-item";
+    function selectCard(div, card) {
+      if (div.classList.contains('matched') || selected.length === 2) return;
+      div.style.borderColor = "#007bff";
+      selected.push({div, card});
 
-        const btn = document.createElement("button");
-        btn.textContent = fruit.taiwanese;
-        btn.dataset.id = fruit.id;
-        btn.addEventListener("click", () => selectName(btn, fruit.audio));
-
-        const link = document.createElement("a");
-        link.href = fruit.link;
-        link.target = "_blank";
-        link.className = "dict-link";
-        link.textContent = "🔗";
-
-        div.appendChild(btn);
-        div.appendChild(link);
-        nameContainer.appendChild(div);
-      });
-    }
-
-    function selectImage(img) {
-      if (img.classList.contains("matched")) return;
-      document.querySelectorAll(".images img").forEach(i => i.classList.remove("selected"));
-      img.classList.add("selected");
-      selectedImage = img;
-    }
-
-    function selectName(btn, audioUrl) {
-      if (!selectedImage) return;
-      const imgId = selectedImage.dataset.id;
-      const nameId = btn.dataset.id;
-
-      if (imgId === nameId) {
-        // 正確
-        selectedImage.classList.add("matched");
-        btn.classList.add("matched");
-        selectedImage.classList.remove("selected");
-
-        new Audio(audioUrl).play();
-
-        matchedCount++;
-        if (matchedCount === fruits.length) {
-          victorySound.play();
-          victoryText.style.display = "block";
-          nextRoundBtn.style.display = "inline-block";
+      if (selected.length === 2) {
+        const [c1, c2] = selected;
+        if (c1.card.id === c2.card.id && c1.card.type !== c2.card.type) {
+          // 配對成功
+          c1.div.classList.add('matched');
+          c2.div.classList.add('matched');
+          playAudio(c1.card.audio);
+          matchedCount++;
+          if (matchedCount === data.length) {
+            document.getElementById('message').style.display = "block";
+            document.getElementById('victorySound').play();
+          }
+        } else {
+          // 配對失敗
+          document.getElementById('wrongSound').play();
+          setTimeout(() => {
+            c1.div.style.borderColor = "#ccc";
+            c2.div.style.borderColor = "#ccc";
+          }, 800);
         }
-      } else {
-        wrongSound.play();
-        selectedImage.classList.remove("selected");
+        selected = [];
       }
-      selectedImage = null;
+    }
+
+    function playAudio(src) {
+      let audio = new Audio(src);
+      audio.play();
     }
   </script>
 </body>
 </html>
-
