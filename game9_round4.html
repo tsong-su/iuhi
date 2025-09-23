@@ -11,7 +11,7 @@
   --gap:8px;
   --max-width:1000px;
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
 header{padding:12px;}
 h1{margin:0;font-size:18px;color:#cc5500;}
@@ -50,7 +50,6 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   position: fixed; left:0; right:0; bottom:0;
   background:#fff8dc;border-top:1px solid #e6ddd0;
   padding:10px 8px; display:flex; justify-content:space-around; gap:8px; z-index:1200;
-  flex-wrap: wrap;
 }
 .bottom button{
   color:#fff; border:none; padding:10px 14px; border-radius:8px; font-size:1rem; cursor:pointer; min-width:88px; font-weight:700;
@@ -58,9 +57,10 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 .btn1{background:#3498db;}
 .btn2{background:#2ecc71;}
 .btn3{background:#e67e22;}
-.btn4{background:#9b59b6;}
-@media (max-width:480px){.hint{font-size:1.8rem;}}
-@media (min-width:900px){:root {--card-size:150px;}}
+#linkContainer{margin:10px 0;}
+.link-btn{background:#f9c74f;color:#000;padding:8px 12px;border-radius:6px;font-weight:700;text-decoration:none;display:inline-block;}
+@media (max-width:480px){.hint{font-size:1.8rem;} }
+@media (min-width:900px){:root {--card-size:150px;} }
 </style>
 </head>
 <body>
@@ -70,11 +70,11 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 </header>
 <main class="wrap">
 <div id="grid" class="grid" aria-live="polite"></div>
+<div id="linkContainer">
+  <a href="https://sutian.moe.edu.tw/und-hani/su/6575/" target="_blank" class="link-btn">臭柿仔教典</a>
+</div>
 </main>
 <div id="victory">有夠 gâu！</div>
-<div class="wrap" style="margin:8px 0;">
-  <button class="btn4" onclick="window.open('https://sutian.moe.edu.tw/und-hani/su/6575/','_blank')">臭柿仔教典</button>
-</div>
 <div class="bottom">
   <button class="btn1" onclick="location.reload()">閣耍一擺</button>
   <button class="btn2" onclick="location.href='game9_round3.html'">前一回</button>
@@ -84,7 +84,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 <script>
 const JSON_PATH='game9_assets/fruits_part2.json';
-const ROUND_START=24; // 第4回 25-32 → index 24-31
+const ROUND_START=24; // 第四回資料索引 25–32
 const ROUND_COUNT=8;
 const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
 const grid=document.getElementById('grid');
@@ -147,26 +147,13 @@ function onPick(el){
   const typeA=firstPick.dataset.type; const typeB=el.dataset.type;
   if(idA===idB && typeA!==typeB){
     const bg=colorMap[idA]||'#f0f7ee';
-    [firstPick,el].forEach(node=>{node.classList.remove('selected'); node.classList.add('matched'); node.style.backgroundColor=bg; node.style.borderColor='#ddd';});
-    const fruitObj=fruits.find(f=>f.id===idA);
-    if(fruitObj && fruitObj.audio){
-      const audio = new Audio(fruitObj.audio);
-      audio.play();
-      matched++; firstPick=null;
-      if(matched===fruits.length){
-        audio.onended = ()=>{
-          setTimeout(()=>{
-            victoryAudio.currentTime=0; victoryAudio.play();
-            victoryEl.classList.add('show');
-            setTimeout(()=>victoryEl.classList.remove('show'),2200);
-          },500);
-        };
-      }
-    }
+    firstPick.style.background=bg; el.style.background=bg;
+    firstPick.classList.add('matched'); el.classList.add('matched');
+    matched++; firstPick.classList.remove('selected'); el.classList.remove('selected'); firstPick=null;
+    if(matched===ROUND_COUNT){victoryEl.classList.add('show'); victoryAudio.play();}
   }else{
-    try{wrongAudio.currentTime=0; wrongAudio.play();}catch(e){}
-    firstPick.classList.add('wrong'); el.classList.add('wrong'); lock=true;
-    setTimeout(()=>{firstPick.classList.remove('wrong','selected'); el.classList.remove('wrong','selected'); firstPick=null; lock=false;},700);
+    lock=true; wrongAudio.play();
+    setTimeout(()=>{firstPick.classList.remove('selected'); el.classList.remove('selected'); firstPick=null; lock=false;},700);
   }
 }
 </script>
