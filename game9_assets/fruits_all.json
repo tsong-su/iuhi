@@ -1,0 +1,37 @@
+[
+  { "name": "水果1", "image": "images/fruit1.png", "audio": "audio/fruit1.mp3" },
+  { "name": "水果2", "image": "images/fruit2.png", "audio": "audio/fruit2.mp3" },
+  { "name": "水果3", "image": "images/fruit3.png", "audio": "audio/fruit3.mp3" },
+  { "name": "水果4", "image": "images/fruit4.png", "audio": "audio/fruit4.mp3" },
+  { "name": "水果5", "image": "images/fruit5.png", "audio": "audio/fruit5.mp3" },
+  { "name": "水果6", "image": "images/fruit6.png", "audio": "audio/fruit6.mp3" },
+  { "name": "水果7", "image": "images/fruit7.png", "audio": "audio/fruit7.mp3" },
+  { "name": "水果8", "image": "images/fruit8.png", "audio": "audio/fruit8.mp3" },
+
+  { "name": "水果9", "image": "images/fruit9.png", "audio": "audio/fruit9.mp3" },
+  { "name": "水果10", "image": "images/fruit10.png", "audio": "audio/fruit10.mp3" },
+  { "name": "水果11", "image": "images/fruit11.png", "audio": "audio/fruit11.mp3" },
+  { "name": "水果12", "image": "images/fruit12.png", "audio": "audio/fruit12.mp3" },
+  { "name": "水果13", "image": "images/fruit13.png", "audio": "audio/fruit13.mp3" },
+  { "name": "水果14", "image": "images/fruit14.png", "audio": "audio/fruit14.mp3" },
+  { "name": "水果15", "image": "images/fruit15.png", "audio": "audio/fruit15.mp3" },
+  { "name": "水果16", "image": "images/fruit16.png", "audio": "audio/fruit16.mp3" },
+
+  { "name": "水果17", "image": "images/fruit17.png", "audio": "audio/fruit17.mp3" },
+  { "name": "水果18", "image": "images/fruit18.png", "audio": "audio/fruit18.mp3" },
+  { "name": "水果19", "image": "images/fruit19.png", "audio": "audio/fruit19.mp3" },
+  { "name": "水果20", "image": "images/fruit20.png", "audio": "audio/fruit20.mp3" },
+  { "name": "水果21", "image": "images/fruit21.png", "audio": "audio/fruit21.mp3" },
+  { "name": "水果22", "image": "images/fruit22.png", "audio": "audio/fruit22.mp3" },
+  { "name": "水果23", "image": "images/fruit23.png", "audio": "audio/fruit23.mp3" },
+  { "name": "水果24", "image": "images/fruit24.png", "audio": "audio/fruit24.mp3" },
+
+  { "name": "水果25", "image": "images/fruit25.png", "audio": "audio/fruit25.mp3" },
+  { "name": "水果26", "image": "images/fruit26.png", "audio": "audio/fruit26.mp3" },
+  { "name": "水果27", "image": "images/fruit27.png", "audio": "audio/fruit27.mp3" },
+  { "name": "水果28", "image": "images/fruit28.png", "audio": "audio/fruit28.mp3" },
+  { "name": "水果29", "image": "images/fruit29.png", "audio": "audio/fruit29.mp3" },
+  { "name": "水果30", "image": "images/fruit30.png", "audio": "audio/fruit30.mp3" },
+  { "name": "水果31", "image": "images/fruit31.png", "audio": "audio/fruit31.mp3" },
+  { "name": "水果32", "image": "images/fruit32.png", "audio": "audio/fruit32.mp3" }
+]
