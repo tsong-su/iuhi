@@ -34,6 +34,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   padding:2px 4px;user-select:none;
   font-size: var(--font-size);
   word-break: break-word;
+  white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .matched{pointer-events:none;}
 .selected{outline:3px solid #ffd28a;outline-offset:-6px;}
@@ -93,7 +94,8 @@ function computeSizes(){
   const cardW=Math.floor((availableW-(columns-1)*8)/columns);
   const final=Math.max(100, Math.min(160, cardW));
   document.documentElement.style.setProperty('--card-size', final+'px');
-  const fontPx=Math.floor(final*0.32);
+  // 動態字體：手機直式縮小，平板/桌面維持大字
+  const fontPx=Math.min(Math.floor(final*0.32), final*0.9/3); 
   document.documentElement.style.setProperty('--font-size', fontPx+'px');
   return {card:final,font:fontPx};
 }
@@ -140,7 +142,7 @@ function onPick(el){
       audio.play();
       matched++; firstPick=null;
       if(matched===fruits.length){
-        audio.onended = ()=>{ // 正確音檔播完再播勝利音效
+        audio.onended = ()=>{ // 播完正確音檔再播勝利音效
           setTimeout(()=>{
             victoryAudio.currentTime=0;
             victoryAudio.play();
