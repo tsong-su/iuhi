@@ -136,10 +136,18 @@ function onPick(el){
     [firstPick,el].forEach(node=>{node.classList.remove('selected'); node.classList.add('matched'); node.style.backgroundColor=bg; node.style.borderColor='#ddd';});
     const fruitObj=fruits.find(f=>f.id===idA);
     if(fruitObj && fruitObj.audio){
-      try{new Audio(fruitObj.audio).play();}catch(e){console.warn('audio play err',e);}
+      const audio = new Audio(fruitObj.audio);
+      audio.play();
       matched++; firstPick=null;
       if(matched===fruits.length){
-        setTimeout(()=>{victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200);},1000);
+        audio.onended = ()=>{ // 正確音檔播完再播勝利音效
+          setTimeout(()=>{
+            victoryAudio.currentTime=0;
+            victoryAudio.play();
+            victoryEl.classList.add('show');
+            setTimeout(()=>victoryEl.classList.remove('show'),2200);
+          },500);
+        };
       }
     }
   }else{
