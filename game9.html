@@ -2,11 +2,9 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>華台水果語詞配對</title>
+  <title>華台果子語詞配對</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Microsoft JhengHei", sans-serif;
@@ -15,35 +13,62 @@
       flex-direction: column;
       align-items: center;
     }
-    h1 {
-      margin: 10px 0 0 0;
+
+    /* ===== 上方標題區塊 ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .header h1 {
       font-size: 28px;
+      font-weight: bold;
+      margin: 0;
       text-align: center;
     }
-    .note {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 10px;
+    .fruit-icon {
+      width: 50px;
+      height: auto;
+    }
+    .sub-note {
+      font-size: 18px;
+      color: #444;
+      margin-top: 5px;
       text-align: center;
     }
+    .orientation-note {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    /* ===== 格子排版 ===== */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
       width: 95%;
       max-width: 500px;
-      margin-bottom: 20px;
+      margin: 15px 0;
     }
     .grid-item {
       background: #fff;
       border: 2px solid #ccc;
       border-radius: 10px;
-      padding: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       text-align: center;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: bold;
+      padding: 15px;
       cursor: pointer;
       user-select: none;
+      white-space: nowrap;
       transition: background 0.3s, border-color 0.3s;
     }
     .grid-item.matched {
@@ -52,6 +77,25 @@
       color: #000;
       cursor: default;
     }
+
+    /* ===== 動畫字樣 ===== */
+    #victoryText {
+      font-size: 40px;
+      font-weight: bold;
+      color: #e91e63;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+      animation: pop 1s ease forwards;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.2) translateY(-50%); opacity: 0; }
+      50% { transform: scale(1.3) translateY(-50%); opacity: 1; }
+      100% { transform: scale(1) translateY(-50%); opacity: 1; }
+    }
+
+    /* ===== 按鈕區塊 ===== */
     .buttons {
       margin: 15px;
       display: flex;
@@ -75,70 +119,77 @@
   </style>
 </head>
 <body>
-  <h1>華台水果語詞配對</h1>
-  <div class="note">📱 直式觀看效果最佳</div>
+  <!-- ===== 上方標題區塊 ===== -->
+  <div class="header">
+    <img id="fruitLeft" class="fruit-icon" src="game9_assets/fruit_left.png" alt="fruit left">
+    <h1>華台果子語詞配對</h1>
+    <img id="fruitRight" class="fruit-icon" src="game9_assets/fruit_right.png" alt="fruit right">
+  </div>
+  <div class="sub-note">
+    tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！
+  </div>
+  <div class="orientation-note">
+    📱 直式觀看效果最佳
+  </div>
 
+  <!-- ===== 遊戲格子區 ===== -->
   <div id="mandarinGrid" class="grid-container"></div>
   <div id="taiwaneseGrid" class="grid-container"></div>
 
+  <!-- ===== 勝利動畫文字 ===== -->
+  <div id="victoryText">有夠 gâu！</div>
+
+  <!-- ===== 按鈕區塊 ===== -->
   <div class="buttons">
     <button id="nextBtn">第一回</button>
+    <button id="restartBtn">閣耍一擺</button>
+    <button onclick="location.href='index.html'">轉去遊戲頭頁</button>
   </div>
 
   <script>
-    const rounds = [
-      // 第一回 (刪掉 15.李子/李仔 → 剩 16)
-      [
-        ["1.蘋果", "蘋果仔"],
-        ["2.香蕉", "芭蕉"],
-        ["3.西瓜", "西瓜"],
-        ["4.葡萄", "葡萄"],
-        ["5.芒果", "檨仔"],
-        ["6.木瓜", "木瓜"],
-        ["7.橘子", "柑仔"],
-        ["8.柚子", "柚仔"],
-        ["9.櫻桃", "櫻桃仔"],
-        ["10.鳳梨", "旺梨"],
-        ["11.草莓", "草莓仔"],
-        ["12.百香果", "百香果"],
-        ["13.龍眼", "龍眼"],
-        ["14.荔枝", "荔枝"],
-        ["16.楊桃", "楊桃"],
-        ["17.蓮霧", "蓮霧"]
-      ],
-      // 第二回 (刪掉 32.黑珍珠/烏真珠 → 剩 16)
-      [
-        ["18.番茄", "番茄仔"],
-        ["19.檸檬", "檸檬"],
-        ["20.火龍果", "火龍果"],
-        ["21.柿子", "柿仔"],
-        ["22.椰子", "椰仔"],
-        ["23.楊梅", "楊梅"],
-        ["24.橄欖", "欖仔"],
-        ["25.枇杷", "枇杷仔"],
-        ["26.桑葚", "桑椹仔"],
-        ["27.釋迦", "釋迦"],
-        ["28.山竹", "山竹"],
-        ["29.人參果", "人參果"],
-        ["30.哈密瓜", "哈密瓜"],
-        ["31.蜜棗", "蜜棗仔"],
-        ["33.無花果", "無花果"],
-        ["34.椪柑", "椪柑"]
-      ]
-    ];
+    // ===== 隨機水果圖 =====
+    const fruitLeftImgs = ["game9_assets/fruit_left.png", "game9_assets/fruit_left1.png"];
+    const fruitRightImgs = ["game9_assets/fruit_right.png", "game9_assets/fruit_right1.png"];
+    document.getElementById("fruitLeft").src = fruitLeftImgs[Math.floor(Math.random() * fruitLeftImgs.length)];
+    document.getElementById("fruitRight").src = fruitRightImgs[Math.floor(Math.random() * fruitRightImgs.length)];
 
+    // ===== 音效 =====
+    const successSound = new Audio("game9_assets/success.mp3");
+    const errorSound = new Audio("game9_assets/error.mp3");
+    const victorySound = new Audio("game9_assets/victory.mp3");
+
+    // ===== 載入 JSON 資料 =====
+    const rounds = ["game9_assets/fruits_part1.json", "game9_assets/fruits_part2.json"];
     let currentRound = 0;
+    let pairs = [];
     let selectedMandarin = null;
     let selectedTaiwanese = null;
-    let pairs = [];
 
-    function loadRound(roundIndex) {
-      const round = rounds[roundIndex];
-      pairs = round.map(pair => ({ mandarin: pair[0], taiwanese: pair[1], matched: false }));
+    async function loadRound(roundIndex) {
+      const res = await fetch(rounds[roundIndex]);
+      let data = await res.json();
 
+      // 刪除指定語詞
+      if (roundIndex === 0) {
+        data = data.filter(item => item.mandarin !== "李子"); 
+      } else if (roundIndex === 1) {
+        data = data.filter(item => item.mandarin !== "黑珍珠"); 
+      }
+
+      pairs = data.map(item => ({
+        mandarin: item.mandarin,
+        taiwanese: item.taiwanese,
+        audio: item.audio,
+        matched: false
+      }));
+
+      renderGrids();
+      document.getElementById("nextBtn").textContent = roundIndex === 0 ? "第一回" : "第二回";
+    }
+
+    function renderGrids() {
       const mandarinGrid = document.getElementById("mandarinGrid");
       const taiwaneseGrid = document.getElementById("taiwaneseGrid");
-
       mandarinGrid.innerHTML = "";
       taiwaneseGrid.innerHTML = "";
 
@@ -160,15 +211,12 @@
         div.onclick = () => selectTaiwanese(div, word);
         taiwaneseGrid.appendChild(div);
       });
-
-      document.getElementById("nextBtn").textContent = roundIndex === 0 ? "第一回" : "第二回";
     }
 
     function selectMandarin(div, word) {
       if (div.classList.contains("matched")) return;
       if (selectedMandarin) selectedMandarin.classList.remove("selected");
       selectedMandarin = div;
-      div.classList.add("selected");
       checkMatch();
     }
 
@@ -176,7 +224,6 @@
       if (div.classList.contains("matched")) return;
       if (selectedTaiwanese) selectedTaiwanese.classList.remove("selected");
       selectedTaiwanese = div;
-      div.classList.add("selected");
       checkMatch();
     }
 
@@ -187,20 +234,41 @@
         const pair = pairs.find(p => p.mandarin === mandarinWord && p.taiwanese === taiwaneseWord);
 
         if (pair) {
+          // 正確配對
           selectedMandarin.classList.add("matched");
           selectedTaiwanese.classList.add("matched");
           pair.matched = true;
+          if (pair.audio) {
+            new Audio(pair.audio).play();
+          } else {
+            successSound.play();
+          }
+          checkVictory();
+        } else {
+          // 錯誤
+          errorSound.play();
         }
 
-        selectedMandarin.classList.remove("selected");
-        selectedTaiwanese.classList.remove("selected");
         selectedMandarin = null;
         selectedTaiwanese = null;
       }
     }
 
+    function checkVictory() {
+      if (pairs.every(p => p.matched)) {
+        victorySound.play();
+        const text = document.getElementById("victoryText");
+        text.style.opacity = "1";
+        setTimeout(() => { text.style.opacity = "0"; }, 2000);
+      }
+    }
+
     document.getElementById("nextBtn").addEventListener("click", () => {
       currentRound = (currentRound + 1) % rounds.length;
+      loadRound(currentRound);
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
       loadRound(currentRound);
     });
 
