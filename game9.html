@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>華台水果語詞配對–第1回</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      padding: 10px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      margin: 5px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header h1 img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .note {
+      font-size: 20px;
+      font-weight: bold;
+      color: #d60000;
+      margin: 5px 0 10px 0;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      width: 95%;
+      max-width: 500px;
+      margin: 5px auto;
+    }
+
+    .grid-item {
+      background: #fff8dc;
+      border-radius: 12px;
+      border: 2px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      padding: 10px;
+      min-height: 60px;
+      text-align: center;
+      word-break: keep-all;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .grid-item.selected {
+      border: 3px solid #ff4081;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 15px 0;
+    }
+
+    .buttons button {
+      padding: 10px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .buttons button:hover {
+      transform: scale(1.05);
+    }
+
+    #btn-home { background: #ff7043; color: #fff; }
+    #btn-restart { background: #66bb6a; color: #fff; }
+    #btn-next { background: #42a5f5; color: #fff; }
+
+    #victory {
+      font-size: 40px;
+      font-weight: bold;
+      color: #e91e63;
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.6s ease;
+      pointer-events: none;
+    }
+
+    #victory.show {
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>
+      <img src="game9_assets/fruit_left.png" alt="fruit left">
+      華台水果語詞配對–第1回
+      <img src="game9_assets/fruit_right.png" alt="fruit right">
+    </h1>
+    <div class="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+    <div class="note">📱 建議直式觀看效果最佳</div>
+  </header>
+
+  <div class="grid-container" id="grid-cn"></div>
+  <div class="grid-container" id="grid-tw"></div>
+
+  <div class="buttons">
+    <button id="btn-home">轉去遊戲頭頁</button>
+    <button id="btn-restart">閣耍一擺</button>
+    <button id="btn-next">後一回</button>
+  </div>
+
+  <div id="victory">有夠 gâu！</div>
+
+  <audio id="wrongAudio" src="game9_assets/wrong.mp3"></audio>
+  <audio id="victoryAudio" src="game9_assets/victory.mp3"></audio>
+
+  <script>
+    const cnGrid = document.getElementById("grid-cn");
+    const twGrid = document.getElementById("grid-tw");
+    const wrongAudio = document.getElementById("wrongAudio");
+    const victoryAudio = document.getElementById("victoryAudio");
+    const victoryText = document.getElementById("victory");
+
+    const colors = [
+      "#f44336","#e91e63","#9c27b0","#673ab7",
+      "#3f51b5","#2196f3","#03a9f4","#00bcd4",
+      "#009688","#4caf50","#8bc34a","#cddc39",
+      "#ffeb3b","#ffc107","#ff9800","#ff5722"
+    ];
+
+    let fruitsCN = [];
+    let fruitsTW = [];
+    let pairs = {};
+    let selected = null;
+    let matchedCount = 0;
+
+    async function loadData() {
+      const res1 = await fetch("game9_assets/fruits_part1.json");
+      const data1 = await res1.json();
+      const part1 = data1.filter(f => !f.name.includes("李子"));
+
+      const res2 = await fetch("game9_assets/fruits_part2.json");
+      const data2 = await res2.json();
+      const part2 = data2.filter(f => !f.name.includes("黑珍珠"));
+
+      const data = part1.slice(0,16); // 只取前 16 筆
+      fruitsCN = data.map((f,i)=>({ id:"cn"+i, text:f.name.split("/")[0], audio:f.audio }));
+      fruitsTW = data.map((f,i)=>({ id:"tw"+i, text:f.name.split("/")[1], audio:f.audio }));
+      pairs = {};
+      fruitsCN.forEach((f,i)=>{ pairs[f.id]=fruitsTW[i].id; pairs[fruitsTW[i].id]=f.id; });
+
+      renderGrid(fruitsCN, cnGrid);
+      renderGrid(shuffle([...fruitsTW]), twGrid);
+    }
+
+    function renderGrid(list, container){
+      container.innerHTML="";
+      list.forEach(item=>{
+        const div=document.createElement("div");
+        div.className="grid-item";
+        div.textContent=item.text;
+        div.dataset.id=item.id;
+        div.dataset.audio=item.audio;
+        div.addEventListener("click",()=>selectItem(div));
+        container.appendChild(div);
+      });
+    }
+
+    function selectItem(el){
+      if(el.classList.contains("matched")) return;
+      if(selected===null){
+        selected=el;
+        el.classList.add("selected");
+      }else{
+        if(el===selected) return;
+        checkMatch(selected,el);
+        selected.classList.remove("selected");
+        selected=null;
+      }
+    }
+
+    function checkMatch(a,b){
+      if(pairs[a.dataset.id]===b.dataset.id){
+        const color=colors[matchedCount%colors.length];
+        a.classList.add("matched");
+        b.classList.add("matched");
+        a.style.background=color;
+        b.style.background=color;
+        new Audio(a.dataset.audio).play();
+        matchedCount++;
+        if(matchedCount===fruitsCN.length){
+          setTimeout(()=>{
+            new Audio(a.dataset.audio).play();
+            setTimeout(()=>{
+              victoryAudio.play();
+              victoryText.classList.add("show");
+            },1000);
+          },500);
+        }
+      }else{
+        wrongAudio.play();
+      }
+    }
+
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    document.getElementById("btn-home").onclick=()=>location.href="index.html";
+    document.getElementById("btn-restart").onclick=()=>location.reload();
+    document.getElementById("btn-next").onclick=()=>location.href="game9_round2.html";
+
+    loadData();
+  </script>
+</body>
+</html>
