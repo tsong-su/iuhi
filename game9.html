@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<title>格子配對測試</title>
+<title>華台果子語詞配對–第1回</title>
 <style>
   body {
     margin: 0;
@@ -39,23 +39,13 @@
   .cell.selected {
     outline: 3px solid #ff0000;
   }
-
-  .round-title {
-    margin: 10px 0;
-    font-size: 20px;
-    color: #0066cc;
-  }
 </style>
 </head>
 <body>
-<h1>格子配對測試</h1>
-<div class="round-title">第 1 回</div>
-<div id="chineseGrid1" class="grid-container"></div>
-<div id="taiwaneseGrid1" class="grid-container"></div>
+<h1>華台果子語詞配對 – 第1回</h1>
 
-<div class="round-title">第 2 回</div>
-<div id="chineseGrid2" class="grid-container"></div>
-<div id="taiwaneseGrid2" class="grid-container"></div>
+<div id="chineseGrid" class="grid-container"></div>
+<div id="taiwaneseGrid" class="grid-container"></div>
 
 <script>
 // 模擬 fruits_all.json 資料
@@ -64,7 +54,9 @@ for(let i=1;i<=32;i++){
   fruits_all.push({name:"水果"+i,image:"images/fruit"+i+".png",audio:"audio/fruit"+i+".mp3"});
 }
 
-// 生成格子
+// 取第1回資料 (前16筆)
+const roundData = fruits_all.slice(0,16);
+
 function createGrid(gridEl, data) {
   gridEl.innerHTML = "";
   data.forEach(item=>{
@@ -76,15 +68,9 @@ function createGrid(gridEl, data) {
   });
 }
 
-// 第一回 1-16
-const firstRound = fruits_all.slice(0,16);
-createGrid(document.getElementById("chineseGrid1"), firstRound);
-createGrid(document.getElementById("taiwaneseGrid1"), firstRound);
-
-// 第二回 17-32
-const secondRound = fruits_all.slice(16,32);
-createGrid(document.getElementById("chineseGrid2"), secondRound);
-createGrid(document.getElementById("taiwaneseGrid2"), secondRound);
+// 上下各 16 格
+createGrid(document.getElementById("chineseGrid"), roundData);
+createGrid(document.getElementById("taiwaneseGrid"), roundData);
 </script>
 </body>
 </html>
