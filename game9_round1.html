@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --card-size: 120px;
-  --gap: 8px;
-  --max-width: 1000px;
+  --card-size:120px;
+  --gap:8px;
+  --max-width:1000px;
 }
 *{box-sizing:border-box}
 body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
@@ -33,7 +33,8 @@ h1{margin:0;font-size:18px;color:#cc5500;}
   font-weight:700;color:#111;text-align:center;line-height:1.1;
   padding:2px 4px;user-select:none;
   font-size: var(--font-size);
-  word-break: break-word;
+  word-break: keep-all;   /* 保持文字不拆開 */
+  white-space: nowrap;    /* 三個字一行顯示 */
 }
 .matched{pointer-events:none;}
 .selected{outline:3px solid #ffd28a;outline-offset:-6px;}
@@ -79,6 +80,7 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
 <script>
 const JSON_PATH='game9_assets/fruits_part1.json';
+const ROUND_START=0; // 第1回 → fruits 0–7
 const ROUND_COUNT=8;
 const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
 const grid=document.getElementById('grid');
@@ -93,33 +95,39 @@ function computeSizes(){
   const cardW=Math.floor((availableW-(columns-1)*8)/columns);
   const final=Math.max(100, Math.min(160, cardW));
   document.documentElement.style.setProperty('--card-size', final+'px');
-  // 動態字體：寬度/文字長度自動縮放，確保最多3字一行
-  const chars=3; // 最多字數
-  const fontPx=Math.floor((final*0.9)/chars);
+  const chars=3;
+  const fontPx=Math.floor((final*0.65)/chars);
   document.documentElement.style.setProperty('--font-size', fontPx+'px');
   return {card:final,font:fontPx};
 }
-
 function setupResponsive(){computeSizes(); window.addEventListener('resize',()=>computeSizes());}
 function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
 
-fetch(JSON_PATH).then(r=>{if(!r.ok) throw new Error('JSON load fail'); return r.json();})
-.then(all=>{fruits=all.slice(0,ROUND_COUNT); setupResponsive(); initGame();})
-.catch(e=>{console.error('load json err',e); alert('無法讀取 fruits_part1.json');});
+fetch(JSON_PATH).then(r=>r.json())
+.then(all=>{
+  fruits=all.slice(ROUND_START,ROUND_START+ROUND_COUNT);
+  setupResponsive(); initGame();
+}).catch(e=>{console.error('load json err',e); alert('無法讀取 JSON');});
 
 function initGame(){
 grid.innerHTML=''; deck=[]; firstPick=null; lock=false; matched=0; colorMap={};
 const colors=shuffle(PALETTE.slice());
 fruits.forEach((f,idx)=>{colorMap[f.id]=colors[idx%colors.length];});
-fruits.forEach(f=>{deck.push({id:f.id,type:'img',data:f}); deck.push({id:f.id,type:'text',data:f});});
+fruits.forEach(f=>{
+  deck.push({id:f.id,type:'img',data:f});
+  deck.push({id:f.id,type:'text',data:f});
+});
 shuffle(deck);
 deck.forEach(cardObj=>{
   const el=document.createElement('div'); el.className='card';
   el.dataset.id=cardObj.id; el.dataset.type=cardObj.type;
   el.setAttribute('role','button'); el.setAttribute('tabindex','0');
-  if(cardObj.type==='img'){ const img=document.createElement('img'); img.src=`game9_assets/${cardObj.id}.png`; img.alt=cardObj.data.chinese||cardObj.data.taiwanese||cardObj.id;
+  if(cardObj.type==='img'){
+    const img=document.createElement('img'); img.src=`game9_assets/${cardObj.id}.png`; img.alt=cardObj.data.chinese||cardObj.data.taiwanese||cardObj.id;
     img.onerror=()=>{img.style.opacity=0.6; img.alt='圖片載入失敗';}; el.appendChild(img);
-  } else { const span=document.createElement('span'); span.className='fruit-text'; span.textContent=cardObj.data.taiwanese||cardObj.data.chinese||cardObj.id; el.appendChild(span);}
+  } else {
+    const span=document.createElement('span'); span.className='fruit-text'; span.textContent=cardObj.data.taiwanese||cardObj.data.chinese||cardObj.id; el.appendChild(span);
+  }
   el.addEventListener('click',()=>onPick(el));
   el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onPick(el);}});
   grid.appendChild(el);
@@ -142,10 +150,9 @@ function onPick(el){
       audio.play();
       matched++; firstPick=null;
       if(matched===fruits.length){
-        audio.onended = ()=>{ // 播完正確音檔再播勝利音效
+        audio.onended = ()=>{
           setTimeout(()=>{
-            victoryAudio.currentTime=0;
-            victoryAudio.play();
+            victoryAudio.currentTime=0; victoryAudio.play();
             victoryEl.classList.add('show');
             setTimeout(()=>victoryEl.classList.remove('show'),2200);
           },500);
