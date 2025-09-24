@@ -1,230 +1,210 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
-<title>華台水果語詞配對</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin:0; padding:0;
-    font-family:"Microsoft JhengHei",sans-serif;
-    background-color:#fff8e7;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    min-height:100vh;
-  }
-  header {
-    width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    margin:20px 0 10px;
-  }
-  header img { height:60px; margin:0 20px; }
-  h1 { color:#d35400; font-size:2em; margin:0; }
-  h2 { color:#2c3e50; font-size:1em; margin:5px 0 15px; }
-  main {
-    flex:1;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    width:100%;
-    max-width:1000px;
-    padding:10px;
-  }
-  .column {
-    flex:1;
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:10px;
-    padding:10px;
-  }
-  .word {
-    border:2px solid #333;
-    border-radius:8px;
-    padding:8px 12px;
-    font-size:1em;
-    cursor:pointer;
-    user-select:none;
-    text-align:center;
-    background-color:#fefefe;
-    min-width:60px;
-  }
-  .hua { background-color:#ffeb99; }
-  .tai { background-color:#c5eff7; }
-  .selected { border:3px solid #e74c3c; }
-  footer { margin:15px 0; }
-  button {
-    padding:8px 16px;
-    margin:0 5px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:1em;
-    color:white;
-  }
-  #restart { background-color:#3498db; }
-  #next { background-color:#e67e22; }
-  #home { background-color:#2ecc71; }
-  #message {
-    font-size:1.5em;
-    color:#27ae60;
-    margin:10px;
-    font-weight:bold;
-    text-align:center;
-  }
-  @media(max-width:768px){
-    main{flex-direction:column;align-items:center;}
-    .column{flex-direction:row;flex-wrap:wrap;}
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>華台水果語詞配對</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: #fdfcf5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin: 10px 0 0 0;
+      font-size: 28px;
+      text-align: center;
+    }
+    .note {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 95%;
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+    .grid-item {
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .grid-item.matched {
+      background: #b3e5fc; /* 配對成功底色 */
+      border-color: #0288d1;
+      color: #000;
+      cursor: default;
+    }
+    .buttons {
+      margin: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #0288d1;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0277bd;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <img id="fruit-left" src="game9_assets/fruit_left.png" alt="fruit left">
   <h1>華台水果語詞配對</h1>
-  <img id="fruit-right" src="game9_assets/fruit_right.png" alt="fruit right">
-</header>
-<h2>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</h2>
-<main>
-  <div class="column" id="hua-col"></div>
-  <div class="column" id="tai-col"></div>
-</main>
-<div id="message"></div>
-<footer>
-  <button id="restart">重新開始</button>
-  <button id="next">後一部份</button>
-  <button id="home" onclick="location.href='index.html'">轉去頭頁</button>
-</footer>
+  <div class="note">📱 直式觀看效果最佳</div>
 
-<audio id="audio-player"></audio>
-<audio id="effect-correct" src="game9_assets/victory1.mp3"></audio>
-<audio id="effect-wrong" src="game9_assets/wrong2.mp3"></audio>
+  <div id="mandarinGrid" class="grid-container"></div>
+  <div id="taiwaneseGrid" class="grid-container"></div>
 
-<script>
-let huaData=[], taiData=[];
-let selectedHua=null, selectedTai=null;
-let matchedCount=0;
-let currentPart=1;
+  <div class="buttons">
+    <button id="nextBtn">第一回</button>
+  </div>
 
-// 配對成功格子顏色
-const colors=["#e74c3c","#8e44ad","#f39c12","#16a085","#2980b9","#d35400","#27ae60","#2c3e50","#c0392b","#8e44ad",
-              "#f1c40f","#e67e22","#1abc9c","#3498db","#9b59b6","#e84393","#fd79a8"];
+  <script>
+    const rounds = [
+      // 第一回 (刪掉 15.李子/李仔 → 剩 16)
+      [
+        ["1.蘋果", "蘋果仔"],
+        ["2.香蕉", "芭蕉"],
+        ["3.西瓜", "西瓜"],
+        ["4.葡萄", "葡萄"],
+        ["5.芒果", "檨仔"],
+        ["6.木瓜", "木瓜"],
+        ["7.橘子", "柑仔"],
+        ["8.柚子", "柚仔"],
+        ["9.櫻桃", "櫻桃仔"],
+        ["10.鳳梨", "旺梨"],
+        ["11.草莓", "草莓仔"],
+        ["12.百香果", "百香果"],
+        ["13.龍眼", "龍眼"],
+        ["14.荔枝", "荔枝"],
+        ["16.楊桃", "楊桃"],
+        ["17.蓮霧", "蓮霧"]
+      ],
+      // 第二回 (刪掉 32.黑珍珠/烏真珠 → 剩 16)
+      [
+        ["18.番茄", "番茄仔"],
+        ["19.檸檬", "檸檬"],
+        ["20.火龍果", "火龍果"],
+        ["21.柿子", "柿仔"],
+        ["22.椰子", "椰仔"],
+        ["23.楊梅", "楊梅"],
+        ["24.橄欖", "欖仔"],
+        ["25.枇杷", "枇杷仔"],
+        ["26.桑葚", "桑椹仔"],
+        ["27.釋迦", "釋迦"],
+        ["28.山竹", "山竹"],
+        ["29.人參果", "人參果"],
+        ["30.哈密瓜", "哈密瓜"],
+        ["31.蜜棗", "蜜棗仔"],
+        ["33.無花果", "無花果"],
+        ["34.椪柑", "椪柑"]
+      ]
+    ];
 
-// 隨機水果圖片
-const fruitsLeft=["fruit_left.png","fruit_left1.png"];
-const fruitsRight=["fruit_right.png","fruit_right1.png"];
+    let currentRound = 0;
+    let selectedMandarin = null;
+    let selectedTaiwanese = null;
+    let pairs = [];
 
-async function loadPart(part){
-  currentPart=part;
-  document.getElementById("fruit-left").src="game9_assets/"+fruitsLeft[Math.floor(Math.random()*fruitsLeft.length)];
-  document.getElementById("fruit-right").src="game9_assets/"+fruitsRight[Math.floor(Math.random()*fruitsRight.length)];
+    function loadRound(roundIndex) {
+      const round = rounds[roundIndex];
+      pairs = round.map(pair => ({ mandarin: pair[0], taiwanese: pair[1], matched: false }));
 
-  const res=await fetch(`game9_assets/fruits_part${part}.json`);
-  const data=await res.json();
-  setupGame(data);
-}
+      const mandarinGrid = document.getElementById("mandarinGrid");
+      const taiwaneseGrid = document.getElementById("taiwaneseGrid");
 
-function setupGame(data){
-  huaData=data.map(item=>({id:item.id,text:item.chinese}));
-  taiData=data.map(item=>({id:item.id,text:item.taiwanese,audio:item.audio}));
+      mandarinGrid.innerHTML = "";
+      taiwaneseGrid.innerHTML = "";
 
-  shuffleArray(huaData);
-  shuffleArray(taiData);
+      let mandarinWords = pairs.map(p => p.mandarin).sort(() => Math.random() - 0.5);
+      let taiwaneseWords = pairs.map(p => p.taiwanese).sort(() => Math.random() - 0.5);
 
-  const huaCol=document.getElementById("hua-col");
-  const taiCol=document.getElementById("tai-col");
-  huaCol.innerHTML=""; taiCol.innerHTML="";
-  matchedCount=0;
-  document.getElementById("message").textContent="";
+      mandarinWords.forEach(word => {
+        const div = document.createElement("div");
+        div.className = "grid-item";
+        div.textContent = word;
+        div.onclick = () => selectMandarin(div, word);
+        mandarinGrid.appendChild(div);
+      });
 
-  huaData.forEach(item=>{
-    const div=document.createElement("div");
-    div.className="word hua";
-    div.textContent=item.text;
-    div.dataset.id=item.id;
-    div.onclick=()=>selectHua(div);
-    huaCol.appendChild(div);
-  });
+      taiwaneseWords.forEach(word => {
+        const div = document.createElement("div");
+        div.className = "grid-item";
+        div.textContent = word;
+        div.onclick = () => selectTaiwanese(div, word);
+        taiwaneseGrid.appendChild(div);
+      });
 
-  taiData.forEach(item=>{
-    const div=document.createElement("div");
-    div.className="word tai";
-    div.textContent=item.text;
-    div.dataset.id=item.id;
-    div.dataset.audio=item.audio;
-    div.onclick=()=>selectTai(div);
-    taiCol.appendChild(div);
-  });
-}
-
-function selectHua(el){
-  if(el.classList.contains("matched")) return;
-  if(selectedHua) selectedHua.classList.remove("selected");
-  selectedHua=el; el.classList.add("selected");
-  checkMatch();
-}
-
-function selectTai(el){
-  if(el.classList.contains("matched")) return;
-  if(selectedTai) selectedTai.classList.remove("selected");
-  selectedTai=el; el.classList.add("selected");
-  checkMatch();
-}
-
-function checkMatch(){
-  if(!selectedHua||!selectedTai) return;
-  if(selectedHua.dataset.id===selectedTai.dataset.id){
-    const color=colors[matchedCount%colors.length];
-    selectedHua.classList.add("matched"); selectedHua.style.backgroundColor=color; selectedHua.style.color="white";
-    selectedTai.classList.add("matched"); selectedTai.style.backgroundColor=color; selectedTai.style.color="white";
-
-    // 播放音檔
-    const audioPlayer=document.getElementById("audio-player");
-    audioPlayer.src=selectedTai.dataset.audio;
-    audioPlayer.play();
-
-    matchedCount++;
-    resetSelection();
-
-    if(matchedCount===huaData.length){
-      const msg=document.getElementById("message");
-      msg.textContent="有夠 gâu！";
-      msg.style.fontSize="1em";
-      msg.style.opacity=1;
-      document.getElementById("effect-correct").play();
-      let size=16;
-      const grow=setInterval(()=>{
-        if(size>=48){ clearInterval(grow); }
-        else{ size+=2; msg.style.fontSize=size+"px"; }
-      },50);
+      document.getElementById("nextBtn").textContent = roundIndex === 0 ? "第一回" : "第二回";
     }
-  } else {
-    document.getElementById("effect-wrong").play();
-    resetSelection();
-  }
-}
 
-function resetSelection(){
-  if(selectedHua) selectedHua.classList.remove("selected");
-  if(selectedTai) selectedTai.classList.remove("selected");
-  selectedHua=null; selectedTai=null;
-}
+    function selectMandarin(div, word) {
+      if (div.classList.contains("matched")) return;
+      if (selectedMandarin) selectedMandarin.classList.remove("selected");
+      selectedMandarin = div;
+      div.classList.add("selected");
+      checkMatch();
+    }
 
-function shuffleArray(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-}
+    function selectTaiwanese(div, word) {
+      if (div.classList.contains("matched")) return;
+      if (selectedTaiwanese) selectedTaiwanese.classList.remove("selected");
+      selectedTaiwanese = div;
+      div.classList.add("selected");
+      checkMatch();
+    }
 
-document.getElementById("restart").onclick=()=>loadPart(currentPart);
-document.getElementById("next").onclick=()=>loadPart(currentPart===1?2:1);
+    function checkMatch() {
+      if (selectedMandarin && selectedTaiwanese) {
+        const mandarinWord = selectedMandarin.textContent;
+        const taiwaneseWord = selectedTaiwanese.textContent;
+        const pair = pairs.find(p => p.mandarin === mandarinWord && p.taiwanese === taiwaneseWord);
 
-// 預設載入 Part1
-loadPart(1);
-</script>
+        if (pair) {
+          selectedMandarin.classList.add("matched");
+          selectedTaiwanese.classList.add("matched");
+          pair.matched = true;
+        }
+
+        selectedMandarin.classList.remove("selected");
+        selectedTaiwanese.classList.remove("selected");
+        selectedMandarin = null;
+        selectedTaiwanese = null;
+      }
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      currentRound = (currentRound + 1) % rounds.length;
+      loadRound(currentRound);
+    });
+
+    loadRound(currentRound);
+  </script>
 </body>
 </html>
