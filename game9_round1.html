@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<title>格子配色測試</title>
+<title>格子圓角方框測試</title>
 <style>
   body {
     margin: 0;
@@ -16,37 +16,33 @@
   h1 {
     text-align: center;
     color: #ff6600;
+    margin: 10px 0;
   }
 
   .grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 5px;
+    gap: 8px;
     width: 95%;
     margin: 5px 0;
   }
 
   .cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
+    height: 60px;
+    border: 2px solid #999;
     border-radius: 12px;
-    font-size: 18px;
+    background-color: #fff;
     cursor: pointer;
-    user-select: none;
-    text-align: center;
     transition: all 0.3s;
   }
 
-  /* 點擊外框 */
   .cell.selected {
     outline: 3px solid #ff0000;
   }
 </style>
 </head>
 <body>
-<h1>格子配色測試</h1>
+<h1>格子圓角方框測試</h1>
 
 <div id="chineseGrid" class="grid-container"></div>
 <div id="taiwaneseGrid" class="grid-container"></div>
@@ -55,34 +51,19 @@
 const chineseGrid = document.getElementById("chineseGrid");
 const taiwaneseGrid = document.getElementById("taiwaneseGrid");
 
-// 測試用文字
-const chineseWords = ["西瓜","香蕉","鳳梨","芒果","龍眼","荔枝","柿子","楊桃","草莓","蘋果","葡萄","水蜜桃","檸檬","柳丁","藍莓","木瓜"];
-const taiwaneseWords = ["西瓜仔","芭蕉","鳳梨仔","芒果仔","龍眼仔","荔枝仔","柿仔","楊桃仔","草莓仔","蘋果仔","葡萄仔","水蜜桃仔","檸檬仔","柳丁仔","藍莓仔","木瓜仔"];
-
-// 16 種艷色
-const colors = [
-  "#FF5733","#FF8D1A","#FFC300","#DAF7A6","#33FF57","#1AFF8D","#33FFF6","#3380FF",
-  "#8D33FF","#FF33F6","#FF3380","#FF6666","#66FF66","#66FFFF","#6666FF","#FFCC00"
-];
-
-// 生成格子
-function createGrid(gridEl, words) {
+// 生成 16 格空方框
+function createGrid(gridEl) {
   gridEl.innerHTML = "";
-  words.forEach((word,i)=>{
+  for (let i = 0; i < 16; i++) {
     const div = document.createElement("div");
     div.className = "cell";
-    div.textContent = word;
-    div.dataset.color = colors[i];
-    div.onclick = () => {
-      // 點擊顯示外框
-      div.classList.toggle("selected");
-    };
+    div.onclick = () => div.classList.toggle("selected");
     gridEl.appendChild(div);
-  });
+  }
 }
 
-createGrid(chineseGrid, chineseWords);
-createGrid(taiwaneseGrid, taiwaneseWords);
+createGrid(chineseGrid);
+createGrid(taiwaneseGrid);
 </script>
 </body>
 </html>
