@@ -7,44 +7,40 @@
   body {
     margin: 0;
     font-family: "Microsoft JhengHei", sans-serif;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background-color: #fdf6e3;
-    height: 100vh;
   }
-
   header {
     text-align: center;
-    margin: 8px 0;
+    padding: 8px;
+    height: 20vh;
   }
-
-  h1 {
-    color: #ff6600;
+  header h1 {
     margin: 4px 0;
     font-size: 20px;
+    color: #ff6600;
   }
-
+  header p {
+    margin: 2px 0;
+  }
   .grid-wrapper {
-    flex: 1; /* 平均分配剩餘高度 */
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
   }
-
   .grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 6px;
     width: 95%;
-    height: 100%;
+    height: 90%;
   }
-
   .cell {
     border: 2px solid #999;
-    border-radius: 12px;
+    border-radius: 16px; /* 圓角 */
     background-color: #fff;
     display: flex;
     align-items: center;
@@ -53,48 +49,80 @@
     cursor: pointer;
     transition: all 0.3s;
   }
-
   .cell.selected {
     outline: 3px solid #ff0000;
+  }
+  footer {
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+  footer button {
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ffcc00;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 <header>
   <h1>華台果子語詞配對 – 第1回</h1>
+  <p>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</p>
+  <p style="font-size: 20px; color: #0077cc;">📱 直式觀看效果最佳</p>
 </header>
 
-<div class="grid-wrapper">
+<div class="grid-wrapper" style="height:30vh;">
   <div id="chineseGrid" class="grid-container"></div>
 </div>
-<div class="grid-wrapper">
+<div class="grid-wrapper" style="height:30vh;">
   <div id="taiwaneseGrid" class="grid-container"></div>
 </div>
 
+<footer>
+  <button>閣耍一擺</button>
+  <button>轉去遊戲頭頁</button>
+</footer>
+
 <script>
-// 模擬 fruits_all.json 資料
-const fruits_all = [];
-for(let i=1;i<=32;i++){
-  fruits_all.push({name:"水果"+i,image:"images/fruit"+i+".png",audio:"audio/fruit"+i+".mp3"});
-}
+// 測試資料：實際要換成 fruits_all.json
+const fruits_all = [
+  { chinese: "芭樂", taiwanese: "芭樂仔" },
+  { chinese: "香蕉", taiwanese: "香蕉仔" },
+  { chinese: "西瓜", taiwanese: "西瓜仔" },
+  { chinese: "荔枝", taiwanese: "荔枝仔" },
+  { chinese: "龍眼", taiwanese: "龍眼仔" },
+  { chinese: "柚子", taiwanese: "柚仔" },
+  { chinese: "橘子", taiwanese: "柑仔" },
+  { chinese: "蘋果", taiwanese: "蘋果仔" },
+  { chinese: "鳳梨", taiwanese: "鳳梨仔" },
+  { chinese: "草莓", taiwanese: "草莓仔" },
+  { chinese: "楊桃", taiwanese: "楊桃仔" },
+  { chinese: "木瓜", taiwanese: "木瓜仔" },
+  { chinese: "葡萄", taiwanese: "葡萄仔" },
+  { chinese: "檸檬", taiwanese: "檸檬仔" },
+  { chinese: "櫻桃", taiwanese: "櫻桃仔" },
+  { chinese: "哈密瓜", taiwanese: "哈密瓜仔" }
+];
 
-// 取第1回資料 (前16筆)
-const roundData = fruits_all.slice(0,16);
-
-function createGrid(gridEl, data) {
+function createGrid(gridEl, data, key) {
   gridEl.innerHTML = "";
   data.forEach(item=>{
     const div = document.createElement("div");
     div.className = "cell";
-    div.textContent = item.name;
+    div.textContent = item[key];
     div.onclick = () => div.classList.toggle("selected");
     gridEl.appendChild(div);
   });
 }
 
-// 上下各 16 格
-createGrid(document.getElementById("chineseGrid"), roundData);
-createGrid(document.getElementById("taiwaneseGrid"), roundData);
+// 上下各16格
+createGrid(document.getElementById("chineseGrid"), fruits_all, "chinese");
+createGrid(document.getElementById("taiwaneseGrid"), fruits_all, "taiwanese");
 </script>
 </body>
 </html>
