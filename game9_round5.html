@@ -39,7 +39,6 @@
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 1s ease;
     }
     .dice-face {
       position: absolute;
@@ -135,11 +134,14 @@
       if (awaitingAnswer) return;
       awaitingAnswer = true;
 
-      document.getElementById("roll-sound").play();
       const dice = document.getElementById("dice");
-      const x = Math.floor(Math.random() * 4) * 90;
-      const y = Math.floor(Math.random() * 4) * 90;
-      dice.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
+      document.getElementById("roll-sound").play();
+
+      // 隨機旋轉多圈
+      const xRot = 720 + Math.floor(Math.random() * 360);
+      const yRot = 720 + Math.floor(Math.random() * 360);
+      dice.style.transition = "transform 1s ease";
+      dice.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
 
       setTimeout(() => {
         currentFruit = Math.floor(Math.random() * totalFruits) + 1;
