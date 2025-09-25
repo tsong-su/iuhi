@@ -172,4 +172,73 @@ function parsePairEntry(entry, idx){
   let chinese = pickFirst(entry, ['chinese','zh','name','title','text','Chinese','cn']);
   let taiwanese = pickFirst(entry, ['taiwanese','tai','tw','taiwaneseName','taiwanese_name','Taiwanese','tw_name']);
   if(!chinese && chinese!== "") chinese = null;
-  if(!taiwan
+  if(!taiwanese && taiwanese!=="") taiwanese = null;
+  if(!taiwanese && chinese && chinese.includes('/')){ const parts=chinese.split('/').map(s=>s.trim()); if(parts.length>=2){ chinese=parts[0]; taiwanese=parts[1]; } }
+  if(!chinese) chinese=`水果${idx+1}`; if(!taiwanese) taiwanese=`台語${idx+1}`;
+  let audio = pickFirst(entry,['audio','Audio','audioSrc','sound','audioPath']);
+  if(audio) audio=String(audio); else audio=null;
+  return {id,chinese,taiwanese,audio};
+}
+
+async function loadRound(r){
+  round = (r===1?1:2);
+  titleText.textContent=`華台水果語詞配對 - 第${round}回`;
+  victoryEl.classList.remove('show');
+  matchedCount=0; selected=null; playingFinalFlow=false; pairs=[];
+  const file = ROUND_FILES[round];
+  try{
+    const res = await fetch(file,{cache:'no-cache'});
+    if(!res.ok) throw new Error('fetch failed');
+    let arr = extractArray(await res.json());
+    const excludedId = EXCLUDE_ID[round];
+    arr = arr.filter((it,idx)=>{
+      const idVal = (it&&(it.id??it.ID??(idx+1)));
+      const cn = (pickFirst(it,['chinese','zh','name','title','text'])||'').toString();
+      const tw = (pickFirst(it,['taiwanese','tai','tw','taiwaneseName'])||'').toString();
+      if(idVal!==undefined && idVal!==null && Number(idVal)===Number(excludedId)) return false;
+      if(round===1&&(cn.includes('李子')||tw.includes('李仔'))) return false;
+      if(round===2&&(cn.includes('黑珍珠')||tw.includes('烏真珠'))) return false;
+      return true;
+    });
+    if(arr.length>16) arr=arr.slice(0,16);
+    pairs = arr.map((it,i)=>{ const p=parsePairEntry(it,i); p.color=COLOR_PALETTE[i%COLOR_PALETTE.length]; return p; });
+    renderGrids();
+  }catch(err){ console.error('loadRound error',err); gridCn.innerHTML='<div style="padding:16px;color:#a00">無法載入資料</div>'; gridTw.innerHTML=''; }
+}
+
+function renderGrids(){
+  gridCn.innerHTML=''; gridTw.innerHTML=''; matchedCount=0; selected=null; victoryEl.classList.remove('show');
+  pairs.forEach(p=>{ const d=document.createElement('div'); d.className='cell'; d.textContent=p.chinese; d.dataset.pairId=String(p.id); d.dataset.type='cn'; d.addEventListener('click',()=>onCellClick(d)); gridCn.appendChild(d); });
+  const shuffled=pairs.slice().sort(()=>Math.random()-0.5);
+  shuffled.forEach(p=>{ const d=document.createElement('div'); d.className='cell'; d.textContent=p.taiwanese; d.dataset.pairId=String(p.id); d.dataset.type='tw'; d.addEventListener('click',()=>onCellClick(d)); gridTw.appendChild(d); });
+}
+
+function onCellClick(el){
+  if(playingFinalFlow) return;
+  if(el.classList.contains('matched')) return;
+  if(!selected){ selected={el,id:el.dataset.pairId,type:el.dataset.type}; el.classList.add('selected'); return; }
+  if(selected.el===el){ el.classList.remove('selected'); selected=null; return; }
+  el.classList.add('selected'); const first=selected; const second={el,id:el.dataset.pairId,type:el.dataset.type};
+  if(first.id===second.id && first.type!==second.type){
+    const pairIndex=pairs.findIndex(p=>String(p.id)===String(first.id));
+    const pair=pairs[pairIndex]; const color=pair.color||COLOR_PALETTE[pairIndex%COLOR_PALETTE.length];
+    first.el.classList.add('matched'); second.el.classList.add('matched'); first.el.style.background=color; second.el.style.background=color; first.el.style.color='#fff'; second.el.style.color='#fff'; matchedCount++;
+    if(pair.audio){ const a=new Audio(pair.audio); a.play().catch(()=>{}); }
+    if(matchedCount===pairs.length){
+      playingFinalFlow=true;
+      setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); setTimeout(()=>{playingFinalFlow=false;},2500); },1000);
+    }
+  }else{ try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{});}catch(e){}; first.el.classList.add('shake'); second.el.classList.add('shake'); setTimeout(()=>{ first.el.classList.remove('shake'); second.el.classList.remove('shake'); first.el.classList.remove('selected'); second.el.classList.remove('selected'); },380);}
+  if(first.el && !first.el.classList.contains('matched')) first.el.classList.remove('selected');
+  if(second.el && !second.el.classList.contains('matched')) second.el.classList.remove('selected');
+  selected=null;
+}
+
+document.getElementById('btn-restart').addEventListener('click',()=>loadRound(round));
+document.getElementById('btn-next').addEventListener('click',()=>{ round=(round===1?2:1); loadRound(round); });
+document.getElementById('btn-home').addEventListener('click',()=>{ location.href='index.html'; });
+
+loadRound(1);
+</script>
+</body>
+</html>
