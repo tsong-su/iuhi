@@ -32,7 +32,7 @@
       margin: 20px auto;
       width: 200px;
       height: 200px;
-      perspective: 1000px;
+      perspective: 1200px;
     }
     .dice {
       width: 100%;
@@ -137,7 +137,7 @@
       const dice = document.getElementById("dice");
       document.getElementById("roll-sound").play();
 
-      // 隨機旋轉多圈
+      // 立體旋轉動畫，多圈隨機
       const xRot = 720 + Math.floor(Math.random() * 360);
       const yRot = 720 + Math.floor(Math.random() * 360);
       dice.style.transition = "transform 1s ease";
