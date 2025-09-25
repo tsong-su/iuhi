@@ -27,20 +27,20 @@
 
   .title-row{
     display:flex; align-items:center; gap:10px;
-    font-size:clamp(20px,4.5vw,32px);
+    font-size:clamp(20px,5vw,30px);
     font-weight:800;
     color:#ff6f00;
   }
-  .title-row img{ width:44px; height:44px; object-fit:contain; transition: opacity 0.3s ease; }
+  .title-row img{ width:44px; height:44px; object-fit:contain; }
 
   .subtitle{
     margin-top:6px;
-    font-size:clamp(14px,2.4vw,18px);
+    font-size:clamp(14px,2.6vw,18px);
     color:#1565c0;
   }
   .view-hint{
     margin-top:4px;
-    font-size:clamp(16px,3.2vw,20px);
+    font-size:clamp(16px,3vw,20px);
     color:#d81b60;
     font-weight:800;
   }
@@ -90,9 +90,9 @@
     padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(14px,2.4vw,18px);
     cursor:pointer; color:#fff;
   }
-  #btn-restart{ background:#ffb74d } /* 閣耍一擺 */
-  #btn-next{ background:#4fc3f7 }    /* 後一回 */
-  #btn-home{ background:#81c784 }    /* 轉去遊戲頭頁 */
+  #btn-restart{ background:#ffb74d }
+  #btn-next{ background:#4fc3f7 }
+  #btn-home{ background:#81c784 }
 
   #victory {
     position: fixed; left:50%; top:44%; transform:translate(-50%,-50%) scale(.2);
@@ -110,9 +110,9 @@
 <body>
   <header>
     <div class="title-row">
-      <img id="leftImg" src="" alt="left fruit">
+      <img id="leftImg" src="game9_assets/fruit_left.png" alt="left fruit">
       <div id="titleText">華台水果語詞配對 - 第1回</div>
-      <img id="rightImg" src="" alt="right fruit">
+      <img id="rightImg" src="game9_assets/fruit_right.png" alt="right fruit">
     </div>
     <div class="subtitle" id="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
     <div class="view-hint">📱 建議直式觀看效果最佳</div>
@@ -145,153 +145,106 @@ const COLOR_PALETTE = [
 
 const gridCn = document.getElementById('grid-cn');
 const gridTw = document.getElementById('grid-tw');
-const leftImg = document.getElementById('leftImg');
-const rightImg = document.getElementById('rightImg');
 const titleText = document.getElementById('titleText');
 const victoryEl = document.getElementById('victory');
 const wrongAudio = document.getElementById('wrongAudio');
 const victoryAudio = document.getElementById('victoryAudio');
 
-let round = 1;
-let pairs = [];
-let selected = null;
-let matchedCount = 0;
-let playingFinalFlow = false;
-
-// 左右圖片輪播
-const leftImgs=['fruit_left.png','fruit_left1.png','fruit_left2.png'];
-const rightImgs=['fruit_right.png','fruit_right1.png','fruit_right2.png'];
-let li=0, ri=0;
-const preloadedLeft = leftImgs.map(f=>{const img=new Image(); img.src='game9_assets/'+f; return img;});
-const preloadedRight = rightImgs.map(f=>{const img=new Image(); img.src='game9_assets/'+f; return img;});
-
-setInterval(()=>{
-  li = (li + 1) % preloadedLeft.length;
-  ri = (ri + 1) % preloadedRight.length;
-  const newLeft = preloadedLeft[li].src;
-  const newRight = preloadedRight[ri].src;
-  leftImg.style.opacity=0; rightImg.style.opacity=0;
-  setTimeout(()=>{
-    leftImg.src = newLeft;
-    rightImg.src = newRight;
-    leftImg.style.opacity=1;
-    rightImg.style.opacity=1;
-  }, 300);
-},2000);
-
-function extractArray(json){if(Array.isArray(json)) return json;if(json.fruits && Array.isArray(json.fruits)) return json.fruits;return [];}
-function pickFirst(obj, keys){for(const k of keys){if(obj[k]!==undefined && obj[k]!==null && String(obj[k]).trim()!=='') return String(obj[k]).trim();} return null;}
-function parsePairEntry(entry, idx){
-  const id = entry.id ?? entry.ID ?? entry.index ?? (idx+1);
-  let chinese = pickFirst(entry,['chinese','zh','name','title','text','Chinese','cn']);
-  let taiwanese = pickFirst(entry,['taiwanese','tai','tw','taiwaneseName','taiwanese_name','Taiwanese','tw_name']);
-  if(!chinese && chinese !== "") chinese=null;
-  if(!taiwanese && taiwanese !== "") taiwanese=null;
-  if(!taiwanese && chinese && chinese.includes('/')){
-    const parts=chinese.split('/').map(s=>s.trim());
-    if(parts.length>=2){ chinese=parts[0]; taiwanese=parts[1]; }
-  }
-  if(!chinese) chinese=`水果${idx+1}`;
-  if(!taiwanese) taiwanese=`台語${idx+1}`;
-  let audio=pickFirst(entry,['audio','Audio','audioSrc','sound','audioPath']);
-  if(audio) audio=String(audio); else audio=null;
-  return {id,chinese,taiwanese,audio};
-}
+let round = 1, pairs = [], selected=null, matchedCount=0, playingFinalFlow=false;
 
 async function loadRound(r){
-  round=(r===1?1:2);
-  titleText.textContent=`華台水果語詞配對 - 第${round}回`;
-  victoryEl.classList.remove('show'); matchedCount=0; selected=null; playingFinalFlow=false; pairs=[];
-  const file = ROUND_FILES[round];
+  round = r===1?1:2;
+  titleText.textContent = `華台水果語詞配對 - 第${round}回`;
+  matchedCount = 0; selected=null; playingFinalFlow=false; pairs=[];
+  victoryEl.classList.remove('show');
+
   try{
-    const res = await fetch(file,{cache:'no-cache'});
+    const res = await fetch(ROUND_FILES[round],{cache:'no-cache'});
     if(!res.ok) throw new Error('fetch failed');
-    const json=await res.json();
-    let arr=extractArray(json);
-    const excludedId=EXCLUDE_ID[round];
-    arr=arr.filter((it,idx)=>{
-      const idVal=(it && (it.id ?? it.ID ?? (idx+1)));
-      const cn=(pickFirst(it,['chinese','zh','name','title','text'])||'').toString();
-      const tw=(pickFirst(it,['taiwanese','tai','tw','taiwaneseName'])||'').toString();
-      if(idVal!==undefined && idVal!==null && Number(idVal)===Number(excludedId)) return false;
-      if(round===1&&(cn.includes('李子')||tw.includes('李仔'))) return false;
-      if(round===2&&(cn.includes('黑珍珠')||tw.includes('烏真珠'))) return false;
+    let arr = await res.json();
+    arr = Array.isArray(arr)? arr: arr.fruits;
+    const excludedId = EXCLUDE_ID[round];
+    arr = arr.filter((it,idx)=>{
+      const idVal = it.id ?? (idx+1);
+      const cn = it.chinese ?? it.name ?? '';
+      const tw = it.taiwanese ?? '';
+      if(idVal === excludedId) return false;
+      if(round===1 && (cn.includes('李子')||tw.includes('李仔'))) return false;
+      if(round===2 && (cn.includes('黑珍珠')||tw.includes('烏真珠'))) return false;
       return true;
     });
-    if(arr.length>16) arr=arr.slice(0,16);
-    pairs=arr.map((it,i)=>{const parsed=parsePairEntry(it,i); parsed.color=COLOR_PALETTE[i%COLOR_PALETTE.length]; return parsed;});
+    arr = arr.slice(0,16);
+    pairs = arr.map((it,i)=>{
+      return {
+        id: it.id ?? (i+1),
+        chinese: it.chinese ?? it.name ?? `水果${i+1}`,
+        taiwanese: it.taiwanese ?? `台語${i+1}`,
+        audio: it.audio ?? null,
+        color: COLOR_PALETTE[i%COLOR_PALETTE.length]
+      }
+    });
     renderGrids();
   }catch(err){
-    console.error('loadRound error',err);
-    gridCn.innerHTML='<div style="padding:16px;color:#a00">無法載入資料，請確認 game9_assets 中的 JSON 檔案存在。</div>';
-    gridTw.innerHTML='';
+    console.error('loadRound error', err);
+    gridCn.innerHTML = '<div style="padding:16px;color:#a00">無法載入資料</div>';
+    gridTw.innerHTML = '';
   }
 }
 
 function renderGrids(){
   gridCn.innerHTML=''; gridTw.innerHTML='';
   matchedCount=0; selected=null; victoryEl.classList.remove('show');
+
   pairs.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='cell';
-    d.textContent=p.chinese;
-    d.dataset.pairId=String(p.id); d.dataset.type='cn';
+    const d = document.createElement('div');
+    d.className='cell'; d.textContent=p.chinese;
+    d.dataset.pairId=p.id; d.dataset.type='cn';
     d.addEventListener('click',()=>onCellClick(d));
     gridCn.appendChild(d);
   });
-  const shuffled=pairs.slice().sort(()=>Math.random()-0.5);
+
+  const shuffled = pairs.slice().sort(()=>Math.random()-0.5);
   shuffled.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='cell';
-    d.textContent=p.taiwanese;
-    d.dataset.pairId=String(p.id); d.dataset.type='tw';
+    const d = document.createElement('div');
+    d.className='cell'; d.textContent=p.taiwanese;
+    d.dataset.pairId=p.id; d.dataset.type='tw';
     d.addEventListener('click',()=>onCellClick(d));
     gridTw.appendChild(d);
   });
 }
 
 function onCellClick(el){
-  if(playingFinalFlow) return;
-  if(el.classList.contains('matched')) return;
-  if(!selected){ selected={el,id:el.dataset.pairId,type:el.dataset.type}; el.classList.add('selected'); return; }
+  if(playingFinalFlow||el.classList.contains('matched')) return;
+  if(!selected){ selected={el, id:el.dataset.pairId, type:el.dataset.type}; el.classList.add('selected'); return; }
   if(selected.el===el){ el.classList.remove('selected'); selected=null; return; }
   el.classList.add('selected');
-  const first=selected;
-  const second={el,id:el.dataset.pairId,type:el.dataset.type};
+  const first = selected, second={el, id:el.dataset.pairId, type:el.dataset.type};
   if(first.id===second.id && first.type!==second.type){
-    const pairIndex=pairs.findIndex(p=>String(p.id)===String(first.id));
-    const pair=pairs[pairIndex];
-    const color=pair.color||COLOR_PALETTE[pairIndex%COLOR_PALETTE.length];
+    const pairIndex = pairs.findIndex(p=>p.id==first.id);
+    const pair = pairs[pairIndex];
+    const color = pair.color;
     first.el.classList.add('matched'); second.el.classList.add('matched');
     first.el.style.background=color; second.el.style.background=color;
     first.el.style.color='#fff'; second.el.style.color='#fff';
     matchedCount++;
-    const audioSrc=pair.audio;
+    if(pair.audio){ new Audio(pair.audio).play().catch(()=>{}); }
     if(matchedCount===pairs.length){
-      if(audioSrc){
-        playingFinalFlow=true;
-        const a=new Audio(audioSrc); a.play().catch(()=>{});
-        a.addEventListener('ended',()=>{
-          setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); setTimeout(()=>{playingFinalFlow=false;},2500);},1000);
-        });
-        setTimeout(()=>{
-          if(!victoryEl.classList.contains('show')) setTimeout(()=>{ victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); },1000);
-        },5000);
-      } else { setTimeout(()=>{ victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); },1000);}
-    } else if(audioSrc){ const a=new Audio(audioSrc); a.play().catch(()=>{}); }
-  } else{
-    try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{});}catch(e){}
+      playingFinalFlow=true;
+      setTimeout(()=>{ victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); setTimeout(()=>{playingFinalFlow=false;},2500); },1000);
+    }
+  }else{
+    try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{}); }catch(e){}
     first.el.classList.add('shake'); second.el.classList.add('shake');
-    setTimeout(()=>{ first.el.classList.remove('shake'); second.el.classList.remove('shake'); first.el.classList.remove('selected'); second.el.classList.remove('selected'); },380);
+    setTimeout(()=>{ first.el.classList.remove('shake','selected'); second.el.classList.remove('shake','selected'); },380);
   }
-  if(first.el && !first.el.classList.contains('matched')) first.el.classList.remove('selected');
-  if(second.el && !second.el.classList.contains('matched')) second.el.classList.remove('selected');
+  if(!first.el.classList.contains('matched')) first.el.classList.remove('selected');
+  if(!second.el.classList.contains('matched')) second.el.classList.remove('selected');
   selected=null;
 }
 
 document.getElementById('btn-restart').addEventListener('click',()=>loadRound(round));
-document.getElementById('btn-next').addEventListener('click',()=>{ round=(round===1?2:1); loadRound(round); });
-document.getElementById('btn-home').addEventListener('click',()=>{ location.href='index.html'; });
+document.getElementById('btn-next').addEventListener('click',()=>loadRound(round===1?2:1));
+document.getElementById('btn-home').addEventListener('click',()=>{location.href='index.html';});
 
 loadRound(1);
 </script>
