@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>水果骰子遊戲第1回</title>
+  <title>水果骰子遊戲第1回 - 單人測試版</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -12,21 +12,13 @@
       padding: 10px;
       margin: 0;
     }
-    h1 {
-      color: #d35400;
-      margin-bottom: 5px;
-    }
+    h1 { color: #d35400; margin-bottom: 5px; }
     #rules {
       background-color: rgba(255,255,255,0.8);
       padding: 10px;
       border-radius: 10px;
       font-size: 16px;
       margin-bottom: 15px;
-    }
-    .scoreboard {
-      margin: 10px 0;
-      font-size: 18px;
-      color: #2c3e50;
     }
     #dice-container {
       margin: 20px auto;
@@ -49,10 +41,7 @@
       align-items: center;
       justify-content: center;
     }
-    .fruit-stamp {
-      width: 180px;
-      height: 180px;
-    }
+    .fruit-stamp { width: 180px; height: 180px; }
     button {
       margin: 5px;
       padding: 10px 20px;
@@ -63,19 +52,8 @@
       background-color: #f39c12;
       color: white;
     }
-    button:hover {
-      background-color: #e67e22;
-    }
-    #fruit-info {
-      margin-top: 15px;
-      font-size: 16px;
-    }
-    #winner {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #27ae60;
-    }
+    button:hover { background-color: #e67e22; }
+    #fruit-info { margin-top: 15px; font-size: 16px; }
     @media (max-width: 500px){
       #dice-container { width: 150px; height: 150px; }
       .dice-face { width: 150px; height: 150px; }
@@ -84,24 +62,15 @@
   </style>
 </head>
 <body>
-  <h1>水果骰子遊戲第1回</h1>
+  <h1>水果骰子遊戲第1回 - 單人測試版</h1>
   <div id="rules">
     <p>遊戲規則：</p>
     <ul>
-      <li>玩家輪流擲骰子。</li>
-      <li>骰子停下後，顯示水果圖片與名稱。</li>
-      <li>點 🔊 可以聽水果的台語發音。</li>
-      <li>玩家說出台語後，點「正確 ✅」或「錯誤 ❌」判分。</li>
-      <li>先達到 100 分者獲勝。</li>
-      <li>手動按「換玩家 🔄」切換玩家。</li>
+      <li>按「擲骰 🎲」骰子會滾動。</li>
+      <li>停下後顯示水果圖片。</li>
+      <li>點 🔊 可以播放水果台語發音。</li>
     </ul>
   </div>
-
-  <div class="scoreboard">
-    玩家 1 分數: <span id="score1">0</span> | 
-    玩家 2 分數: <span id="score2">0</span>
-  </div>
-  <div>目前輪到：<span id="current-player">玩家 1</span></div>
 
   <div id="dice-container">
     <div id="dice" class="dice"></div>
@@ -109,45 +78,46 @@
 
   <div>
     <button onclick="rollDice()">擲骰 🎲</button>
-    <button onclick="markAnswer(true)">正確 ✅</button>
-    <button onclick="markAnswer(false)">錯誤 ❌</button>
-    <button onclick="switchPlayer()">換玩家 🔄</button>
   </div>
-
   <div id="fruit-info"></div>
-  <div id="winner"></div>
 
   <!-- 音效 -->
   <audio id="roll-sound" src="game9_assets/Roll the dice.mp3"></audio>
   <audio id="ding-sound" src="game9_assets/ding.mp3"></audio>
-  <audio id="victory-sound" src="game9_assets/victory.mp3"></audio>
-  <audio id="wrong-sound" src="game9_assets/wrong1.mp3"></audio>
 
   <script>
     const totalFruits = 34;
     let currentFruit = 1;
-    let currentPlayer = 1;
-    let scores = [0, 0];
-    let awaitingAnswer = false;
+    let rolling = false;
 
     function rollDice() {
-      if (awaitingAnswer) return;
-      awaitingAnswer = true;
-
+      if (rolling) return;
+      rolling = true;
       const dice = document.getElementById("dice");
-      document.getElementById("roll-sound").play();
+      const rollSound = document.getElementById("roll-sound");
+      const dingSound = document.getElementById("ding-sound");
+      rollSound.currentTime = 0;
+      rollSound.play();
 
-      // 立體旋轉動畫，多圈隨機
-      const xRot = 720 + Math.floor(Math.random() * 360);
-      const yRot = 720 + Math.floor(Math.random() * 360);
-      dice.style.transition = "transform 1s ease";
-      dice.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
+      let steps = 15; // 連續滾動步數
+      let i = 0;
 
-      setTimeout(() => {
-        currentFruit = Math.floor(Math.random() * totalFruits) + 1;
-        showFruit(currentFruit);
-        document.getElementById("ding-sound").play();
-      }, 1000);
+      const rollInterval = setInterval(() => {
+        const xRot = Math.floor(Math.random() * 720);
+        const yRot = Math.floor(Math.random() * 720);
+        dice.style.transition = "transform 0.08s ease";
+        dice.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
+        i++;
+        if (i >= steps) {
+          clearInterval(rollInterval);
+          currentFruit = Math.floor(Math.random() * totalFruits) + 1;
+          showFruit(currentFruit);
+          rollSound.pause();
+          rollSound.currentTime = 0;
+          dingSound.play();
+          rolling = false;
+        }
+      }, 80);
     }
 
     function showFruit(index) {
@@ -180,39 +150,6 @@
     function playFruitSound(index) {
       const audio = new Audio(`game9_assets/fruit${index}.mp3`);
       audio.play();
-    }
-
-    function markAnswer(correct) {
-      if (!awaitingAnswer) return;
-      if (correct) {
-        scores[currentPlayer-1] += 10;
-        document.getElementById("victory-sound").play();
-      } else {
-        document.getElementById("wrong-sound").play();
-      }
-      updateScores();
-      checkWinner();
-      awaitingAnswer = false;
-    }
-
-    function switchPlayer() {
-      currentPlayer = currentPlayer === 1 ? 2 : 1;
-      document.getElementById("current-player").textContent = `玩家 ${currentPlayer}`;
-    }
-
-    function updateScores() {
-      document.getElementById("score1").textContent = scores[0];
-      document.getElementById("score2").textContent = scores[1];
-    }
-
-    function checkWinner() {
-      if (scores[0] >= 100) {
-        document.getElementById("winner").textContent = "🎉 玩家 1 獲勝！";
-        awaitingAnswer = false;
-      } else if (scores[1] >= 100) {
-        document.getElementById("winner").textContent = "🎉 玩家 2 獲勝！";
-        awaitingAnswer = false;
-      }
     }
   </script>
 </body>
