@@ -27,23 +27,21 @@
 
   .title-row{
     display:flex; align-items:center; gap:10px;
-    font-size:clamp(18px,4.2vw,28px);
+    font-size:clamp(20px,5vw,32px);
     font-weight:800;
-    color:#ff6f00; /* 亮麗色系 */
-    flex-wrap: nowrap;
-    justify-content: center;
+    color:#ff6f00;
   }
   .title-row img{ width:44px; height:44px; object-fit:contain; }
 
   .subtitle{
     margin-top:6px;
-    font-size:clamp(12px,2.2vw,16px);
-    color:#1565c0; 
+    font-size:clamp(14px,2.6vw,18px);
+    color:#1565c0;
   }
   .view-hint{
     margin-top:4px;
-    font-size:clamp(14px,3vw,18px);
-    color:#ff4081; /* 更亮麗 */
+    font-size:clamp(16px,3vw,20px);
+    color:#d81b60;
     font-weight:800;
   }
 
@@ -71,7 +69,7 @@
     user-select:none;
     overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
     font-weight:700;
-    font-size: clamp(14px, 2.6vw, 20px);
+    font-size: clamp(16px, 3vw, 24px);
     min-height: 44px;
   }
   .cell:active{ transform: translateY(2px); }
@@ -89,7 +87,7 @@
   }
 
   button.btn {
-    padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(13px,2.2vw,16px);
+    padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(14px,2.4vw,18px);
     cursor:pointer; color:#fff;
   }
   #btn-restart{ background:#ffb74d } /* 閣耍一擺 */
@@ -104,8 +102,8 @@
   }
   #victory.show { transform:translate(-50%,-50%) scale(1.2); opacity:1; }
 
-  @media (max-width:600px){
-    .title-row img{ width:36px; height:36px; }
+  @media (min-width:900px){
+    :root{ --header-h:12vh; --footer_h:10vh; }
   }
 </style>
 </head>
@@ -139,10 +137,10 @@
 const ROUND_FILES = {1:'game9_assets/fruits_part1.json', 2:'game9_assets/fruits_part2.json'};
 const EXCLUDE_ID = {1:15, 2:32};
 const COLOR_PALETTE = [
-  "#FF5733","#FF8D1A","#FFC300","#DAF7A6",
-  "#33FF57","#1AFF8D","#33FFF6","#3380FF",
+  "#FF5733","#FF8D1A","#FFC300","#DAA520",
+  "#33FF57","#1AFF8D","#33CFFF","#3380FF",
   "#8D33FF","#FF33F6","#FF3380","#FF6666",
-  "#66FF66","#66FFFF","#6666FF","#FFCC00"
+  "#66CC66","#66FFFF","#6666FF","#FFCC00"
 ];
 
 const gridCn = document.getElementById('grid-cn');
@@ -156,85 +154,89 @@ const victoryAudio = document.getElementById('victoryAudio');
 
 let round = 1, pairs = [], selected = null, matchedCount = 0, playingFinalFlow=false;
 
-// 隨機切換左右水果圖
-const LEFT_OPTS = ['fruit_left.png','fruit_left1.png','fruit_left2.png','fruit_left3.png'];
-const RIGHT_OPTS = ['fruit_right.png','fruit_right1.png','fruit_right2.png','fruit_right3.png'];
-setInterval(()=> {
-  leftImg.src = 'game9_assets/' + LEFT_OPTS[Math.floor(Math.random()*LEFT_OPTS.length)];
-  rightImg.src = 'game9_assets/' + RIGHT_OPTS[Math.floor(Math.random()*RIGHT_OPTS.length)];
-}, 2000);
+(function pickHeaderImgs(){
+  const leftOpts = ['fruit_left.png','fruit_left1.png'];
+  const rightOpts = ['fruit_right.png','fruit_right1.png'];
+  leftImg.src = 'game9_assets/' + leftOpts[Math.floor(Math.random()*leftOpts.length)];
+  rightImg.src = 'game9_assets/' + rightOpts[Math.floor(Math.random()*rightOpts.length)];
+})();
 
-// JSON 處理與渲染 (同您原本程式碼)
-function extractArray(json){ if(Array.isArray(json)) return json; if(json.fruits&&Array.isArray(json.fruits)) return json.fruits; return []; }
-function pickFirst(obj,keys){for(const k of keys) if(obj[k]!==undefined && obj[k]!==null && String(obj[k]).trim()!=='') return String(obj[k]).trim(); return null;}
+function extractArray(json){ return Array.isArray(json)?json:(json.fruits||json.items||json.data||[]); }
+function pickFirst(obj, keys){ for(const k of keys) if(obj[k]) return String(obj[k]).trim(); return null; }
 function parsePairEntry(entry, idx){
   const id = entry.id ?? entry.ID ?? entry.index ?? (idx+1);
-  let chinese = pickFirst(entry, ['chinese','zh','name','title','text','Chinese','cn']);
-  let taiwanese = pickFirst(entry, ['taiwanese','tai','tw','taiwaneseName','taiwanese_name','Taiwanese','tw_name']);
-  if(!chinese && chinese!== "") chinese = null;
-  if(!taiwanese && taiwanese!=="") taiwanese = null;
-  if(!taiwanese && chinese && chinese.includes('/')){ const parts=chinese.split('/').map(s=>s.trim()); if(parts.length>=2){ chinese=parts[0]; taiwanese=parts[1]; } }
-  if(!chinese) chinese=`水果${idx+1}`; if(!taiwanese) taiwanese=`台語${idx+1}`;
+  let chinese = pickFirst(entry, ['chinese','zh','name','title','text']) || null;
+  let taiwanese = pickFirst(entry, ['taiwanese','tai','tw','taiwaneseName','taiwanese_name']) || null;
+  if(!taiwanese && chinese && chinese.includes('/')){ const parts=chinese.split('/'); chinese=parts[0]; taiwanese=parts[1]; }
   let audio = pickFirst(entry,['audio','Audio','audioSrc','sound','audioPath']);
-  if(audio) audio=String(audio); else audio=null;
-  return {id,chinese,taiwanese,audio};
+  return { id, chinese: chinese||`水果${idx+1}`, taiwanese: taiwanese||`台語${idx+1}`, audio };
 }
 
 async function loadRound(r){
   round = (r===1?1:2);
-  titleText.textContent=`華台水果語詞配對 - 第${round}回`;
+  titleText.textContent = `華台水果語詞配對 - 第${round}回`;
   victoryEl.classList.remove('show');
-  matchedCount=0; selected=null; playingFinalFlow=false; pairs=[];
-  const file = ROUND_FILES[round];
+  matchedCount = 0; selected=null; playingFinalFlow=false; pairs=[];
   try{
-    const res = await fetch(file,{cache:'no-cache'});
-    if(!res.ok) throw new Error('fetch failed');
-    let arr = extractArray(await res.json());
+    const res = await fetch(ROUND_FILES[round], {cache:'no-cache'});
+    const json = await res.json();
+    let arr = extractArray(json);
     const excludedId = EXCLUDE_ID[round];
     arr = arr.filter((it,idx)=>{
-      const idVal = (it&&(it.id??it.ID??(idx+1)));
-      const cn = (pickFirst(it,['chinese','zh','name','title','text'])||'').toString();
-      const tw = (pickFirst(it,['taiwanese','tai','tw','taiwaneseName'])||'').toString();
-      if(idVal!==undefined && idVal!==null && Number(idVal)===Number(excludedId)) return false;
+      const idVal = it.id ?? it.ID ?? (idx+1);
+      const cn = pickFirst(it, ['chinese','zh','name','title','text'])||'';
+      const tw = pickFirst(it,['taiwanese','tai','tw','taiwaneseName'])||'';
+      if(Number(idVal)===Number(excludedId)) return false;
       if(round===1&&(cn.includes('李子')||tw.includes('李仔'))) return false;
       if(round===2&&(cn.includes('黑珍珠')||tw.includes('烏真珠'))) return false;
       return true;
     });
     if(arr.length>16) arr=arr.slice(0,16);
-    pairs = arr.map((it,i)=>{ const p=parsePairEntry(it,i); p.color=COLOR_PALETTE[i%COLOR_PALETTE.length]; return p; });
+    pairs=arr.map((it,i)=>{ const p=parsePairEntry(it,i); p.color=COLOR_PALETTE[i%COLOR_PALETTE.length]; return p; });
     renderGrids();
-  }catch(err){ console.error('loadRound error',err); gridCn.innerHTML='<div style="padding:16px;color:#a00">無法載入資料</div>'; gridTw.innerHTML=''; }
+  }catch(err){ console.error(err); gridCn.innerHTML='<div style="padding:16px;color:#a00">無法載入資料</div>'; gridTw.innerHTML=''; }
 }
 
 function renderGrids(){
   gridCn.innerHTML=''; gridTw.innerHTML=''; matchedCount=0; selected=null; victoryEl.classList.remove('show');
-  pairs.forEach(p=>{ const d=document.createElement('div'); d.className='cell'; d.textContent=p.chinese; d.dataset.pairId=String(p.id); d.dataset.type='cn'; d.addEventListener('click',()=>onCellClick(d)); gridCn.appendChild(d); });
+  pairs.forEach(p=>{
+    const d=document.createElement('div'); d.className='cell'; d.textContent=p.chinese;
+    d.dataset.pairId=p.id; d.dataset.type='cn'; d.addEventListener('click',()=>onCellClick(d));
+    gridCn.appendChild(d);
+  });
   const shuffled=pairs.slice().sort(()=>Math.random()-0.5);
-  shuffled.forEach(p=>{ const d=document.createElement('div'); d.className='cell'; d.textContent=p.taiwanese; d.dataset.pairId=String(p.id); d.dataset.type='tw'; d.addEventListener('click',()=>onCellClick(d)); gridTw.appendChild(d); });
+  shuffled.forEach(p=>{
+    const d=document.createElement('div'); d.className='cell'; d.textContent=p.taiwanese;
+    d.dataset.pairId=p.id; d.dataset.type='tw'; d.addEventListener('click',()=>onCellClick(d));
+    gridTw.appendChild(d);
+  });
 }
 
 function onCellClick(el){
-  if(playingFinalFlow) return;
-  if(el.classList.contains('matched')) return;
+  if(playingFinalFlow||el.classList.contains('matched')) return;
   if(!selected){ selected={el,id:el.dataset.pairId,type:el.dataset.type}; el.classList.add('selected'); return; }
   if(selected.el===el){ el.classList.remove('selected'); selected=null; return; }
-  el.classList.add('selected'); const first=selected; const second={el,id:el.dataset.pairId,type:el.dataset.type};
+  el.classList.add('selected'); const first=selected, second={el,id:el.dataset.pairId,type:el.dataset.type};
   if(first.id===second.id && first.type!==second.type){
-    const pairIndex=pairs.findIndex(p=>String(p.id)===String(first.id));
-    const pair=pairs[pairIndex]; const color=pair.color||COLOR_PALETTE[pairIndex%COLOR_PALETTE.length];
-    first.el.classList.add('matched'); second.el.classList.add('matched'); first.el.style.background=color; second.el.style.background=color; first.el.style.color='#fff'; second.el.style.color='#fff'; matchedCount++;
+    const pair=pairs.find(p=>String(p.id)===String(first.id)); const color=pair.color||'#888';
+    [first.el,second.el].forEach(d=>{ d.classList.add('matched'); d.style.background=color; d.style.color=(['#DAA520','#FFC300','#FFCC00','#66FFFF','#66CC66'].includes(color)?'#000':'#fff'); });
+    matchedCount++;
     if(pair.audio){ const a=new Audio(pair.audio); a.play().catch(()=>{}); }
     if(matchedCount===pairs.length){
       playingFinalFlow=true;
       setTimeout(()=>{ victoryAudio.currentTime=0; victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); setTimeout(()=>{playingFinalFlow=false;},2500); },1000);
     }
-  }else{ try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{});}catch(e){}; first.el.classList.add('shake'); second.el.classList.add('shake'); setTimeout(()=>{ first.el.classList.remove('shake'); second.el.classList.remove('shake'); first.el.classList.remove('selected'); second.el.classList.remove('selected'); },380);}
-  if(first.el && !first.el.classList.contains('matched')) first.el.classList.remove('selected');
-  if(second.el && !second.el.classList.contains('matched')) second.el.classList.remove('selected');
+  } else {
+    try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{}); }catch(e){}
+    [first.el,second.el].forEach(d=>d.classList.add('shake'));
+    setTimeout(()=>{ [first.el,second.el].forEach(d=>{d.classList.remove('shake'); d.classList.remove('selected');}); },380);
+  }
+  if(first.el&&!first.el.classList.contains('matched')) first.el.classList.remove('selected');
+  if(second.el&&!second.el.classList.contains('matched')) second.el.classList.remove('selected');
   selected=null;
 }
 
-document.getElementById('btn-restart').addEventListener('click',()=>loadRound(round));
+document.getElementById('btn-restart').addEventListener('click',()=> loadRound(round));
 document.getElementById('btn-next').addEventListener('click',()=>{ round=(round===1?2:1); loadRound(round); });
 document.getElementById('btn-home').addEventListener('click',()=>{ location.href='index.html'; });
 
