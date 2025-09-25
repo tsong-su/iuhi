@@ -1,247 +1,416 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>華台水果語詞配對-第1回</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background: linear-gradient(to bottom, #fff7e6, #ffe0b2);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 100vh;
-    }
-    header {
-      text-align: center;
-      padding: 10px;
-    }
-    header h1 {
-      font-size: 2em;
-      font-weight: bold;
-      color: #ff6600; /* 亮麗色系 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    header img {
-      width: 40px;
-      height: 40px;
-    }
-    .subtitle {
-      font-size: 1em;
-      margin-top: 5px;
-      color: #444;
-    }
-    .hint {
-      font-size: 1.2em;
-      margin-top: 5px;
-      color: #0077cc;
-      font-weight: bold;
-    }
-    main {
-      flex-grow: 1;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      width: 90%;
-      max-width: 600px;
-    }
-    .cell {
-      border-radius: 12px;
-      padding: 10px;
-      background: #fff3cd;
-      text-align: center;
-      font-size: 1.1em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      word-break: break-word;
-    }
-    .cell:hover { transform: scale(1.05); }
-    .top-grid .cell { background: #e0f7fa; }   /* 初始上方顏色 */
-    .bottom-grid .cell { background: #fce4ec; }/* 初始下方顏色 */
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>華台水果語詞配對</title>
+<style>
+  :root{
+    --header-h:14vh;
+    --footer-h:11vh;
+    --grid-h: calc((100vh - var(--header-h) - var(--footer-h) - 22px) / 2);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    background: linear-gradient(180deg,#fffaf0 0%, #fff3df 100%);
+    color:#222;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  }
 
-    footer {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      padding: 15px;
-    }
-    button {
-      border: none;
-      padding: 10px 15px;
-      font-size: 1em;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: transform 0.2s;
-    }
-    button:hover { transform: scale(1.1); }
-    .btn-restart { background: #ffcc80; }
-    .btn-next { background: #90caf9; }
-    .btn-home { background: #a5d6a7; }
+  header{
+    height:var(--header-h);
+    width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8px 12px; text-align:center;
+  }
 
-    #result {
-      font-size: 2em;
-      color: #d32f2f;
-      font-weight: bold;
-      opacity: 0;
-      transition: all 0.5s ease;
-    }
-    #result.show {
-      opacity: 1;
-      transform: scale(1.5);
-    }
-  </style>
+  .title-row{
+    display:flex; align-items:center; gap:10px;
+    font-size:clamp(18px,4.2vw,28px);
+    font-weight:800;
+    color:#ff6f00; /* 亮麗色系 */
+  }
+  .title-row img{ width:44px; height:44px; object-fit:contain; }
+
+  .subtitle{
+    margin-top:6px;
+    font-size:clamp(12px,2.2vw,16px);
+    color:#1565c0; /* 不是黑色，容易辨識 */
+  }
+  .view-hint{
+    margin-top:4px;
+    font-size:clamp(14px,3vw,18px);
+    color:#d81b60;
+    font-weight:800;
+  }
+
+  main{ width:100%; display:flex; flex-direction:column; align-items:center; gap:8px; padding:6px 0; }
+
+  .grid-area{
+    width:100%;
+    max-width:720px;
+    height:var(--grid-h);
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:repeat(4,1fr);
+    gap:8px;
+    padding: 0 4%;
+  }
+
+  .cell{
+    border-radius:14px;
+    border:2px solid rgba(0,0,0,0.12);
+    display:flex; align-items:center; justify-content:center;
+    padding:6px;
+    text-align:center;
+    cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select:none;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    font-weight:700;
+    font-size: clamp(14px, 2.6vw, 20px);
+    min-height: 44px;
+  }
+  .cell:active{ transform: translateY(2px); }
+
+  /* initial zone colors to distinguish top/bottom */
+  #grid-cn .cell{ background: #e3f2fd; color:#0b2340; }
+  #grid-tw .cell{ background: #fff0f6; color:#2b1f2f; }
+
+  .cell.selected{ outline:4px solid rgba(33,150,243,0.85); outline-offset:-6px; }
+  .cell.matched{ pointer-events:none; color:#fff; }
+
+  footer{
+    height:var(--footer-h);
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:12px; padding:8px;
+  }
+
+  button.btn {
+    padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(13px,2.2vw,16px);
+    cursor:pointer; color:#fff;
+  }
+  /* order & colors per your spec/order */
+  #btn-restart{ background:#ffb74d } /* 閣耍一擺 */
+  #btn-next{ background:#4fc3f7 }    /* 後一回 */
+  #btn-home{ background:#81c784 }    /* 轉去遊戲頭頁 */
+
+  /* victory text */
+  #victory {
+    position: fixed; left:50%; top:44%; transform:translate(-50%,-50%) scale(.2);
+    font-size: clamp(28px,6vw,48px); color:#e91e63; font-weight:900; opacity:0;
+    transition: all .45s cubic-bezier(.2,.9,.2,1);
+    pointer-events:none;
+  }
+  #victory.show { transform:translate(-50%,-50%) scale(1.2); opacity:1; }
+
+  @media (min-width:900px){
+    :root{ --header-h:12vh; --footer_h:10vh; }
+  }
+</style>
 </head>
 <body>
   <header>
-    <h1>
-      <img src="game9_assets/fruit_icon.png" alt="水果">
-      華台水果語詞配對-第1回
-      <img src="game9_assets/fruit_icon.png" alt="水果">
-    </h1>
-    <div class="subtitle">tshi̍h華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
-    <div class="hint">📱 建議直式觀看效果最佳</div>
+    <div class="title-row">
+      <img id="leftImg" src="game9_assets/fruit_left.png" alt="left fruit">
+      <div id="titleText">華台水果語詞配對 - 第1回</div>
+      <img id="rightImg" src="game9_assets/fruit_right.png" alt="right fruit">
+    </div>
+    <div class="subtitle" id="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+    <div class="view-hint">📱 建議直式觀看效果最佳</div>
   </header>
 
   <main>
-    <div class="grid top-grid" id="chineseGrid"></div>
-    <div class="grid bottom-grid" id="taiwaneseGrid"></div>
-    <div id="result">有夠gâu！</div>
+    <!-- top: 中文 -->
+    <div id="grid-cn" class="grid-area" aria-label="華語格子"></div>
+    <!-- bottom: 台語 -->
+    <div id="grid-tw" class="grid-area" aria-label="台語格子"></div>
+    <div id="victory">有夠 gâu！</div>
   </main>
 
   <footer>
-    <button class="btn-restart" onclick="restartGame()">閣耍一擺</button>
-    <button class="btn-next" onclick="nextRound()">後一回</button>
-    <button class="btn-home" onclick="goHome()">轉去遊戲頭頁</button>
+    <button id="btn-restart" class="btn">閣耍一擺</button>
+    <button id="btn-next" class="btn">後一回</button>
+    <button id="btn-home" class="btn">轉去遊戲頭頁</button>
   </footer>
 
-  <audio id="wrongSound" src="game9_assets/wrong.mp3"></audio>
-  <audio id="correctSound" src="game9_assets/correct.mp3"></audio>
-  <audio id="winSound" src="game9_assets/win.mp3"></audio>
+  <!-- sounds -->
+  <audio id="wrongAudio" src="game9_assets/wrong.mp3" preload="auto"></audio>
+  <audio id="victoryAudio" src="game9_assets/victory.mp3" preload="auto"></audio>
 
-  <script>
-    const chineseGrid = document.getElementById("chineseGrid");
-    const taiwaneseGrid = document.getElementById("taiwaneseGrid");
-    const result = document.getElementById("result");
-    const wrongSound = document.getElementById("wrongSound");
-    const correctSound = document.getElementById("correctSound");
-    const winSound = document.getElementById("winSound");
+<script>
+/* Robust game9.html
+ - toggles rounds 1 & 2 (starts at 1)
+ - loads fruits_part{round}.json (array or {fruits:[]})
+ - filters out id 15 for round1 and id 32 for round2 (also filters by name content as double-check)
+ - displays top 4x4 chinese, bottom 4x4 taiwanese (both 16)
+ - on match: both get pair color (16 vivid colors), play pair audio (if any)
+ - final match: play pair audio (once) -> wait 1s -> play victory audio and show "有夠 gâu" animation
+ - on mismatch: play wrongAudio
+ - click shows outline; matched cells are disabled
+*/
 
-    let data = [];
-    let selected = [];
-    let matches = 0;
+const ROUND_FILES = {1:'game9_assets/fruits_part1.json', 2:'game9_assets/fruits_part2.json'};
+const EXCLUDE_ID = {1:15, 2:32};
+const COLOR_PALETTE = [
+  "#FF5733","#FF8D1A","#FFC300","#DAF7A6",
+  "#33FF57","#1AFF8D","#33FFF6","#3380FF",
+  "#8D33FF","#FF33F6","#FF3380","#FF6666",
+  "#66FF66","#66FFFF","#6666FF","#FFCC00"
+];
 
-    async function loadData() {
-      const [part1, part2] = await Promise.all([
-        fetch("game9_assets/fruits_part1.json").then(res => res.json()),
-        fetch("game9_assets/fruits_part2.json").then(res => res.json())
-      ]);
+const gridCn = document.getElementById('grid-cn');
+const gridTw = document.getElementById('grid-tw');
+const leftImg = document.getElementById('leftImg');
+const rightImg = document.getElementById('rightImg');
+const titleText = document.getElementById('titleText');
+const victoryEl = document.getElementById('victory');
+const wrongAudio = document.getElementById('wrongAudio');
+const victoryAudio = document.getElementById('victoryAudio');
 
-      let combined = [...part1, ...part2];
-      // 排除 李子/李仔 與 黑珍珠/烏真珠
-      combined = combined.filter(item =>
-        !item.zh.includes("李子") &&
-        !item.tai.includes("李仔") &&
-        !item.zh.includes("黑珍珠") &&
-        !item.tai.includes("烏真珠")
-      );
+let round = 1;            // current round (1 or 2)
+let pairs = [];           // array of {id, chinese, taiwanese, audio, color}
+let selected = null;      // {el, id, type}
+let matchedCount = 0;
+let playingFinalFlow = false;
 
-      data = combined.slice(0, 16); // 取16組
-      setupGame();
+// randomize header images (4 variants)
+(function pickHeaderImgs(){
+  const leftOpts = ['fruit_left.png','fruit_left1.png'];
+  const rightOpts = ['fruit_right.png','fruit_right1.png'];
+  leftImg.src = 'game9_assets/' + leftOpts[Math.floor(Math.random()*leftOpts.length)];
+  rightImg.src = 'game9_assets/' + rightOpts[Math.floor(Math.random()*rightOpts.length)];
+})();
+
+// utility: robustly extract array from JSON
+function extractArray(json){
+  if(Array.isArray(json)) return json;
+  if(json.fruits && Array.isArray(json.fruits)) return json.fruits;
+  if(json.items && Array.isArray(json.items)) return json.items;
+  if(json.data && Array.isArray(json.data)) return json.data;
+  // fallback: gather values that are arrays
+  for(const k in json) if(Array.isArray(json[k])) return json[k];
+  return []; // empty fallback
+}
+
+// utility: robust field getter
+function pickFirst(obj, keys){
+  for(const k of keys){
+    if(obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== '') return String(obj[k]).trim();
+  }
+  return null;
+}
+
+function parsePairEntry(entry, idx){
+  // find id
+  const id = entry.id ?? entry.ID ?? entry.index ?? (idx+1);
+  // chinese: try multiple keys or split name by '/'
+  let chinese = pickFirst(entry, ['chinese','zh','name','title','text','Chinese','cn']);
+  let taiwanese = pickFirst(entry, ['taiwanese','tai','tw','taiwaneseName','taiwanese_name','Taiwanese','tw_name']);
+  if(!chinese && chinese !== "") chinese = null;
+  if(!taiwanese && taiwanese !== "") taiwanese = null;
+
+  // if only name exists and contains a slash like "李子/李仔", split it
+  if(!taiwanese && chinese && chinese.includes('/')){
+    const parts = chinese.split('/').map(s=>s.trim());
+    if(parts.length >= 2){
+      const c = parts[0]; const t = parts[1];
+      chinese = c; taiwanese = t;
     }
+  }
+  // alternatively if name like "西瓜 (台語: ...)" not handled; user JSON should be normal
+  // last fallback names
+  if(!chinese) chinese = `水果${idx+1}`;
+  if(!taiwanese) taiwanese = `台語${idx+1}`;
 
-    function setupGame() {
-      chineseGrid.innerHTML = "";
-      taiwaneseGrid.innerHTML = "";
-      result.classList.remove("show");
-      matches = 0;
+  // audio detection
+  let audio = pickFirst(entry, ['audio','Audio','audioSrc','sound','audioPath']);
+  if(audio){
+    // if relative path not starting with http or /, try to keep as-is
+    audio = String(audio);
+  } else {
+    audio = null;
+  }
 
-      const chinese = [...data].sort(() => Math.random() - 0.5);
-      const taiwanese = [...data].sort(() => Math.random() - 0.5);
+  return { id, chinese, taiwanese, audio };
+}
 
-      chinese.forEach(item => {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.textContent = item.zh;
-        cell.dataset.match = item.id;
-        cell.onclick = () => selectCell(cell, "zh");
-        chineseGrid.appendChild(cell);
-      });
+// load round data (1 or 2)
+async function loadRound(r){
+  round = (r===1?1:2);
+  titleText.textContent = `華台水果語詞配對 - 第${round}回`;
+  victoryEl.classList.remove('show');
+  matchedCount = 0;
+  selected = null;
+  playingFinalFlow = false;
+  pairs = [];
 
-      taiwanese.forEach(item => {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.textContent = item.tai;
-        cell.dataset.match = item.id;
-        cell.onclick = () => selectCell(cell, "tai");
-        taiwaneseGrid.appendChild(cell);
-      });
-    }
+  const file = ROUND_FILES[round];
+  try{
+    const res = await fetch(file, {cache:'no-cache'});
+    if(!res.ok) throw new Error('fetch failed');
+    const json = await res.json();
+    let arr = extractArray(json);
 
-    function selectCell(cell, type) {
-      if (cell.classList.contains("matched")) return;
-      cell.style.border = "3px solid #ff5722";
-      selected.push(cell);
+    // filter out specified excluded id OR name content (double safety)
+    const excludedId = EXCLUDE_ID[round];
+    arr = arr.filter((it, idx) => {
+      const idVal = (it && (it.id ?? it.ID ?? (idx+1)));
+      const cn = (pickFirst(it, ['chinese','zh','name','title','text']) || '').toString();
+      const tw = (pickFirst(it, ['taiwanese','tai','tw','taiwaneseName']) || '').toString();
+      // exclude by id OR name match
+      if(idVal !== undefined && idVal !== null && Number(idVal) === Number(excludedId)) return false;
+      if(round===1 && (cn.includes('李子') || tw.includes('李仔'))) return false;
+      if(round===2 && (cn.includes('黑珍珠') || tw.includes('烏真珠'))) return false;
+      return true;
+    });
 
-      if (selected.length === 2) {
-        const [first, second] = selected;
-        if (first.dataset.match === second.dataset.match && first !== second) {
-          // 配對成功
-          first.classList.add("matched");
-          second.classList.add("matched");
-          const color = getRandomColor();
-          first.style.background = color;
-          second.style.background = color;
-          correctSound.play();
-          matches++;
-          if (matches === data.length) {
-            setTimeout(() => {
-              correctSound.pause();
-              correctSound.currentTime = 0;
-              winSound.play();
-              result.classList.add("show");
-            }, 1000);
+    // ensure we take exactly 16 pairs (if >16 slice, if <16 still proceed)
+    if(arr.length > 16) arr = arr.slice(0,16);
+
+    // build pairs with robust parsing
+    pairs = arr.map((it,i)=> {
+      const parsed = parsePairEntry(it,i);
+      parsed.color = COLOR_PALETTE[i % COLOR_PALETTE.length];
+      return parsed;
+    });
+
+    // if by any chance pairs.length < 16, we still render what we have (won't crash)
+    renderGrids();
+  }catch(err){
+    console.error('loadRound error', err);
+    gridCn.innerHTML = '<div style="padding:16px;color:#a00">無法載入資料，請確認 game9_assets 中的 JSON 檔案存在。</div>';
+    gridTw.innerHTML = '';
+  }
+}
+
+function renderGrids(){
+  // clear
+  gridCn.innerHTML = ''; gridTw.innerHTML = '';
+  matchedCount = 0; selected = null; victoryEl.classList.remove('show');
+
+  // build chinese list in order
+  pairs.forEach(p=>{
+    const d = document.createElement('div');
+    d.className = 'cell';
+    d.textContent = p.chinese;
+    d.dataset.pairId = String(p.id);
+    d.dataset.type = 'cn';
+    d.addEventListener('click', ()=>onCellClick(d));
+    gridCn.appendChild(d);
+  });
+
+  // build taiwanese shuffled
+  const shuffled = pairs.slice().sort(()=>Math.random()-0.5);
+  shuffled.forEach(p=>{
+    const d = document.createElement('div');
+    d.className = 'cell';
+    d.textContent = p.taiwanese;
+    d.dataset.pairId = String(p.id);
+    d.dataset.type = 'tw';
+    d.addEventListener('click', ()=>onCellClick(d));
+    gridTw.appendChild(d);
+  });
+}
+
+function onCellClick(el){
+  if(playingFinalFlow) return; // prevent interactions during final flow
+  if(el.classList.contains('matched')) return;
+  // selection
+  if(!selected){
+    selected = { el, id: el.dataset.pairId, type: el.dataset.type };
+    el.classList.add('selected');
+    return;
+  }
+  // if clicking same element, ignore/deselect
+  if(selected.el === el){
+    el.classList.remove('selected');
+    selected = null;
+    return;
+  }
+  // second selection
+  el.classList.add('selected');
+  const first = selected;
+  const second = { el, id: el.dataset.pairId, type: el.dataset.type };
+
+  // must be different types (cn vs tw)
+  if(first.id === second.id && first.type !== second.type){
+    // correct match
+    const pairIndex = pairs.findIndex(p=> String(p.id) === String(first.id));
+    const pair = pairs[pairIndex];
+    const color = pair.color || COLOR_PALETTE[pairIndex % COLOR_PALETTE.length];
+    first.el.classList.add('matched');
+    second.el.classList.add('matched');
+    first.el.style.background = color;
+    second.el.style.background = color;
+    first.el.style.color = '#fff';
+    second.el.style.color = '#fff';
+    matchedCount++;
+
+    // play pair audio (if exists)
+    const audioSrc = pair.audio;
+    // final-match handling
+    if(matchedCount === pairs.length){
+      // final flow: play last matched audio (if any) then wait 1s then victory
+      if(audioSrc){
+        playingFinalFlow = true;
+        const a = new Audio(audioSrc);
+        a.play().catch(()=>{});
+        a.addEventListener('ended', ()=> {
+          setTimeout(()=> {
+            victoryAudio.currentTime = 0;
+            victoryAudio.play().catch(()=>{});
+            victoryEl.classList.add('show');
+            setTimeout(()=>{ playingFinalFlow=false; }, 2500);
+          }, 1000);
+        });
+        // fallback: if audio can't play end event, also set a timeout safety
+        setTimeout(()=> {
+          if(!victoryEl.classList.contains('show')){
+            setTimeout(()=> { victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); }, 1000);
           }
-        } else {
-          // 配對失敗
-          wrongSound.play();
-          setTimeout(() => {
-            first.style.border = "none";
-            second.style.border = "none";
-          }, 500);
-        }
-        selected = [];
+        }, 5000);
+      } else {
+        // no pair audio: wait 1s then victory
+        setTimeout(()=> { victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); }, 1000);
+      }
+    } else {
+      // non-final: play pair audio if any (no additional waiting)
+      if(audioSrc){
+        const a = new Audio(audioSrc);
+        a.play().catch(()=>{});
       }
     }
+  } else {
+    // wrong match
+    try{ wrongAudio.currentTime = 0; wrongAudio.play().catch(()=>{}); }catch(e){}
+    // visually indicate mismatch briefly
+    first.el.classList.add('shake');
+    second.el.classList.add('shake');
+    setTimeout(()=> {
+      first.el.classList.remove('shake');
+      second.el.classList.remove('shake');
+      first.el.classList.remove('selected');
+      second.el.classList.remove('selected');
+    }, 380);
+  }
 
-    function getRandomColor() {
-      const colors = [
-        "#ffb3ba","#ffdfba","#ffffba","#baffc9","#bae1ff",
-        "#e1baff","#ffcba4","#c4fae8","#f1c0e8","#a3c4f3",
-        "#ff9cee","#d0f4de","#fcf6bd","#a9def9","#e4c1f9","#ffd6a5"
-      ];
-      return colors[matches % colors.length];
-    }
+  // clear selection unless matched (we already flag matched)
+  if(first.el && !first.el.classList.contains('matched')) first.el.classList.remove('selected');
+  if(second.el && !second.el.classList.contains('matched')) second.el.classList.remove('selected');
+  selected = null;
+}
 
-    function restartGame() { setupGame(); }
-    function nextRound() { alert("後一回功能尚未串接，待補！"); }
-    function goHome() { window.location.href = "index.html"; }
+/* BUTTONS */
+document.getElementById('btn-restart').addEventListener('click', ()=> loadRound(round));
+document.getElementById('btn-next').addEventListener('click', ()=> {
+  round = (round===1?2:1); loadRound(round);
+});
+document.getElementById('btn-home').addEventListener('click', ()=> { location.href = 'index.html'; });
 
-    loadData();
-  </script>
+/* initial load */
+loadRound(1);
+</script>
 </body>
 </html>
