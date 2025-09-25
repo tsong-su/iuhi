@@ -2,25 +2,34 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>水果骰子遊戲 - Round 5</title>
+  <title>水果骰子遊戲第1回</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
       background: linear-gradient(135deg, #ffecd2, #fcb69f);
       text-align: center;
-      padding: 20px;
+      padding: 10px;
+      margin: 0;
     }
     h1 {
       color: #d35400;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+    }
+    #rules {
+      background-color: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
     }
     .scoreboard {
-      margin: 15px 0;
-      font-size: 20px;
+      margin: 10px 0;
+      font-size: 18px;
       color: #2c3e50;
     }
     #dice-container {
-      margin: 30px auto;
+      margin: 20px auto;
       width: 200px;
       height: 200px;
       perspective: 1000px;
@@ -46,7 +55,7 @@
       height: 180px;
     }
     button {
-      margin: 10px;
+      margin: 5px;
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
@@ -59,19 +68,36 @@
       background-color: #e67e22;
     }
     #fruit-info {
-      margin-top: 20px;
-      font-size: 18px;
+      margin-top: 15px;
+      font-size: 16px;
     }
     #winner {
       margin-top: 20px;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
       color: #27ae60;
+    }
+    @media (max-width: 500px){
+      #dice-container { width: 150px; height: 150px; }
+      .dice-face { width: 150px; height: 150px; }
+      .fruit-stamp { width: 130px; height: 130px; }
     }
   </style>
 </head>
 <body>
-  <h1>水果骰子遊戲 - Round 5</h1>
+  <h1>水果骰子遊戲第1回</h1>
+  <div id="rules">
+    <p>遊戲規則：</p>
+    <ul>
+      <li>玩家輪流擲骰子。</li>
+      <li>骰子停下後，顯示水果圖片與名稱。</li>
+      <li>點 🔊 可以聽水果的台語發音。</li>
+      <li>玩家說出台語後，點「正確 ✅」或「錯誤 ❌」判分。</li>
+      <li>先達到 100 分者獲勝。</li>
+      <li>手動按「換玩家 🔄」切換玩家。</li>
+    </ul>
+  </div>
+
   <div class="scoreboard">
     玩家 1 分數: <span id="score1">0</span> | 
     玩家 2 分數: <span id="score2">0</span>
@@ -86,6 +112,7 @@
     <button onclick="rollDice()">擲骰 🎲</button>
     <button onclick="markAnswer(true)">正確 ✅</button>
     <button onclick="markAnswer(false)">錯誤 ❌</button>
+    <button onclick="switchPlayer()">換玩家 🔄</button>
   </div>
 
   <div id="fruit-info"></div>
@@ -105,7 +132,7 @@
     let awaitingAnswer = false;
 
     function rollDice() {
-      if (awaitingAnswer) return; // 防止連續按
+      if (awaitingAnswer) return;
       awaitingAnswer = true;
 
       document.getElementById("roll-sound").play();
@@ -163,11 +190,12 @@
       }
       updateScores();
       checkWinner();
+      awaitingAnswer = false;
+    }
 
-      // 自動換玩家
+    function switchPlayer() {
       currentPlayer = currentPlayer === 1 ? 2 : 1;
       document.getElementById("current-player").textContent = `玩家 ${currentPlayer}`;
-      awaitingAnswer = false;
     }
 
     function updateScores() {
