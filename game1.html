@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>台語字詞排序遊戲</title>
   <style>
     body {
@@ -9,12 +9,10 @@
       text-align: center;
       margin: 0;
       padding: 0;
-      background-color: #f9f9f9;
     }
     #sentence {
-      margin: 20px;
       font-size: 24px;
-      font-weight: bold;
+      margin: 20px;
     }
     #word-container {
       display: flex;
@@ -25,12 +23,10 @@
     .word {
       padding: 10px 15px;
       margin: 5px;
-      background-color: #ffffff;
-      border: 2px solid #ccc;
-      border-radius: 8px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      background-color: #f0f0f0;
       cursor: grab;
-      user-select: none;
-      font-size: 20px;
     }
     .word.dragging {
       opacity: 0.5;
@@ -39,145 +35,185 @@
       margin: 20px;
     }
     button {
-      padding: 10px 20px;
       margin: 5px;
+      padding: 10px 15px;
       font-size: 16px;
-      cursor: pointer;
-    }
-    #result {
-      margin: 20px;
-      font-size: 20px;
-      font-weight: bold;
     }
     #dict-link {
-      margin-top: 10px;
+      margin-top: 15px;
+      display: block;
+      font-size: 18px;
     }
   </style>
 </head>
 <body>
   <h1>台語字詞排序遊戲</h1>
-  <div id="sentence"></div>
+  <div id="sentence">請依正確順序排列詞語：</div>
   <div id="word-container"></div>
   <div id="controls">
-    <button onclick="checkAnswer()">檢查答案</button>
+    <button onclick="checkAnswer()">確認答案</button>
     <button onclick="nextQuestion()">後一條</button>
-    <button onclick="restart()">重新開始</button>
+    <button onclick="restartGame()">重新開始</button>
     <button onclick="showAnswer()">提示正確答案</button>
     <button onclick="goHome()">回到遊戲首頁</button>
   </div>
-  <div id="result"></div>
-  <div id="dict-link"></div>
-  <audio id="audio" controls style="margin-top: 20px;"></audio>
+  <audio id="audioPlayer" controls style="margin-top: 20px;"></audio>
+  <a id="dict-link" href="#" target="_blank"></a>
 
   <script>
     const questions = [
       {
-        words: ["半老老", "逐家", "攏", "叫伊", "電腦", "博士"],
-        answer: "逐家攏叫伊半老老電腦博士",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/UB/UB/29456-1-1.mp3",
-        dict: { word: "半老老", url: "https://sutian.moe.edu.tw/und-hani/su/29456/" }
+        words: ["半老老", "猶閣", "愛", "做", "苦力"],
+        answer: "半老老猶閣愛做苦力。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1262.mp3",
+        dict: {
+          word: "半老老",
+          url: "https://sutian.moe.edu.tw/und-hani/su/1262/"
+        }
       },
       {
-        words: ["苦力", "攏", "是", "做", "重的", "工作"],
-        answer: "苦力攏是做重的工作",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath1.mp3",
-        dict: { word: "苦力", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX1/" }
+        words: ["逐工", "攏", "去", "做", "散工"],
+        answer: "逐工攏去做散工。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1097.mp3",
+        dict: {
+          word: "散工",
+          url: "https://sutian.moe.edu.tw/und-hani/su/1097/"
+        }
       },
       {
-        words: ["散工", "是", "做", "臨時", "的", "工作"],
-        answer: "散工是做臨時的工作",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath2.mp3",
-        dict: { word: "散工", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX2/" }
+        words: ["伊", "好額人", "做", "大官虎"],
+        answer: "伊好額人做大官虎。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/422.mp3",
+        dict: {
+          word: "大官虎",
+          url: "https://sutian.moe.edu.tw/und-hani/su/422/"
+        }
       },
       {
-        words: ["大官虎", "是", "大頭仔", "的", "意思"],
-        answer: "大官虎是大頭仔的意思",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath3.mp3",
-        dict: { word: "大官虎", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX3/" }
+        words: ["伊", "是", "抓耙仔", "，", "凡勢", "攏", "提去", "報告"],
+        answer: "伊是抓耙仔，凡勢攏提去報告。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/3180.mp3",
+        dict: {
+          word: "抓耙仔",
+          url: "https://sutian.moe.edu.tw/und-hani/su/3180/"
+        }
       },
       {
-        words: ["抓耙仔", "就是", "人", "的", "告密者"],
-        answer: "抓耙仔就是人的告密者",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath4.mp3",
-        dict: { word: "抓耙仔", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX4/" }
+        words: ["逐工", "攏", "咧", "摸飛", "，", "都", "無", "認真", "讀冊"],
+        answer: "逐工攏咧摸飛，都無認真讀冊。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/3032.mp3",
+        dict: {
+          word: "摸飛",
+          url: "https://sutian.moe.edu.tw/und-hani/su/3032/"
+        }
       },
       {
-        words: ["摸飛", "就是", "請人", "幫忙", "傳話"],
-        answer: "摸飛就是請人幫忙傳話",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath5.mp3",
-        dict: { word: "摸飛", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX5/" }
+        words: ["阿母", "咧", "挲圓仔湯"],
+        answer: "阿母咧挲圓仔湯。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/3734.mp3",
+        dict: {
+          word: "挲圓仔湯",
+          url: "https://sutian.moe.edu.tw/und-hani/su/3734/"
+        }
       },
       {
-        words: ["挲圓仔湯", "比喻", "做人", "隨便", "無原則"],
-        answer: "挲圓仔湯比喻做人隨便無原則",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath6.mp3",
-        dict: { word: "挲圓仔湯", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX6/" }
+        words: ["這个", "所在", "伊", "做", "摠頭"],
+        answer: "这个所在伊做摠頭。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/3280.mp3",
+        dict: {
+          word: "摠頭",
+          url: "https://sutian.moe.edu.tw/und-hani/su/3280/"
+        }
       },
       {
-        words: ["摠頭", "是", "帶頭", "管理", "的人"],
-        answer: "摠頭是帶頭管理的人",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath7.mp3",
-        dict: { word: "摠頭", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX7/" }
+        words: ["查埔囝", "做", "二步七仔", "，", "一工", "無閒", "做"],
+        answer: "查埔囝做二步七仔，一工無閒做。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1860.mp3",
+        dict: {
+          word: "二步七仔",
+          url: "https://sutian.moe.edu.tw/und-hani/su/1860/"
+        }
       },
       {
-        words: ["二步七仔", "是", "無路用", "的人"],
-        answer: "二步七仔是無路用的人",
-        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/somepath8.mp3",
-        dict: { word: "二步七仔", url: "https://sutian.moe.edu.tw/und-hani/su/XXXXX8/" }
+        words: ["伊", "真", "健丟", "，", "人講", "的話", "攏", "聽袂入去"],
+        answer: "伊真健丟，人講的話攏聽袂入去。",
+        audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/2227.mp3",
+        dict: {
+          word: "健丟",
+          url: "https://sutian.moe.edu.tw/und-hani/su/2227/"
+        }
       },
       {
         words: ["流行性", "感冒", "病毒", "的", "暗作期", "大約", "是", "一工", "到", "三工"],
         answer: "流行性感冒病毒的暗作期大約是一工到三工",
         audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/8U/SA/29455-1-1.mp3",
-        dict: { word: "暗作期", url: "https://sutian.moe.edu.tw/und-hani/su/29455/" }
+        dict: {
+          word: "暗作期",
+          url: "https://sutian.moe.edu.tw/und-hani/su/29455/"
+        }
       }
     ];
 
     let currentQuestion = 0;
 
     function loadQuestion() {
-      const q = questions[currentQuestion];
-      document.getElementById("sentence").textContent = "請將字詞排成正確句子";
+      const question = questions[currentQuestion];
       const container = document.getElementById("word-container");
       container.innerHTML = "";
-      shuffle(q.words).forEach(word => {
+
+      let words = [...question.words];
+      words = words.sort(() => Math.random() - 0.5);
+
+      words.forEach(word => {
         const div = document.createElement("div");
-        div.textContent = word;
         div.className = "word";
+        div.textContent = word;
         div.draggable = true;
-        div.addEventListener("dragstart", dragStart);
-        div.addEventListener("dragend", dragEnd);
+
+        div.addEventListener("dragstart", () => {
+          div.classList.add("dragging");
+        });
+        div.addEventListener("dragend", () => {
+          div.classList.remove("dragging");
+        });
+
         container.appendChild(div);
       });
-      document.getElementById("result").textContent = "";
-      document.getElementById("dict-link").innerHTML = "";
-      const audio = document.getElementById("audio");
-      audio.src = q.audio;
-      audio.play();
+
+      const audioPlayer = document.getElementById("audioPlayer");
+      audioPlayer.src = question.audio;
+      audioPlayer.play();
+
+      const dictLink = document.getElementById("dict-link");
+      dictLink.textContent = `查詢詞語：「${question.dict.word}」`;
+      dictLink.href = question.dict.url;
     }
 
-    function dragStart(e) {
-      e.target.classList.add("dragging");
-    }
+    document.getElementById("word-container").addEventListener("dragover", e => {
+      e.preventDefault();
+      const afterElement = getDragAfterElement(e.clientX, e.clientY);
+      const dragging = document.querySelector(".dragging");
+      if (afterElement == null) {
+        document.getElementById("word-container").appendChild(dragging);
+      } else {
+        document.getElementById("word-container").insertBefore(dragging, afterElement);
+      }
+    });
 
-    function dragEnd(e) {
-      e.target.classList.remove("dragging");
-    }
-
-    function shuffle(array) {
-      return array.sort(() => Math.random() - 0.5);
+    function getDragAfterElement(x, y) {
+      const elements = [...document.querySelectorAll(".word:not(.dragging)")];
+      return elements.find(element => {
+        const rect = element.getBoundingClientRect();
+        return y < rect.top + rect.height / 2;
+      });
     }
 
     function checkAnswer() {
-      const words = Array.from(document.querySelectorAll(".word")).map(div => div.textContent);
-      const userAnswer = words.join("");
-      const correct = questions[currentQuestion].answer;
-      if (userAnswer === correct) {
-        document.getElementById("result").textContent = "✅ 正確！";
-        const dict = questions[currentQuestion].dict;
-        document.getElementById("dict-link").innerHTML = `<a href="${dict.url}" target="_blank">查詢「${dict.word}」教典</a>`;
+      const arranged = [...document.querySelectorAll(".word")].map(div => div.textContent).join("");
+      if (arranged === questions[currentQuestion].answer.replace(/[，。]/g, "")) {
+        alert("正確！");
       } else {
-        document.getElementById("result").textContent = "❌ 再試一次！";
+        alert("答案不正確，再試一次。");
       }
     }
 
@@ -186,15 +222,13 @@
       loadQuestion();
     }
 
-    function restart() {
+    function restartGame() {
       currentQuestion = 0;
       loadQuestion();
     }
 
     function showAnswer() {
-      document.getElementById("result").textContent = "正確答案：" + questions[currentQuestion].answer;
-      const dict = questions[currentQuestion].dict;
-      document.getElementById("dict-link").innerHTML = `<a href="${dict.url}" target="_blank">查詢「${dict.word}」教典</a>`;
+      alert("正確答案是：" + questions[currentQuestion].answer);
     }
 
     function goHome() {
