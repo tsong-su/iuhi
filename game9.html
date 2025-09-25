@@ -1,244 +1,245 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>華台水果語詞配對–第1回</title>
+  <title>華台水果語詞配對-第1回</title>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(to bottom, #fff7e6, #ffe0b2);
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: space-between;
+      min-height: 100vh;
     }
-
     header {
       text-align: center;
       padding: 10px;
     }
-
     header h1 {
-      font-size: 28px;
-      margin: 5px 0;
+      font-size: 2em;
+      font-weight: bold;
+      color: #ff6600; /* 亮麗色系 */
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       gap: 10px;
     }
-
-    header h1 img {
+    header img {
       width: 40px;
       height: 40px;
     }
-
     .subtitle {
-      font-size: 18px;
-      margin: 5px 0;
-      color: #333;
+      font-size: 1em;
+      margin-top: 5px;
+      color: #444;
     }
-
-    .note {
-      font-size: 20px;
+    .hint {
+      font-size: 1.2em;
+      margin-top: 5px;
+      color: #0077cc;
       font-weight: bold;
-      color: #d60000;
-      margin: 5px 0 10px 0;
     }
-
-    .grid-container {
+    main {
+      flex-grow: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      width: 95%;
-      max-width: 500px;
-      margin: 5px auto;
+      gap: 10px;
+      width: 90%;
+      max-width: 600px;
     }
-
-    .grid-item {
-      background: #fff8dc;
+    .cell {
       border-radius: 12px;
-      border: 2px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
       padding: 10px;
-      min-height: 60px;
+      background: #fff3cd;
       text-align: center;
-      word-break: keep-all;
+      font-size: 1.1em;
+      font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: background 0.3s, transform 0.2s;
+      word-break: break-word;
     }
+    .cell:hover { transform: scale(1.05); }
+    .top-grid .cell { background: #e0f7fa; }   /* 初始上方顏色 */
+    .bottom-grid .cell { background: #fce4ec; }/* 初始下方顏色 */
 
-    .grid-item.selected {
-      border: 3px solid #ff4081;
-    }
-
-    .buttons {
+    footer {
       display: flex;
       justify-content: center;
-      gap: 12px;
-      margin: 15px 0;
+      gap: 15px;
+      padding: 15px;
     }
-
-    .buttons button {
-      padding: 10px 18px;
-      font-size: 16px;
+    button {
       border: none;
+      padding: 10px 15px;
+      font-size: 1em;
       border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
       transition: transform 0.2s;
     }
+    button:hover { transform: scale(1.1); }
+    .btn-restart { background: #ffcc80; }
+    .btn-next { background: #90caf9; }
+    .btn-home { background: #a5d6a7; }
 
-    .buttons button:hover {
-      transform: scale(1.05);
-    }
-
-    #btn-home { background: #ff7043; color: #fff; }
-    #btn-restart { background: #66bb6a; color: #fff; }
-    #btn-next { background: #42a5f5; color: #fff; }
-
-    #victory {
-      font-size: 40px;
+    #result {
+      font-size: 2em;
+      color: #d32f2f;
       font-weight: bold;
-      color: #e91e63;
-      position: fixed;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      transition: transform 0.6s ease;
-      pointer-events: none;
+      opacity: 0;
+      transition: all 0.5s ease;
     }
-
-    #victory.show {
-      transform: translate(-50%, -50%) scale(1.5);
+    #result.show {
+      opacity: 1;
+      transform: scale(1.5);
     }
   </style>
 </head>
 <body>
   <header>
     <h1>
-      <img src="game9_assets/fruit_left.png" alt="fruit left">
-      華台水果語詞配對–第1回
-      <img src="game9_assets/fruit_right.png" alt="fruit right">
+      <img src="game9_assets/fruit_icon.png" alt="水果">
+      華台水果語詞配對-第1回
+      <img src="game9_assets/fruit_icon.png" alt="水果">
     </h1>
-    <div class="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
-    <div class="note">📱 建議直式觀看效果最佳</div>
+    <div class="subtitle">tshi̍h華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+    <div class="hint">📱 建議直式觀看效果最佳</div>
   </header>
 
-  <div class="grid-container" id="grid-cn"></div>
-  <div class="grid-container" id="grid-tw"></div>
+  <main>
+    <div class="grid top-grid" id="chineseGrid"></div>
+    <div class="grid bottom-grid" id="taiwaneseGrid"></div>
+    <div id="result">有夠gâu！</div>
+  </main>
 
-  <div class="buttons">
-    <button id="btn-home">轉去遊戲頭頁</button>
-    <button id="btn-restart">閣耍一擺</button>
-    <button id="btn-next">後一回</button>
-  </div>
+  <footer>
+    <button class="btn-restart" onclick="restartGame()">閣耍一擺</button>
+    <button class="btn-next" onclick="nextRound()">後一回</button>
+    <button class="btn-home" onclick="goHome()">轉去遊戲頭頁</button>
+  </footer>
 
-  <div id="victory">有夠 gâu！</div>
-
-  <audio id="wrongAudio" src="game9_assets/wrong.mp3"></audio>
-  <audio id="victoryAudio" src="game9_assets/victory.mp3"></audio>
+  <audio id="wrongSound" src="game9_assets/wrong.mp3"></audio>
+  <audio id="correctSound" src="game9_assets/correct.mp3"></audio>
+  <audio id="winSound" src="game9_assets/win.mp3"></audio>
 
   <script>
-    const cnGrid = document.getElementById("grid-cn");
-    const twGrid = document.getElementById("grid-tw");
-    const wrongAudio = document.getElementById("wrongAudio");
-    const victoryAudio = document.getElementById("victoryAudio");
-    const victoryText = document.getElementById("victory");
+    const chineseGrid = document.getElementById("chineseGrid");
+    const taiwaneseGrid = document.getElementById("taiwaneseGrid");
+    const result = document.getElementById("result");
+    const wrongSound = document.getElementById("wrongSound");
+    const correctSound = document.getElementById("correctSound");
+    const winSound = document.getElementById("winSound");
 
-    const colors = [
-      "#f44336","#e91e63","#9c27b0","#673ab7",
-      "#3f51b5","#2196f3","#03a9f4","#00bcd4",
-      "#009688","#4caf50","#8bc34a","#cddc39",
-      "#ffeb3b","#ffc107","#ff9800","#ff5722"
-    ];
-
-    let fruitsCN = [];
-    let fruitsTW = [];
-    let pairs = {};
-    let selected = null;
-    let matchedCount = 0;
+    let data = [];
+    let selected = [];
+    let matches = 0;
 
     async function loadData() {
-      const res1 = await fetch("game9_assets/fruits_part1.json");
-      const data1 = await res1.json();
-      const part1 = data1.filter(f => !f.name.includes("李子"));
+      const [part1, part2] = await Promise.all([
+        fetch("game9_assets/fruits_part1.json").then(res => res.json()),
+        fetch("game9_assets/fruits_part2.json").then(res => res.json())
+      ]);
 
-      const res2 = await fetch("game9_assets/fruits_part2.json");
-      const data2 = await res2.json();
-      const part2 = data2.filter(f => !f.name.includes("黑珍珠"));
+      let combined = [...part1, ...part2];
+      // 排除 李子/李仔 與 黑珍珠/烏真珠
+      combined = combined.filter(item =>
+        !item.zh.includes("李子") &&
+        !item.tai.includes("李仔") &&
+        !item.zh.includes("黑珍珠") &&
+        !item.tai.includes("烏真珠")
+      );
 
-      const data = part1.slice(0,16); // 只取前 16 筆
-      fruitsCN = data.map((f,i)=>({ id:"cn"+i, text:f.name.split("/")[0], audio:f.audio }));
-      fruitsTW = data.map((f,i)=>({ id:"tw"+i, text:f.name.split("/")[1], audio:f.audio }));
-      pairs = {};
-      fruitsCN.forEach((f,i)=>{ pairs[f.id]=fruitsTW[i].id; pairs[fruitsTW[i].id]=f.id; });
-
-      renderGrid(fruitsCN, cnGrid);
-      renderGrid(shuffle([...fruitsTW]), twGrid);
+      data = combined.slice(0, 16); // 取16組
+      setupGame();
     }
 
-    function renderGrid(list, container){
-      container.innerHTML="";
-      list.forEach(item=>{
-        const div=document.createElement("div");
-        div.className="grid-item";
-        div.textContent=item.text;
-        div.dataset.id=item.id;
-        div.dataset.audio=item.audio;
-        div.addEventListener("click",()=>selectItem(div));
-        container.appendChild(div);
+    function setupGame() {
+      chineseGrid.innerHTML = "";
+      taiwaneseGrid.innerHTML = "";
+      result.classList.remove("show");
+      matches = 0;
+
+      const chinese = [...data].sort(() => Math.random() - 0.5);
+      const taiwanese = [...data].sort(() => Math.random() - 0.5);
+
+      chinese.forEach(item => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = item.zh;
+        cell.dataset.match = item.id;
+        cell.onclick = () => selectCell(cell, "zh");
+        chineseGrid.appendChild(cell);
+      });
+
+      taiwanese.forEach(item => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = item.tai;
+        cell.dataset.match = item.id;
+        cell.onclick = () => selectCell(cell, "tai");
+        taiwaneseGrid.appendChild(cell);
       });
     }
 
-    function selectItem(el){
-      if(el.classList.contains("matched")) return;
-      if(selected===null){
-        selected=el;
-        el.classList.add("selected");
-      }else{
-        if(el===selected) return;
-        checkMatch(selected,el);
-        selected.classList.remove("selected");
-        selected=null;
-      }
-    }
+    function selectCell(cell, type) {
+      if (cell.classList.contains("matched")) return;
+      cell.style.border = "3px solid #ff5722";
+      selected.push(cell);
 
-    function checkMatch(a,b){
-      if(pairs[a.dataset.id]===b.dataset.id){
-        const color=colors[matchedCount%colors.length];
-        a.classList.add("matched");
-        b.classList.add("matched");
-        a.style.background=color;
-        b.style.background=color;
-        new Audio(a.dataset.audio).play();
-        matchedCount++;
-        if(matchedCount===fruitsCN.length){
-          setTimeout(()=>{
-            new Audio(a.dataset.audio).play();
-            setTimeout(()=>{
-              victoryAudio.play();
-              victoryText.classList.add("show");
-            },1000);
-          },500);
+      if (selected.length === 2) {
+        const [first, second] = selected;
+        if (first.dataset.match === second.dataset.match && first !== second) {
+          // 配對成功
+          first.classList.add("matched");
+          second.classList.add("matched");
+          const color = getRandomColor();
+          first.style.background = color;
+          second.style.background = color;
+          correctSound.play();
+          matches++;
+          if (matches === data.length) {
+            setTimeout(() => {
+              correctSound.pause();
+              correctSound.currentTime = 0;
+              winSound.play();
+              result.classList.add("show");
+            }, 1000);
+          }
+        } else {
+          // 配對失敗
+          wrongSound.play();
+          setTimeout(() => {
+            first.style.border = "none";
+            second.style.border = "none";
+          }, 500);
         }
-      }else{
-        wrongAudio.play();
+        selected = [];
       }
     }
 
-    function shuffle(arr){
-      for(let i=arr.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-      }
-      return arr;
+    function getRandomColor() {
+      const colors = [
+        "#ffb3ba","#ffdfba","#ffffba","#baffc9","#bae1ff",
+        "#e1baff","#ffcba4","#c4fae8","#f1c0e8","#a3c4f3",
+        "#ff9cee","#d0f4de","#fcf6bd","#a9def9","#e4c1f9","#ffd6a5"
+      ];
+      return colors[matches % colors.length];
     }
 
-    document.getElementById("btn-home").onclick=()=>location.href="index.html";
-    document.getElementById("btn-restart").onclick=()=>location.reload();
-    document.getElementById("btn-next").onclick=()=>location.href="game9_round2.html";
+    function restartGame() { setupGame(); }
+    function nextRound() { alert("後一回功能尚未串接，待補！"); }
+    function goHome() { window.location.href = "index.html"; }
 
     loadData();
   </script>
