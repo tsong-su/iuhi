@@ -1,237 +1,175 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>華台水果語詞配對–第1回</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>華台水果語詞配對</title>
 <style>
-body {
-  margin:0;
-  font-family: Arial, sans-serif;
-  background: #FFF8DC;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-.header {
-  text-align:center;
-  padding:10px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-wrap: wrap;
-}
-.header h1 {
-  font-size:28px;
-  color:#FF4500;
-  margin:5px 10px;
-}
-.header img {
-  height:50px;
-  vertical-align:middle;
-  margin:0 5px;
-}
-.header p {
-  margin:3px 0;
-  width:100%;
-  text-align:center;
-}
-.header .note {
-  font-size:20px;
-  color:#32CD32;
-}
-.grid-container {
-  display:grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap:8px;
-  width:95%;
-  max-width:500px;
-  margin:10px 0;
-}
-.grid-item {
-  background-color:#FFDAB9;
-  border-radius:12px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:70px;
-  font-size:18px;
-  font-weight:bold;
-  cursor:pointer;
-  text-align:center;
-  white-space:nowrap;
-}
-.grid-item.selected {
-  outline:3px solid #000;
-}
-.buttons {
-  display:flex;
-  gap:10px;
-  margin:15px 0;
-}
-.buttons button {
-  padding:10px 15px;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  cursor:pointer;
-  color:#fff;
-}
-.btn-retry { background-color:#FF6347; }
-.btn-next { background-color:#1E90FF; }
-.btn-home { background-color:#32CD32; }
-#victory-text {
-  font-size:30px;
-  font-weight:bold;
-  color:#FF4500;
-  position:fixed;
-  top:40%;
-  display:none;
-  text-align:center;
-  animation:grow 0.8s forwards;
-}
-@keyframes grow {
-  0% { transform: scale(0.1); opacity:0; }
-  100% { transform: scale(1); opacity:1; }
-}
+  :root{
+    --header-h:14vh;
+    --footer-h:11vh;
+    --grid-h: calc((100vh - var(--header-h) - var(--footer-h) - 22px) / 2);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    background: linear-gradient(180deg,#fffaf0 0%, #fff3df 100%);
+    color:#222;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  }
+
+  header{
+    height:var(--header-h);
+    width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8px 12px; text-align:center;
+  }
+
+  .title-row{
+    display:flex; align-items:center; gap:10px;
+    font-size:clamp(18px,4.2vw,28px);
+    font-weight:800;
+    color:#ff6f00; /* 亮麗色系 */
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+  .title-row img{ width:44px; height:44px; object-fit:contain; }
+
+  .subtitle{
+    margin-top:6px;
+    font-size:clamp(12px,2.2vw,16px);
+    color:#1565c0; 
+  }
+  .view-hint{
+    margin-top:4px;
+    font-size:clamp(14px,3vw,18px);
+    color:#ff4081; /* 更亮麗 */
+    font-weight:800;
+  }
+
+  main{ width:100%; display:flex; flex-direction:column; align-items:center; gap:8px; padding:6px 0; }
+
+  .grid-area{
+    width:100%;
+    max-width:720px;
+    height:var(--grid-h);
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:repeat(4,1fr);
+    gap:8px;
+    padding: 0 4%;
+  }
+
+  .cell{
+    border-radius:14px;
+    border:2px solid rgba(0,0,0,0.12);
+    display:flex; align-items:center; justify-content:center;
+    padding:6px;
+    text-align:center;
+    cursor:pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select:none;
+    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    font-weight:700;
+    font-size: clamp(14px, 2.6vw, 20px);
+    min-height: 44px;
+  }
+  .cell:active{ transform: translateY(2px); }
+
+  #grid-cn .cell{ background: #e3f2fd; color:#0b2340; }
+  #grid-tw .cell{ background: #fff0f6; color:#2b1f2f; }
+
+  .cell.selected{ outline:4px solid rgba(33,150,243,0.85); outline-offset:-6px; }
+  .cell.matched{ pointer-events:none; color:#fff; }
+
+  footer{
+    height:var(--footer-h);
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:12px; padding:8px;
+  }
+
+  button.btn {
+    padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(13px,2.2vw,16px);
+    cursor:pointer; color:#fff;
+  }
+  #btn-restart{ background:#ffb74d } /* 閣耍一擺 */
+  #btn-next{ background:#4fc3f7 }    /* 後一回 */
+  #btn-home{ background:#81c784 }    /* 轉去遊戲頭頁 */
+
+  #victory {
+    position: fixed; left:50%; top:44%; transform:translate(-50%,-50%) scale(.2);
+    font-size: clamp(28px,6vw,48px); color:#e91e63; font-weight:900; opacity:0;
+    transition: all .45s cubic-bezier(.2,.9,.2,1);
+    pointer-events:none;
+  }
+  #victory.show { transform:translate(-50%,-50%) scale(1.2); opacity:1; }
+
+  @media (max-width:600px){
+    .title-row img{ width:36px; height:36px; }
+  }
 </style>
 </head>
 <body>
+  <header>
+    <div class="title-row">
+      <img id="leftImg" src="game9_assets/fruit_left.png" alt="left fruit">
+      <div id="titleText">華台水果語詞配對 - 第1回</div>
+      <img id="rightImg" src="game9_assets/fruit_right.png" alt="right fruit">
+    </div>
+    <div class="subtitle" id="subtitle">tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</div>
+    <div class="view-hint">📱 建議直式觀看效果最佳</div>
+  </header>
 
-<div class="header">
-  <img id="left-img" src="game9_assets/fruit_left.png">
-  <h1>華台水果語詞配對–第1回</h1>
-  <img id="right-img" src="game9_assets/fruit_right.png">
-  <p>tshi̍h 華文抑是台語攏會使，配對成功會有台語聲音檔喔！</p>
-  <p class="note">📱 建議直式觀看效果最佳</p>
-</div>
+  <main>
+    <div id="grid-cn" class="grid-area" aria-label="華語格子"></div>
+    <div id="grid-tw" class="grid-area" aria-label="台語格子"></div>
+    <div id="victory">有夠 gâu！</div>
+  </main>
 
-<div id="chinese-grid" class="grid-container"></div>
-<div id="taiwanese-grid" class="grid-container"></div>
+  <footer>
+    <button id="btn-restart" class="btn">閣耍一擺</button>
+    <button id="btn-next" class="btn">後一回</button>
+    <button id="btn-home" class="btn">轉去遊戲頭頁</button>
+  </footer>
 
-<div class="buttons">
-  <button class="btn-retry" id="retry-btn">閣耍一擺</button>
-  <button class="btn-next" id="next-btn">後一回</button>
-  <button class="btn-home" id="home-btn">轉去遊戲頭頁</button>
-</div>
-
-<div id="victory-text">有夠gâu</div>
+  <audio id="wrongAudio" src="game9_assets/wrong.mp3" preload="auto"></audio>
+  <audio id="victoryAudio" src="game9_assets/victory.mp3" preload="auto"></audio>
 
 <script>
-// 配色設定
-const successColors = [
-  "#FF5733","#FF8C00","#FFD700","#ADFF2F","#32CD32","#00FA9A","#00CED1","#1E90FF",
-  "#4169E1","#8A2BE2","#DA70D6","#FF1493","#FF4500","#DC143C","#8B0000","#2F4F4F"
+const ROUND_FILES = {1:'game9_assets/fruits_part1.json', 2:'game9_assets/fruits_part2.json'};
+const EXCLUDE_ID = {1:15, 2:32};
+const COLOR_PALETTE = [
+  "#FF5733","#FF8D1A","#FFC300","#DAF7A6",
+  "#33FF57","#1AFF8D","#33FFF6","#3380FF",
+  "#8D33FF","#FF33F6","#FF3380","#FF6666",
+  "#66FF66","#66FFFF","#6666FF","#FFCC00"
 ];
 
-let fruits = [];
-let selected = [];
-let pairsFound = 0;
+const gridCn = document.getElementById('grid-cn');
+const gridTw = document.getElementById('grid-tw');
+const leftImg = document.getElementById('leftImg');
+const rightImg = document.getElementById('rightImg');
+const titleText = document.getElementById('titleText');
+const victoryEl = document.getElementById('victory');
+const wrongAudio = document.getElementById('wrongAudio');
+const victoryAudio = document.getElementById('victoryAudio');
 
-// 載入 JSON
-fetch('game9_assets/fruits_part1.json')
-.then(res => res.json())
-.then(data => {
-  fruits = data.filter((item, idx) => idx !== 14); // 跳過 15.李子/李仔
-  setupGrids();
-});
+let round = 1, pairs = [], selected = null, matchedCount = 0, playingFinalFlow=false;
 
-function setupGrids() {
-  const chineseGrid = document.getElementById('chinese-grid');
-  const taiwaneseGrid = document.getElementById('taiwanese-grid');
-  chineseGrid.innerHTML = '';
-  taiwaneseGrid.innerHTML = '';
+// 隨機切換左右水果圖
+const LEFT_OPTS = ['fruit_left.png','fruit_left1.png','fruit_left2.png','fruit_left3.png'];
+const RIGHT_OPTS = ['fruit_right.png','fruit_right1.png','fruit_right2.png','fruit_right3.png'];
+setInterval(()=> {
+  leftImg.src = 'game9_assets/' + LEFT_OPTS[Math.floor(Math.random()*LEFT_OPTS.length)];
+  rightImg.src = 'game9_assets/' + RIGHT_OPTS[Math.floor(Math.random()*RIGHT_OPTS.length)];
+}, 2000);
 
-  // 上方華語
-  fruits.forEach((item, idx) => {
-    const div = document.createElement('div');
-    div.className = 'grid-item';
-    div.textContent = item.name.split('/')[0];
-    div.dataset.idx = idx;
-    div.dataset.lang = 'chinese';
-    div.addEventListener('click', handleClick);
-    chineseGrid.appendChild(div);
-  });
-
-  // 下方台語
-  fruits.forEach((item, idx) => {
-    const div = document.createElement('div');
-    div.className = 'grid-item';
-    div.textContent = item.name.split('/')[1];
-    div.dataset.idx = idx;
-    div.dataset.lang = 'taiwanese';
-    div.addEventListener('click', handleClick);
-    taiwaneseGrid.appendChild(div);
-  });
-}
-
-function handleClick(e) {
-  const el = e.currentTarget;
-  if (el.classList.contains('selected')) return;
-
-  el.classList.add('selected');
-  selected.push(el);
-
-  if (selected.length === 2) {
-    const [a, b] = selected;
-    if (a.dataset.idx === b.dataset.idx && a.dataset.lang !== b.dataset.lang) {
-      const color = successColors[parseInt(a.dataset.idx)];
-      a.style.backgroundColor = color;
-      b.style.backgroundColor = color;
-
-      const audio = new Audio(fruits[a.dataset.idx].audio);
-      audio.play();
-
-      pairsFound++;
-      selected = [];
-
-      if (pairsFound === fruits.length) {
-        setTimeout(() => {
-          new Audio('game9_assets/success.mp3').play();
-          setTimeout(() => {
-            new Audio('game9_assets/victory.mp3').play();
-            document.getElementById('victory-text').style.display = 'block';
-          },1000);
-        },0);
-      }
-    } else {
-      new Audio('game9_assets/wrong.mp3').play();
-      setTimeout(() => {
-        a.classList.remove('selected');
-        b.classList.remove('selected');
-        selected = [];
-      },500);
-    }
-  }
-}
-
-// 按鈕事件
-document.getElementById('retry-btn').addEventListener('click', () => {
-  pairsFound = 0;
-  selected = [];
-  document.getElementById('victory-text').style.display = 'none';
-  setupGrids();
-});
-document.getElementById('next-btn').addEventListener('click', () => {
-  alert('後一回功能可連到下一回程式碼');
-});
-document.getElementById('home-btn').addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
-
-// 左右水果圖片隨機切換
-const leftImages = ['game9_assets/fruit_left.png','game9_assets/fruit_left1.png'];
-const rightImages = ['game9_assets/fruit_right.png','game9_assets/fruit_right1.png'];
-
-function randomChoice(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-setInterval(()=>{
-  document.getElementById('left-img').src = randomChoice(leftImages);
-  document.getElementById('right-img').src = randomChoice(rightImages);
-},2000);
-</script>
-
-</body>
-</html>
+// JSON 處理與渲染 (同您原本程式碼)
+function extractArray(json){ if(Array.isArray(json)) return json; if(json.fruits&&Array.isArray(json.fruits)) return json.fruits; return []; }
+function pickFirst(obj,keys){for(const k of keys) if(obj[k]!==undefined && obj[k]!==null && String(obj[k]).trim()!=='') return String(obj[k]).trim(); return null;}
+function parsePairEntry(entry, idx){
+  const id = entry.id ?? entry.ID ?? entry.index ?? (idx+1);
+  let chinese = pickFirst(entry, ['chinese','zh','name','title','text','Chinese','cn']);
+  let taiwanese = pickFirst(entry, ['taiwanese','tai','tw','taiwaneseName','taiwanese_name','Taiwanese','tw_name']);
+  if(!chinese && chinese!== "") chinese = null;
+  if(!taiwan
