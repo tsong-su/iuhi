@@ -1,156 +1,274 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>水果骰子遊戲第1回 - 單人測試版</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background: linear-gradient(135deg, #ffecd2, #fcb69f);
-      text-align: center;
-      padding: 10px;
-      margin: 0;
-    }
-    h1 { color: #d35400; margin-bottom: 5px; }
-    #rules {
-      background-color: rgba(255,255,255,0.8);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-bottom: 15px;
-    }
-    #dice-container {
-      margin: 20px auto;
-      width: 200px;
-      height: 200px;
-      perspective: 1200px;
-    }
-    .dice {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-    }
-    .dice-face {
-      position: absolute;
-      width: 200px;
-      height: 200px;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .fruit-stamp { width: 180px; height: 180px; }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #f39c12;
-      color: white;
-    }
-    button:hover { background-color: #e67e22; }
-    #fruit-info { margin-top: 15px; font-size: 16px; }
-    @media (max-width: 500px){
-      #dice-container { width: 150px; height: 150px; }
-      .dice-face { width: 150px; height: 150px; }
-      .fruit-stamp { width: 130px; height: 130px; }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>果子骰子遊戲 – 第1回</title>
+<style>
+  :root{
+    --bg1:#fff8ec; --bg2:#ffecd2;
+    --accent:#ff6b35; --muted:#6b6b6b;
+    --card:#ffffff;
+  }
+  html,body{height:100%;margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:18px auto;padding:16px}
+  header{display:flex;align-items:center;gap:12px}
+  h1{margin:0;color:var(--accent);font-size:20px}
+  #rules{margin-top:12px;background:rgba(255,255,255,0.85);padding:10px;border-radius:10px;color:var(--muted);font-size:14px}
+  .stage{display:flex;gap:18px;align-items:flex-start;margin-top:18px;flex-wrap:wrap}
+  /* dice area */
+  #diceWrap{flex:1;min-width:260px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  /* 3D-like container */
+  #diceContainer{width:260px;height:260px;perspective:1400px;display:flex;align-items:center;justify-content:center}
+  .dice3d{
+    width:100%;height:100%;border-radius:14px;background:linear-gradient(180deg,#fff,#fffef8);
+    box-shadow:0 10px 30px rgba(0,0,0,0.12);display:flex;align-items:center;justify-content:center;
+    transform-style:preserve-3d;transition:transform 900ms cubic-bezier(.2,.9,.3,1);
+    position:relative;overflow:hidden;
+  }
+  /* during rolling we add a classname .rolling to animate jitter */
+  .dice3d.rolling{animation:roll-jitter 1000ms linear}
+  @keyframes roll-jitter{
+    0%{transform:rotateX(0) rotateY(0) rotateZ(0)}
+    25%{transform:rotateX(360deg) rotateY(180deg) rotateZ(20deg)}
+    50%{transform:rotateX(720deg) rotateY(360deg) rotateZ(-18deg)}
+    75%{transform:rotateX(1080deg) rotateY(540deg) rotateZ(12deg)}
+    100%{transform:rotateX(1440deg) rotateY(720deg) rotateZ(0)}
+  }
+
+  /* visible face (we will inject SVG stamp into this) */
+  .faceView{width:92%;height:92%;display:flex;align-items:center;justify-content:center}
+  .stamp-svg{width:100%;height:100%;display:block}
+
+  /* controls */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  button{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  button.secondary{background:#fff;color:var(--accent);border:1px solid #ffd1b8}
+  button:active{transform:translateY(1px)}
+  .infoBox{flex:1;min-width:260px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+  .fruitName{font-size:18px;margin:0;color:#333;font-weight:700}
+  .fruitTai{margin:6px 0 0 0;color:#666}
+  .playPron{margin-top:10px;display:flex;gap:8px;align-items:center}
+  .smallNote{margin-top:10px;color:#666;font-size:13px}
+  footer{margin-top:18px;color:#666;font-size:13px;text-align:center}
+
+/* responsive */
+@media (max-width:720px){
+  #diceContainer{width:200px;height:200px}
+  .dice3d{border-radius:10px}
+  .infoBox{order:3}
+  .stage{flex-direction:column;align-items:center}
+}
+</style>
 </head>
 <body>
-  <h1>水果骰子遊戲第1回 - 單人測試版</h1>
-  <div id="rules">
-    <p>遊戲規則：</p>
-    <ul>
-      <li>按「擲骰 🎲」骰子會滾動。</li>
-      <li>停下後顯示水果圖片。</li>
-      <li>點 🔊 可以播放水果台語發音。</li>
-    </ul>
-  </div>
+  <div class="wrap">
+    <header>
+      <h1>果子骰子遊戲 – 第1回</h1>
+    </header>
 
-  <div id="dice-container">
-    <div id="dice" class="dice"></div>
-  </div>
+    <div id="rules">
+      <strong>玩法簡述：</strong> 按「撚骰子」→ 會出現一個隨機果子（1–34）並顯示圖片、中文名與台語名。按「🔊 播放台語」可聽該果子的台語發音。擲骰同時會播放滾動音效，停止時播放提示音。
+    </div>
 
-  <div>
-    <button onclick="rollDice()">擲骰 🎲</button>
-  </div>
-  <div id="fruit-info"></div>
-
-  <!-- 音效 -->
-  <audio id="roll-sound" src="game9_assets/Roll the dice.mp3"></audio>
-  <audio id="ding-sound" src="game9_assets/ding.mp3"></audio>
-
-  <script>
-    const totalFruits = 34;
-    let currentFruit = 1;
-    let rolling = false;
-
-    function rollDice() {
-      if (rolling) return;
-      rolling = true;
-      const dice = document.getElementById("dice");
-      const rollSound = document.getElementById("roll-sound");
-      const dingSound = document.getElementById("ding-sound");
-      rollSound.currentTime = 0;
-      rollSound.play();
-
-      let steps = 15; // 連續滾動步數
-      let i = 0;
-
-      const rollInterval = setInterval(() => {
-        const xRot = Math.floor(Math.random() * 720);
-        const yRot = Math.floor(Math.random() * 720);
-        dice.style.transition = "transform 0.08s ease";
-        dice.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
-        i++;
-        if (i >= steps) {
-          clearInterval(rollInterval);
-          currentFruit = Math.floor(Math.random() * totalFruits) + 1;
-          showFruit(currentFruit);
-          rollSound.pause();
-          rollSound.currentTime = 0;
-          dingSound.play();
-          rolling = false;
-        }
-      }, 80);
-    }
-
-    function showFruit(index) {
-      const dice = document.getElementById("dice");
-      dice.innerHTML = `
-        <div class="dice-face">
-          <svg class="fruit-stamp" viewBox="0 0 200 200">
-            <defs>
-              <mask id="perforation">
-                <rect width="200" height="200" fill="white"/>
-                ${Array.from({length: 36}).map((_,i)=>{
-                  const angle = i * 10 * Math.PI / 180;
-                  const r = 95;
-                  const cx = 100 + r * Math.cos(angle);
-                  const cy = 100 + r * Math.sin(angle);
-                  return `<circle cx="${cx}" cy="${cy}" r="5" fill="black"/>`;
-                }).join('')}
-              </mask>
-            </defs>
-            <image href="game9_assets/fruit${index}.png" x="10" y="10" width="180" height="180" mask="url(#perforation)"/>
-          </svg>
+    <div class="stage">
+      <div id="diceWrap">
+        <div id="diceContainer" aria-hidden="false">
+          <div id="dice" class="dice3d" role="img" aria-label="果子骰子">
+            <div class="faceView" id="faceView">
+              <!-- SVG stamp injected here -->
+            </div>
+          </div>
         </div>
-      `;
-      document.getElementById("fruit-info").innerHTML = `
-        <p>水果編號：${index}</p>
-        <button onclick="playFruitSound(${index})">🔊 播放台語發音</button>
-      `;
-    }
 
-    function playFruitSound(index) {
-      const audio = new Audio(`game9_assets/fruit${index}.mp3`);
-      audio.play();
+        <div class="controls" style="margin-top:4px">
+          <button id="rollBtn">撚骰子 🎲</button>
+          <button id="pronBtn" class="secondary" style="display:none">🔊 播放台語</button>
+        </div>
+      </div>
+
+      <div class="infoBox" id="infoBox" aria-live="polite">
+        <p class="fruitName" id="fruitCn">—</p>
+        <p class="fruitTai" id="fruitTw">—</p>
+        <div class="playPron" id="playPron" style="display:none">
+          <button id="playAudio" class="secondary">🔊 播放台語發音</button>
+          <div style="font-size:13px;color:#777">（按鈕播放您放在 game9_assets 的對應檔案）</div>
+        </div>
+        <p class="smallNote">說出台語名稱，讓學習變有趣 😊</p>
+      </div>
+    </div>
+
+    <footer>圖片與音檔來源：game9_assets（fruit1–fruit34.png / fruit1–fruit34.mp3）。</footer>
+  </div>
+
+<script>
+/* ---------------------------
+  資料：1..34 對應 中文 + 台語
+  使用者提供對照表，顯示時不顯示編號
+----------------------------*/
+const FRUITS = [
+  {id:1, cn:"芒果", tw:"檨仔", img:"game9_assets/fruit1.png", audio:"game9_assets/fruit1.mp3"},
+  {id:2, cn:"橘子", tw:"柑仔", img:"game9_assets/fruit2.png", audio:"game9_assets/fruit2.mp3"},
+  {id:3, cn:"香蕉", tw:"弓蕉", img:"game9_assets/fruit3.png", audio:"game9_assets/fruit3.mp3"},
+  {id:4, cn:"番石榴", tw:"林菝仔", img:"game9_assets/fruit4.png", audio:"game9_assets/fruit4.mp3"},
+  {id:5, cn:"鳳梨", tw:"王梨", img:"game9_assets/fruit5.png", audio:"game9_assets/fruit5.mp3"},
+  {id:6, cn:"百香果", tw:"時計果", img:"game9_assets/fruit6.png", audio:"game9_assets/fruit6.mp3"},
+  {id:7, cn:"香瓜", tw:"芳瓜", img:"game9_assets/fruit7.png", audio:"game9_assets/fruit7.mp3"},
+  {id:8, cn:"葡萄", tw:"葡萄", img:"game9_assets/fruit8.png", audio:"game9_assets/fruit8.mp3"},
+  {id:9, cn:"蓮霧", tw:"蓮霧", img:"game9_assets/fruit9.png", audio:"game9_assets/fruit9.mp3"},
+  {id:10, cn:"柳丁", tw:"柳丁", img:"game9_assets/fruit10.png", audio:"game9_assets/fruit10.mp3"},
+  {id:11, cn:"木瓜", tw:"木瓜", img:"game9_assets/fruit11.png", audio:"game9_assets/fruit11.mp3"},
+  {id:12, cn:"梨子", tw:"梨仔", img:"game9_assets/fruit12.png", audio:"game9_assets/fruit12.mp3"},
+  {id:13, cn:"棗子", tw:"棗仔", img:"game9_assets/fruit13.png", audio:"game9_assets/fruit13.mp3"},
+  {id:14, cn:"柚子", tw:"柚仔", img:"game9_assets/fruit14.png", audio:"game9_assets/fruit14.mp3"},
+  {id:15, cn:"李子", tw:"李仔", img:"game9_assets/fruit15.png", audio:"game9_assets/fruit15.mp3"},
+  {id:16, cn:"柿子", tw:"柿仔", img:"game9_assets/fruit16.png", audio:"game9_assets/fruit16.mp3"},
+  {id:17, cn:"荔枝", tw:"荔枝", img:"game9_assets/fruit17.png", audio:"game9_assets/fruit17.mp3"},
+  {id:18, cn:"龍眼", tw:"龍眼", img:"game9_assets/fruit18.png", audio:"game9_assets/fruit18.mp3"},
+  {id:19, cn:"釋迦", tw:"釋迦", img:"game9_assets/fruit19.png", audio:"game9_assets/fruit19.mp3"},
+  {id:20, cn:"草莓", tw:"草莓", img:"game9_assets/fruit20.png", audio:"game9_assets/fruit20.mp3"},
+  {id:21, cn:"櫻桃", tw:"櫻桃", img:"game9_assets/fruit21.png", audio:"game9_assets/fruit21.mp3"},
+  {id:22, cn:"水蜜桃", tw:"水蜜桃", img:"game9_assets/fruit22.png", audio:"game9_assets/fruit22.mp3"},
+  {id:23, cn:"西瓜", tw:"西瓜", img:"game9_assets/fruit23.png", audio:"game9_assets/fruit23.mp3"},
+  {id:24, cn:"枇杷", tw:"枇杷", img:"game9_assets/fruit24.png", audio:"game9_assets/fruit24.mp3"},
+  {id:25, cn:"檸檬", tw:"檸檬", img:"game9_assets/fruit25.png", audio:"game9_assets/fruit25.mp3"},
+  {id:26, cn:"蘋果", tw:"蘋果", img:"game9_assets/fruit26.png", audio:"game9_assets/fruit26.mp3"},
+  {id:27, cn:"楊桃", tw:"楊桃", img:"game9_assets/fruit27.png", audio:"game9_assets/fruit27.mp3"},
+  {id:28, cn:"石榴", tw:"石榴", img:"game9_assets/fruit28.png", audio:"game9_assets/fruit28.mp3"},
+  {id:29, cn:"榴槤", tw:"榴槤", img:"game9_assets/fruit29.png", audio:"game9_assets/fruit29.mp3"},
+  {id:30, cn:"鳥梨", tw:"鳥梨仔", img:"game9_assets/fruit30.png", audio:"game9_assets/fruit30.mp3"},
+  {id:31, cn:"金桔", tw:"金桔仔", img:"game9_assets/fruit31.png", audio:"game9_assets/fruit31.mp3"},
+  {id:32, cn:"黑珍珠", tw:"烏真珠", img:"game9_assets/fruit32.png", audio:"game9_assets/fruit32.mp3"},
+  {id:33, cn:"仙桃", tw:"仙桃", img:"game9_assets/fruit33.png", audio:"game9_assets/fruit33.mp3"},
+  {id:34, cn:"番茄", tw:"臭柿仔", img:"game9_assets/fruit34.png", audio:"game9_assets/fruit34.mp3"},
+];
+
+/* DOM refs */
+const rollBtn = document.getElementById('rollBtn');
+const pronBtn = document.getElementById('pronBtn');
+const faceView = document.getElementById('faceView');
+const fruitCn = document.getElementById('fruitCn');
+const fruitTw = document.getElementById('fruitTw');
+const playAudioBtn = document.getElementById('playAudio');
+const playPronBox = document.getElementById('playPron');
+
+const rollSound = new Audio('game9_assets/Roll the dice.mp3');
+const dingSound = new Audio('game9_assets/ding.mp3');
+
+let rolling = false;
+let currentIndex = null;
+
+/* Helper: create SVG stamp markup for a given image URL */
+function createStampSVG(imgUrl){
+  // We'll embed a mask with perforation holes around edge
+  const holes = [];
+  const holeCount = 36;
+  for(let i=0;i<holeCount;i++){
+    const angle = i * (360 / holeCount) * Math.PI/180;
+    const r = 86;
+    const cx = 100 + Math.round(r * Math.cos(angle));
+    const cy = 100 + Math.round(r * Math.sin(angle));
+    holes.push(`<circle cx="${cx}" cy="${cy}" r="3.6" fill="black" />`);
+  }
+  return `
+    <svg class="stamp-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="果子圖片">
+      <defs>
+        <mask id="perfMask">
+          <rect width="200" height="200" fill="white" />
+          ${holes.join('')}
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="200" height="200" fill="#fff" rx="8" ry="8"/>
+      <image href="${imgUrl}" x="10" y="10" width="180" height="180" preserveAspectRatio="xMidYMid slice" mask="url(#perfMask)"></image>
+      <rect x="10" y="10" width="180" height="180" fill="none" stroke="rgba(0,0,0,0.06)" rx="6" ry="6"/>
+    </svg>
+  `;
+}
+
+/* roll animation: we will simulate continuous rolling by rapidly changing random images,
+   and simultaneously apply the CSS .rolling jitter. After duration, stop and pick final index. */
+function rollAnimation(duration = 1200){
+  if(rolling) return;
+  rolling = true;
+  rollBtn.disabled = true;
+  pronBtn.style.display = 'none';
+  playPronBox.style.display = 'none';
+  fruitCn.textContent = '...';
+  fruitTw.textContent = '';
+
+  const diceEl = document.getElementById('dice');
+  diceEl.classList.add('rolling');
+
+  rollSound.currentTime = 0;
+  rollSound.play().catch(()=>{ /* ignore autoplay blocks */ });
+
+  const intervalMs = 70;
+  let elapsed = 0;
+  let lastIdx = null;
+  const iv = setInterval(()=>{
+    // show quick random thumb (no mask heavy work)
+    const idx = Math.floor(Math.random() * FRUITS.length);
+    lastIdx = idx;
+    faceView.innerHTML = createStampSVG(FRUITS[idx].img);
+    elapsed += intervalMs;
+    if(elapsed >= duration){
+      clearInterval(iv);
+      // small delay to let rolling CSS finish
+      setTimeout(()=> finishRoll(lastIdx), 160);
     }
-  </script>
+  }, intervalMs);
+}
+
+/* finalize roll: show final and play ding */
+function finishRoll(randIdx){
+  const diceEl = document.getElementById('dice');
+  diceEl.classList.remove('rolling');
+
+  // pick final index (randIdx already chosen), but to ensure uniform final pick do:
+  const finalIdx = Math.floor(Math.random() * FRUITS.length);
+  currentIndex = finalIdx;
+  // render final stamp (SVG)
+  faceView.innerHTML = createStampSVG(FRUITS[finalIdx].img);
+
+  // populate names (no numbering)
+  fruitCn.textContent = FRUITS[finalIdx].cn;
+  fruitTw.textContent = FRUITS[finalIdx].tw;
+
+  // show pronunciation controls
+  pronBtn.style.display = 'inline-block';
+  playPronBox.style.display = 'flex';
+
+  // stop roll sound & play ding
+  try{ rollSound.pause(); rollSound.currentTime = 0; }catch(e){}
+  dingSound.currentTime = 0;
+  dingSound.play().catch(()=>{});
+
+  // enable roll after a short cooldown
+  setTimeout(()=>{ rolling = false; rollBtn.disabled = false; }, 300);
+}
+
+/* pronounce fruit */
+function playPronunciation(){
+  if(currentIndex === null) return;
+  const aud = new Audio(FRUITS[currentIndex].audio);
+  aud.currentTime = 0;
+  aud.play().catch(()=>{ /* browsers may require user gesture; ignore */ });
+}
+
+/* init handlers */
+rollBtn.addEventListener('click', ()=>{ rollAnimation(1200); });
+pronBtn.addEventListener('click', playPronunciation);
+playAudioBtn && playAudioBtn.addEventListener('click', playPronunciation);
+
+/* Accessibility: allow keyboard Enter on roll button */
+rollBtn.addEventListener('keyup', (e)=>{ if(e.key === 'Enter') rollBtn.click(); });
+
+/* On load, show a neutral placeholder */
+(function setPlaceholder(){
+  faceView.innerHTML = createStampSVG('game9_assets/fruit1.png');
+  fruitCn.textContent = '按「撚骰子」開始';
+  fruitTw.textContent = '';
+})();
+</script>
 </body>
 </html>
