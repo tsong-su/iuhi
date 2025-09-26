@@ -18,21 +18,19 @@
     .dice-area {
       margin-top: 20px;
     }
-    .fruit-frame {
-      display: inline-block;
-      margin-top: 20px;
-    }
     .fruit-frame img {
       width: 200px;
       height: 200px;
       object-fit: contain;
-      clip-path: url(#zigzag);
-      border: 4px solid #ff6600; /* 改成明顯的果色 */
+      border: 6px solid #ff6600;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
     }
     .fruit-name {
       font-size: 22px;
       margin-top: 10px;
-      color: #2c3e50;
+      color: #27ae60; /* 活潑綠色 */
+      font-weight: bold;
     }
     button {
       margin: 10px;
@@ -53,7 +51,13 @@
       line-height: 1.5;
       color: #333;
     }
-    /* 3D 骰子動畫 */
+    /* 骰子動畫 */
+    #dice {
+      width: 120px;
+      height: 120px;
+      margin: 20px auto;
+      background: url("game9_assets/dice.png") no-repeat center/contain;
+    }
     .rolling {
       animation: spin 2.5s ease-in-out;
     }
@@ -67,16 +71,10 @@
   <h1>撚果子骰子遊戲–第1回</h1>
 
   <div class="dice-area">
+    <div id="dice"></div>
     <button onclick="rollDice()">擲骰子 🎲</button>
-    <button onclick="playFruitAudio()">🔊 播放台語</button>
+    <button onclick="playFruitAudio()">🔊 播放台語發音並跟著練習</button>
     <div class="fruit-frame">
-      <svg width="0" height="0">
-        <defs>
-          <clipPath id="zigzag" clipPathUnits="objectBoundingBox">
-            <path d="M0,0 L0.95,0 Q1,0.05,0.95,0.1 L0,0.1 L0,0 Z" />
-          </clipPath>
-        </defs>
-      </svg>
       <img id="fruit-img" src="" alt="水果">
       <div id="fruit-name" class="fruit-name"></div>
     </div>
@@ -84,9 +82,10 @@
 
   <div class="rules">
     玩法簡述：按「擲骰子」→ 會出現一個隨機果子，並顯示圖片、中文名與台語名。<br>
-    按「🔊 播放台語」可聽該水果的台語發音。
+    按「🔊 播放台語發音並跟著練習」可聽該水果的台語發音。
   </div>
 
+  <!-- 音效 -->
   <audio id="roll-sound" src="game9_assets/Roll the dice.mp3"></audio>
   <audio id="stop-sound" src="game9_assets/ding.mp3"></audio>
   <audio id="fruit-sound"></audio>
@@ -98,12 +97,13 @@ const fruits = [
   {ch:"香蕉", tw:"弓蕉", file:"fruit3"},
   {ch:"番石榴", tw:"林菝仔", file:"fruit4"},
   {ch:"鳳梨", tw:"王梨", file:"fruit5"},
-  // …請依照 fruit1–34 全部列上
+  // …依序到 fruit34
 ];
 
 let currentFruit = null;
 
 function rollDice() {
+  const dice = document.getElementById("dice");
   const img = document.getElementById("fruit-img");
   const nameDiv = document.getElementById("fruit-name");
   const rollSound = document.getElementById("roll-sound");
@@ -117,14 +117,18 @@ function rollDice() {
   rollSound.currentTime = 0;
   rollSound.play();
 
-  img.classList.add("rolling");
+  // 加入骰子動畫
+  dice.classList.add("rolling");
 
   setTimeout(() => {
-    img.classList.remove("rolling");
+    dice.classList.remove("rolling");
+
+    // 隨機水果
     const rand = Math.floor(Math.random() * fruits.length);
     currentFruit = fruits[rand];
     img.src = "game9_assets/" + currentFruit.file + ".png";
     nameDiv.textContent = currentFruit.ch + " / " + currentFruit.tw;
+
     stopSound.play();
   }, 2500);
 }
