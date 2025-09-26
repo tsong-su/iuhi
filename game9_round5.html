@@ -1,144 +1,173 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>撚果子骰子遊戲–第1回</title>
+  <title>水果骰子遊戲</title>
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background: #fff7e6;
       text-align: center;
+      background: #fffbea;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
+
     h1 {
-      margin-top: 20px;
-      color: #d35400;
+      color: #ff6600;
+      margin-bottom: 10px;
     }
-    .dice-area {
-      margin-top: 20px;
-    }
-    .fruit-frame img {
-      width: 200px;
-      height: 200px;
-      object-fit: contain;
-      border: 6px solid #ff6600;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.2);
-    }
+
     .fruit-name {
-      font-size: 22px;
-      margin-top: 10px;
-      color: #27ae60; /* 活潑綠色 */
+      font-size: 28px;
       font-weight: bold;
+      color: #ff6600; /* 亮橘色 */
+      margin: 15px 0 10px 0;
     }
+
+    .taiwanese-text {
+      font-size: 20px;
+      color: #0077ff; /* 活潑藍 */
+      margin-bottom: 15px;
+    }
+
     button {
-      margin: 10px;
-      padding: 10px 20px;
       font-size: 18px;
+      padding: 10px 20px;
+      margin: 10px;
       border-radius: 8px;
       border: none;
-      background: #f39c12;
-      color: #fff;
       cursor: pointer;
+      background-color: #ffcc66;
+      color: #000;
+      transition: transform 0.2s;
     }
+
     button:hover {
-      background: #e67e22;
+      transform: scale(1.1);
+      background-color: #ffb84d;
     }
-    .rules {
-      margin-top: 20px;
-      font-size: 18px;
-      line-height: 1.5;
-      color: #333;
-    }
-    /* 骰子動畫 */
-    #dice {
+
+    /* 骰子容器 */
+    .dice-container {
+      perspective: 1000px;
       width: 120px;
       height: 120px;
-      margin: 20px auto;
-      background: url("game9_assets/dice.png") no-repeat center/contain;
+      margin: 30px auto;
+      position: relative;
     }
-    .rolling {
-      animation: spin 2.5s ease-in-out;
+
+    .dice {
+      width: 120px;
+      height: 120px;
+      position: absolute;
+      transform-style: preserve-3d;
+      transition: transform 2.5s cubic-bezier(.36,.07,.19,.97);
     }
-    @keyframes spin {
-      0%   { transform: rotate(0deg); }
-      100% { transform: rotate(1440deg); }
+
+    .face {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: #fff;
+      border: 2px solid #333;
+      border-radius: 10px;
+      line-height: 120px;
+      font-size: 40px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    .front  { transform: rotateY(0deg) translateZ(60px); }
+    .back   { transform: rotateY(180deg) translateZ(60px); }
+    .right  { transform: rotateY(90deg) translateZ(60px); }
+    .left   { transform: rotateY(-90deg) translateZ(60px); }
+    .top    { transform: rotateX(90deg) translateZ(60px); }
+    .bottom { transform: rotateX(-90deg) translateZ(60px); }
   </style>
 </head>
 <body>
-  <h1>撚果子骰子遊戲–第1回</h1>
 
-  <div class="dice-area">
-    <div id="dice"></div>
-    <button onclick="rollDice()">擲骰子 🎲</button>
-    <button onclick="playFruitAudio()">🔊 播放台語發音並跟著練習</button>
-    <div class="fruit-frame">
-      <img id="fruit-img" src="" alt="水果">
-      <div id="fruit-name" class="fruit-name"></div>
+  <h1>🎲 水果骰子遊戲</h1>
+
+  <div class="fruit-name" id="fruitName">蘋果</div>
+  <div class="taiwanese-text">按「🔊 播放台語發音」並跟著練習</div>
+
+  <button onclick="rollDice()">擲骰子</button>
+  <button onclick="playTaiwanese()">🔊 播放台語發音</button>
+
+  <!-- 骰子 3D 容器 -->
+  <div class="dice-container">
+    <div class="dice" id="dice">
+      <div class="face front">1</div>
+      <div class="face back">6</div>
+      <div class="face right">3</div>
+      <div class="face left">4</div>
+      <div class="face top">5</div>
+      <div class="face bottom">2</div>
     </div>
   </div>
 
-  <div class="rules">
-    玩法簡述：按「擲骰子」→ 會出現一個隨機果子，並顯示圖片、中文名與台語名。<br>
-    按「🔊 播放台語發音並跟著練習」可聽該水果的台語發音。
-  </div>
-
   <!-- 音效 -->
-  <audio id="roll-sound" src="game9_assets/Roll the dice.mp3"></audio>
-  <audio id="stop-sound" src="game9_assets/ding.mp3"></audio>
-  <audio id="fruit-sound"></audio>
+  <audio id="rollSound" src="Roll the dice.mp3"></audio>
+  <audio id="dingSound" src="ding.mp3"></audio>
+  <audio id="taiwaneseSound" src="apple_taiwanese.mp3"></audio>
 
-<script>
-const fruits = [
-  {ch:"芒果", tw:"檨仔", file:"fruit1"},
-  {ch:"橘子", tw:"柑仔", file:"fruit2"},
-  {ch:"香蕉", tw:"弓蕉", file:"fruit3"},
-  {ch:"番石榴", tw:"林菝仔", file:"fruit4"},
-  {ch:"鳳梨", tw:"王梨", file:"fruit5"},
-  // …依序到 fruit34
-];
+  <script>
+    const dice = document.getElementById("dice");
+    const rollSound = document.getElementById("rollSound");
+    const dingSound = document.getElementById("dingSound");
+    const taiwaneseSound = document.getElementById("taiwaneseSound");
 
-let currentFruit = null;
+    function rollDice() {
+      // 先播放滾動音效
+      rollSound.currentTime = 0;
+      rollSound.play();
 
-function rollDice() {
-  const dice = document.getElementById("dice");
-  const img = document.getElementById("fruit-img");
-  const nameDiv = document.getElementById("fruit-name");
-  const rollSound = document.getElementById("roll-sound");
-  const stopSound = document.getElementById("stop-sound");
+      // 隨機產生骰子點數 (1~6)
+      const result = Math.floor(Math.random() * 6) + 1;
 
-  // 清空舊資料
-  img.src = "";
-  nameDiv.textContent = "";
+      // 多轉幾圈再停下來 (確保有 3D 動態感)
+      const xRand = Math.floor(Math.random() * 4 + 4) * 360;
+      const yRand = Math.floor(Math.random() * 4 + 4) * 360;
 
-  // 播放滾動音效
-  rollSound.currentTime = 0;
-  rollSound.play();
+      // 設定旋轉動畫 (2.5s)
+      dice.style.transform = `rotateX(${xRand + getRotationX(result)}deg) rotateY(${yRand + getRotationY(result)}deg)`;
 
-  // 加入骰子動畫
-  dice.classList.add("rolling");
+      // 2.5 秒後播放提示音
+      setTimeout(() => {
+        dingSound.play();
+      }, 2500);
+    }
 
-  setTimeout(() => {
-    dice.classList.remove("rolling");
+    // 各點數的固定角度
+    function getRotationX(num) {
+      switch (num) {
+        case 1: return 0;
+        case 2: return 90;
+        case 3: return 0;
+        case 4: return 0;
+        case 5: return -90;
+        case 6: return 180;
+      }
+    }
+    function getRotationY(num) {
+      switch (num) {
+        case 1: return 0;
+        case 2: return 0;
+        case 3: return -90;
+        case 4: return 90;
+        case 5: return 0;
+        case 6: return 180;
+      }
+    }
 
-    // 隨機水果
-    const rand = Math.floor(Math.random() * fruits.length);
-    currentFruit = fruits[rand];
-    img.src = "game9_assets/" + currentFruit.file + ".png";
-    nameDiv.textContent = currentFruit.ch + " / " + currentFruit.tw;
+    function playTaiwanese() {
+      taiwaneseSound.currentTime = 0;
+      taiwaneseSound.play();
+    }
+  </script>
 
-    stopSound.play();
-  }, 2500);
-}
-
-function playFruitAudio() {
-  if (!currentFruit) return;
-  const fruitAudio = document.getElementById("fruit-sound");
-  fruitAudio.src = "game9_assets/" + currentFruit.file + ".mp3";
-  fruitAudio.play();
-}
-</script>
 </body>
 </html>
