@@ -4,62 +4,75 @@
   <meta charset="UTF-8">
   <title>水果骰子遊戲–第1回</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500&display=swap');
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: "Microsoft JhengHei", sans-serif;
+      font-family: 'Noto Sans TC', sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
       align-items: center;
       height: 100vh;
-      background: #fffbe6;
+      background: #fffbea;
       text-align: center;
       padding: 10px;
     }
     h1 {
       font-size: 6vw;
+      color: #ff5722;
       margin: 10px 0;
     }
     p {
       font-size: 4vw;
+      color: #4caf50;
       margin-bottom: 10px;
     }
     #dice {
-      width: 60vw;
-      max-width: 300px;
+      width: 65vw;
+      max-width: 320px;
       margin: 20px auto;
+      border: 5px solid #ff9800;
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25);
     }
     #rollBtn {
       font-size: 5vw;
-      padding: 10px 20px;
+      padding: 10px 25px;
       margin: 20px 0;
       background: #ff9800;
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 15px;
       cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    #rollBtn:active {
-      background: #e68900;
-    }
+    #rollBtn:active { background: #e68900; }
     #result {
       margin-top: 20px;
-      font-size: 5vw;
       display: none;
+    }
+    .fruit-name {
+      font-size: 7vw;
+      color: #ff4081;
+      font-weight: bold;
+    }
+    .fruit-roman {
+      font-size: 5vw;
+      color: #009688;
+      margin-top: 5px;
     }
     #result button {
       font-size: 4.5vw;
-      margin-left: 10px;
-      padding: 5px 15px;
+      margin-top: 10px;
+      padding: 6px 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #4caf50;
       color: white;
       cursor: pointer;
     }
-    #result button:active {
-      background: #3d8b40;
-    }
+    #result button:active { background: #3d8b40; }
   </style>
 </head>
 <body>
@@ -71,8 +84,8 @@
 
   <div id="result"></div>
 
-  <audio id="rollSound" src="game9_assets/Roll_the_dice.mp3"></audio>
-  <audio id="dingSound" src="game9_assets/ding.mp3"></audio>
+  <audio id="rollSound" src="game9_assets/Roll_the_dice.mp3" preload="auto"></audio>
+  <audio id="dingSound" src="game9_assets/ding.mp3" preload="auto"></audio>
 
   <script>
     const dice = document.getElementById("dice");
@@ -91,9 +104,12 @@
     ];
 
     rollBtn.addEventListener("click", () => {
-      result.style.display = "none"; // 先隱藏文字
+      result.style.display = "none";
+
+      // 確保能播放 roll 音效
+      rollSound.pause();
       rollSound.currentTime = 0;
-      rollSound.play();
+      rollSound.play().catch(e => console.log("播放受阻:", e));
 
       let count = 0;
       const rollInterval = setInterval(() => {
@@ -111,11 +127,14 @@
         dice.src = `game9_assets/${fruit.img}`;
 
         setTimeout(() => {
-          result.innerHTML = `${fruit.name} (${fruit.roman}) 
-            <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>`;
+          result.innerHTML = `
+            <div class="fruit-name">${fruit.name}</div>
+            <div class="fruit-roman">${fruit.roman}</div>
+            <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>
+          `;
           result.style.display = "block";
-        }, 500); // 延遲顯示名稱
-      }, 2500); // 2.5 秒滾動
+        }, 500);
+      }, 2500);
     });
   </script>
 </body>
