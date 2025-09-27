@@ -6,30 +6,30 @@
   <style>
     body {
       margin: 0;
-      background: linear-gradient(135deg, #fff7f0, #ffe6f7);
-      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(135deg, #f9f7ff, #ffe6f7);
+      font-family: "Segoe UI Rounded", "Microsoft JhengHei", sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       height: 100vh;
+      overflow: hidden;
     }
     h1 {
       margin: 10px 0 5px 0;
-      font-size: 1.6em;
+      font-size: 1.8em;
       color: #d94f4f;
     }
     .hint {
-      font-size: 1.3em;
+      font-size: 1.2em;
       font-weight: bold;
       color: #ff6600;
       margin-bottom: 10px;
     }
     .dice-container {
-      width: 160px;
-      height: 160px;
+      width: 200px;
+      height: 200px;
       perspective: 1000px;
-      margin: 10px 0;
     }
     .dice {
       width: 100%;
@@ -40,64 +40,61 @@
     }
     .face {
       position: absolute;
-      width: 160px;
-      height: 160px;
-      border: 4px solid #ffcc66;
-      border-radius: 15px;
+      width: 200px;
+      height: 200px;
+      border: 5px solid #ffcc66;
+      border-radius: 20px;
       background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 2em;
+      font-weight: bold;
       backface-visibility: hidden;
     }
     .face img {
       max-width: 90%;
       max-height: 90%;
-      border-radius: 12px;
+      border-radius: 15px;
     }
-    /* 六面骰子 */
-    .front  { transform: rotateY(0deg) translateZ(80px); }
-    .back   { transform: rotateY(180deg) translateZ(80px); }
-    .right  { transform: rotateY(90deg) translateZ(80px); }
-    .left   { transform: rotateY(-90deg) translateZ(80px); }
-    .top    { transform: rotateX(90deg) translateZ(80px); }
-    .bottom { transform: rotateX(-90deg) translateZ(80px); }
+    /* 骰子六面 */
+    .front  { transform: rotateY(0deg) translateZ(100px); }
+    .back   { transform: rotateY(180deg) translateZ(100px); }
+    .right  { transform: rotateY(90deg) translateZ(100px); }
+    .left   { transform: rotateY(-90deg) translateZ(100px); }
+    .top    { transform: rotateX(90deg) translateZ(100px); }
+    .bottom { transform: rotateX(-90deg) translateZ(100px); }
 
     .result {
       text-align: center;
-      margin: 8px 0 3px 0;
-      font-size: 1.8em;
+      margin: 10px 0;
+      font-size: 2em;
       font-weight: bold;
       color: #0066cc;
     }
     .pinyin {
       text-align: center;
-      font-size: 1.4em;
+      font-size: 1.5em;
       font-weight: bold;
       color: #ff3399;
-      margin-bottom: 8px;
     }
-
     button {
       margin: 5px;
-      padding: 8px 18px;
+      padding: 10px 20px;
       border: none;
       border-radius: 12px;
+      background: #ff99cc;
+      color: white;
       font-size: 1em;
       font-weight: bold;
       cursor: pointer;
-      color: white;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
     }
-    #rollBtn { background: #ff99cc; }
-    #againBtn { background: #66cc66; }
-    #nextBtn { background: #ff9933; }
-    #homeBtn { background: #6699ff; }
     button:hover {
-      opacity: 0.85;
+      background: #ff6699;
     }
     .footer-buttons {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -119,12 +116,12 @@
   <div class="result" id="fruitName">？</div>
   <div class="pinyin" id="fruitPinyin">？</div>
 
-  <button id="rollBtn" onclick="rollDice()">🎲 擲骰子</button>
+  <button onclick="rollDice()">🎲 掠骰仔</button>
 
   <div class="footer-buttons">
-    <button id="againBtn" onclick="rollDice()">閣耍一擺</button>
-    <button id="nextBtn" onclick="alert('後一回功能未來會加！')">後一回</button>
-    <button id="homeBtn" onclick="window.location.href='index.html'">轉去遊戲頭頁</button>
+    <button onclick="rollDice()">閣耍一擺</button>
+    <button onclick="alert('後一回功能未來會加！')">後一回</button>
+    <button onclick="window.location.href='index.html'">轉去遊戲頭頁</button>
   </div>
 
   <audio id="diceSound" src="Roll_the_dice.mp3"></audio>
