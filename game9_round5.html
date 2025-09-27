@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>水果骰子遊戲–第1回</title>
+  <title>水果骰仔遊戲–第1回</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500&display=swap');
 
@@ -49,9 +49,11 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     #rollBtn:active { background: #e68900; }
+
+    /* 固定顯示區塊 */
     #result {
       margin-top: 20px;
-      display: none;
+      min-height: 120px; /* 固定高度，避免按鈕跳動 */
     }
     .fruit-name {
       font-size: 7vw;
@@ -59,7 +61,7 @@
       font-weight: bold;
     }
     .fruit-roman {
-      font-size: 5vw;
+      font-size: 7vw; /* 與台語相同大小 */
       color: #009688;
       margin-top: 5px;
     }
@@ -74,6 +76,7 @@
       cursor: pointer;
     }
     #result button:active { background: #3d8b40; }
+
     /* 底部三個按鈕 */
     .bottom-buttons {
       margin-top: 25px;
@@ -96,13 +99,15 @@
   </style>
 </head>
 <body>
-  <h1>水果骰子遊戲–第1回</h1>
+  <h1>水果骰仔遊戲–第1回</h1>
   <p>📱 建議直式觀看效果最佳</p>
 
   <img id="dice" src="game9_assets/fruit1.png" alt="骰子">
-  <button id="rollBtn">擲骰子 🎲</button>
+  <button id="rollBtn">撚骰子 🎲</button>
 
-  <div id="result"></div>
+  <div id="result">
+    <!-- 預留空間，避免按鈕跳動 -->
+  </div>
 
   <!-- 底部三個按鈕 -->
   <div class="bottom-buttons">
@@ -131,39 +136,67 @@
     ];
 
     rollBtn.addEventListener("click", () => {
-      result.style.display = "none";
-
       // 播放滾動音效
       rollSound.pause();
       rollSound.currentTime = 0;
       rollSound.play().catch(e => console.log("播放受阻:", e));
 
-      // 骰子快速切換 (模擬滾動)
-      let count = 0;
+      let ticks = 0;
+      let intervalTime = 80; // 一開始快
+
       const rollInterval = setInterval(() => {
         const randomIndex = Math.floor(Math.random() * fruits.length);
         dice.src = `game9_assets/${fruits[randomIndex].img}`;
-        count++;
-      }, 120);
+        ticks++;
 
-      // 2.5 秒後停止
-      setTimeout(() => {
-        clearInterval(rollInterval);
-        dingSound.play();
+        // 每過幾次就放慢一點 (漸停效果)
+        if (ticks % 5 === 0) {
+          clearInterval(rollInterval);
+          intervalTime += 40; // 間隔變長
+          if (intervalTime < 400) { // 逐漸變慢
+            startRolling(intervalTime, ticks);
+          } else {
+            // 停止，選最終水果
+            dingSound.play();
+            const finalIndex = Math.floor(Math.random() * fruits.length);
+            const fruit = fruits[finalIndex];
+            dice.src = `game9_assets/${fruit.img}`;
 
-        const finalIndex = Math.floor(Math.random() * fruits.length);
-        const fruit = fruits[finalIndex];
-        dice.src = `game9_assets/${fruit.img}`;
+            result.innerHTML = `
+              <div class="fruit-name">${fruit.name}</div>
+              <div class="fruit-roman">${fruit.roman}</div>
+              <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>
+            `;
+          }
+        }
+      }, intervalTime);
 
-        setTimeout(() => {
-          result.innerHTML = `
-            <div class="fruit-name">${fruit.name}</div>
-            <div class="fruit-roman">${fruit.roman}</div>
-            <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>
-          `;
-          result.style.display = "block";
-        }, 400);
-      }, 2500);
+      function startRolling(time, tickCount) {
+        const newInterval = setInterval(() => {
+          const randomIndex = Math.floor(Math.random() * fruits.length);
+          dice.src = `game9_assets/${fruits[randomIndex].img}`;
+          tickCount++;
+
+          if (tickCount % 5 === 0) {
+            clearInterval(newInterval);
+            time += 40;
+            if (time < 400) {
+              startRolling(time, tickCount);
+            } else {
+              dingSound.play();
+              const finalIndex = Math.floor(Math.random() * fruits.length);
+              const fruit = fruits[finalIndex];
+              dice.src = `game9_assets/${fruit.img}`;
+
+              result.innerHTML = `
+                <div class="fruit-name">${fruit.name}</div>
+                <div class="fruit-roman">${fruit.roman}</div>
+                <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>
+              `;
+            }
+          }
+        }, time);
+      }
     });
   </script>
 </body>
