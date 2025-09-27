@@ -1,110 +1,160 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>水果骰子遊戲</title>
+  <title>水果骰子遊戲–第1回</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html {
-      height: 100%; width: 100%;
-      display: flex; justify-content: center; align-items: center;
-      background: #fef9e7;
+    body {
+      margin: 0;
       font-family: "Microsoft JhengHei", sans-serif;
-    }
-    .container {
       text-align: center;
-      width: 100%;
-      max-width: 600px;
+      background: #fff8f0;
     }
-    .dice {
-      width: 80vmin; height: 80vmin;
-      max-width: 300px; max-height: 300px;
-      margin: auto;
+    h1 {
+      margin-top: 20px;
+      font-size: 2em;
+      color: #d35400;
+    }
+    .dice-container {
+      perspective: 1000px;
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
       position: relative;
     }
-    .dice img {
-      width: 100%; height: 100%;
+    .dice {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      transform-style: preserve-3d;
+      transition: transform 2.5s ease-out;
+    }
+    .face {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border: 5px solid #f39c12;
+      border-radius: 20px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+    }
+    .face img {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      border-radius: 15px;
     }
-    .fruit-name {
-      margin-top: 15px;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
+    /* 六面 */
+    .front  { transform: rotateY(0deg) translateZ(100px); }
+    .back   { transform: rotateY(180deg) translateZ(100px); }
+    .right  { transform: rotateY(90deg) translateZ(100px); }
+    .left   { transform: rotateY(-90deg) translateZ(100px); }
+    .top    { transform: rotateX(90deg) translateZ(100px); }
+    .bottom { transform: rotateX(-90deg) translateZ(100px); }
+
     button {
-      margin-top: 20px;
+      font-size: 1.2em;
+      margin: 20px;
       padding: 10px 20px;
-      font-size: 1.2rem;
-      border: none;
       border-radius: 10px;
-      background: #ffb84d;
+      border: none;
+      background: #e67e22;
+      color: white;
       cursor: pointer;
     }
-    button:hover { background: #ff9933; }
-    .sound-btn {
-      margin-left: 10px;
-      cursor: pointer;
-      font-size: 1.5rem;
-      background: none;
-      border: none;
+    button:hover {
+      background: #d35400;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: #27ae60;
+    }
+    .taiwanese {
+      font-size: 1.2em;
+      color: #8e44ad;
+    }
+    .audio-btn {
+      margin-top: 10px;
+      font-size: 1em;
+      background: #3498db;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="dice" id="dice">
-      <img id="diceImg" src="fruits/apple.png" alt="骰子">
+  <h1>水果骰子遊戲–第1回</h1>
+
+  <div class="dice-container">
+    <div id="dice" class="dice">
+      <div class="face front"><img src="game9_assets/fruit1.png" alt="檨仔"></div>
+      <div class="face back"><img src="game9_assets/fruit2.png" alt="柑仔"></div>
+      <div class="face right"><img src="game9_assets/fruit3.png" alt="弓蕉"></div>
+      <div class="face left"><img src="game9_assets/fruit4.png" alt="林菝仔"></div>
+      <div class="face top"><img src="game9_assets/fruit5.png" alt="王梨"></div>
+      <div class="face bottom"><img src="game9_assets/fruit6.png" alt="時計果"></div>
     </div>
-    <div class="fruit-name" id="fruitName">請擲骰子</div>
-    <button onclick="rollDice()">🎲 擲骰子</button>
-    <audio id="rollSound" src="Roll the dice.mp3"></audio>
-    <audio id="stopSound" src="ding.mp3"></audio>
-    <audio id="fruitSound"></audio>
   </div>
 
+  <button onclick="rollDice()">擲骰子 🎲</button>
+
+  <div class="result" id="result">請擲骰子！</div>
+  <div class="taiwanese" id="taiwanese"></div>
+  <button class="audio-btn" id="play-audio" onclick="playAudio()" style="display:none;">🔊 播放台語發音</button>
+
+  <!-- 音效 -->
+  <audio id="roll-sound" src="game9_assets/RollTheDice.mp3"></audio>
+  <audio id="ding-sound" src="game9_assets/ding.mp3"></audio>
+  <audio id="fruit-sound"></audio>
+
   <script>
+    const dice = document.getElementById("dice");
+    const resultDiv = document.getElementById("result");
+    const taiwaneseDiv = document.getElementById("taiwanese");
+    const fruitAudio = document.getElementById("fruit-sound");
+    const rollSound = document.getElementById("roll-sound");
+    const dingSound = document.getElementById("ding-sound");
+    const playBtn = document.getElementById("play-audio");
+
     const fruits = [
-      { name: "蘋果 (Phîn-kó)", img: "fruits/apple.png", sound: "sounds/apple.mp3" },
-      { name: "香蕉 (Kim-tsio)", img: "fruits/banana.png", sound: "sounds/banana.mp3" },
-      { name: "葡萄 (Phû-thô)", img: "fruits/grape.png", sound: "sounds/grape.mp3" },
-      { name: "橘子 (Kiat-tsí)", img: "fruits/orange.png", sound: "sounds/orange.mp3" },
-      { name: "西瓜 (Se-kue)", img: "fruits/watermelon.png", sound: "sounds/watermelon.mp3" },
-      { name: "鳳梨 (Ông-lâi)", img: "fruits/pineapple.png", sound: "sounds/pineapple.mp3" }
+      { name: "檨仔", tai: "suāinn-á", img: "fruit1.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3", rot: "rotateX(0deg) rotateY(0deg)" },
+      { name: "柑仔", tai: "kam-á", img: "fruit2.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3", rot: "rotateY(180deg)" },
+      { name: "弓蕉", tai: "king-tsio", img: "fruit3.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3", rot: "rotateY(-90deg)" },
+      { name: "林菝仔", tai: "ná-pua̍t-á", img: "fruit4.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3", rot: "rotateY(90deg)" },
+      { name: "王梨", tai: "ông-lâi", img: "fruit5.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3", rot: "rotateX(-90deg)" },
+      { name: "時計果", tai: "sî-kè-kó", img: "fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3", rot: "rotateX(90deg)" },
     ];
 
-    const diceImg = document.getElementById("diceImg");
-    const fruitName = document.getElementById("fruitName");
-    const rollSound = document.getElementById("rollSound");
-    const stopSound = document.getElementById("stopSound");
-    const fruitSound = document.getElementById("fruitSound");
-
-    let rolling = false;
-
     function rollDice() {
-      if (rolling) return;
-      rolling = true;
+      const random = Math.floor(Math.random() * 6);
+      const fruit = fruits[random];
+
+      // 播放滾動音效
       rollSound.currentTime = 0;
       rollSound.play();
 
-      let interval = setInterval(() => {
-        let r = Math.floor(Math.random() * fruits.length);
-        diceImg.src = fruits[r].img;
-      }, 150);
+      // 隨機旋轉動畫
+      const x = 360 * 3 + (Math.random() * 360);
+      const y = 360 * 3 + (Math.random() * 360);
+      dice.style.transform = `rotateX(${x}deg) rotateY(${y}deg)`;
 
+      // 2.5秒後停止
       setTimeout(() => {
-        clearInterval(interval);
-        let result = Math.floor(Math.random() * fruits.length);
-        diceImg.src = fruits[result].img;
-        fruitName.innerHTML = fruits[result].name + 
-          ` <button class="sound-btn" onclick="playFruitSound('${fruits[result].sound}')">🔊</button>`;
-        stopSound.play();
-        rolling = false;
+        dice.style.transform = fruit.rot;
+        dingSound.play();
+
+        resultDiv.textContent = fruit.name;
+        taiwaneseDiv.textContent = fruit.tai;
+        fruitAudio.src = fruit.audio;
+        playBtn.style.display = "inline-block";
       }, 2500);
     }
 
-    function playFruitSound(src) {
-      fruitSound.src = src;
-      fruitSound.play();
+    function playAudio() {
+      fruitAudio.currentTime = 0;
+      fruitAudio.play();
     }
   </script>
 </body>
