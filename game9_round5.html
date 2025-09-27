@@ -2,114 +2,169 @@
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
-  <title>骰子遊戲 🎲</title>
+  <title>水果骰子遊戲–第1回</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      padding: 0;
-      background: #f7f7f7;
-      font-family: "Microsoft JhengHei", sans-serif;
+      font-family: 'Noto Sans TC', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
       height: 100vh;
+      background: #fffbea;
+      text-align: center;
+      padding: 10px;
     }
-
     h1 {
-      margin: 20px 0 10px 0;
-      color: #333;
+      font-size: 6vw;
+      color: #ff5722;
+      margin: 10px 0;
     }
-
-    .dice-container {
-      flex-grow: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    p {
+      font-size: 5vw;
+      color: #4caf50;
+      margin-bottom: 10px;
+      font-weight: bold;
     }
-
-    .dice {
-      width: min(40vw, 200px);  /* 保持正方形，依螢幕大小縮放 */
-      height: min(40vw, 200px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 4rem;
-      border-radius: 15px;
+    #dice {
+      width: 65vw;
+      max-width: 320px;
+      margin: 20px auto;
+      border: 5px solid #ff9800;
+      border-radius: 20px;
       background: white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: transform 1s ease;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25);
     }
-
-    .roll-button {
+    #rollBtn {
+      font-size: 5vw;
+      padding: 10px 25px;
+      margin: 20px 0;
       background: #ff9800;
       color: white;
       border: none;
-      padding: 12px 25px;
-      font-size: 18px;
-      border-radius: 10px;
+      border-radius: 15px;
       cursor: pointer;
-      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-
-    .roll-button:hover {
-      background: #e68900;
+    #rollBtn:active { background: #e68900; }
+    #result {
+      margin-top: 20px;
+      display: none;
     }
-
-    .bottom-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+    .fruit-name {
+      font-size: 7vw;
+      color: #ff4081;
+      font-weight: bold;
     }
-
-    .bottom-buttons button {
-      padding: 10px 18px;
-      font-size: 16px;
-      border-radius: 8px;
+    .fruit-roman {
+      font-size: 5vw;
+      color: #009688;
+      margin-top: 5px;
+    }
+    #result button {
+      font-size: 4.5vw;
+      margin-top: 10px;
+      padding: 6px 18px;
       border: none;
-      cursor: pointer;
-      background: #2196f3;
+      border-radius: 10px;
+      background: #4caf50;
       color: white;
+      cursor: pointer;
     }
-
-    .bottom-buttons button:hover {
-      background: #1976d2;
+    #result button:active { background: #3d8b40; }
+    /* 底部三個按鈕 */
+    .bottom-buttons {
+      margin-top: 25px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
     }
+    .bottom-buttons button {
+      font-size: 4.5vw;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .btn-again { background: #03a9f4; }   /* 藍色 */
+    .btn-next { background: #9c27b0; }    /* 紫色 */
+    .btn-home { background: #f44336; }    /* 紅色 */
   </style>
 </head>
 <body>
-  <h1>骰子遊戲 🎲</h1>
-  <div class="dice-container">
-    <div class="dice" id="dice">🎲</div>
-  </div>
-  <button class="roll-button" onclick="rollDice()">擲骰子 🎲</button>
+  <h1>水果骰子遊戲–第1回</h1>
+  <p>📱 建議直式觀看效果最佳</p>
+
+  <img id="dice" src="game9_assets/fruit1.png" alt="骰子">
+  <button id="rollBtn">擲骰子 🎲</button>
+
+  <div id="result"></div>
+
+  <!-- 底部三個按鈕 -->
   <div class="bottom-buttons">
-    <button onclick="alert('遊戲說明：按下「擲骰子」即可隨機出現 1-6 點數！')">遊戲說明</button>
-    <button onclick="location.reload()">重新開始</button>
-    <button onclick="alert('返回首頁功能尚未設定')">回到首頁</button>
+    <button class="btn-again" onclick="location.reload()">閣耍一擺</button>
+    <button class="btn-next" onclick="alert('後一回功能待串接')">後一回</button>
+    <button class="btn-home" onclick="location.href='index.html'">轉去遊戲頭頁</button>
   </div>
 
-  <audio id="diceSound" src="game9_assets/Roll the dice.mp3" preload="auto"></audio>
+  <audio id="rollSound" src="game9_assets/Roll_the_dice.mp3" preload="auto"></audio>
+  <audio id="dingSound" src="game9_assets/ding.mp3" preload="auto"></audio>
 
   <script>
-    function rollDice() {
-      const dice = document.getElementById("dice");
-      const sound = document.getElementById("diceSound");
+    const dice = document.getElementById("dice");
+    const rollBtn = document.getElementById("rollBtn");
+    const result = document.getElementById("result");
+    const rollSound = document.getElementById("rollSound");
+    const dingSound = document.getElementById("dingSound");
 
-      // 播放音效
-      sound.currentTime = 0;
-      sound.play();
+    const fruits = [
+      { name: "檨仔", roman: "suāinn-á", img: "fruit1.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3" },
+      { name: "柑仔", roman: "kam-á", img: "fruit2.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
+      { name: "弓蕉", roman: "king-tsio", img: "fruit3.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
+      { name: "林菝仔", roman: "ná-pua̍t-á", img: "fruit4.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
+      { name: "王梨", roman: "ông-lâi", img: "fruit5.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3" },
+      { name: "時計果", roman: "sî-kè-kó", img: "fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
+    ];
 
-      // 滾動動畫
-      dice.style.transform = "rotateX(720deg) rotateY(720deg)";
-      
+    rollBtn.addEventListener("click", () => {
+      result.style.display = "none";
+
+      // 播放滾動音效
+      rollSound.pause();
+      rollSound.currentTime = 0;
+      rollSound.play().catch(e => console.log("播放受阻:", e));
+
+      // 骰子快速切換 (模擬滾動)
+      let count = 0;
+      const rollInterval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * fruits.length);
+        dice.src = `game9_assets/${fruits[randomIndex].img}`;
+        count++;
+      }, 120);
+
+      // 2.5 秒後停止
       setTimeout(() => {
-        const diceNumber = Math.floor(Math.random() * 6) + 1;
-        dice.textContent = ["⚀","⚁","⚂","⚃","⚄","⚅"][diceNumber - 1];
-        dice.style.transform = "rotateX(0deg) rotateY(0deg)";
-      }, 1000);
-    }
+        clearInterval(rollInterval);
+        dingSound.play();
+
+        const finalIndex = Math.floor(Math.random() * fruits.length);
+        const fruit = fruits[finalIndex];
+        dice.src = `game9_assets/${fruit.img}`;
+
+        setTimeout(() => {
+          result.innerHTML = `
+            <div class="fruit-name">${fruit.name}</div>
+            <div class="fruit-roman">${fruit.roman}</div>
+            <button onclick="new Audio('${fruit.audio}').play()">🔊 聽看覓</button>
+          `;
+          result.style.display = "block";
+        }, 400);
+      }, 2500);
+    });
   </script>
 </body>
 </html>
