@@ -1,221 +1,181 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>水果骰仔遊戲–第1回</title>
+  <title>台語水果骰子遊戲</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500&display=swap');
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Noto Sans TC', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      background: #fffbea;
+      font-family: Arial, sans-serif;
       text-align: center;
-      padding: 10px;
+      background: #f0f9f0;
+      margin: 0;
+      padding: 0;
     }
     h1 {
-      font-size: 6vw;
-      color: #ff5722;
-      margin: 10px 0;
-    }
-    p {
-      font-size: 5vw;
-      color: #4caf50;
-      margin-bottom: 10px;
-      font-weight: bold;
+      margin: 20px 0;
     }
 
     /* 骰子容器 */
     .scene {
-      width: 65vw;
-      max-width: 300px;
-      height: 65vw;
-      max-height: 300px;
+      width: 150px;
+      height: 150px;
+      margin: 30px auto;
       perspective: 1000px;
-      margin: 20px 0;
     }
-    .dice {
+    .cube {
       width: 100%;
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
       transition: transform 2s ease-out;
     }
+    .cube img {
+      width: 150px;
+      height: 150px;
+      border-radius: 12px;
+    }
     .face {
       position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 4px solid #ff9800;
-      border-radius: 20px;
-      background: white;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 150px;
+      height: 150px;
+      backface-visibility: hidden;
     }
-    .face img {
-      width: 90%;
-      height: 90%;
-      object-fit: contain;
-    }
+    .front  { transform: rotateY(   0deg) translateZ(75px); }
+    .back   { transform: rotateY( 180deg) translateZ(75px); }
+    .right  { transform: rotateY(  90deg) translateZ(75px); }
+    .left   { transform: rotateY( -90deg) translateZ(75px); }
+    .top    { transform: rotateX(  90deg) translateZ(75px); }
+    .bottom { transform: rotateX( -90deg) translateZ(75px); }
 
-    /* 六面位置 */
-    .front  { transform: rotateY(0deg) translateZ(50%); }
-    .back   { transform: rotateY(180deg) translateZ(50%); }
-    .right  { transform: rotateY(90deg) translateZ(50%); }
-    .left   { transform: rotateY(-90deg) translateZ(50%); }
-    .top    { transform: rotateX(90deg) translateZ(50%); }
-    .bottom { transform: rotateX(-90deg) translateZ(50%); }
-
-    #rollBtn {
-      font-size: 5vw;
-      padding: 10px 25px;
-      margin: 20px 0;
-      background: #ff9800;
-      color: white;
+    button {
+      margin: 10px;
+      padding: 10px 18px;
+      font-size: 16px;
       border: none;
-      border-radius: 15px;
+      border-radius: 8px;
+      background: #4CAF50;
+      color: white;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    #rollBtn:active { background: #e68900; }
+    button:hover {
+      background: #45a049;
+    }
 
     #result {
       margin-top: 15px;
-      min-height: 120px; /* 固定高度，避免閃動 */
-    }
-    .fruit-name {
-      font-size: 7vw;
-      color: #ff4081;
+      font-size: 20px;
       font-weight: bold;
     }
-    .fruit-roman {
-      font-size: 7vw;
-      color: #009688;
-      margin-top: 8px;
-    }
-    .play-audio {
-      font-size: 5vw;
-      margin-top: 12px;
-      padding: 8px 22px;
-      border: none;
-      border-radius: 12px;
-      background: #3f51b5;
-      color: white;
-      cursor: pointer;
-    }
 
-    /* 底部三個按鈕 */
-    .bottom-btns {
-      margin-top: auto;
-      display: flex;
-      gap: 15px;
+    /* 三個按鈕區塊 */
+    #extraButtons {
+      margin-top: 15px;
+      display: none;
     }
-    .bottom-btns button {
-      font-size: 4.5vw;
-      padding: 8px 18px;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      cursor: pointer;
+    #extraButtons button {
+      background: #2196F3;
     }
-    .btn1 { background: #4caf50; }
-    .btn2 { background: #2196f3; }
-    .btn3 { background: #9c27b0; }
+    #extraButtons button:hover {
+      background: #0b7dda;
+    }
   </style>
 </head>
 <body>
-  <h1>水果骰仔遊戲–第1回</h1>
-  <p>📱 建議直式觀看效果最佳</p>
+  <h1>🎲 台語水果骰子遊戲</h1>
 
-  <!-- 骰子區 -->
+  <!-- 骰子 -->
   <div class="scene">
-    <div class="dice" id="dice">
-      <div class="face front"><img src="game9_assets/fruit1.png"></div>
-      <div class="face back"><img src="game9_assets/fruit2.png"></div>
-      <div class="face right"><img src="game9_assets/fruit3.png"></div>
-      <div class="face left"><img src="game9_assets/fruit4.png"></div>
-      <div class="face top"><img src="game9_assets/fruit5.png"></div>
-      <div class="face bottom"><img src="game9_assets/fruit6.png"></div>
+    <div class="cube" id="cube">
+      <div class="face front"><img src="img/pineapple.png" alt="鳳梨"></div>
+      <div class="face back"><img src="img/watermelon.png" alt="西瓜"></div>
+      <div class="face right"><img src="img/banana.png" alt="香蕉"></div>
+      <div class="face left"><img src="img/orange.png" alt="柳丁"></div>
+      <div class="face top"><img src="img/apple.png" alt="蘋果"></div>
+      <div class="face bottom"><img src="img/grape.png" alt="葡萄"></div>
     </div>
   </div>
 
-  <button id="rollBtn">撚骰仔 🎲</button>
-
+  <!-- 擲骰子 -->
+  <button onclick="rollDice()">撚骰仔</button>
   <div id="result"></div>
 
-  <!-- 底部三個按鈕 -->
-  <div class="bottom-btns">
-    <button class="btn1">閣耍一擺</button>
-    <button class="btn2">後一回</button>
-    <button class="btn3">轉去遊戲頭頁</button>
+  <!-- 額外按鈕 -->
+  <div id="extraButtons">
+    <button id="taiyuBtn">台語</button>
+    <button id="pinyinBtn">拼音</button>
+    <button id="audioBtn">🔊 聽台語發音</button>
   </div>
 
-  <audio id="rollSound" src="game9_assets/Roll_the_dice.mp3" preload="auto"></audio>
-  <audio id="dingSound" src="game9_assets/ding.mp3" preload="auto"></audio>
+  <!-- 音效 -->
+  <audio id="rollSound" src="Roll_the_dice.mp3"></audio>
+  <audio id="stopSound" src="ding.mp3"></audio>
 
   <script>
-    const dice = document.getElementById("dice");
-    const rollBtn = document.getElementById("rollBtn");
-    const result = document.getElementById("result");
+    const cube = document.getElementById("cube");
+    const resultDiv = document.getElementById("result");
+    const extraButtons = document.getElementById("extraButtons");
     const rollSound = document.getElementById("rollSound");
-    const dingSound = document.getElementById("dingSound");
+    const stopSound = document.getElementById("stopSound");
 
-    // 水果對應六面
     const fruits = [
-      { name: "檨仔", roman: "suāinn-á", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3" },
-      { name: "柑仔", roman: "kam-á", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
-      { name: "弓蕉", roman: "king-tsio", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
-      { name: "林菝仔", roman: "ná-pua̍t-á", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
-      { name: "王梨", roman: "ông-lâi", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3" },
-      { name: "時計果", roman: "sî-kè-kó", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
+      { name: "鳳梨", pinyin: "ông-lâi", audio: "audio/pineapple.mp3" },
+      { name: "西瓜", pinyin: "se-kue", audio: "audio/watermelon.mp3" },
+      { name: "香蕉", pinyin: "king-tsio", audio: "audio/banana.mp3" },
+      { name: "柳丁", pinyin: "liú-ting", audio: "audio/orange.mp3" },
+      { name: "蘋果", pinyin: "phîn-kó", audio: "audio/apple.mp3" },
+      { name: "葡萄", pinyin: "phô-thô", audio: "audio/grape.mp3" }
     ];
 
-    // 每一面對應的旋轉角度
-    const rotations = [
-      {x: 0,   y: 0},    // front
-      {x: 0,   y: 180},  // back
-      {x: 0,   y: -90},  // left
-      {x: 0,   y: 90},   // right
-      {x: -90, y: 0},    // top
-      {x: 90,  y: 0}     // bottom
-    ];
+    let currentAudio = null;
 
-    let currentX = 0, currentY = 0;
+    function rollDice() {
+      // 隱藏上一次的資訊
+      resultDiv.textContent = "";
+      extraButtons.style.display = "none";
 
-    rollBtn.addEventListener("click", () => {
+      // 停止上一個音效
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
       // 播放滾動音效
-      rollSound.pause();
       rollSound.currentTime = 0;
-      rollSound.play().catch(e => console.log("播放受阻:", e));
+      rollSound.play();
 
-      result.innerHTML = ""; // 清空結果
+      // 隨機選骰子點數
+      const face = Math.floor(Math.random() * 6);
 
-      // 隨機選擇結果
-      const finalIndex = Math.floor(Math.random() * 6);
-      const rot = rotations[finalIndex];
+      // 設定骰子旋轉角度
+      const x = [0, 0, 0, 0, 90, -90][face];
+      const y = [0, 180, -90, 90, 0, 0][face];
 
-      // 加上多圈，製造滾動感
-      currentX += 360 * 3 + rot.x;
-      currentY += 360 * 3 + rot.y;
+      cube.style.transform = `rotateX(${x + 1440}deg) rotateY(${y + 1440}deg)`;
 
-      dice.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
-
+      // 等待動畫結束
       setTimeout(() => {
-        dingSound.play();
-        const fruit = fruits[finalIndex];
-        result.innerHTML = `
-          <div class="fruit-name">${fruit.name}</div>
-          <div class="fruit-roman">${fruit.roman}</div>
-          <button class="play-audio" onclick="new Audio('${fruit.audio}').play()">🔊 聽台語發音</button>
-        `;
-      }, 2000); // 2秒後顯示結果
-    });
+        rollSound.pause();
+        stopSound.play();
+
+        const fruit = fruits[face];
+        resultDiv.textContent = fruit.name + " (" + fruit.pinyin + ")";
+
+        // 顯示三個按鈕
+        extraButtons.style.display = "block";
+
+        // 綁定事件
+        document.getElementById("taiyuBtn").onclick = () => alert(fruit.name);
+        document.getElementById("pinyinBtn").onclick = () => alert(fruit.pinyin);
+        document.getElementById("audioBtn").onclick = () => {
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+          }
+          currentAudio = new Audio(fruit.audio);
+          currentAudio.play();
+        };
+      }, 2000); // 2秒動畫時間
+    }
   </script>
 </body>
 </html>
