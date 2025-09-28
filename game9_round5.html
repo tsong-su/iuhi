@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>水果骰仔遊戲–第5回</title>
+<title>果子骰仔遊戲-第1回</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -12,6 +12,8 @@
     --next-btn: #2196f3;
     --home-btn: #9c27b0;
     --bg1: #fffbea;
+    --cube-border: 4px solid #d94f4f; /* 加深邊框 */
+    --cube-border-radius: 12px;
   }
   *{ box-sizing:border-box; }
   body{
@@ -27,10 +29,10 @@
 
   .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
   .cube-stage{
-    width: min(92vw, 420px);
-    height: min(92vw, 420px);
-    max-width:420px;
-    max-height:420px;
+    width: min(92vw, 300px);
+    height: min(92vw, 300px);
+    max-width:300px;
+    max-height:300px;
     perspective:1200px;
     display:flex; align-items:center; justify-content:center;
   }
@@ -44,14 +46,14 @@
   .face{
     position:absolute; left:0; top:0;
     width:100%; height:100%;
-    border-radius:16px;
+    border-radius:var(--cube-border-radius);
     overflow:hidden;
     display:flex; align-items:center; justify-content:center;
     background:#fff; box-shadow: 0 14px 30px rgba(0,0,0,0.12);
-    border:5px solid rgba(255,153,51,0.14);
+    border:var(--cube-border);
     backface-visibility:hidden;
   }
-  .face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:12px; }
+  .face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:var(--cube-border-radius); }
 
   .face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size) / 2)); }
   .face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size) / 2)); }
@@ -91,7 +93,7 @@
 </head>
 <body>
   <header>
-    <h1>水果骰仔遊戲–第5回</h1>
+    <h1>果子骰仔遊戲-第1回</h1>
     <div class="hint">📱 建議直式觀看效果最佳</div>
   </header>
 
@@ -141,12 +143,12 @@ const fruits = [
 ];
 
 const faceRotations = [
-  { x: 0,   y: 0 },    // front -> fruit1
-  { x: 0,   y: 180 },  // back -> fruit2
-  { x: 0,   y: 90 },   // right -> fruit3
-  { x: 0,   y: -90 },  // left -> fruit4
-  { x: -90, y: 0 },    // top -> fruit5
-  { x: 90,  y: 0 }     // bottom -> fruit6
+  { x: 0,   y: 0 },
+  { x: 0,   y: 180 },
+  { x: 0,   y: 90 },
+  { x: 0,   y: -90 },
+  { x: -90, y: 0 },
+  { x: 90,  y: 0 }
 ];
 
 const cube = document.getElementById('cube');
@@ -177,8 +179,8 @@ setAudioWithFallback(rollSound, ['game9_assets/Roll_the_dice.mp3']);
 setAudioWithFallback(dingSound, ['game9_assets/ding.mp3']);
 
 function updateCubeSize(){
-  const maxW = Math.min(window.innerWidth*0.92, 320);
-  const maxH = Math.min(window.innerHeight*0.48, 320);
+  const maxW = Math.min(window.innerWidth*0.7, 260);
+  const maxH = Math.min(window.innerHeight*0.45, 260);
   const size = Math.floor(Math.min(maxW, maxH));
   cube.style.setProperty('--cube-size', size+'px');
 }
@@ -208,23 +210,25 @@ function rollDice(){
   const preX=360*(1+Math.floor(Math.random()*1));
   const preY=360*(1+Math.floor(Math.random()*1));
   cube.style.transform=`rotateX(${preX}deg) rotateY(${preY}deg)`;
-  setTimeout(()=>{ cube.style.transform=`rotateX(${currentX}deg) rotateY(${currentY}deg)`; }, 60);
+  setTimeout(()=>{ cube.style.transform=`rotateX(${currentX}deg) rotateY(${currentY}deg)`; },60);
 
   setTimeout(()=>{
     try { rollSound.loop=false; rollSound.pause(); rollSound.currentTime=0; } catch(e){}
     try { dingSound.currentTime=0; dingSound.play().catch(()=>{}); } catch(e){}
+
     const f=fruits[chosen];
     fruitNameEl.textContent=f.name;
     fruitRomanEl.textContent=f.roman;
     playPronBtn.style.display='inline-block';
     fruitSound.src=f.audio;
+
     animating=false;
   }, 2000+80);
 }
 
 playPronBtn.addEventListener('click', ()=>{
   if(currentIndex===null) return;
-  try{ fruitSound.currentTime=0; fruitSound.play().catch(()=>{}); } catch(e){}
+  try { fruitSound.currentTime=0; fruitSound.play().catch(()=>{}); } catch(e){}
 });
 
 rollBtn.addEventListener('click', rollDice);
@@ -232,7 +236,9 @@ againBtn.addEventListener('click', ()=>{ rollDice(); });
 nextBtn.addEventListener('click', ()=>{ window.location.href='game9_round2.html'; });
 homeBtn.addEventListener('click', ()=>{ window.location.href='index.html'; });
 
-document.querySelectorAll('.face img').forEach(img=>{ img.onerror=()=>{ console.warn('Missing image:', img.src); img.style.opacity=0.2; }; });
+document.querySelectorAll('.face img').forEach(img=>{
+  img.onerror=()=>{ console.warn('Missing image:', img.src); img.style.opacity=0.2; };
+});
 </script>
 </body>
 </html>
