@@ -25,9 +25,7 @@ body{
 header{ text-align:center; padding:14px 10px 4px; width:100%; }
 h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
 .hint{ margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
-
 main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto; }
-
 .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
 .cube-stage{
   width: min(90vw, 200px);
@@ -61,7 +59,6 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 .face.left   { transform: rotateY(-90deg)  translateZ(calc(var(--cube-size)/2)); }
 .face.top    { transform: rotateX(90deg)   translateZ(calc(var(--cube-size)/2)); }
 .face.bottom { transform: rotateX(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-
 #result {
   width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:8px;
@@ -82,7 +79,6 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 #againBtn{ background:var(--again-btn) }
 #nextBtn{ background:var(--next-btn) }
 #homeBtn{ background:var(--home-btn) }
-
 @media(min-width:720px){
   h1{ font-size:28px } .hint{ font-size:16px } .fruit-name{ font-size:28px } .fruit-roman{ font-size:18px }
   #rollBtn{ font-size:16px } .play-audio{ font-size:14px } .bottom button{ font-size:14px }
@@ -94,7 +90,6 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <h1>果子骰仔遊戲-第2回</h1>
   <div class="hint">📱 建議直式觀看效果最佳</div>
 </header>
-
 <main>
   <div class="cube-wrap">
     <div class="cube-stage" id="stage">
@@ -108,38 +103,37 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
       </div>
     </div>
   </div>
-
   <div class="controls">
     <button id="rollBtn">撚骰仔 🎲</button>
   </div>
-
   <div id="result">
     <div class="fruit-name" id="fruitName">&nbsp;</div>
     <div class="fruit-roman" id="fruitRoman">&nbsp;</div>
     <button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
   </div>
 </main>
-
 <div class="bottom">
   <button id="againBtn">閣耍一擺</button>
   <button id="nextBtn">後一回</button>
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
-
-<audio id="rollSound" preload="auto" src="game9_assets/Roll_the_dice.mp3"></audio>
-<audio id="dingSound" preload="auto" src="game9_assets/ding.mp3"></audio>
+<audio id="rollSound" preload="auto"></audio>
+<audio id="dingSound" preload="auto"></audio>
 <audio id="fruitSound" preload="auto"></audio>
-
 <script>
 const fruits = [
-  {name:"芳瓜", roman:"phang-kue", img:"game9_assets/fruit7.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3", x:0, y:0},
-  {name:"葡萄", roman:"phû-tô", img:"game9_assets/fruit8.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3", x:0, y:180},
-  {name:"蓮霧", roman:"lián-bū", img:"game9_assets/fruit9.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3", x:0, y:90},
-  {name:"柳丁", roman:"liú-ting", img:"game9_assets/fruit10.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3", x:0, y:-90},
-  {name:"木瓜", roman:"bo̍k-kue", img:"game9_assets/fruit11.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3", x:-90, y:0},
-  {name:"梨仔", roman:"lâi-á", img:"game9_assets/fruit12.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3", x:90, y:0}
+  { name: "芳瓜", roman: "phang-kue", img: "game9_assets/fruit7.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
+  { name: "葡萄", roman: "phû-tô", img: "game9_assets/fruit8.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
+  { name: "蓮霧", roman: "lián-bū", img: "game9_assets/fruit9.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
+  { name: "柳丁", roman: "liú-ting", img: "game9_assets/fruit10.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
+  { name: "木瓜", roman: "bo̍k-kue", img: "game9_assets/fruit11.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
+  { name: "梨仔", roman: "lâi-á", img: "game9_assets/fruit12.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
 ];
-
+const faceTarget = [
+  { x: 0, y:0}, {x:0,y:180},{x:0,y:90},{x:0,y:-90},{x:-90,y:0},{x:90,y:0}
+];
+const rollCandidates = ['game9_assets/Roll_the_dice.mp3'];
+const dingCandidates = ['game9_assets/ding.mp3'];
 const cube = document.getElementById('cube');
 const rollBtn = document.getElementById('rollBtn');
 const fruitNameEl = document.getElementById('fruitName');
@@ -151,57 +145,28 @@ const homeBtn = document.getElementById('homeBtn');
 const rollSound = document.getElementById('rollSound');
 const dingSound = document.getElementById('dingSound');
 const fruitSound = document.getElementById('fruitSound');
-
 let animating = false;
-let lastBase = { x:0, y:0 };
-
-function updateCubeSize(){
-  const maxW = Math.min(window.innerWidth * 0.86, 200);
-  const maxH = Math.min(window.innerHeight * 0.46, 200);
-  const size = Math.floor(Math.min(maxW, maxH));
-  cube.style.setProperty('--cube-size', size + 'px');
-}
-window.addEventListener('resize', updateCubeSize);
-window.addEventListener('orientationchange', updateCubeSize);
+let lastBase = {x:0,y:0};
+function updateCubeSize(){const size=Math.floor(Math.min(window.innerWidth*0.86,window.innerHeight*0.46,200));cube.style.setProperty('--cube-size',size+'px');}
+window.addEventListener('resize',updateCubeSize);
+window.addEventListener('orientationchange',updateCubeSize);
 updateCubeSize();
-
-function rollDice(){
-  if(animating) return;
-  animating = true;
-  fruitNameEl.textContent = '';
-  fruitRomanEl.textContent = '';
-  playPronBtn.style.display = 'none';
-
-  rollSound.currentTime = 0;
-  rollSound.play().catch(()=>{});
-
-  const chosen = Math.floor(Math.random() * fruits.length);
-  const f = fruits[chosen];
-  const spinRoundsX = 3 + Math.floor(Math.random() * 3);
-  const spinRoundsY = 3 + Math.floor(Math.random() * 3);
-  const largeX = spinRoundsX*360 + f.x;
-  const largeY = spinRoundsY*360 + f.y;
-
-  cube.style.transition = 'transform 1800ms cubic-bezier(.19,.57,.3,.98)';
-  cube.style.transform = `rotateX(${largeX}deg) rotateY(${largeY}deg)`;
-
-  setTimeout(()=>{
-    animating = false;
-    fruitNameEl.textContent = f.name;
-    fruitRomanEl.textContent = f.roman;
-    fruitSound.src = f.audio;
-    playPronBtn.style.display = 'inline-block';
-    rollSound.pause();
-    rollSound.currentTime = 0;
-    dingSound.currentTime = 0; dingSound.play().catch(()=>{});
-  },1800);
+async function tryPlayRollAudio(){rollSound.loop=true;rollSound.volume=1;try{rollSound.src=rollCandidates[0];rollSound.load();await rollSound.play();return true;}catch(e){console.warn('rollSound failed',e);return false;}}
+async function rollDice(){if(animating) return;animating=true;fruitNameEl.textContent='';fruitRomanEl.textContent='';playPronBtn.style.display='none';try{await tryPlayRollAudio();}catch(e){}
+const chosen=Math.floor(Math.random()*fruits.length);const target=faceTarget[chosen];
+const spinRounds=4;const largeX=spinRounds*360+target.x;const largeY=spinRounds*360+target.y;
+cube.style.transition='transform 1800ms cubic-bezier(.19,.57,.3,.98)';cube.style.transform=`rotateX(${lastBase.x}deg) rotateY(${lastBase.y}deg)`;
+requestAnimationFrame(()=>{requestAnimationFrame(()=>{cube.style.transform=`rotateX(${lastBase.x+largeX}deg) rotateY(${lastBase.y+largeY}deg)`;});});
+setTimeout(()=>{
+  try{if(!rollSound.paused){rollSound.loop=false;rollSound.pause();rollSound.currentTime=0;}}catch(e){}
+  if(dingSound.src){try{dingSound.currentTime=0;dingSound.play().catch(()=>{});}catch(e){}}
+  fruitNameEl.textContent=fruits[chosen].name;fruitRomanEl.textContent=fruits[chosen].roman;playPronBtn.style.display='inline-block';fruitSound.src=fruits[chosen].audio;fruitSound.load();
+  cube.style.transition='none';cube.style.transform=`rotateX(${target.x}deg) rotateY(${target.y}deg)`;void cube.offsetHeight;cube.style.transition='transform 800ms cubic-bezier(.19,.57,.3,.98)';lastBase={x:target.x,y:target.y};animating=false;
+},1850);
 }
-
-rollBtn.addEventListener('click', rollDice);
-playPronBtn.addEventListener('click', ()=>{ fruitSound.currentTime=0; fruitSound.play(); });
-againBtn.addEventListener('click', rollDice);
-nextBtn.addEventListener('click', ()=>{ location.href='game9_round5.html'; });
-homeBtn.addEventListener('click', ()=>{ location.href='https://tsong-su.github.io/iuhi/index.html'; });
+playPronBtn.addEventListener('click',()=>{if(!fruitSound.src)return;fruitSound.currentTime=0;fruitSound.play().catch(e=>console.warn(e));});
+rollBtn.addEventListener('click',rollDice);againBtn.addEventListener('click',()=>{rollDice();});nextBtn.addEventListener('click',()=>{window.location.href='game9_round7.html';});homeBtn.addEventListener('click',()=>{window.location.href='https://tsong-su.github.io/iuhi/index.html';});
+document.querySelectorAll('.face img').forEach(img=>{img.onerror=()=>{console.warn('Missing image:',img.src);img.style.opacity=0.2;};});
 </script>
 </body>
 </html>
