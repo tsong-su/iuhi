@@ -149,12 +149,15 @@ const fruits = [
   { name: "時計果",roman: "sî-kè-kó",img: "game9_assets/fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
 ];
 
-/* base rotations that make each face exactly front+upright */
+/* ---------- CORRECTED base rotations that make each face exactly front+upright ----------
+   NOTE: right face (.face.right { rotateY(90deg) }) comes to front when cube rotated around Y by -90deg.
+   So we set right -> y: -90, left -> y: 90 to match DOM order: front, back, right, left, top, bottom.
+*/
 const faceTarget = [
   { x: 0,   y: 0   },  // front  -> fruit1
   { x: 0,   y: 180 },  // back   -> fruit2
-  { x: 0,   y: 90  },  // right  -> fruit3
-  { x: 0,   y: -90 },  // left   -> fruit4
+  { x: 0,   y: -90 },  // right  -> fruit3  <-- corrected (was previously +90 in some versions)
+  { x: 0,   y: 90  },  // left   -> fruit4  <-- corrected
   { x: -90, y: 0   },  // top    -> fruit5
   { x: 90,  y: 0   }   // bottom -> fruit6
 ];
@@ -187,6 +190,19 @@ const fruitSound = document.getElementById('fruitSound');
 
 let animating = false;
 let lastBase = { x:0, y:0 }; // track current snapped base orientation
+
+/* ---------- SEQUENCE (洗牌) for fair distribution ---------- */
+let sequence = [];
+function refillSequence(){
+  sequence = [0,1,2,3,4,5];
+  // Fisher-Yates shuffle
+  for(let i = sequence.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+  }
+  console.log('refilled sequence:', sequence);
+}
+refillSequence();
 
 /* ---------- helper: set cube size responsive ---------- */
 function updateCubeSize(){
@@ -271,8 +287,7 @@ async function tryLoadDing(){
   // no ding file: leave dingSound empty (we can use short synth beep later)
 }
 
-/* ---------- core roll logic ---------- */
-/* animate-to-large-angles then snap to exact base to guarantee upright & correct mapping */
+/* ---------- core roll logic (uses sequence for fairness) ---------- */
 async function rollDice(){
   if(animating) return;
   animating = true;
@@ -288,8 +303,9 @@ async function rollDice(){
     await tryPlayRollAudio();
   } catch(e){ console.warn('tryPlayRollAudio error', e); }
 
-  // choose a face deterministically (0..5)
-  const chosen = Math.floor(Math.random() * fruits.length);
+  // pick next from sequence (refill if empty)
+  if(sequence.length === 0) refillSequence();
+  const chosen = sequence.pop();
   const target = faceTarget[chosen];
   console.log('chosen', chosen, fruits[chosen].name, 'target', target);
 
@@ -300,22 +316,16 @@ async function rollDice(){
   const largeY = spinRoundsY * 360 + target.y;
 
   // animate from current snapped base to base + large spins
-  // set transition for visible spin
   cube.style.transition = 'transform 1800ms cubic-bezier(.19,.57,.3,.98)';
-  // start transform: base + large spins (we always animate from lastBase to target+spins)
-  // compute absolute angles relative to 0: lastBase + large
   const startX = lastBase.x;
   const startY = lastBase.y;
-  // set immediate (no transition) to startX/startY to ensure continuity
   cube.style.transform = `rotateX(${startX}deg) rotateY(${startY}deg)`;
-  // small delay to let the browser pick up start state
   requestAnimationFrame(()=> {
     requestAnimationFrame(()=> {
       cube.style.transform = `rotateX(${startX + largeX}deg) rotateY(${startY + largeY}deg)`;
     });
   });
 
-  // after animation duration -> stop roll audio, play ding, show result, then snap to exact target
   const ANIM_MS = 1800;
   setTimeout(()=>{
     // stop roll audio (file or synth)
@@ -332,7 +342,6 @@ async function rollDice(){
     if(dingSound.src){
       try{ dingSound.currentTime = 0; dingSound.play().catch(()=>{}); }catch(e){}
     }else{
-      // quick beep if no ding file
       try{
         if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         audioCtx.resume();
@@ -356,12 +365,9 @@ async function rollDice(){
     fruitSound.load();
 
     // SNAP to exact base orientation (no transition) to guarantee upright / not flipped
-    // remove transition, set exact transform corresponding to target.x/target.y
     cube.style.transition = 'none';
     cube.style.transform = `rotateX(${target.x}deg) rotateY(${target.y}deg)`;
-    // force reflow
     void cube.offsetHeight;
-    // restore default transition for next roll
     cube.style.transition = 'transform 800ms cubic-bezier(.19,.57,.3,.98)';
 
     // update lastBase for next roll start
@@ -394,15 +400,12 @@ document.querySelectorAll('.face img').forEach(img=>{
 
 /* initial: attempt to preload roll/ding candidates (non-blocking) */
 (function preloadAudioCandidates(){
-  // just set first available if possible
   (async ()=>{
-    // try ding candidates to set dingSound.src
     for(const s of dingCandidates){
-      try{ dingSound.src = s; dingSound.load(); break; }catch(e){ continue; }
+      try{ dingSound.src = s; dingSound.load(); console.log('preload ding candidate', s); break; }catch(e){ continue; }
     }
-    // attempt to set rollSound to first available (not necessary to play now)
     for(const s of rollCandidates){
-      try{ rollSound.src = s; rollSound.load(); break; }catch(e){ continue; }
+      try{ rollSound.src = s; rollSound.load(); console.log('preload roll candidate', s); break; }catch(e){ continue; }
     }
   })();
 })();
