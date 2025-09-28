@@ -12,7 +12,8 @@
   --next-btn: #2196f3;
   --home-btn: #9c27b0;
   --bg1: #fffbea;
-  --cube-border: 4px solid #d94f4f;
+  --cube-border-color: #c74444;
+  --cube-border: 6px solid var(--cube-border-color);
   --cube-border-radius: 12px;
 }
 *{ box-sizing:border-box; }
@@ -29,31 +30,35 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 
 .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
 .cube-stage{
-  width: min(92vw, 220px);
-  height: min(92vw, 220px);
-  max-width:220px;
-  max-height:220px;
+  width: min(90vw, 200px);
+  height: min(90vw, 200px);
+  max-width:200px;
+  max-height:200px;
   perspective:1200px;
   display:flex; align-items:center; justify-content:center;
 }
+
+/* cube size via --cube-size */
 .cube {
   width: var(--cube-size);
   height: var(--cube-size);
   position:relative;
   transform-style:preserve-3d;
-  transition: transform 2000ms cubic-bezier(.19,.57,.3,.98);
+  transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);
 }
+
+/* postcard / stamp edge feel: thicker colored border + subtle inner shadow */
 .face{
   position:absolute; left:0; top:0;
   width:100%; height:100%;
   border-radius:var(--cube-border-radius);
   overflow:hidden;
   display:flex; align-items:center; justify-content:center;
-  background:#fff; box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+  background:#fff; box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 0 0 2px rgba(0,0,0,0.02);
   border:var(--cube-border);
   backface-visibility:hidden;
 }
-.face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:var(--cube-border-radius); }
+.face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:8px; }
 
 .face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size)/2)); }
 .face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size)/2)); }
@@ -100,7 +105,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 <main>
   <div class="cube-wrap">
     <div class="cube-stage" id="stage">
-      <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子">
+      <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
         <div class="face front"><img src="game9_assets/fruit1.png" alt="檨仔"></div>
         <div class="face back"><img src="game9_assets/fruit2.png" alt="柑仔"></div>
         <div class="face right"><img src="game9_assets/fruit3.png" alt="弓蕉"></div>
@@ -128,24 +133,46 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="rollSound" preload="auto" src="game9_assets/Roll_the_dice.mp3"></audio>
-<audio id="dingSound" preload="auto" src="game9_assets/ding.mp3"></audio>
+<!-- try several possible filenames; fallback synth ensures audible roll -->
+<audio id="rollSound" preload="auto"></audio>
+<audio id="dingSound" preload="auto"></audio>
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
+/* ---------- data ---------- */
 const fruits = [
   { name: "檨仔", roman: "suāinn-á", img: "game9_assets/fruit1.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3" },
-  { name: "柑仔", roman: "kam-á", img: "game9_assets/fruit2.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
-  { name: "弓蕉", roman: "king-tsio", img: "game9_assets/fruit3.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
-  { name: "林菝仔", roman: "ná-pua̍t-á", img: "game9_assets/fruit4.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
+  { name: "柑仔", roman: "kam-á",   img: "game9_assets/fruit2.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
+  { name: "弓蕉", roman: "king-tsio",img: "game9_assets/fruit3.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
+  { name: "林菝仔",roman: "ná-pua̍t-á",img:"game9_assets/fruit4.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
   { name: "王梨", roman: "ông-lâi", img: "game9_assets/fruit5.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3" },
-  { name: "時計果", roman: "sî-kè-kó", img: "game9_assets/fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
+  { name: "時計果",roman: "sî-kè-kó",img: "game9_assets/fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
 ];
 
-const faceRotations = [
-  { x:0, y:0 }, { x:0, y:180 }, { x:0, y:90 }, { x:0, y:-90 }, { x:-90, y:0 }, { x:90, y:0 }
+/* base rotations that make each face exactly front+upright */
+const faceTarget = [
+  { x: 0,   y: 0   },  // front  -> fruit1
+  { x: 0,   y: 180 },  // back   -> fruit2
+  { x: 0,   y: 90  },  // right  -> fruit3
+  { x: 0,   y: -90 },  // left   -> fruit4
+  { x: -90, y: 0   },  // top    -> fruit5
+  { x: 90,  y: 0   }   // bottom -> fruit6
 ];
 
+/* audio candidate filenames for roll and ding (try several common variants) */
+const rollCandidates = [
+  'game9_assets/Roll_the_dice.mp3',
+  'game9_assets/Roll the dice.mp3',
+  'game9_assets/RollTheDice.mp3',
+  'game9_assets/Roll the Dice.mp3'
+];
+const dingCandidates = [
+  'game9_assets/ding.mp3',
+  'game9_assets/ding_sound.mp3',
+  'game9_assets/ding-short.mp3'
+];
+
+/* ---------- DOM ---------- */
 const cube = document.getElementById('cube');
 const rollBtn = document.getElementById('rollBtn');
 const fruitNameEl = document.getElementById('fruitName');
@@ -158,62 +185,227 @@ const rollSound = document.getElementById('rollSound');
 const dingSound = document.getElementById('dingSound');
 const fruitSound = document.getElementById('fruitSound');
 
-let animating=false, currentIndex=null, currentX=0, currentY=0;
+let animating = false;
+let lastBase = { x:0, y:0 }; // track current snapped base orientation
 
+/* ---------- helper: set cube size responsive ---------- */
 function updateCubeSize(){
-  const maxW=Math.min(window.innerWidth*0.92,220);
-  const maxH=Math.min(window.innerHeight*0.58,220);
-  const size=Math.floor(Math.min(maxW,maxH));
-  cube.style.setProperty('--cube-size',size+'px');
+  const maxW = Math.min(window.innerWidth * 0.86, 200);
+  const maxH = Math.min(window.innerHeight * 0.46, 200);
+  const size = Math.floor(Math.min(maxW, maxH));
+  cube.style.setProperty('--cube-size', size + 'px');
 }
-window.addEventListener('resize',updateCubeSize);
-window.addEventListener('orientationchange',updateCubeSize);
+window.addEventListener('resize', updateCubeSize);
+window.addEventListener('orientationchange', updateCubeSize);
 updateCubeSize();
 
-function rollDice(){
-  if(animating) return;
-  animating=true;
-  fruitNameEl.textContent=''; fruitRomanEl.textContent=''; playPronBtn.style.display='none';
-  currentIndex=null;
+/* ---------- audio helpers & fallback synth ---------- */
+let audioCtx = null;
+let synthNodes = null;
 
-  rollSound.currentTime=0; rollSound.loop=true; rollSound.play().catch(()=>{});
-
-  const chosen=Math.floor(Math.random()*fruits.length);
-  currentIndex=chosen;
-  const base=faceRotations[chosen];
-  const extrasX=360*(3+Math.floor(Math.random()*3));
-  const extrasY=360*(3+Math.floor(Math.random()*3));
-  currentX+=extrasX+base.x; currentY+=extrasY+base.y;
-
-  cube.style.transition='transform 2s cubic-bezier(.19,.57,.3,.98)';
-  const preX=360*(1+Math.floor(Math.random()*1));
-  const preY=360*(1+Math.floor(Math.random()*1));
-  cube.style.transform=`rotateX(${preX}deg) rotateY(${preY}deg)`;
-  setTimeout(()=>{ cube.style.transform=`rotateX(${currentX}deg) rotateY(${currentY}deg)`; },60);
-
-  setTimeout(()=>{
-    rollSound.loop=false; rollSound.pause(); rollSound.currentTime=0;
-    dingSound.currentTime=0; dingSound.play().catch(()=>{});
-
-    const f=fruits[chosen];
-    fruitNameEl.textContent=f.name;
-    fruitRomanEl.textContent=f.roman;
-    playPronBtn.style.display='inline-block';
-    fruitSound.src=f.audio;
-
-    animating=false;
-  },2080);
+function startSynthRoll(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.value = 40; // low rumble
+    g.gain.value = 0.02;
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.value = 600;
+    o.connect(noiseFilter);
+    noiseFilter.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+    synthNodes = { osc: o, gain: g, filter: noiseFilter };
+  }catch(e){ console.warn('synth failed', e); synthNodes = null; }
 }
 
-playPronBtn.addEventListener('click',()=>{
-  if(currentIndex===null) return;
-  fruitSound.currentTime=0; fruitSound.play().catch(()=>{});
+function stopSynthRoll(){
+  if(!synthNodes) return;
+  try{
+    const now = audioCtx.currentTime;
+    synthNodes.gain.gain.setTargetAtTime(0, now, 0.02);
+    setTimeout(()=> {
+      try{ synthNodes.osc.stop(); synthNodes.osc.disconnect(); synthNodes.filter.disconnect(); synthNodes.gain.disconnect(); }catch(e){}
+      synthNodes = null;
+    }, 120);
+  }catch(e){ synthNodes = null; }
+}
+
+/* try to play roll sound from candidate list; returns promise(boolean) */
+async function tryPlayRollAudio(){
+  rollSound.loop = true;
+  rollSound.volume = 1;
+  for(const src of rollCandidates){
+    try{
+      rollSound.src = src;
+      rollSound.load();
+      await rollSound.play();
+      console.log('rollSound playing from', src);
+      return true;
+    }catch(e){
+      console.warn('rollSound candidate failed:', src, e);
+      // try next candidate
+    }
+  }
+  // all candidates failed -> fallback to synth
+  console.warn('all rollSound candidates failed, using synth fallback');
+  startSynthRoll();
+  return false;
+}
+
+/* try to set ding sound (non-loop) */
+async function tryLoadDing(){
+  for(const src of dingCandidates){
+    try{
+      dingSound.src = src;
+      dingSound.load();
+      // don't play now; just ensure it's set (will play later)
+      console.log('dingSound set to', src);
+      return;
+    }catch(e){ console.warn('ding candidate failed', src, e); }
+  }
+  // no ding file: leave dingSound empty (we can use short synth beep later)
+}
+
+/* ---------- core roll logic ---------- */
+/* animate-to-large-angles then snap to exact base to guarantee upright & correct mapping */
+async function rollDice(){
+  if(animating) return;
+  animating = true;
+  fruitNameEl.textContent = '';
+  fruitRomanEl.textContent = '';
+  playPronBtn.style.display = 'none';
+
+  // ensure ding attempts loaded
+  tryLoadDing();
+
+  // try to play roll audio (if fails, synth started)
+  try {
+    await tryPlayRollAudio();
+  } catch(e){ console.warn('tryPlayRollAudio error', e); }
+
+  // choose a face deterministically (0..5)
+  const chosen = Math.floor(Math.random() * fruits.length);
+  const target = faceTarget[chosen];
+  console.log('chosen', chosen, fruits[chosen].name, 'target', target);
+
+  // spins (full 360 multiples) for visual effect
+  const spinRoundsX = 3 + Math.floor(Math.random() * 3); // 3..5
+  const spinRoundsY = 3 + Math.floor(Math.random() * 3); // 3..5
+  const largeX = spinRoundsX * 360 + target.x;
+  const largeY = spinRoundsY * 360 + target.y;
+
+  // animate from current snapped base to base + large spins
+  // set transition for visible spin
+  cube.style.transition = 'transform 1800ms cubic-bezier(.19,.57,.3,.98)';
+  // start transform: base + large spins (we always animate from lastBase to target+spins)
+  // compute absolute angles relative to 0: lastBase + large
+  const startX = lastBase.x;
+  const startY = lastBase.y;
+  // set immediate (no transition) to startX/startY to ensure continuity
+  cube.style.transform = `rotateX(${startX}deg) rotateY(${startY}deg)`;
+  // small delay to let the browser pick up start state
+  requestAnimationFrame(()=> {
+    requestAnimationFrame(()=> {
+      cube.style.transform = `rotateX(${startX + largeX}deg) rotateY(${startY + largeY}deg)`;
+    });
+  });
+
+  // after animation duration -> stop roll audio, play ding, show result, then snap to exact target
+  const ANIM_MS = 1800;
+  setTimeout(()=>{
+    // stop roll audio (file or synth)
+    try{
+      if(!rollSound.paused){
+        rollSound.loop = false;
+        rollSound.pause();
+        rollSound.currentTime = 0;
+      }
+    }catch(e){ console.warn('stop rollSound error', e); }
+    stopSynthRoll();
+
+    // play ding (if available), else quick synth beep
+    if(dingSound.src){
+      try{ dingSound.currentTime = 0; dingSound.play().catch(()=>{}); }catch(e){}
+    }else{
+      // quick beep if no ding file
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx.resume();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'sine';
+        o.frequency.value = 880;
+        g.gain.value = 0.0008;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start();
+        setTimeout(()=>{ g.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02); setTimeout(()=>{ o.stop(); o.disconnect(); g.disconnect(); }, 80); }, 120);
+      }catch(e){ console.warn('ding synth failed', e); }
+    }
+
+    // display matched text & load pronunciation
+    const f = fruits[chosen];
+    fruitNameEl.textContent = f.name;
+    fruitRomanEl.textContent = f.roman;
+    playPronBtn.style.display = 'inline-block';
+    fruitSound.src = f.audio;
+    fruitSound.load();
+
+    // SNAP to exact base orientation (no transition) to guarantee upright / not flipped
+    // remove transition, set exact transform corresponding to target.x/target.y
+    cube.style.transition = 'none';
+    cube.style.transform = `rotateX(${target.x}deg) rotateY(${target.y}deg)`;
+    // force reflow
+    void cube.offsetHeight;
+    // restore default transition for next roll
+    cube.style.transition = 'transform 800ms cubic-bezier(.19,.57,.3,.98)';
+
+    // update lastBase for next roll start
+    lastBase = { x: target.x, y: target.y };
+
+    animating = false;
+    console.log('rolled ->', f.name, ' snapped to target', target);
+  }, ANIM_MS + 60);
+}
+
+/* play pronunciation */
+playPronBtn.addEventListener('click', ()=>{
+  if(!fruitSound.src) return;
+  try{
+    fruitSound.currentTime = 0;
+    fruitSound.play().catch(e => console.warn('fruitSound play blocked', e));
+  }catch(e){ console.warn(e); }
 });
 
-rollBtn.addEventListener('click',rollDice);
-againBtn.addEventListener('click',()=>{ rollDice(); });
-nextBtn.addEventListener('click',()=>{ window.location.href='game9_round2.html'; });
-homeBtn.addEventListener('click',()=>{ window.location.href='index.html'; });
+/* wire UI */
+rollBtn.addEventListener('click', rollDice);
+againBtn.addEventListener('click', ()=>{ rollDice(); });
+nextBtn.addEventListener('click', ()=>{ window.location.href='game9_round2.html'; });
+homeBtn.addEventListener('click', ()=>{ window.location.href='index.html'; });
+
+/* safety: if images missing show console warning */
+document.querySelectorAll('.face img').forEach(img=>{
+  img.onerror = ()=>{ console.warn('Missing image:', img.src); img.style.opacity = 0.2; };
+});
+
+/* initial: attempt to preload roll/ding candidates (non-blocking) */
+(function preloadAudioCandidates(){
+  // just set first available if possible
+  (async ()=>{
+    // try ding candidates to set dingSound.src
+    for(const s of dingCandidates){
+      try{ dingSound.src = s; dingSound.load(); break; }catch(e){ continue; }
+    }
+    // attempt to set rollSound to first available (not necessary to play now)
+    for(const s of rollCandidates){
+      try{ rollSound.src = s; rollSound.load(); break; }catch(e){ continue; }
+    }
+  })();
+})();
 </script>
 </body>
 </html>
