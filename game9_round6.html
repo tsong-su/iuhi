@@ -1,96 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>果子骰仔遊戲-第2回</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --roll-btn: #ff6b35;
-  --again-btn: #4caf50;
-  --next-btn: #2196f3;
-  --home-btn: #9c27b0;
-  --bg1: #fffbea;
-  --cube-border-color: #c74444;
-  --cube-border: 6px solid var(--cube-border-color);
-  --cube-border-radius: 12px;
+  --roll-btn:#ff6b35; --again-btn:#4caf50; --next-btn:#2196f3; --home-btn:#9c27b0;
+  --bg1:#fffbea; --cube-border-color:#c74444; --cube-border:6px solid var(--cube-border-color);
+  --cube-border-radius:12px;
 }
-*{ box-sizing:border-box; }
-body{
-  margin:0; min-height:100vh; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
-  background:var(--bg1); display:flex; flex-direction:column; align-items:center;
-  color:#222;
-}
-header{ text-align:center; padding:14px 10px 4px; width:100%; }
-h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
-.hint{ margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
+*{box-sizing:border-box;}
+body{margin:0; min-height:100vh; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+background:var(--bg1); display:flex; flex-direction:column; align-items:center; color:#222;}
+header{text-align:center; padding:14px 10px 4px; width:100%;}
+h1{margin:0; font-size:6.5vw; color:#d94f4f; line-height:1;}
+.hint{margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700;}
+main{width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto;}
+.cube-wrap{width:100%; display:flex; justify-content:center; align-items:center;}
+.cube-stage{width:min(90vw,200px); height:min(90vw,200px); max-width:200px; max-height:200px; perspective:1200px; display:flex; align-items:center; justify-content:center;}
+.cube{width:var(--cube-size); height:var(--cube-size); position:relative; transform-style:preserve-3d; transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);}
+.face{position:absolute; left:0; top:0; width:100%; height:100%; border-radius:var(--cube-border-radius); overflow:hidden;
+display:flex; align-items:center; justify-content:center; background:#fff; box-shadow:0 12px 22px rgba(0,0,0,0.12), inset 0 0 0 2px rgba(0,0,0,0.02); border:var(--cube-border); backface-visibility:hidden;}
+.face img{width:92%; height:92%; object-fit:contain; display:block; border-radius:8px;}
+.face.front{transform:rotateY(0deg) translateZ(calc(var(--cube-size)/2));}
+.face.back{transform:rotateY(180deg) translateZ(calc(var(--cube-size)/2));}
+.face.right{transform:rotateY(90deg) translateZ(calc(var(--cube-size)/2));}
+.face.left{transform:rotateY(-90deg) translateZ(calc(var(--cube-size)/2));}
+.face.top{transform:rotateX(90deg) translateZ(calc(var(--cube-size)/2));}
+.face.bottom{transform:rotateX(-90deg) translateZ(calc(var(--cube-size)/2));}
 
-main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto; }
-
-.cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
-.cube-stage{
-  width: min(90vw, 200px);
-  height: min(90vw, 200px);
-  max-width:200px;
-  max-height:200px;
-  perspective:1200px;
-  display:flex; align-items:center; justify-content:center;
-}
-
-.cube {
-  width: var(--cube-size);
-  height: var(--cube-size);
-  position:relative;
-  transform-style:preserve-3d;
-  transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);
-}
-
-.face{
-  position:absolute; left:0; top:0;
-  width:100%; height:100%;
-  border-radius:var(--cube-border-radius);
-  overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  background:#fff; box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 0 0 2px rgba(0,0,0,0.02);
-  border:var(--cube-border);
-  backface-visibility:hidden;
-}
-.face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:8px; }
-
-.face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size)/2)); }
-.face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.right  { transform: rotateY(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.left   { transform: rotateY(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.top    { transform: rotateX(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.bottom { transform: rotateX(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-
-#result {
-  width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:8px;
-}
-.fruit-name{ font-size:6.5vw; color:#ff4081; font-weight:800; line-height:1; }
-.fruit-roman{ font-size:5vw; color:#009688; font-weight:700; margin-top:4px; }
-.play-audio{
-  margin-top:8px; padding:8px 18px; border-radius:12px; border:none; background:#3f51b5; color:#fff; font-weight:700;
-  font-size:4.6vw; cursor:pointer;
-}
-
-.controls{ display:flex; gap:8px; justify-content:center; align-items:center; width:100%; margin-top:6px; }
-#rollBtn{
-  background:var(--roll-btn); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-weight:800;
-  font-size:5.2vw; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-.bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
-.bottom button{ border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
-#againBtn{ background:var(--again-btn) }
-#nextBtn{ background:var(--next-btn) }
-#homeBtn{ background:var(--home-btn) }
+#result{width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;}
+.fruit-name{font-size:6.5vw; color:#ff4081; font-weight:800; line-height:1;}
+.fruit-roman{font-size:5vw; color:#009688; font-weight:700; margin-top:4px;}
+.play-audio{margin-top:8px; padding:8px 18px; border-radius:12px; border:none; background:#3f51b5; color:#fff; font-weight:700; font-size:4.6vw; cursor:pointer;}
+.controls{display:flex; gap:8px; justify-content:center; align-items:center; width:100%; margin-top:6px;}
+#rollBtn{background:var(--roll-btn); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-weight:800; font-size:5.2vw; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.12);}
+.bottom{width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px;}
+.bottom button{border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw;}
+#againBtn{background:var(--again-btn)}
+#nextBtn{background:var(--next-btn)}
+#homeBtn{background:var(--home-btn)}
 
 @media(min-width:720px){
-  h1{ font-size:28px } .hint{ font-size:16px } .fruit-name{ font-size:28px } .fruit-roman{ font-size:18px }
-  #rollBtn{ font-size:16px } .play-audio{ font-size:14px } .bottom button{ font-size:14px }
+  h1{font-size:28px} .hint{font-size:16px} .fruit-name{font-size:28px} .fruit-roman{font-size:18px}
+  #rollBtn{font-size:16px} .play-audio{font-size:14px} .bottom button{font-size:14px}
 }
 </style>
 </head>
@@ -103,7 +58,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 <main>
   <div class="cube-wrap">
     <div class="cube-stage" id="stage">
-      <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
+      <div id="cube" class="cube">
         <div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
         <div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
         <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
@@ -131,12 +86,83 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="rollSound" preload="auto"></audio>
-<audio id="dingSound" preload="auto"></audio>
+<audio id="rollSound" src="game9_assets/Roll the dice.mp3" preload="auto"></audio>
+<audio id="dingSound" src="game9_assets/ding.mp3" preload="auto"></audio>
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
 const fruits = [
-  { name: "芳瓜", roman: "phang-kue", img: "game9_assets/fruit7.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
-  { name: "葡萄", roman: "phû-tô", img: "game9_assets/fruit8.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
-  { name: "蓮霧", roman: "lián-bū", img: "game9_assets/fruit9.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong
+  {name:"芳瓜", roman:"phang-kue", img:"game9_assets/fruit7.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3"},
+  {name:"葡萄", roman:"phû-tô", img:"game9_assets/fruit8.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3"},
+  {name:"蓮霧", roman:"lián-bū", img:"game9_assets/fruit9.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3"},
+  {name:"柳丁", roman:"liú-ting", img:"game9_assets/fruit10.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
+  {name:"木瓜", roman:"bo̍k-kue", img:"game9_assets/fruit11.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
+  {name:"梨仔", roman:"lâi-á", img:"game9_assets/fruit12.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"}
+];
+
+const cube = document.getElementById("cube");
+const rollBtn = document.getElementById("rollBtn");
+const fruitName = document.getElementById("fruitName");
+const fruitRoman = document.getElementById("fruitRoman");
+const playPron = document.getElementById("playPron");
+const rollSound = document.getElementById("rollSound");
+const dingSound = document.getElementById("dingSound");
+const fruitSound = document.getElementById("fruitSound");
+const againBtn = document.getElementById("againBtn");
+const nextBtn = document.getElementById("nextBtn");
+const homeBtn = document.getElementById("homeBtn");
+
+let rolling = false;
+
+function shuffleArray(array){
+  let a = array.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+rollBtn.addEventListener("click",()=>{
+  if(rolling) return;
+  rolling = true;
+  fruitName.innerHTML = "&nbsp;";
+  fruitRoman.innerHTML = "&nbsp;";
+  playPron.style.display="none";
+
+  rollSound.currentTime = 0;
+  rollSound.play();
+
+  const sequence = shuffleArray(fruits);
+  let idx=0;
+
+  const rollInterval = setInterval(()=>{
+    const f = sequence[idx];
+    cube.style.transform = `rotateX(${Math.random()*720}deg) rotateY(${Math.random()*720}deg)`;
+    idx = (idx+1)%sequence.length;
+  },200);
+
+  setTimeout(()=>{
+    clearInterval(rollInterval);
+    const selected = sequence[Math.floor(Math.random()*sequence.length)];
+    cube.style.transform = "rotateX(0deg) rotateY(0deg)";
+    fruitName.textContent = selected.name;
+    fruitRoman.textContent = selected.roman;
+    fruitSound.src = selected.audio;
+    fruitSound.play();
+    playPron.style.display="inline-block";
+    rollSound.pause();
+    rollSound.currentTime = 0;
+    dingSound.play();
+    rolling=false;
+  },2000);
+});
+
+playPron.addEventListener("click",()=>{fruitSound.play();});
+
+againBtn.addEventListener("click",()=>{fruitName.innerHTML="&nbsp;"; fruitRoman.innerHTML="&nbsp;"; playPron.style.display="none";});
+nextBtn.addEventListener("click",()=>{window.location.href="game9_round7.html";});
+homeBtn.addEventListener("click",()=>{window.location.href="https://tsong-su.github.io/iuhi/index.html";});
+</script>
+</body>
+</html>
