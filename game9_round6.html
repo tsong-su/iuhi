@@ -1,206 +1,149 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>果子骰仔遊戲-第2回</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果子骰仔遊戲－第2回</title>
 <style>
-:root{
-  --roll-btn: #ff6b35;
-  --again-btn: #4caf50;
-  --next-btn: #2196f3;
-  --home-btn: #9c27b0;
-  --bg1: #fffbea;
-  --cube-border-color: #c74444;
-  --cube-border: 6px solid var(--cube-border-color);
-  --cube-border-radius: 12px;
-  --cube-size: 180px;
-}
-*{ box-sizing:border-box; }
-body{
-  margin:0; min-height:100vh; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
-  background:var(--bg1); display:flex; flex-direction:column; align-items:center;
-  color:#222;
-}
-header{ text-align:center; padding:14px 10px 4px; width:100%; }
-h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
-.hint{ margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
-
-main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto; }
-
-.cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
-.cube-stage{
-  width: var(--cube-size);
-  height: var(--cube-size);
-  perspective:1200px;
-  display:flex; align-items:center; justify-content:center;
-}
-.cube {
-  width: var(--cube-size);
-  height: var(--cube-size);
-  position:relative;
-  transform-style:preserve-3d;
-  transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);
-}
-.face{
-  position:absolute; left:0; top:0;
-  width:100%; height:100%;
-  border-radius:var(--cube-border-radius);
-  overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  background:#fff; box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 0 0 2px rgba(0,0,0,0.02);
-  border:var(--cube-border);
-  backface-visibility:hidden;
-}
-.face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:8px; }
-
-.face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size)/2)); }
-.face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.right  { transform: rotateY(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.left   { transform: rotateY(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.top    { transform: rotateX(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.bottom { transform: rotateX(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-
-#result {
-  width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:8px;
-}
-.fruit-name{ font-size:6.5vw; color:#ff4081; font-weight:800; line-height:1; }
-.fruit-roman{ font-size:5vw; color:#009688; font-weight:700; margin-top:4px; }
-.play-audio{
-  margin-top:8px; padding:8px 18px; border-radius:12px; border:none; background:#3f51b5; color:#fff; font-weight:700;
-  font-size:4.6vw; cursor:pointer;
-}
-
-.controls{ display:flex; gap:8px; justify-content:center; align-items:center; width:100%; margin-top:6px; }
-#rollBtn{
-  background:var(--roll-btn); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-weight:800;
-  font-size:5.2vw; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-.bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
-.bottom button{ border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
-#againBtn{ background:var(--again-btn) }
-#nextBtn{ background:var(--next-btn) }
-#homeBtn{ background:var(--home-btn) }
-
-@media(min-width:720px){
-  h1{ font-size:28px } .hint{ font-size:16px } .fruit-name{ font-size:28px } .fruit-roman{ font-size:18px }
-  #rollBtn{ font-size:16px } .play-audio{ font-size:14px } .bottom button{ font-size:14px }
-}
+  body {
+    background: #fff8e7;
+    text-align: center;
+    font-family: "Microsoft JhengHei", sans-serif;
+  }
+  h1 {
+    color: #e67e22;
+    font-size: 2em;
+    margin-top: 10px;
+  }
+  .tip {
+    color: #555;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+  }
+  #dice-container {
+    perspective: 1000px;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 20px auto;
+    position: relative;
+  }
+  #dice {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 1.5s ease-out;
+  }
+  .face {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border: 4px solid #f39c12;
+    border-radius: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .face img {
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
+  }
+  .front  { transform: rotateY(0deg) translateZ(80px); }
+  .back   { transform: rotateY(180deg) translateZ(80px); }
+  .right  { transform: rotateY(90deg) translateZ(80px); }
+  .left   { transform: rotateY(-90deg) translateZ(80px); }
+  .top    { transform: rotateX(90deg) translateZ(80px); }
+  .bottom { transform: rotateX(-90deg) translateZ(80px); }
+  button {
+    background: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #e67e22;
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>果子骰仔遊戲-第2回</h1>
-  <div class="hint">📱 建議直式觀看效果最佳</div>
-</header>
 
-<main>
-  <div class="cube-wrap">
-    <div class="cube-stage" id="stage">
-      <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
-        <div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
-        <div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
-        <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
-        <div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
-        <div class="face top"><img src="game9_assets/fruit11.png" alt="木瓜"></div>
-        <div class="face bottom"><img src="game9_assets/fruit12.png" alt="梨仔"></div>
-      </div>
-    </div>
+<h1>果子骰仔遊戲－第2回</h1>
+<p class="tip">📱建議直式觀看效果最佳</p>
+
+<div id="dice-container">
+  <div id="dice">
+    <div class="face front"><img src="game9_assets/fruit7.png" alt="fruit7"></div>
+    <div class="face back"><img src="game9_assets/fruit8.png" alt="fruit8"></div>
+    <div class="face right"><img src="game9_assets/fruit9.png" alt="fruit9"></div>
+    <div class="face left"><img src="game9_assets/fruit10.png" alt="fruit10"></div>
+    <div class="face top"><img src="game9_assets/fruit11.png" alt="fruit11"></div>
+    <div class="face bottom"><img src="game9_assets/fruit12.png" alt="fruit12"></div>
   </div>
-
-  <div class="controls">
-    <button id="rollBtn">撚骰仔 🎲</button>
-  </div>
-
-  <div id="result">
-    <div class="fruit-name" id="fruitName">&nbsp;</div>
-    <div class="fruit-roman" id="fruitRoman">&nbsp;</div>
-    <button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
-  </div>
-</main>
-
-<div class="bottom">
-  <button id="againBtn">閣耍一擺</button>
-  <button id="nextBtn">後一回</button>
-  <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="rollSound" preload="auto" src="game9_assets/Roll the dice.mp3"></audio>
-<audio id="dingSound" preload="auto" src="game9_assets/ding.mp3"></audio>
-<audio id="fruitSound" preload="auto"></audio>
+<button id="rollButton">擲骰子</button>
+<button id="resetButton">閣耍一擺</button>
+<button onclick="location.href='index.html'">轉去遊戲頭頁</button>
+<button onclick="location.href='game9_round7.html'">後一回</button>
+
+<audio id="rollSound" src="game9_assets/Roll the dice.mp3"></audio>
+<audio id="dingSound" src="game9_assets/ding.mp3"></audio>
 
 <script>
-const fruits = [
-  { name: "芳瓜", roman: "phang-kue", img: "game9_assets/fruit7.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
-  { name: "葡萄", roman: "phû-tô", img: "game9_assets/fruit8.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
-  { name: "蓮霧", roman: "lián-bū", img: "game9_assets/fruit9.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
-  { name: "柳丁", roman: "liú-ting", img: "game9_assets/fruit10.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
-  { name: "木瓜", roman: "bo̍k-kue", img: "game9_assets/fruit11.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
-  { name: "梨仔", roman: "lâi-á", img: "game9_assets/fruit12.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" },
-];
-
-const cube = document.getElementById("cube");
-const rollBtn = document.getElementById("rollBtn");
-const fruitName = document.getElementById("fruitName");
-const fruitRoman = document.getElementById("fruitRoman");
-const playPron = document.getElementById("playPron");
+const dice = document.getElementById("dice");
 const rollSound = document.getElementById("rollSound");
 const dingSound = document.getElementById("dingSound");
-const fruitSound = document.getElementById("fruitSound");
+const rollButton = document.getElementById("rollButton");
+
+const fruits = [
+  { name: "芳瓜", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
+  { name: "葡萄", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
+  { name: "蓮霧", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
+  { name: "柳丁", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
+  { name: "木瓜", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
+  { name: "梨仔", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
+];
 
 let isRolling = false;
 
 function rollDice() {
-  if(isRolling) return;
+  if (isRolling) return;
   isRolling = true;
 
-  // 隨機選水果
-  const fruitIndex = Math.floor(Math.random()*fruits.length);
-  const fruit = fruits[fruitIndex];
+  rollSound.currentTime = 0;
+  rollSound.play();
 
-  // 隨機旋轉角度
-  const randX = 720 + Math.floor(Math.random()*360);
-  const randY = 720 + Math.floor(Math.random()*360);
+  const xRotation = 720 + Math.floor(Math.random() * 360);
+  const yRotation = 720 + Math.floor(Math.random() * 360);
+  const randomIndex = Math.floor(Math.random() * fruits.length);
+  const chosenFruit = fruits[randomIndex];
 
-  // 播放骰子聲
-  rollSound.currentTime=0; rollSound.play();
+  dice.style.transform = `rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
 
-  cube.style.transition="transform 1.8s cubic-bezier(.19,.57,.3,.98)";
-  cube.style.transform=`rotateX(${randX}deg) rotateY(${randY}deg)`;
-
-  // 完成後播放 ding + 水果
-  setTimeout(()=>{
+  setTimeout(() => {
     rollSound.pause();
-    rollSound.currentTime=0;
-    dingSound.currentTime=0; dingSound.play();
+    dingSound.play();
 
-    // 顯示水果名稱
-    fruitName.textContent = fruit.name;
-    fruitRoman.textContent = fruit.roman;
+    const fruitAudio = new Audio(chosenFruit.sound);
+    fruitAudio.play();
 
-    // 設置發音按鈕
-    fruitSound.src = fruit.audio;
-    playPron.style.display="inline-block";
     isRolling = false;
-  }, 1800);
+  }, 2200);
 }
 
-rollBtn.addEventListener("click", rollDice);
-playPron.addEventListener("click", ()=>{ fruitSound.currentTime=0; fruitSound.play(); });
+function resetDice() {
+  dice.style.transform = "rotateX(0deg) rotateY(0deg)";
+}
 
-// 閣耍一擺
-document.getElementById("againBtn").addEventListener("click", ()=>{
-  fruitName.textContent=""; fruitRoman.textContent=""; playPron.style.display="none";
-  rollDice();
-});
-
-// 後一回
-document.getElementById("nextBtn").addEventListener("click", ()=>{ alert("此功能尚未設定"); });
-// 轉去遊戲頭頁
-document.getElementById("homeBtn").addEventListener("click", ()=>{ window.location.href="index.html"; });
+rollButton.addEventListener("click", rollDice);
+document.getElementById("resetButton").addEventListener("click", resetDice);
 </script>
+
 </body>
 </html>
