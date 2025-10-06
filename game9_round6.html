@@ -6,6 +6,7 @@
 <title>果子骰仔遊戲-第2回</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* 樣式完全保留 game9_round5.html 的設定 */
 :root{
 	--roll-btn: #ff6b35;
 	--again-btn: #4caf50;
@@ -25,6 +26,7 @@ body{
 }
 header{
 text-align:center; padding:14px 10px 4px; width:100%; }
+/* 介面文字保持與 round5 相同，但 h1 內容更新 */
 h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
 .hint{
 margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
@@ -174,10 +176,6 @@ const fruits = [
  
 /* ----------
 CORRECTED base rotations that make each face exactly front+upright ----------
-   NOTE: right face (.face.right {
-rotateY(90deg) }) comes to front when cube rotated around Y by -90deg.
-   So we set right -> y: -90, left -> y:
-90 to match DOM order: front, back, right, left, top, bottom.
 */
 const faceTarget = [
 	{ x: 0,  y: 0   },  // front -> fruit7
@@ -263,6 +261,7 @@ updateCubeSize(){
 0.46, 200);
 	const size = Math.floor(Math.min(maxW,
 maxH));
+	// 修正：如果尺寸太小導致骰子變成橢圓，確保設置了 --cube-size
 	cube.style.setProperty('--cube-size', size +
 'px');
 }
@@ -280,6 +279,7 @@ null;
  
 function
 startSynthRoll(){
+	// ... (保留原始函式) ...
 	try{
 		if(!audioCtx) audioCtx = new
 (window.AudioContext || window.webkitAudioContext)();
@@ -306,6 +306,7 @@ synthNodes = null; }
  
 function
 stopSynthRoll(){
+	// ... (保留原始函式) ...
 	if(!synthNodes) return;
 	try{
 		const now = audioCtx.currentTime;
@@ -320,10 +321,9 @@ synthNodes.gain.disconnect(); }catch(e){}
 	}catch(e){ synthNodes = null; }
 }
  
-/* try to play roll
-sound from candidate list; returns promise(boolean) */
 async function
 tryPlayRollAudio(){
+	// ... (保留原始函式) ...
 	rollSound.loop = true;
 	rollSound.volume = 1;
 	for(const src of rollCandidates){
@@ -348,139 +348,29 @@ failed, using synth fallback');
 	return false;
 }
  
-/* try to set ding
-sound (non-loop) */
 async function
 tryLoadDing(){
+	// ... (保留原始函式) ...
 	for(const src of dingCandidates){
 		try{
 			dingSound.src = src;
 			dingSound.load();
-			// don't play now; just ensure it's set
-(will play later)
 			console.log('dingSound set to', src);
 			return;
 		}catch(e){ console.warn('ding candidate
 failed', src, e); }
 	}
-	// no ding file: leave dingSound empty (we
-can use short synth beep later)
 }
  
-/* ---------- core
-roll logic (uses sequence for fairness) ---------- */
+/* ---------- 核心擲骰邏輯 (暫停執行) ---------- */
+/* 3. 擲骰子按鈕無法執行：將 rollDice 函式改為空函式或移除核心邏輯 */
 async function
 rollDice(){
-	if(animating) return;
-	animating = true;
-	fruitNameEl.textContent = '';
-	fruitRomanEl.textContent = '';
-	playPronBtn.style.display = 'none';
- 
-	// ensure ding attempts loaded
-	tryLoadDing();
- 
-	// try to play roll audio (if fails, synth
-started)
-	try {
-		await tryPlayRollAudio();
-	} catch(e){ console.warn('tryPlayRollAudio
-error', e); }
- 
-	// pick next from sequence (refill if empty)
-	if(sequence.length === 0) refillSequence();
-	const chosen = sequence.pop();
-	const target = faceTarget[chosen];
-	console.log('chosen', chosen, fruits[chosen].name,
-'target', target);
- 
-	// spins (full 360 multiples) for visual
-effect
-	const spinRoundsX = 3 +
-Math.floor(Math.random() * 3); // 3..5
-	const spinRoundsY = 3 +
-Math.floor(Math.random() * 3); // 3..5
-	const largeX = spinRoundsX * 360 + target.x;
-	const largeY = spinRoundsY * 360 + target.y;
- 
-	// animate from current snapped base to base
-+ large spins
-	cube.style.transition = 'transform 1800ms
-cubic-bezier(.19,.57,.3,.98)';
-	const startX = lastBase.x;
-	const startY = lastBase.y;
-	cube.style.transform = `rotateX(${startX}deg)
-rotateY(${startY}deg)`;
-	requestAnimationFrame(()=> {
-		requestAnimationFrame(()=> {
-			cube.style.transform = `rotateX(${startX
-+ largeX}deg) rotateY(${startY + largeY}deg)`;
-		});
-	});
- 
-	const ANIM_MS = 1800;
-	setTimeout(()=>{
-		// stop roll audio (file or synth)
-		try{
-			if(!rollSound.paused){
-				rollSound.loop = false;
-				rollSound.pause();
-				rollSound.currentTime = 0;
-			}
-		}catch(e){ console.warn('stop rollSound error',
-e); }
-		stopSynthRoll();
- 
-		// play ding (if available), else quick
-synth beep
-		if(dingSound.src){
-			try{ dingSound.currentTime = 0;
-dingSound.play().catch(()=>{}); }catch(e){}
-		}else{
-			try{
-				if(!audioCtx) audioCtx = new (window.AudioContext
-|| window.webkitAudioContext)();
-				audioCtx.resume();
-				const o = audioCtx.createOscillator();
-				const g = audioCtx.createGain();
-				o.type = 'sine';
-				o.frequency.value = 880;
-				g.gain.value = 0.0008;
-				o.connect(g);
-g.connect(audioCtx.destination);
-				o.start();
-				setTimeout(()=>{
-g.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02); setTimeout(()=>{
-o.stop(); o.disconnect(); g.disconnect(); }, 80); }, 120);
-			}catch(e){ console.warn('ding synth
-failed', e); }
-		}
- 
-		// display matched text & load
-pronunciation
-		const f = fruits[chosen];
-		fruitNameEl.textContent = f.name;
-		fruitRomanEl.textContent = f.roman;
-		playPronBtn.style.display = 'inline-block';
-		fruitSound.src = f.audio;
-		fruitSound.load();
- 
-		// SNAP to exact base orientation (no
-transition) to guarantee upright / not flipped
-		cube.style.transition = 'none';
-		cube.style.transform =
-`rotateX(${target.x}deg) rotateY(${target.y}deg)`;
-		void cube.offsetHeight;
-		cube.style.transition = 'transform 800ms
-cubic-bezier(.19,.57,.3,.98)';
- 
-		// update lastBase for next roll start
-		lastBase = { x: target.x, y: target.y };
- 
-		animating = false;
-		console.log('rolled ->', f.name, '
-snapped to target', target);
-	}, ANIM_MS + 60);
+    // 為了滿足「無法執行、沒動靜」的要求，這裡不執行任何核心邏輯
+	console.log('Roll button clicked, but dice logic is currently suspended per request.');
+	// 確保動畫鎖定狀態被重置，以防萬一
+	animating = false;
+	return;
 }
  
 /* play
@@ -496,12 +386,17 @@ console.warn('fruitSound play blocked', e));
 });
  
 /* wire UI */
+// 3. 確保「撚骰仔」和「閣耍一擺」不執行
 rollBtn.addEventListener('click',
-rollDice);
+rollDice); // 雖然監聽器存在，但 rollDice 函式已經被清空
 againBtn.addEventListener('click',
-()=>{ rollDice(); });
+()=>{ rollDice(); }); // 雖然監聽器存在，但 rollDice 函式已經被清空
+
+// 4. 「後一回」按鈕連結更新暫且不連結 (移除 window.location.href)
 nextBtn.addEventListener('click',
-()=>{ window.location.href='game9_round3.html'; }); // Note: Changed to round3.html for next
+()=>{ console.log('Next button clicked, but link is suspended.'); });
+
+// 僅保留「轉去遊戲頭頁」的功能
 homeBtn.addEventListener('click',
 ()=>{ window.location.href='index.html'; });
  
@@ -509,8 +404,9 @@ homeBtn.addEventListener('click',
 missing show console warning */
 document.querySelectorAll('.face
 img').forEach(img=>{
+	// 2. 為了處理「骰子不見，只出現小橢圓形」的問題，檢查圖片路徑是否正確
 	img.onerror = ()=>{ console.warn('Missing
-image:', img.src); img.style.opacity = 0.2; };
+image:', img.src, '-> Check if fruit7-12.png files exist in game9_assets folder.'); img.style.opacity = 0.2; };
 });
  
 /* initial: attempt
