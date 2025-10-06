@@ -1,325 +1,150 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>果子骰仔遊戲-第2回</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果子骰仔遊戲－第2回</title>
 <style>
-  :root{
-    --roll-btn: #ff6b35;
-    --again-btn: #4caf50;
-    --next-btn: #2196f3;
-    --home-btn: #9c27b0;
-    --bg1: #fffbea;
-    --cube-border-color: #c74444;
-    --cube-border: 6px solid var(--cube-border-color);
-    --cube-border-radius: 12px;
+  body {
+    font-family: "DFKai-sb", sans-serif;
+    background: linear-gradient(to bottom right, #f9e9f9, #fff6ff);
+    text-align: center;
+    margin: 0;
+    padding: 0;
   }
-  *{ box-sizing:border-box; }
-  body{
-    margin:0; min-height:100vh; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
-    background:var(--bg1); display:flex; flex-direction:column; align-items:center;
-    color:#222;
+  h1 {
+    color: #b5479c;
+    text-shadow: 2px 2px 4px #fff;
+    margin-top: 20px;
   }
-  header{ text-align:center; padding:14px 10px 4px; width:100%; }
-  h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
-  .hint{ margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
+  .hint {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  #dice-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 10px auto;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+  }
+  .face {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 4px solid #b5479c; /* 與第5回一致的紫紅邊框 */
+    border-radius: 16px;
+    background-color: #fff;
+    backface-visibility: hidden;
+  }
+  .face img {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+  }
+  /* 六面設定 */
+  .front  { transform: rotateY(0deg) translateZ(60px); }
+  .back   { transform: rotateY(180deg) translateZ(60px); }
+  .right  { transform: rotateY(90deg) translateZ(60px); }
+  .left   { transform: rotateY(-90deg) translateZ(60px); }
+  .top    { transform: rotateX(90deg) translateZ(60px); }
+  .bottom { transform: rotateX(-90deg) translateZ(60px); }
 
-  main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto; }
-
-  /* cube area - keep cube square and centered */
-  .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
-  .cube-stage{
-    width: min(92vw, 420px);
-    height: min(92vw, 420px);
-    max-width:420px;
-    max-height:420px;
-    perspective:1200px;
-    display:flex; align-items:center; justify-content:center;
+  button {
+    background-color: #c462b9;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    margin: 8px;
+    cursor: pointer;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
   }
-  /* cube size controlled by JS via --cube-size (px) */
-  .cube {
-    width: var(--cube-size);
-    height: var(--cube-size);
-    position:relative;
-    transform-style:preserve-3d;
-    transition: transform 2000ms cubic-bezier(.19,.57,.3,.98);
+  button:hover {
+    background-color: #a8489d;
   }
-  .face{
-    position:absolute; left:0; top:0;
-    width:100%; height:100%;
-    border-radius:16px;
-    overflow:hidden;
-    display:flex; align-items:center; justify-content:center;
-    background:#fff; box-shadow: 0 14px 30px rgba(0,0,0,0.12);
-    border:5px solid rgba(255,153,51,0.14);
-    backface-visibility:hidden;
-  }
-  .face img{ width:92%; height:92%; object-fit:contain; display:block; border-radius:12px; }
-
-  /* faces positioned by translateZ(half) using CSS calc */
-  .face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size) / 2)); }
-  .face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size) / 2)); }
-  .face.right  { transform: rotateY(90deg)   translateZ(calc(var(--cube-size) / 2)); }
-  .face.left   { transform: rotateY(-90deg)  translateZ(calc(var(--cube-size) / 2)); }
-  .face.top    { transform: rotateX(90deg)   translateZ(calc(var(--cube-size) / 2)); }
-  .face.bottom { transform: rotateX(-90deg)  translateZ(calc(var(--cube-size) / 2)); }
-
-  /* result area */
   #result {
-    width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:8px;
+    font-size: 22px;
+    color: #a33f9b;
+    margin-top: 12px;
   }
-  .fruit-name{ font-size:6.5vw; color:#ff4081; font-weight:800; line-height:1; }
-  .fruit-roman{ font-size:5vw; color:#009688; font-weight:700; margin-top:4px; }
-  .play-audio{
-    margin-top:8px; padding:8px 18px; border-radius:12px; border:none; background:#3f51b5; color:#fff; font-weight:700;
-    font-size:4.6vw; cursor:pointer;
-  }
-
-  /* controls */
-  .controls{ display:flex; gap:8px; justify-content:center; align-items:center; width:100%; margin-top:6px; }
-  #rollBtn{
-    background:var(--roll-btn); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-weight:800;
-    font-size:5.2vw; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-  }
-
-  /* bottom buttons */
-  .bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
-  .bottom button{ border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
-  #againBtn{ background:var(--again-btn) }
-  #nextBtn{ background:var(--next-btn) }
-  #homeBtn{ background:var(--home-btn) }
-
-  @media(min-width:720px){
-    h1{ font-size:28px } .hint{ font-size:16px } .fruit-name{ font-size:28px } .fruit-roman{ font-size:18px }
-    #rollBtn{ font-size:16px } .play-audio{ font-size:14px } .bottom button{ font-size:14px }
+  audio {
+    display: none;
   }
 </style>
 </head>
 <body>
-  <header>
-    <h1>果子骰仔遊戲-第2回</h1>
-    <div class="hint">📱 建議直式觀看效果最佳</div>
-  </header>
+<h1>果子骰仔遊戲－第2回</h1>
+<p class="hint">📱 建議直式觀看效果最佳</p>
 
-  <main>
-    <div class="cube-wrap">
-      <div class="cube-stage" id="stage">
-        <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子">
-          <!-- faces: front/back/right/left/top/bottom -->
-          <div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
-          <div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
-          <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
-          <div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
-          <div class="face top"><img src="game9_assets/fruit11.png" alt="木瓜"></div>
-          <div class="face bottom"><img src="game9_assets/fruit12.png" alt="梨仔"></div>
-        </div>
-      </div>
-    </div>
+<div id="dice-container">
+  <div class="face front"><img src="fruit1.png" alt="fruit1"></div>
+  <div class="face back"><img src="fruit2.png" alt="fruit2"></div>
+  <div class="face right"><img src="fruit3.png" alt="fruit3"></div>
+  <div class="face left"><img src="fruit4.png" alt="fruit4"></div>
+  <div class="face top"><img src="fruit5.png" alt="fruit5"></div>
+  <div class="face bottom"><img src="fruit6.png" alt="fruit6"></div>
+</div>
 
-    <div class="controls">
-      <button id="rollBtn">撚骰仔 🎲</button>
-    </div>
+<button id="rollBtn">撚骰仔 🎲</button>
 
-    <div id="result">
-      <div class="fruit-name" id="fruitName">&nbsp;</div>
-      <div class="fruit-roman" id="fruitRoman">&nbsp;</div>
-      <button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
-    </div>
+<p id="result"></p>
 
-  </main>
+<button onclick="location.reload()">閣耍一擺</button>
+<button onclick="window.location.href='game9_round7.html'">後一回 ➡️</button>
+<button onclick="window.location.href='index.html'">🏠 轉去遊戲頭頁</button>
 
-  <div class="bottom">
-    <button id="againBtn">閣耍一擺</button>
-    <button id="nextBtn">後一回</button>
-    <button id="homeBtn">轉去遊戲頭頁</button>
-  </div>
+<!-- 滾動音效 -->
+<audio id="rollingSound" src="https://tsong-su.github.io/iuhi/sound/dice-rolling.mp3"></audio>
+<!-- 停止音效 -->
+<audio id="stopSound" src="https://tsong-su.github.io/iuhi/sound/dice-stop.mp3"></audio>
 
-  <!-- audio elements -->
-  <audio id="rollSound" preload="auto"></audio>
-  <audio id="dingSound" preload="auto"></audio>
-  <audio id="fruitSound" preload="auto"></audio>
+<!-- 各面水果音檔 -->
+<audio id="sound1" src="https://tsong-su.github.io/iuhi/sound/fruit1.mp3"></audio>
+<audio id="sound2" src="https://tsong-su.github.io/iuhi/sound/fruit2.mp3"></audio>
+<audio id="sound3" src="https://tsong-su.github.io/iuhi/sound/fruit3.mp3"></audio>
+<audio id="sound4" src="https://tsong-su.github.io/iuhi/sound/fruit4.mp3"></audio>
+<audio id="sound5" src="https://tsong-su.github.io/iuhi/sound/fruit5.mp3"></audio>
+<audio id="sound6" src="https://tsong-su.github.io/iuhi/sound/fruit6.mp3"></audio>
 
 <script>
-/* ---------- DATA: fruit7..fruit12 ---------- */
+const dice = document.getElementById("dice-container");
+const rollBtn = document.getElementById("rollBtn");
+const rollingSound = document.getElementById("rollingSound");
+const stopSound = document.getElementById("stopSound");
+const result = document.getElementById("result");
+
 const fruits = [
-  { name: "芳瓜",   roman: "phang-kue", img: "game9_assets/fruit7.png",  audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
-  { name: "葡萄",   roman: "phû-tô",   img: "game9_assets/fruit8.png",  audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
-  { name: "蓮霧",   roman: "lián-bū",   img: "game9_assets/fruit9.png",  audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
-  { name: "柳丁",   roman: "liú-ting",  img: "game9_assets/fruit10.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
-  { name: "木瓜",   roman: "bo̍k-kue",  img: "game9_assets/fruit11.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
-  { name: "梨仔",   roman: "lâi-á",     img: "game9_assets/fruit12.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
+  { name: "芭樂", pinyin: "pa̍t-lâ", sound: "sound1" },
+  { name: "鳳梨", pinyin: "hōng-lâi", sound: "sound2" },
+  { name: "西瓜", pinyin: "se-koe", sound: "sound3" },
+  { name: "柳丁", pinyin: "liú-ting", sound: "sound4" },
+  { name: "香蕉", pinyin: "hiunn-tsio", sound: "sound5" },
+  { name: "蓮霧", pinyin: "liân-bu̍t", sound: "sound6" }
 ];
 
-/* ---------- CORRECT face rotations so each DOM face ends up front+upright ---------- */
-/* Mapping order: front, back, right, left, top, bottom  (matches DOM order above) */
-const faceRotations = [
-  { x: 0,   y: 0   },  // front  -> fruit7
-  { x: 0,   y: 180 },  // back   -> fruit8
-  { x: 0,   y: -90 },  // right  -> fruit9  (note: -90 so CSS rotateY(90deg) face becomes front)
-  { x: 0,   y: 90  },  // left   -> fruit10
-  { x: -90, y: 0   },  // top    -> fruit11
-  { x: 90,  y: 0   }   // bottom -> fruit12
-];
+rollBtn.addEventListener("click", () => {
+  const x = Math.floor(Math.random() * 4) * 90;
+  const y = Math.floor(Math.random() * 4) * 90;
+  const resultIndex = Math.floor(Math.random() * 6);
+  
+  rollingSound.currentTime = 0;
+  rollingSound.play();
+  dice.style.transform = `rotateX(${x + 720}deg) rotateY(${y + 720}deg)`;
 
-/* ---------- DOM ---------- */
-const cube = document.getElementById('cube');
-const rollBtn = document.getElementById('rollBtn');
-const fruitNameEl = document.getElementById('fruitName');
-const fruitRomanEl = document.getElementById('fruitRoman');
-const playPronBtn = document.getElementById('playPron');
-const againBtn = document.getElementById('againBtn');
-const nextBtn = document.getElementById('nextBtn');
-const homeBtn = document.getElementById('homeBtn');
+  setTimeout(() => {
+    rollingSound.pause();
+    stopSound.play();
 
-const rollSound = document.getElementById('rollSound');
-const dingSound = document.getElementById('dingSound');
-const fruitSound = document.getElementById('fruitSound');
+    const fruit = fruits[resultIndex];
+    result.innerHTML = `${fruit.name} (${fruit.pinyin})`;
+    document.getElementById(fruit.sound).play();
 
-let animating = false;
-let currentX = 0, currentY = 0;
-
-/* ---------- audio fallback loader (tries the exact filename first) ---------- */
-function setAudioWithFallback(el, candidates){
-  if(!Array.isArray(candidates)) candidates = [candidates];
-  let i = 0;
-  function trySet(){
-    el.src = candidates[i];
-    try { el.load(); } catch(e){}
-  }
-  el.onerror = function(){
-    i++;
-    if(i < candidates.length){ trySet(); }
-    else { console.warn('audio failed to load candidates:', candidates); }
-  };
-  trySet();
-}
-
-/* provide candidates (ensure "Roll the dice.mp3" is tried first) */
-setAudioWithFallback(rollSound, [
-  'game9_assets/Roll the dice.mp3',
-  'game9_assets/Roll_the_dice.mp3',
-  'game9_assets/RollTheDice.mp3',
-  'game9_assets/Roll the Dice.mp3'
-]);
-setAudioWithFallback(dingSound, [
-  'game9_assets/ding.mp3',
-  'game9_assets/ding_sound.mp3'
-]);
-
-/* ---------- responsive cube size ---------- */
-function updateCubeSize(){
-  // compute px size that fits nicely
-  const maxW = Math.min(window.innerWidth * 0.92, 420);
-  const maxH = Math.min(window.innerHeight * 0.58, 420); // leave room for text & buttons
-  const size = Math.floor(Math.min(maxW, maxH));
-  cube.style.setProperty('--cube-size', size + 'px');
-}
-window.addEventListener('resize', updateCubeSize);
-window.addEventListener('orientationchange', updateCubeSize);
-updateCubeSize();
-
-/* ---------- roll logic: spins then snap to exact face; rollSound loops while animating ---------- */
-function rollDice(){
-  if(animating) return;
-  animating = true;
-
-  // hide previous text
-  fruitNameEl.textContent = '';
-  fruitRomanEl.textContent = '';
-  playPronBtn.style.display = 'none';
-  fruitSound.src = '';
-
-  // choose a face index (0..5)
-  const chosen = Math.floor(Math.random() * faceRotations.length);
-  const base = faceRotations[chosen];
-
-  // pick extra full spins (3..5)
-  const extrasX = 360 * (3 + Math.floor(Math.random() * 3));
-  const extrasY = 360 * (3 + Math.floor(Math.random() * 3));
-
-  // compute final large absolute rotation
-  const finalX = currentX + extrasX + base.x;
-  const finalY = currentY + extrasY + base.y;
-
-  // start roll sound (loop while animating)
-  try {
-    rollSound.loop = true;
-    rollSound.currentTime = 0;
-    rollSound.play().catch(e => console.warn('rollSound play blocked', e));
-  } catch(e){ console.warn(e); }
-
-  // small pre-nudge to ensure animation looks natural
-  const preX = currentX + 360 * (1 + Math.floor(Math.random()*1));
-  const preY = currentY + 360 * (1 + Math.floor(Math.random()*1));
-  cube.style.transition = 'transform 200ms linear';
-  cube.style.transform = `rotateX(${preX}deg) rotateY(${preY}deg)`;
-  // apply final (animated) transform shortly after
-  setTimeout(()=> {
-    cube.style.transition = 'transform 2000ms cubic-bezier(.19,.57,.3,.98)';
-    cube.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-  }, 60);
-
-  // after animation ends -> stop roll sound, play ding, show result, then snap to upright face
-  setTimeout(()=> {
-    // stop roll sound
-    try { rollSound.loop = false; rollSound.pause(); rollSound.currentTime = 0; } catch(e){}
-
-    // play ding (if available)
-    try { dingSound.currentTime = 0; dingSound.play().catch(()=>{}); } catch(e){}
-
-    // show text and prepare fruit audio, but play fruit audio AFTER ding ends
-    const f = fruits[chosen];
-    fruitNameEl.textContent = f.name;
-    fruitRomanEl.textContent = f.roman;
-    playPronBtn.style.display = 'inline-block';
-    // set fruit audio src (external)
-    fruitSound.src = f.audio;
-    fruitSound.load();
-
-    // when ding finishes -> play fruit audio
-    dingSound.onended = function(){
-      try { fruitSound.currentTime = 0; fruitSound.play().catch(()=>{}); } catch(e){}
-      // clear handler
-      dingSound.onended = null;
-    };
-
-    // SNAP to exact base orientation (no transition) to guarantee upright / not flipped
-    cube.style.transition = 'none';
-    cube.style.transform = `rotateX(${base.x}deg) rotateY(${base.y}deg)`;
-    // force reflow
-    void cube.offsetHeight;
-    // restore default transition for next roll
-    cube.style.transition = 'transform 800ms cubic-bezier(.19,.57,.3,.98)';
-
-    // update current base for next roll
-    currentX = base.x;
-    currentY = base.y;
-
-    animating = false;
-  }, 2000 + 100);
-}
-
-/* play pronunciation on button click */
-playPronBtn.addEventListener('click', ()=>{
-  try {
-    if(!fruitSound.src) return;
-    fruitSound.currentTime = 0;
-    fruitSound.play().catch(e => console.warn('fruit audio blocked', e));
-  } catch(e){ console.warn(e); }
-});
-
-/* wire buttons */
-rollBtn.addEventListener('click', rollDice);
-againBtn.addEventListener('click', ()=>{ rollDice(); });
-nextBtn.addEventListener('click', ()=>{ window.location.href='game9_round7.html'; });
-homeBtn.addEventListener('click', ()=>{ window.location.href='index.html'; });
-
-/* safety: if images missing, report in console and keep layout */
-document.querySelectorAll('.face img').forEach(img=>{
-  img.onerror = ()=>{ console.warn('Missing image:', img.src); img.style.opacity = 0.2; };
+    dice.style.transform = `rotateX(${resultIndex * 90}deg) rotateY(${resultIndex * 60}deg)`;
+  }, 1800);
 });
 </script>
 </body>
