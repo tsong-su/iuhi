@@ -2,169 +2,149 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>果子骰仔遊戲－第2回</title>
+<title>華台水果語詞配對｜第6回</title>
 <style>
   body {
     font-family: "DFKai-sb", sans-serif;
+    background: linear-gradient(#fff8e1, #ffe0b2);
     text-align: center;
-    background-color: #fffbe6;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
   }
   h1 {
-    background: linear-gradient(to right, #ffcc66, #ff9966);
-    color: #5a3e1b;
-    padding: 10px;
-    margin: 0;
-    font-size: 1.5em;
+    color: #d84315;
+    margin-top: 20px;
+    font-size: 2em;
   }
-  #tip {
-    font-size: 1em;
-    color: #555;
-    margin-top: 5px;
-  }
-  .dice-container {
+  #dice-container {
+    perspective: 1000px;
+    width: 150px;
+    height: 150px;
+    margin: 40px auto;
     position: relative;
-    width: 180px;
-    height: 180px;
-    margin: 30px auto;
-    perspective: 800px;
   }
-  .dice {
+  #dice {
     width: 100%;
     height: 100%;
-    position: relative;
+    position: absolute;
     transform-style: preserve-3d;
     transition: transform 1s;
   }
   .face {
     position: absolute;
-    width: 180px;
-    height: 180px;
-    border: 4px solid #ffcc66;
-    border-radius: 20px;
-    background-color: #fff8e1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .face img {
     width: 150px;
     height: 150px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face img {
+    width: 120px;
+    height: 120px;
     border-radius: 15px;
   }
 
-  .front  { transform: translateZ(90px); }
-  .back   { transform: rotateY(180deg) translateZ(90px); }
-  .right  { transform: rotateY(90deg) translateZ(90px); }
-  .left   { transform: rotateY(-90deg) translateZ(90px); }
-  .top    { transform: rotateX(90deg) translateZ(90px); }
-  .bottom { transform: rotateX(-90deg) translateZ(90px); }
+  /* 六面配置 */
+  .front  { transform: translateZ(75px); }
+  .back   { transform: rotateY(180deg) translateZ(75px); }
+  .right  { transform: rotateY(90deg) translateZ(75px); }
+  .left   { transform: rotateY(-90deg) translateZ(75px); }
+  .top    { transform: rotateX(90deg) translateZ(75px); }
+  .bottom { transform: rotateX(-90deg) translateZ(75px); }
 
   button {
+    background: #ff7043;
+    border: none;
+    color: white;
     font-size: 1.2em;
     padding: 10px 20px;
-    margin-top: 20px;
-    background-color: #ff9966;
-    color: white;
-    border: none;
-    border-radius: 12px;
+    margin: 10px;
+    border-radius: 8px;
     cursor: pointer;
   }
   button:hover {
-    background-color: #ff6600;
+    background: #f4511e;
   }
 
-  #result {
-    margin-top: 25px;
-    font-size: 1.3em;
-    color: #5a3e1b;
-    font-weight: bold;
-  }
-
-  #next {
-    display: block;
-    margin: 25px auto;
-    padding: 8px 18px;
-    font-size: 1em;
-    border: none;
-    border-radius: 12px;
-    background-color: #66bb6a;
-    color: white;
-    cursor: pointer;
-  }
-  #next:hover {
-    background-color: #388e3c;
+  #word {
+    font-size: 1.5em;
+    color: #4e342e;
+    margin-top: 20px;
   }
 </style>
 </head>
 <body>
-  <h1>果子骰仔遊戲－第2回</h1>
-  <div id="tip">📱建議直式觀看效果最佳</div>
 
-  <div class="dice-container">
-    <div class="dice" id="dice">
-      <div class="face front"><img src="game9_assets/fruit7.png" alt="鳳梨"></div>
-      <div class="face back"><img src="game9_assets/fruit8.png" alt="香蕉"></div>
-      <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
-      <div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
-      <div class="face top"><img src="game9_assets/fruit11.png" alt="芭樂"></div>
-      <div class="face bottom"><img src="game9_assets/fruit12.png" alt="西瓜"></div>
-    </div>
+<h1>🍉 華台水果語詞配對｜第6回 🍊</h1>
+
+<div id="dice-container">
+  <div id="dice">
+    <div class="face front"><img src="fruit7.png" alt="芳瓜"></div>
+    <div class="face back"><img src="fruit8.png" alt="葡萄"></div>
+    <div class="face right"><img src="fruit9.png" alt="蓮霧"></div>
+    <div class="face left"><img src="fruit10.png" alt="柳丁"></div>
+    <div class="face top"><img src="fruit11.png" alt="木瓜"></div>
+    <div class="face bottom"><img src="fruit12.png" alt="梨仔"></div>
   </div>
+</div>
 
-  <button id="roll">🎲 擲骰子</button>
+<div id="word">請點選「轉動水果骰子」開始！</div>
 
-  <div id="result"></div>
+<button id="rollBtn">🎲 轉動水果骰子</button>
+<button id="nextBtn" onclick="location.href='game9_round7.html'">後一回 ▶</button>
 
-  <button id="next" onclick="window.location.href='game9_round7.html'">➡️ 後一回</button>
+<!-- 音效：滾動聲 -->
+<audio id="rollSound" src="game9_assets/roll.mp3" preload="auto"></audio>
 
-  <audio id="rollSound" src="game9_assets/Roll the dice.mp3"></audio>
-  <audio id="dingSound" src="game9_assets/ding.mp3"></audio>
+<!-- 外部台語音檔 -->
+<audio id="audio7" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3"></audio>
+<audio id="audio8" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3"></audio>
+<audio id="audio9" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3"></audio>
+<audio id="audio10" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"></audio>
+<audio id="audio11" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"></audio>
+<audio id="audio12" src="https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"></audio>
 
 <script>
 const dice = document.getElementById("dice");
-const result = document.getElementById("result");
-const rollBtn = document.getElementById("roll");
+const rollBtn = document.getElementById("rollBtn");
 const rollSound = document.getElementById("rollSound");
-const dingSound = document.getElementById("dingSound");
+const word = document.getElementById("word");
 
 const fruits = [
-  { name: "鳳梨", pinyin: "hông-lâi", img: "fruit7.png", sound: "game9_assets/fruit7.mp3" },
-  { name: "香蕉", pinyin: "kiûⁿ-tsio", img: "fruit8.png", sound: "game9_assets/fruit8.mp3" },
-  { name: "蓮霧", pinyin: "lián-bū", img: "fruit9.png", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
-  { name: "柳丁", pinyin: "liú-ting", img: "fruit10.png", sound: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
-  { name: "芭樂", pinyin: "pa-lah", img: "fruit11.png", sound: "game9_assets/fruit11.mp3" },
-  { name: "西瓜", pinyin: "se-kue", img: "fruit12.png", sound: "game9_assets/fruit12.mp3" }
+  {name: "芳瓜", roman: "phang-kue", audio: "audio7"},
+  {name: "葡萄", roman: "phû-tô", audio: "audio8"},
+  {name: "蓮霧", roman: "lián-bū", audio: "audio9"},
+  {name: "柳丁", roman: "liú-ting", audio: "audio10"},
+  {name: "木瓜", roman: "bo̍k-kue", audio: "audio11"},
+  {name: "梨仔", roman: "lâi-á", audio: "audio12"}
 ];
 
-rollBtn.addEventListener("click", () => {
-  rollBtn.disabled = true;
-  result.textContent = "";
-  const x = 720 + Math.floor(Math.random() * 360);
-  const y = 720 + Math.floor(Math.random() * 360);
-  const z = 720 + Math.floor(Math.random() * 360);
+function randomFace() {
+  const x = Math.floor(Math.random() * 4) * 90;
+  const y = Math.floor(Math.random() * 4) * 90;
+  const z = Math.floor(Math.random() * 4) * 90;
+  return {x, y, z};
+}
 
+rollBtn.addEventListener("click", () => {
   rollSound.currentTime = 0;
   rollSound.play();
 
-  dice.style.transition = "transform 3s cubic-bezier(.17,.67,.83,.67)";
-  dice.style.transform = `rotateX(${x}deg) rotateY(${y}deg) rotateZ(${z}deg)`;
+  const r = randomFace();
+  dice.style.transform = `rotateX(${r.x}deg) rotateY(${r.y}deg) rotateZ(${r.z}deg)`;
+
+  const index = Math.floor(Math.random() * fruits.length);
+  const f = fruits[index];
 
   setTimeout(() => {
-    const faceIndex = Math.floor(Math.random() * fruits.length);
-    const chosen = fruits[faceIndex];
-    result.innerHTML = `🎉 ${chosen.name}（${chosen.pinyin}）`;
-    dingSound.play();
-
-    const fruitAudio = new Audio(chosen.sound);
-    fruitAudio.play();
-
-    rollBtn.disabled = false;
-  }, 3000);
+    word.innerHTML = `${f.name} <br><span style="font-size:1.1em;color:#8d6e63;">${f.roman}</span>`;
+    document.getElementById(f.audio).play();
+  }, 1000);
 });
 </script>
+
 </body>
 </html>
