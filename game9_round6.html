@@ -104,12 +104,12 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <div class="cube-wrap">
     <div class="cube-stage" id="stage">
       <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
-        <div class="face front"><img src="game9_assets/fruit1.png" alt="檨仔"></div>
-        <div class="face back"><img src="game9_assets/fruit2.png" alt="柑仔"></div>
-        <div class="face right"><img src="game9_assets/fruit3.png" alt="弓蕉"></div>
-        <div class="face left"><img src="game9_assets/fruit4.png" alt="林菝仔"></div>
-        <div class="face top"><img src="game9_assets/fruit5.png" alt="王梨"></div>
-        <div class="face bottom"><img src="game9_assets/fruit6.png" alt="時計果"></div>
+        <div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
+        <div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
+        <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
+        <div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
+        <div class="face top"><img src="game9_assets/fruit11.png" alt="木瓜"></div>
+        <div class="face bottom"><img src="game9_assets/fruit12.png" alt="梨仔"></div>
       </div>
     </div>
   </div>
@@ -131,91 +131,98 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="rollSound" preload="auto"></audio>
-<audio id="dingSound" preload="auto"></audio>
+<audio id="rollSound" preload="auto" src="game9_assets/Roll the dice.mp3"></audio>
+<audio id="dingSound" preload="auto" src="game9_assets/ding.mp3"></audio>
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
-/* ---------- 水果資料 ---------- */
 const fruits = [
-  { name: "檨仔", roman: "suāinn-á", img: "game9_assets/fruit1.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12189.mp3" },
-  { name: "柑仔", roman: "kam-á",   img: "game9_assets/fruit2.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
-  { name: "弓蕉", roman: "king-tsio",img: "game9_assets/fruit3.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
-  { name: "林菝仔",roman: "ná-pua̍t-á",img:"game9_assets/fruit4.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
-  { name: "王梨", roman: "ông-lâi", img: "game9_assets/fruit5.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3373.mp3" },
-  { name: "時計果", roman: "si-ki-kó", img:"game9_assets/fruit6.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8291.mp3" },
-  { name: "柳丁", roman: "liú-ting", img:"game9_assets/fruit10.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
-  { name: "木瓜", roman: "bo̍k-kue", img:"game9_assets/fruit11.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
-  { name: "梨仔", roman: "lâi-á", img:"game9_assets/fruit12.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
+  { name:"芳瓜", roman:"phang-kue", img:"game9_assets/fruit7.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3"},
+  { name:"葡萄", roman:"phû-tô", img:"game9_assets/fruit8.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3"},
+  { name:"蓮霧", roman:"lián-bū", img:"game9_assets/fruit9.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3"},
+  { name:"柳丁", roman:"liú-ting", img:"game9_assets/fruit10.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3"},
+  { name:"木瓜", roman:"bo̍k-kue", img:"game9_assets/fruit11.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3"},
+  { name:"梨仔", roman:"lâi-á", img:"game9_assets/fruit12.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3"}
 ];
 
-/* ---------- DOM ---------- */
-const cube = document.getElementById("cube");
-const rollBtn = document.getElementById("rollBtn");
-const fruitName = document.getElementById("fruitName");
-const fruitRoman = document.getElementById("fruitRoman");
-const playPron = document.getElementById("playPron");
-const rollSound = document.getElementById("rollSound");
-const dingSound = document.getElementById("dingSound");
-const fruitSound = document.getElementById("fruitSound");
+const faceTarget = [
+  { x: 0,   y: 0 }, { x: 0,   y: 180 }, { x: 0,   y: -90 },
+  { x: 0,   y: 90 }, { x: -90, y: 0 }, { x: 90,  y: 0 }
+];
 
-/* ---------- 音效檔 ---------- */
-rollSound.src = "game9_assets/Roll the dice.mp3";
-dingSound.src = "game9_assets/ding.mp3";
+const cube = document.getElementById('cube');
+const rollBtn = document.getElementById('rollBtn');
+const fruitNameEl = document.getElementById('fruitName');
+const fruitRomanEl = document.getElementById('fruitRoman');
+const playPronBtn = document.getElementById('playPron');
+const againBtn = document.getElementById('againBtn');
+const nextBtn = document.getElementById('nextBtn');
+const homeBtn = document.getElementById('homeBtn');
+const rollSound = document.getElementById('rollSound');
+const dingSound = document.getElementById('dingSound');
+const fruitSound = document.getElementById('fruitSound');
 
-/* ---------- 隨機六面水果 ---------- */
-function randomFruits6(){
-  const shuffled = fruits.sort(()=>0.5-Math.random());
-  return shuffled.slice(0,6);
+let currentFruit = null;
+
+function shuffleArray(arr){
+  const copy = arr.slice();
+  for(let i=copy.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]] = [copy[j],copy[i]];
+  }
+  return copy;
 }
 
-/* ---------- 骰子旋轉 ---------- */
-function rollDice(){
-  const faces = randomFruits6();
-  const angleX = Math.floor(Math.random()*4)*90 + 720;
-  const angleY = Math.floor(Math.random()*4)*90 + 720;
+rollBtn.addEventListener('click', ()=>{
+  rollBtn.disabled=true;
+  fruitNameEl.textContent=""; fruitRomanEl.textContent="";
+  playPronBtn.style.display="none";
 
-  // 更新六面圖片
-  const faceDivs = cube.querySelectorAll(".face");
-  faceDivs.forEach((face,i)=>{
-    face.querySelector("img").src = faces[i].img;
-    face.querySelector("img").alt = faces[i].name;
-  });
+  const shuffledFruits = shuffleArray(fruits);
+  currentFruit = shuffledFruits[0];
 
-  // 播放擲骰子聲
-  rollSound.currentTime=0;
-  rollSound.play();
+  const faceIdx = fruits.indexOf(currentFruit);
 
-  cube.style.transition="transform 1800ms cubic-bezier(.19,.57,.3,.98)";
-  cube.style.transform=`rotateX(${angleX}deg) rotateY(${angleY}deg)`;
+  const rotateX = faceTarget[faceIdx].x + 1080 + Math.floor(Math.random()*360);
+  const rotateY = faceTarget[faceIdx].y + 1080 + Math.floor(Math.random()*360);
 
-  // 結束後播放 ding → 正確水果
+  rollSound.currentTime=0; rollSound.play();
+
+  cube.style.transition="transform 1.8s cubic-bezier(.19,.57,.3,.98)";
+  cube.style.transform=`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
   setTimeout(()=>{
     rollSound.pause();
-    dingSound.currentTime=0;
-    dingSound.play();
-
+    dingSound.currentTime=0; dingSound.play();
     dingSound.onended = ()=>{
-      const topFruit = faces[0];
-      fruitName.textContent = topFruit.name;
-      fruitRoman.textContent = topFruit.roman;
-      fruitSound.src = topFruit.audio;
-      fruitSound.play();
-      playPron.style.display="inline-block";
-      playPron.onclick = ()=>{ fruitSound.currentTime=0; fruitSound.play(); };
-    }
-  },1800);
-}
-
-/* ---------- 控制 ---------- */
-rollBtn.addEventListener("click", rollDice);
-document.getElementById("againBtn").addEventListener("click", ()=>{
-  fruitName.innerHTML="&nbsp;"; fruitRoman.innerHTML="&nbsp;"; playPron.style.display="none";
-  cube.style.transition="none"; cube.style.transform="rotateX(0deg) rotateY(0deg)";
+      fruitSound.src=currentFruit.audio;
+      fruitSound.currentTime=0; fruitSound.play();
+      fruitNameEl.textContent=currentFruit.name;
+      fruitRomanEl.textContent=currentFruit.roman;
+      playPronBtn.style.display="inline-block";
+      rollBtn.disabled=false;
+    };
+  }, 1800);
 });
-document.getElementById("nextBtn").addEventListener("click", ()=>{ location.href="game9_round6.html"; });
-document.getElementById("homeBtn").addEventListener("click", ()=>{ location.href="index.html"; });
 
+playPronBtn.addEventListener('click', ()=>{
+  if(currentFruit){ fruitSound.currentTime=0; fruitSound.play(); }
+});
+
+againBtn.addEventListener('click', ()=>{
+  rollBtn.disabled=false;
+  fruitNameEl.textContent=""; fruitRomanEl.textContent="";
+  playPronBtn.style.display="none";
+});
+
+nextBtn.addEventListener('click', ()=>{
+  alert("下一回還沒設計"); 
+});
+
+homeBtn.addEventListener('click', ()=>{
+  window.location.href="index.html";
+});
 </script>
+
 </body>
 </html>
