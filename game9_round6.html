@@ -1,429 +1,133 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>果子骰仔遊戲-第2回</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>華台水果語詞配對｜第2回</title>
 <style>
-/* 樣式完全保留 game9_round5.html 的設定 */
-:root{
-	--roll-btn: #ff6b35;
-	--again-btn: #4caf50;
-	--next-btn: #2196f3;
-	--home-btn: #9c27b0;
-	--bg1: #fffbea;
-	--cube-border-color: #c74444;
-	--cube-border: 6px solid var(--cube-border-color);
-	--cube-border-radius: 12px;
-}
-*{
-box-sizing:border-box; }
-body{
-	margin:0; min-height:100vh; font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
-	background:var(--bg1); display:flex; flex-direction:column; align-items:center;
-	color:#222;
-}
-header{
-text-align:center; padding:14px 10px 4px; width:100%; }
-/* 介面文字保持與 round5 相同，但 h1 內容更新 */
-h1{ margin:0; font-size:6.5vw; color:#d94f4f; line-height:1; }
-.hint{
-margin-top:8px; font-size:4.8vw; color:#ff6600; font-weight:700; }
+  body {
+    font-family: "jf open 粉圓", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(#fffdf5, #ffeccc);
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    color: #d65b00;
+    font-size: 2em;
+    margin-top: 20px;
+    text-shadow: 1px 1px #fff;
+  }
+  #dice {
+    width: 120px;
+    height: 120px;
+    margin: 40px auto;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    transition: transform 1s ease-out;
+  }
+  .face {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    backface-visibility: hidden;
+  }
+  #dice img {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    border: 3px solid #fff3d6;
+    box-shadow: 0 0 10px #ffa94d;
+  }
+  /* 六面定位 */
+  .front  { transform: rotateY(0deg) translateZ(60px); }
+  .back   { transform: rotateY(180deg) translateZ(60px); }
+  .right  { transform: rotateY(90deg) translateZ(60px); }
+  .left   { transform: rotateY(-90deg) translateZ(60px); }
+  .top    { transform: rotateX(90deg) translateZ(60px); }
+  .bottom { transform: rotateX(-90deg) translateZ(60px); }
 
-main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column;
-align-items:center; gap:8px; flex:1 1 auto; }
-
-.cube-wrap{
-width:100%; display:flex; justify-content:center; align-items:center; }
-.cube-stage{
-	width: min(90vw, 200px);
-	height: min(90vw, 200px);
-	max-width:200px;
-	max-height:200px;
-	perspective:1200px;
-	display:flex; align-items:center; justify-content:center;
-}
-
-/* cube size via
---cube-size */
-.cube {
-	width: var(--cube-size);
-	height: var(--cube-size);
-	position:relative;
-	transform-style:preserve-3d;
-	transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);
-}
-
-/* postcard / stamp
-edge feel: thicker colored border + subtle inner shadow */
-.face{
-	position:absolute; left:0; top:0;
-	width:100%; height:100%;
-	border-radius:var(--cube-border-radius);
-	overflow:hidden;
-	display:flex; align-items:center; justify-content:center;
-	background:#fff; box-shadow: 0 12px 22px rgba(0,0,0,0.12), inset 0 0 0 2px rgba(0,0,0,0.02);
-	border:var(--cube-border);
-	backface-visibility:hidden;
-}
-.face img{
-width:92%; height:92%; object-fit:contain; display:block; border-radius:8px; }
-
-.face.front  { transform: rotateY(0deg)    translateZ(calc(var(--cube-size)/2)); }
-.face.back   { transform: rotateY(180deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.right  { transform: rotateY(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.left   { transform: rotateY(-90deg)  translateZ(calc(var(--cube-size)/2)); }
-.face.top    { transform: rotateX(90deg)   translateZ(calc(var(--cube-size)/2)); }
-.face.bottom {
-transform: rotateX(-90deg) translateZ(calc(var(--cube-size)/2)); }
-
-#result {
-	width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-	gap:8px;
-}
-.fruit-name{
-font-size:6.5vw; color:#ff4081; font-weight:800; line-height:1; }
-.fruit-roman{
-font-size:5vw; color:#009688; font-weight:700; margin-top:4px; }
-.play-audio{
-	margin-top:8px; padding:8px 18px; border-radius:12px; border:none; background:#3f51b5; color:#fff; font-weight:700;
-	font-size:4.6vw; cursor:pointer;
-}
-
-.controls{
-display:flex; gap:8px; justify-content:center; align-items:center; width:100%; margin-top:6px; }
-#rollBtn{
-	background:var(--roll-btn); color:#fff; border:none; border-radius:12px; padding:12px 20px; font-weight:800;
-	font-size:5.2vw; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-.bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
-.bottom button{
-border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
-#againBtn{
-background:var(--again-btn) }
-#nextBtn{
-background:var(--next-btn) }
-#homeBtn{
-background:var(--home-btn) }
-
-@media(min-width:720px){
-	h1{ font-size:28px } .hint{ font-size:16px }
-.fruit-name{ font-size:28px } .fruit-roman{ font-size:18px }
-	#rollBtn{ font-size:16px } .play-audio{
-font-size:14px } .bottom button{ font-size:14px }
-}
+  button {
+    font-size: 1.1em;
+    margin: 10px;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    background-color: #f57c00;
+    box-shadow: 2px 2px 5px #d35400;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #ff9800;
+  }
+  #result {
+    margin-top: 10px;
+    font-size: 1.3em;
+    color: #333;
+  }
+  #footer {
+    margin-top: 30px;
+    color: #a35b00;
+    font-size: 1em;
+  }
 </style>
 </head>
 <body>
-<header>
-	<h1>果子骰仔遊戲-第2回</h1>
-	<div class="hint">📱 建議直式觀看效果最佳</div>
-</header>
 
-<main>
-	<div class="cube-wrap">
-		<div class="cube-stage" id="stage">
-			<div id="cube" class="cube" aria-hidden="false" role="img"
-aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
-				<div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
-				<div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
-				<div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
-				<div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
-				<div class="face top"><img src="game9_assets/fruit11.png" alt="木瓜"></div>
-				<div class="face bottom"><img src="game9_assets/fruit12.png" alt="梨仔"></div>
-			</div>
-		</div>
-	</div>
+<h1>🍊 華台水果語詞配對｜第2回 🍇</h1>
 
-	<div class="controls">
-		<button id="rollBtn">撚骰仔 🎲</button>
-	</div>
-
-	<div id="result">
-		<div class="fruit-name" id="fruitName">&nbsp;</div>
-		<div class="fruit-roman" id="fruitRoman">&nbsp;</div>
-		<button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
-	</div>
-</main>
-
-<div
-class="bottom">
-	<button id="againBtn">閣耍一擺</button>
-	<button id="nextBtn">後一回</button>
-	<button id="homeBtn">轉去遊戲頭頁</button>
+<div id="dice">
+  <div class="face front"><img id="face1" src="fruit7.png"></div>
+  <div class="face back"><img id="face2" src="fruit8.png"></div>
+  <div class="face right"><img id="face3" src="fruit9.png"></div>
+  <div class="face left"><img id="face4" src="fruit10.png"></div>
+  <div class="face top"><img id="face5" src="fruit11.png"></div>
+  <div class="face bottom"><img id="face6" src="fruit12.png"></div>
 </div>
 
-<audio
-id="rollSound" preload="auto"></audio>
-<audio
-id="dingSound" preload="auto"></audio>
-<audio
-id="fruitSound" preload="auto"></audio>
- 
+<div>
+  <button onclick="rollDice()">🎲 擲骰子</button>
+  <button onclick="nextRound()">➡️ 後一回</button>
+  <button onclick="location.href='index.html'">🏠 回首頁</button>
+</div>
+
+<p id="result"></p>
+
+<div id="footer">台語水果學習遊戲｜第2回</div>
+
 <script>
-/* ---------- data
----------- */
-const fruits = [
-	{ name: "芳瓜", roman: "phang-kue", img: "game9_assets/fruit7.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
-	{ name: "葡萄", roman: "phû-tô",   img: "game9_assets/fruit8.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
-	{ name: "蓮霧", roman: "lián-bū",img: "game9_assets/fruit9.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
-	{ name: "柳丁",roman: "liú-ting",img:"game9_assets/fruit10.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
-	{ name: "木瓜", roman: "bo̍k-kue", img: "game9_assets/fruit11.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
-	{ name: "梨仔",roman: "lâi-á",img: "game9_assets/fruit12.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
-];
- 
-/* ----------
-CORRECTED base rotations that make each face exactly front+upright ----------
-*/
-const faceTarget = [
-	{ x: 0,  y: 0   },  // front -> fruit7
-	{ x: 0,  y: 180 },  // back   -> fruit8
-	{ x: 0,  y: -90 },  // right  -> fruit9
-	{ x: 0,  y: 90  },  // left  -> fruit10
-	{ x: -90, y: 0   },  //
-top    -> fruit11
-	{ x: 90, y: 0   }   // bottom -> fruit12
-];
- 
-/* audio candidate
-filenames for roll and ding (try several common variants) */
-const rollCandidates
-= [
-	'game9_assets/Roll_the_dice.mp3',
-	'game9_assets/Roll the dice.mp3',
-	'game9_assets/RollTheDice.mp3',
-	'game9_assets/Roll the Dice.mp3'
-];
-const dingCandidates
-= [
-	'game9_assets/ding.mp3',
-	'game9_assets/ding_sound.mp3',
-	'game9_assets/ding-short.mp3'
-];
- 
-/* ---------- DOM
----------- */
-const cube =
-document.getElementById('cube');
-const rollBtn =
-document.getElementById('rollBtn');
-const fruitNameEl =
-document.getElementById('fruitName');
-const fruitRomanEl =
-document.getElementById('fruitRoman');
-const playPronBtn =
-document.getElementById('playPron');
-const againBtn =
-document.getElementById('againBtn');
-const nextBtn =
-document.getElementById('nextBtn');
-const homeBtn =
-document.getElementById('homeBtn');
-const rollSound =
-document.getElementById('rollSound');
-const dingSound =
-document.getElementById('dingSound');
-const fruitSound =
-document.getElementById('fruitSound');
- 
-let animating =
-false;
-let lastBase = {
-x:0, y:0 }; // track current snapped base orientation
- 
-/* ----------
-SEQUENCE (洗牌) for fair distribution ---------- */
-let sequence = [];
-function
-refillSequence(){
-	sequence = [0,1,2,3,4,5];
-	// Fisher-Yates shuffle
-	for(let i = sequence.length - 1; i > 0;
-i--){
-		const j = Math.floor(Math.random() * (i +
-1));
-		[sequence[i], sequence[j]] = [sequence[j],
-sequence[i]];
-	}
-	console.log('refilled sequence:', sequence);
-}
-refillSequence();
- 
-/* ----------
-helper: set cube size responsive ---------- */
-function
-updateCubeSize(){
-	const maxW = Math.min(window.innerWidth *
-0.86, 200);
-	const maxH = Math.min(window.innerHeight *
-0.46, 200);
-	const size = Math.floor(Math.min(maxW,
-maxH));
-	// 修正：如果尺寸太小導致骰子變成橢圓，確保設置了 --cube-size
-	cube.style.setProperty('--cube-size', size +
-'px');
-}
-window.addEventListener('resize',
-updateCubeSize);
-window.addEventListener('orientationchange',
-updateCubeSize);
-updateCubeSize();
- 
-/* ---------- audio
-helpers & fallback synth ---------- */
-let audioCtx = null;
-let synthNodes =
-null;
- 
-function
-startSynthRoll(){
-	// ... (保留原始函式) ...
-	try{
-		if(!audioCtx) audioCtx = new
-(window.AudioContext || window.webkitAudioContext)();
-		if(audioCtx.state === 'suspended')
-audioCtx.resume();
-		const o = audioCtx.createOscillator();
-		const g = audioCtx.createGain();
-		o.type = 'sawtooth';
-		o.frequency.value = 40; // low rumble
-		g.gain.value = 0.02;
-		const noiseFilter =
-audioCtx.createBiquadFilter();
-		noiseFilter.type = 'lowpass';
-		noiseFilter.frequency.value = 600;
-		o.connect(noiseFilter);
-		noiseFilter.connect(g);
-		g.connect(audioCtx.destination);
-		o.start();
-		synthNodes = { osc: o, gain: g, filter:
-noiseFilter };
-	}catch(e){ console.warn('synth failed', e);
-synthNodes = null; }
-}
- 
-function
-stopSynthRoll(){
-	// ... (保留原始函式) ...
-	if(!synthNodes) return;
-	try{
-		const now = audioCtx.currentTime;
-		synthNodes.gain.gain.setTargetAtTime(0,
-now, 0.02);
-		setTimeout(()=> {
-			try{ synthNodes.osc.stop();
-synthNodes.osc.disconnect(); synthNodes.filter.disconnect();
-synthNodes.gain.disconnect(); }catch(e){}
-			synthNodes = null;
-		}, 120);
-	}catch(e){ synthNodes = null; }
-}
- 
-async function
-tryPlayRollAudio(){
-	// ... (保留原始函式) ...
-	rollSound.loop = true;
-	rollSound.volume = 1;
-	for(const src of rollCandidates){
-		try{
-			rollSound.src = src;
-			rollSound.load();
-			await rollSound.play();
-			console.log('rollSound playing from',
-src);
-			return true;
-		}catch(e){
-			console.warn('rollSound candidate
-failed:', src, e);
-			// try next candidate
-		}
-	}
-	// all candidates failed -> fallback to
-synth
-	console.warn('all rollSound candidates
-failed, using synth fallback');
-	startSynthRoll();
-	return false;
-}
- 
-async function
-tryLoadDing(){
-	// ... (保留原始函式) ...
-	for(const src of dingCandidates){
-		try{
-			dingSound.src = src;
-			dingSound.load();
-			console.log('dingSound set to', src);
-			return;
-		}catch(e){ console.warn('ding candidate
-failed', src, e); }
-	}
-}
- 
-/* ---------- 核心擲骰邏輯 (暫停執行) ---------- */
-/* 3. 擲骰子按鈕無法執行：將 rollDice 函式改為空函式或移除核心邏輯 */
-async function
-rollDice(){
-    // 為了滿足「無法執行、沒動靜」的要求，這裡不執行任何核心邏輯
-	console.log('Roll button clicked, but dice logic is currently suspended per request.');
-	// 確保動畫鎖定狀態被重置，以防萬一
-	animating = false;
-	return;
-}
- 
-/* play
-pronunciation */
-playPronBtn.addEventListener('click',
-()=>{
-	if(!fruitSound.src) return;
-	try{
-		fruitSound.currentTime = 0;
-		fruitSound.play().catch(e =>
-console.warn('fruitSound play blocked', e));
-	}catch(e){ console.warn(e); }
-});
- 
-/* wire UI */
-// 3. 確保「撚骰仔」和「閣耍一擺」不執行
-rollBtn.addEventListener('click',
-rollDice); // 雖然監聽器存在，但 rollDice 函式已經被清空
-againBtn.addEventListener('click',
-()=>{ rollDice(); }); // 雖然監聽器存在，但 rollDice 函式已經被清空
+  const fruits = [
+    { img: "fruit7.png", tai: "芳瓜 phang-kue", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
+    { img: "fruit8.png", tai: "葡萄 phû-tô", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
+    { img: "fruit9.png", tai: "蓮霧 lián-bū", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
+    { img: "fruit10.png", tai: "柳丁 liú-ting", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
+    { img: "fruit11.png", tai: "木瓜 bo̍k-kue", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
+    { img: "fruit12.png", tai: "梨仔 lâi-á", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
+  ];
 
-// 4. 「後一回」按鈕連結更新暫且不連結 (移除 window.location.href)
-nextBtn.addEventListener('click',
-()=>{ console.log('Next button clicked, but link is suspended.'); });
+  let dice = document.getElementById("dice");
+  let result = document.getElementById("result");
+  let currentFace = 0;
 
-// 僅保留「轉去遊戲頭頁」的功能
-homeBtn.addEventListener('click',
-()=>{ window.location.href='index.html'; });
- 
-/* safety: if images
-missing show console warning */
-document.querySelectorAll('.face
-img').forEach(img=>{
-	// 2. 為了處理「骰子不見，只出現小橢圓形」的問題，檢查圖片路徑是否正確
-	img.onerror = ()=>{ console.warn('Missing
-image:', img.src, '-> Check if fruit7-12.png files exist in game9_assets folder.'); img.style.opacity = 0.2; };
-});
- 
-/* initial: attempt
-to preload roll/ding candidates (non-blocking) */
-(function
-preloadAudioCandidates(){
-	(async ()=>{
-		for(const s of dingCandidates){
-			try{ dingSound.src = s; dingSound.load();
-console.log('preload ding candidate', s); break; }catch(e){ continue; }
-		}
-		for(const s of rollCandidates){
-			try{ rollSound.src = s; rollSound.load();
-console.log('preload roll candidate', s); break; }catch(e){ continue; }
-		}
-	})();
-})();
+  function rollDice() {
+    let randX = 360 * 3 + Math.floor(Math.random() * 360);
+    let randY = 360 * 3 + Math.floor(Math.random() * 360);
+    dice.style.transform = `rotateX(${randX}deg) rotateY(${randY}deg)`;
+    let face = Math.floor(Math.random() * 6);
+    currentFace = face;
+    setTimeout(() => {
+      let f = fruits[face];
+      result.innerHTML = `<b>${f.tai}</b>`;
+      let audio = new Audio(f.audio);
+      audio.play();
+    }, 1100);
+  }
+
+  function nextRound() {
+    window.location.href = "game9_round7.html";
+  }
 </script>
+
 </body>
 </html>
