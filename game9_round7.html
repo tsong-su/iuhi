@@ -15,7 +15,6 @@
   --cube-border-color: #c74444;
   --cube-border: 6px solid var(--cube-border-color);
   --cube-border-radius: 12px;
-  --cube-size: min(90vw, 200px);
 }
 *{ box-sizing:border-box; }
 body{
@@ -31,16 +30,17 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 
 .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
 .cube-stage{
-  width: var(--cube-size);
-  height: var(--cube-size);
+  width: min(90vw, 200px);
+  height: min(90vw, 200px);
+  max-width:200px;
+  max-height:200px;
   perspective:1200px;
   display:flex; align-items:center; justify-content:center;
-  aspect-ratio:1/1;
 }
 
 .cube {
-  width: 100%;
-  height: 100%;
+  width: var(--cube-size);
+  height: var(--cube-size);
   position:relative;
   transform-style:preserve-3d;
   transition: transform 1800ms cubic-bezier(.19,.57,.3,.98);
@@ -131,8 +131,8 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
 
-<audio id="rollSound" preload="auto" src="game9_assets/Roll the dice.mp3"></audio>
-<audio id="dingSound" preload="auto" src="game9_assets/ding.mp3"></audio>
+<audio id="rollSound" preload="auto"></audio>
+<audio id="dingSound" preload="auto"></audio>
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
@@ -146,83 +146,75 @@ const fruits = [
 ];
 
 const faceTarget = [
-  {x:0, y:0},{x:0, y:180},{x:0, y:-90},{x:0, y:90},{x:-90,y:0},{x:90,y:0}
+  {x:0,y:0},{x:0,y:180},{x:0,y:-90},{x:0,y:90},{x:-90,y:0},{x:90,y:0}
 ];
 
+const rollCandidates=['game9_assets/Roll_the_dice.mp3'];
+const dingCandidates=['game9_assets/ding.mp3'];
+
 const cube = document.getElementById('cube');
-const rollBtn = document.getElementById('rollBtn');
-const fruitNameEl = document.getElementById('fruitName');
-const fruitRomanEl = document.getElementById('fruitRoman');
-const playPronBtn = document.getElementById('playPron');
-const againBtn = document.getElementById('againBtn');
-const nextBtn = document.getElementById('nextBtn');
-const homeBtn = document.getElementById('homeBtn');
-const rollSound = document.getElementById('rollSound');
-const dingSound = document.getElementById('dingSound');
-const fruitSound = document.getElementById('fruitSound');
+const rollBtn=document.getElementById('rollBtn');
+const fruitNameEl=document.getElementById('fruitName');
+const fruitRomanEl=document.getElementById('fruitRoman');
+const playPronBtn=document.getElementById('playPron');
+const againBtn=document.getElementById('againBtn');
+const nextBtn=document.getElementById('nextBtn');
+const homeBtn=document.getElementById('homeBtn');
 
-let animating = false;
-let lastBase = {x:0,y:0};
-let sequence = [];
-function refillSequence(){
-  sequence=[0,1,2,3,4,5];
-  for(let i=sequence.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [sequence[i],sequence[j]]=[sequence[j],sequence[i]];
-  }
+const rollSound=document.getElementById('rollSound');
+const dingSound=document.getElementById('dingSound');
+const fruitSound=document.getElementById('fruitSound');
+
+let animating=false;
+
+function getRandomFace(){ return Math.floor(Math.random()*6); }
+
+function resetResult(){
+  fruitNameEl.innerHTML='&nbsp;';
+  fruitRomanEl.innerHTML='&nbsp;';
+  playPronBtn.style.display='none';
 }
-refillSequence();
 
-function updateCubeSize(){
-  const size = Math.floor(Math.min(window.innerWidth*0.86, 200));
-  cube.style.setProperty('--cube-size', size+'px');
-}
-window.addEventListener('resize', updateCubeSize);
-window.addEventListener('orientationchange', updateCubeSize);
-updateCubeSize();
-
-async function rollDice(){
+function rollDice(){
   if(animating) return;
   animating=true;
-  fruitNameEl.textContent='';
-  fruitRomanEl.textContent='';
-  playPronBtn.style.display='none';
+  resetResult();
+  const idx = getRandomFace();
+  const fruit = fruits[idx];
 
-  // 播放滾動音效
-  try{ rollSound.currentTime=0; await rollSound.play(); }catch(e){}
+  rollSound.src='game9_assets/Roll_the_dice.mp3';
+  rollSound.currentTime=0;
+  rollSound.play().catch(()=>{});
 
-  if(sequence.length===0) refillSequence();
-  const chosen = sequence.pop();
-  const target = faceTarget[chosen];
+  const xRot = 360*3 + faceTarget[idx].x;
+  const yRot = 360*3 + faceTarget[idx].y;
 
-  const spinRoundsX = 3 + Math.floor(Math.random()*2);
-  const spinRoundsY = 3 + Math.floor(Math.random()*2);
-  const finalX = 360*spinRoundsX + target.x;
-  const finalY = 360*spinRoundsY + target.y;
+  cube.style.transform=`rotateX(${xRot}deg) rotateY(${yRot}deg)`;
 
-  cube.style.transition='transform 1.2s cubic-bezier(.19,.57,.3,.98)';
-  cube.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-
-  // 停止音效
-  setTimeout(()=>{ try{ rollSound.pause(); dingSound.currentTime=0; dingSound.play(); }catch(e){} }, 1200);
-
-  // 水果音檔延遲播放
   setTimeout(()=>{
-    const fruit = fruits[chosen];
-    fruitNameEl.textContent = fruit.name;
-    fruitRomanEl.textContent = fruit.roman;
-    fruitSound.src = fruit.audio;
-    try{ fruitSound.currentTime=0; fruitSound.play(); }catch(e){}
-    playPronBtn.style.display='inline-block';
-  }, 1700);
+    rollSound.pause();
+    dingSound.src='game9_assets/ding.mp3';
+    dingSound.currentTime=0;
+    dingSound.play().catch(()=>{});
+
+    setTimeout(()=>{
+      fruitNameEl.textContent=fruit.name;
+      fruitRomanEl.textContent=fruit.roman;
+      playPronBtn.style.display='inline-block';
+      fruitSound.src=fruit.audio;
+      fruitSound.currentTime=0;
+      fruitSound.play().catch(()=>{});
+      animating=false;
+    },500);
+  },1800);
 }
 
-rollBtn.addEventListener('click', rollDice);
-playPronBtn.addEventListener('click',()=>{ fruitSound.currentTime=0; fruitSound.play(); });
+rollBtn.addEventListener('click',rollDice);
+againBtn.addEventListener('click',rollDice);
+homeBtn.addEventListener('click',()=>{window.location.href='index.html'});
+nextBtn.addEventListener('click',()=>{window.location.href='game9_round8.html'});
+playPronBtn.addEventListener('click',()=>{fruitSound.play().catch(()=>{});});
 
-againBtn.addEventListener('click', ()=>{ fruitNameEl.textContent=''; fruitRomanEl.textContent=''; playPronBtn.style.display='none'; refillSequence(); });
-nextBtn.addEventListener('click', ()=>{ alert('後一回功能，請自行實作'); });
-homeBtn.addEventListener('click', ()=>{ window.location.href='index.html'; });
 </script>
 </body>
 </html>
