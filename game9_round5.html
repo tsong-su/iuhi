@@ -143,4 +143,111 @@ const fruits = [
   { name:"柑仔", roman:"kam-á", img:"game9_assets/fruit2.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5084.mp3" },
   { name:"弓蕉", roman:"king-tsio", img:"game9_assets/fruit3.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/529.mp3" },
   { name:"林菝仔", roman:"ná-pua̍t-á", img:"game9_assets/fruit4.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4237.mp3" },
-  { name:"王梨", roman:"ông-lâi", img:"game9_assets
+  { name:"王梨", roman:"ông-lâi", img:"game9_assets/fruit5.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1260.mp3" },
+  { name:"時計果", roman:"sî-kè-kó", img:"game9_assets/fruit6.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14205.mp3" }
+];
+
+const faceRotations = [
+  {x:0,y:0}, {x:0,y:180}, {x:0,y:-90}, {x:0,y:90}, {x:-90,y:0}, {x:90,y:0}
+];
+
+const cube = document.getElementById('cube');
+const rollBtn = document.getElementById('rollBtn');
+const fruitNameEl = document.getElementById('fruitName');
+const fruitRomanEl = document.getElementById('fruitRoman');
+const playPronBtn = document.getElementById('playPron');
+const againBtn = document.getElementById('againBtn');
+const nextBtn = document.getElementById('nextBtn');
+const homeBtn = document.getElementById('homeBtn');
+const rollSound = document.getElementById('rollSound');
+const dingSound = document.getElementById('dingSound');
+const fruitSound = document.getElementById('fruitSound');
+
+let animating = false, currentX=0, currentY=0;
+
+function setAudioWithFallback(el, candidates){
+  if(!Array.isArray(candidates)) candidates = [candidates];
+  let i=0;
+  function trySet(){ el.src=candidates[i]; try{el.load()}catch(e){} }
+  el.onerror = function(){ i++; if(i<candidates.length) trySet(); else console.warn('audio failed',candidates); };
+  trySet();
+}
+
+setAudioWithFallback(rollSound,['game9_assets/Roll the dice.mp3']);
+setAudioWithFallback(dingSound,['game9_assets/ding.mp3']);
+
+function updateCubeSize(){
+  const maxW=Math.min(window.innerWidth*0.92,420);
+  const maxH=Math.min(window.innerHeight*0.58,420);
+  cube.style.setProperty('--cube-size',Math.floor(Math.min(maxW,maxH))+'px');
+}
+window.addEventListener('resize',updateCubeSize);
+window.addEventListener('orientationchange',updateCubeSize);
+updateCubeSize();
+
+function rollDice(){
+  if(animating) return;
+  animating=true;
+  fruitNameEl.textContent=''; fruitRomanEl.textContent=''; playPronBtn.style.display='none'; fruitSound.src='';
+  const chosen=Math.floor(Math.random()*faceRotations.length);
+  const base=faceRotations[chosen];
+  const extrasX=360*(3+Math.floor(Math.random()*3));
+  const extrasY=360*(3+Math.floor(Math.random()*3));
+  const finalX=currentX+extrasX+base.x;
+  const finalY=currentY+extrasY+base.y;
+
+  try{ rollSound.loop=true; rollSound.currentTime=0; rollSound.play().catch(()=>{}); }catch(e){}
+
+  const preX=currentX+360*(1+Math.floor(Math.random()*1));
+  const preY=currentY+360*(1+Math.floor(Math.random()*1));
+  cube.style.transition='transform 200ms linear';
+  cube.style.transform=`rotateX(${preX}deg) rotateY(${preY}deg)`;
+  setTimeout(()=>{
+    cube.style.transition='transform 2000ms cubic-bezier(.19,.57,.3,.98)';
+    cube.style.transform=`rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+  },60);
+
+  setTimeout(()=>{
+    try{ rollSound.loop=false; rollSound.pause(); rollSound.currentTime=0; }catch(e){}
+    try{ dingSound.currentTime=0; dingSound.play().catch(()=>{}); }catch(e){}
+
+    // 顯示文字
+    const f=fruits[chosen];
+    fruitNameEl.textContent=f.name;
+    fruitRomanEl.textContent=f.roman;
+    playPronBtn.style.display='inline-block';
+    fruitSound.src=f.audio;
+    fruitSound.load();
+
+    // 延遲1秒再播水果音
+    dingSound.onended=function(){
+      setTimeout(()=>{
+        try{ fruitSound.currentTime=0; fruitSound.play().catch(()=>{}); }catch(e){}
+      },1000);
+      dingSound.onended=null;
+    };
+
+    cube.style.transition='none';
+    cube.style.transform=`rotateX(${base.x}deg) rotateY(${base.y}deg)`;
+    void cube.offsetHeight;
+    cube.style.transition='transform 800ms cubic-bezier(.19,.57,.3,.98)';
+
+    currentX=base.x; currentY=base.y; animating=false;
+  },2000+100);
+}
+
+playPronBtn.addEventListener('click',()=>{
+  try{ if(!fruitSound.src) return; fruitSound.currentTime=0; fruitSound.play().catch(()=>{}); }catch(e){}
+});
+
+rollBtn.addEventListener('click',rollDice);
+againBtn.addEventListener('click',()=>{rollDice();});
+nextBtn.addEventListener('click',()=>{window.location.href='game9_round6.html';});
+homeBtn.addEventListener('click',()=>{window.location.href='index.html';});
+
+document.querySelectorAll('.face img').forEach(img=>{
+  img.onerror=()=>{ console.warn('Missing image:',img.src); img.style.opacity=0.2; };
+});
+</script>
+</body>
+</html>
