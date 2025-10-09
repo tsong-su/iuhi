@@ -12,7 +12,7 @@
   --next-btn: #2196f3;
   --home-btn: #9c27b0;
   --bg1: #fffbea;
-  --cube-border-color: #b23a48; /* 與 round6 一致 */
+  --cube-border-color: #b23a48; /* 與 round5 一致風格 */
   --cube-border: 6px solid var(--cube-border-color);
   --cube-border-radius: 12px;
 }
@@ -85,7 +85,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   font-size:5.2vw; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
-.bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
+.bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
 .bottom button{ border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
 #againBtn{ background:var(--again-btn) }
 #prevBtn{ background:#ffb300 } /* 前一回 按鈕顏色（區別） */
@@ -108,12 +108,12 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
   <div class="cube-wrap">
     <div class="cube-stage" id="stage">
       <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子" style="transform: rotateX(0deg) rotateY(0deg);">
-        <div class="face front"><img src="game9_assets/fruit7.png" alt="果子7"></div>
-        <div class="face back"><img src="game9_assets/fruit8.png" alt="果子8"></div>
-        <div class="face right"><img src="game9_assets/fruit9.png" alt="果子9"></div>
-        <div class="face left"><img src="game9_assets/fruit10.png" alt="果子10"></div>
-        <div class="face top"><img src="game9_assets/fruit11.png" alt="果子11"></div>
-        <div class="face bottom"><img src="game9_assets/fruit12.png" alt="果子12"></div>
+        <div class="face front"><img src="game9_assets/fruit7.png" alt="芳瓜"></div>
+        <div class="face back"><img src="game9_assets/fruit8.png" alt="葡萄"></div>
+        <div class="face right"><img src="game9_assets/fruit9.png" alt="蓮霧"></div>
+        <div class="face left"><img src="game9_assets/fruit10.png" alt="柳丁"></div>
+        <div class="face top"><img src="game9_assets/fruit11.png" alt="木瓜"></div>
+        <div class="face bottom"><img src="game9_assets/fruit12.png" alt="梨仔"></div>
       </div>
     </div>
   </div>
@@ -143,14 +143,13 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 
 <script>
 /* ---------- DATA ---------- */
-/* 使用與原版完全一致的結構；此處水果資料請在您提供第2回正確名稱/拼音/音檔後告訴我即可替換 */
 const fruits = [
-  { name: "果子7", roman: "pinyin7", img: "game9_assets/fruit7.png", audio: "game9_assets/fruit7.mp3" },
-  { name: "果子8", roman: "pinyin8", img: "game9_assets/fruit8.png", audio: "game9_assets/fruit8.mp3" },
-  { name: "果子9", roman: "pinyin9", img: "game9_assets/fruit9.png", audio: "game9_assets/fruit9.mp3" },
-  { name: "果子10", roman: "pinyin10", img: "game9_assets/fruit10.png", audio: "game9_assets/fruit10.mp3" },
-  { name: "果子11", roman: "pinyin11", img: "game9_assets/fruit11.png", audio: "game9_assets/fruit11.mp3" },
-  { name: "果子12", roman: "pinyin12", img: "game9_assets/fruit12.png", audio: "game9_assets/fruit12.mp3" }
+  { name: "芳瓜", roman: "phang-kue", img: "game9_assets/fruit7.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4434.mp3" },
+  { name: "葡萄", roman: "phû-tô",   img: "game9_assets/fruit8.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9985.mp3" },
+  { name: "蓮霧", roman: "lián-bū",   img: "game9_assets/fruit9.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3" },
+  { name: "柳丁", roman: "liú-ting", img: "game9_assets/fruit10.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5078.mp3" },
+  { name: "木瓜", roman: "bo̍k-kue", img: "game9_assets/fruit11.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/877.mp3" },
+  { name: "梨仔", roman: "lâi-á",   img: "game9_assets/fruit12.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7478.mp3" }
 ];
 
 /* base rotations that make each face exactly front+upright */
