@@ -29,6 +29,7 @@
 
   main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1 1 auto; }
 
+  /* cube area */
   .cube-wrap{ width:100%; display:flex; justify-content:center; align-items:center; }
   .cube-stage{
     width: min(90vw, 200px);
@@ -95,46 +96,46 @@
 </style>
 </head>
 <body>
-<header>
-  <h1>果子骰仔遊戲-第4回</h1>
-  <div class="hint">📱 建議直式觀看效果最佳</div>
-</header>
+  <header>
+    <h1>果子骰仔遊戲-第4回</h1>
+    <div class="hint">📱 建議直式觀看效果最佳</div>
+  </header>
 
-<main>
-  <div class="cube-wrap">
-    <div class="cube-stage" id="stage">
-      <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子">
-        <div class="face front"><img src="game9_assets/fruit19.png" alt="釋迦"></div>
-        <div class="face back"><img src="game9_assets/fruit20.png" alt="草莓"></div>
-        <div class="face right"><img src="game9_assets/fruit21.png" alt="櫻桃"></div>
-        <div class="face left"><img src="game9_assets/fruit22.png" alt="水蜜桃"></div>
-        <div class="face top"><img src="game9_assets/fruit23.png" alt="西瓜"></div>
-        <div class="face bottom"><img src="game9_assets/fruit24.png" alt="枇杷"></div>
+  <main>
+    <div class="cube-wrap">
+      <div class="cube-stage" id="stage">
+        <div id="cube" class="cube" aria-hidden="false" role="img" aria-label="果子骰子">
+          <div class="face front"><img src="game9_assets/fruit19.png" alt="釋迦"></div>
+          <div class="face back"><img src="game9_assets/fruit20.png" alt="草莓"></div>
+          <div class="face right"><img src="game9_assets/fruit21.png" alt="櫻桃"></div>
+          <div class="face left"><img src="game9_assets/fruit22.png" alt="水蜜桃"></div>
+          <div class="face top"><img src="game9_assets/fruit23.png" alt="西瓜"></div>
+          <div class="face bottom"><img src="game9_assets/fruit24.png" alt="枇杷"></div>
+        </div>
       </div>
     </div>
+
+    <div class="controls">
+      <button id="rollBtn">撚骰仔 🎲</button>
+    </div>
+
+    <div id="result">
+      <div class="fruit-name" id="fruitName">&nbsp;</div>
+      <div class="fruit-roman" id="fruitRoman">&nbsp;</div>
+      <button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
+    </div>
+  </main>
+
+  <div class="bottom">
+    <button id="againBtn">閣耍一擺</button>
+    <button id="prevBtn">前一回</button>
+    <button id="nextBtn">後一回</button>
+    <button id="homeBtn">轉去遊戲頭頁</button>
   </div>
 
-  <div class="controls">
-    <button id="rollBtn">撚骰仔 🎲</button>
-  </div>
-
-  <div id="result">
-    <div class="fruit-name" id="fruitName">&nbsp;</div>
-    <div class="fruit-roman" id="fruitRoman">&nbsp;</div>
-    <button id="playPron" class="play-audio" style="display:none">🔊 聽台語發音</button>
-  </div>
-</main>
-
-<div class="bottom">
-  <button id="againBtn">閣耍一擺</button>
-  <button id="prevBtn">前一回</button>
-  <button id="nextBtn">後一回</button>
-  <button id="homeBtn">轉去遊戲頭頁</button>
-</div>
-
-<audio id="rollSound" preload="auto"></audio>
-<audio id="dingSound" preload="auto"></audio>
-<audio id="fruitSound" preload="auto"></audio>
+  <audio id="rollSound" preload="auto"></audio>
+  <audio id="dingSound" preload="auto"></audio>
+  <audio id="fruitSound" preload="auto"></audio>
 
 <script>
 const fruits = [
@@ -146,62 +147,62 @@ const fruits = [
   { name:"枇杷", roman:"pî-pê", img:"game9_assets/fruit24.png", audio:"https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4220.mp3" }
 ];
 
-const faceRotations = [
-  { x: 0, y: 0 },
-  { x: 0, y: 180 },
-  { x: 0, y: -90 },
-  { x: 0, y: 90 },
-  { x: -90, y: 0 },
-  { x: 90, y: 0 }
-];
+const cube = document.getElementById("cube");
+const rollBtn = document.getElementById("rollBtn");
+const resultName = document.getElementById("fruitName");
+const resultRoman = document.getElementById("fruitRoman");
+const playBtn = document.getElementById("playPron");
 
-const cube = document.getElementById('cube');
-const rollBtn = document.getElementById('rollBtn');
-const fruitName = document.getElementById('fruitName');
-const fruitRoman = document.getElementById('fruitRoman');
-const playPron = document.getElementById('playPron');
-const rollSound = document.getElementById('rollSound');
-const dingSound = document.getElementById('dingSound');
-const fruitSound = document.getElementById('fruitSound');
-const againBtn = document.getElementById('againBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const homeBtn = document.getElementById('homeBtn');
+const rollSound = document.getElementById("rollSound");
+const dingSound = document.getElementById("dingSound");
+const fruitSound = document.getElementById("fruitSound");
 
 rollSound.src = "game9_assets/Roll the dice.mp3";
 dingSound.src = "game9_assets/ding.mp3";
 
-let rolling = false;
+let xRot=0, yRot=0;
 
 function rollDice(){
-  if(rolling) return;
-  rolling = true;
+  const index = Math.floor(Math.random()*6);
+  const degX = Math.floor(Math.random()*4+1)*90;
+  const degY = Math.floor(Math.random()*4+1)*90;
+  xRot += degX; yRot += degY;
+
+  cube.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
   rollSound.currentTime=0; rollSound.play();
-  const chosenIndex = Math.floor(Math.random()*fruits.length);
-  const rotation = faceRotations[chosenIndex];
-  cube.style.transform = `rotateX(${rotation.x + 720}deg) rotateY(${rotation.y + 720}deg)`;
+
   setTimeout(()=>{
     rollSound.pause();
-    rollSound.currentTime=0;
     dingSound.currentTime=0; dingSound.play();
-    const fruit = fruits[chosenIndex];
-    fruitName.textContent = fruit.name;
-    fruitRoman.textContent = fruit.roman;
+    const fruit = fruits[index];
+    resultName.textContent = fruit.name;
+    resultRoman.textContent = fruit.roman;
     fruitSound.src = fruit.audio;
-    fruitSound.currentTime = 0;
-    fruitSound.play().catch(()=>{});
-    playPron.style.display = 'inline-block';
-    rolling = false;
-  },2000);
+    playBtn.style.display="inline-block";
+  }, 2000);
 }
 
-rollBtn.addEventListener('click', rollDice);
-playPron.addEventListener('click',()=>{ fruitSound.currentTime=0; fruitSound.play(); });
+rollBtn.addEventListener("click", rollDice);
 
-againBtn.addEventListener('click', ()=>{ location.reload(); });
-prevBtn.addEventListener('click', ()=>{ location.href='game9_round7.html'; });
-nextBtn.addEventListener('click', ()=>{ location.href='game9_round9.html'; });
-homeBtn.addEventListener('click', ()=>{ location.href='index.html'; });
+playBtn.addEventListener("click", ()=>{
+  fruitSound.currentTime=0; fruitSound.play();
+});
+
+// 底部按鈕
+document.getElementById("againBtn").addEventListener("click", ()=>{
+  resultName.textContent = "";
+  resultRoman.textContent = "";
+  playBtn.style.display="none";
+});
+document.getElementById("prevBtn").addEventListener("click", ()=>{
+  location.href="game9_round7.html";
+});
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  location.href="game9_round9.html";
+});
+document.getElementById("homeBtn").addEventListener("click", ()=>{
+  location.href="index.html";
+});
 </script>
 </body>
 </html>
