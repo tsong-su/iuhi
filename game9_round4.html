@@ -1,145 +1,204 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>果子圖片 & 台語果子名配對 - 第4回</title>
   <style>
     body {
-      font-family: "jf open 粉圓", "微軟正黑體", sans-serif;
-      background: linear-gradient(to bottom right, #fff8e7, #ffe6cc);
+      font-family: "Microsoft JhengHei", sans-serif;
       text-align: center;
+      background-color: #fff7e6;
       margin: 0;
       padding: 0;
     }
+
     h1 {
-      background-color: #ffcc66;
-      color: #663300;
-      padding: 15px;
-      margin: 0;
-      font-size: 28px;
+      color: #d2691e;
+      margin-top: 20px;
     }
+
     #game-container {
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 30px;
-      margin-top: 40px;
       flex-wrap: wrap;
-    }
-    .column {
-      display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      gap: 15px;
+      margin: 20px auto;
+      max-width: 1000px;
     }
-    .fruit {
+
+    .card {
       width: 120px;
       height: 120px;
-      border: 2px solid #d2691e;
-      border-radius: 15px;
-      background-color: #fffaf0;
-      background-size: cover;
-      background-position: center;
-      cursor: grab;
-    }
-    .word {
-      width: 120px;
-      padding: 10px;
+      margin: 10px;
       background-color: #fff;
-      border: 2px solid #ff9966;
+      border: 2px solid #ffa726;
       border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      background-color: #fff3e0;
+    }
+
+    .card img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+
+    .word-card {
       font-size: 20px;
-      color: #cc6600;
+      font-weight: bold;
+      color: #4e342e;
     }
-    .matched {
-      background-color: #ffcc99 !important;
-      opacity: 0.7;
-      pointer-events: none;
-    }
+
     #buttons {
-      margin-top: 40px;
+      margin: 30px 0;
     }
+
     button {
       font-size: 18px;
-      margin: 5px;
-      padding: 10px 18px;
-      border-radius: 10px;
+      margin: 8px;
+      padding: 10px 20px;
       border: none;
+      border-radius: 10px;
       cursor: pointer;
-      background-color: #ff9966;
       color: white;
-      transition: 0.3s;
+      transition: background-color 0.3s;
     }
+
+    #retryBtn {
+      background-color: #ff9800;
+    }
+
+    #prevBtn {
+      background-color: #8bc34a;
+    }
+
+    #nextBtn {
+      background-color: #03a9f4;
+    }
+
+    #homeBtn {
+      background-color: #9c27b0;
+    }
+
     button:hover {
-      background-color: #ff6600;
+      opacity: 0.85;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 100px;
+        height: 100px;
+        margin: 6px;
+      }
+      .word-card {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
 <body>
   <h1>果子圖片 & 台語果子名配對 - 第4回</h1>
-  <div id="game-container">
-    <div class="column" id="fruits">
-      <div class="fruit" style="background-image: url('fruit19.png')" data-name="芒果"></div>
-      <div class="fruit" style="background-image: url('fruit20.png')" data-name="蓮霧"></div>
-      <div class="fruit" style="background-image: url('fruit21.png')" data-name="鳳梨"></div>
-      <div class="fruit" style="background-image: url('fruit22.png')" data-name="甘蔗"></div>
-    </div>
-    <div class="column" id="words">
-      <div class="word" data-name="鳳梨">ong-lâi（鳳梨）</div>
-      <div class="word" data-name="甘蔗">kam-tsià（甘蔗）</div>
-      <div class="word" data-name="芒果">báng-kó（芒果）</div>
-      <div class="word" data-name="蓮霧">liân-bū（蓮霧）</div>
-    </div>
-  </div>
+
+  <div id="game-container"></div>
 
   <div id="buttons">
-    <button onclick="window.location.href='game9_round3.html'">前一回</button>
-    <button onclick="resetGame()">閣耍一擺</button>
-    <button onclick="window.location.href='game9_fruit5.html'">後一回</button>
-    <button onclick="window.location.href='game9.html'">轉去遊戲頭頁</button>
+    <button id="retryBtn">閣耍一擺</button>
+    <button id="prevBtn" onclick="location.href='game9_round3.html'">前一回</button>
+    <button id="nextBtn" onclick="location.href='game9_fruit5.html'">後一回</button>
+    <button id="homeBtn" onclick="location.href='game9.html'">轉去遊戲頭頁</button>
   </div>
 
+  <audio id="audioPlayer"></audio>
+
   <script>
-    let selectedFruit = null;
-    const fruits = document.querySelectorAll('.fruit');
-    const words = document.querySelectorAll('.word');
+    const cards = [
+      { img: "fruit28.png", text: "桑椹", audio: "game9_assets/fruit28.mp3" },
+      { img: "fruit29.png", text: "椰棗", audio: "game9_assets/fruit29.mp3" },
+      { img: "fruit30.png", text: "西瓜", audio: "game9_assets/fruit30.mp3" },
+      { img: "fruit31.png", text: "香瓜", audio: "game9_assets/fruit31.mp3" },
+      { img: "fruit32.png", text: "楊桃", audio: "game9_assets/fruit32.mp3" },
+      { img: "fruit33.png", text: "鳳梨", audio: "game9_assets/fruit33.mp3" },
+      { img: "fruit34.png", text: "木瓜", audio: "game9_assets/fruit34.mp3" },
+      { img: "fruit27.png", text: "草莓", audio: "game9_assets/fruit27.mp3" }
+    ];
 
-    fruits.forEach(fruit => {
-      fruit.addEventListener('click', () => {
-        if (fruit.classList.contains('matched')) return;
-        selectedFruit = fruit;
-        fruits.forEach(f => f.style.border = "2px solid #d2691e");
-        fruit.style.border = "4px solid red";
-      });
-    });
+    const container = document.getElementById("game-container");
 
-    words.forEach(word => {
-      word.addEventListener('click', () => {
-        if (!selectedFruit || word.classList.contains('matched')) return;
+    let shuffledCards = [];
+    let selected = [];
+    let matched = [];
 
-        if (selectedFruit.dataset.name === word.dataset.name) {
-          selectedFruit.classList.add('matched');
-          word.classList.add('matched');
-          selectedFruit.style.border = "2px solid #d2691e";
-          selectedFruit = null;
-
-          const allMatched = [...fruits].every(f => f.classList.contains('matched'));
-          if (allMatched) {
-            setTimeout(() => alert('👏 全部配對成功！'), 100);
-          }
-        } else {
-          alert('未配對成功，閣試看覓～');
-        }
-      });
-    });
-
-    function resetGame() {
-      fruits.forEach(f => f.classList.remove('matched'));
-      words.forEach(w => w.classList.remove('matched'));
-      fruits.forEach(f => f.style.border = "2px solid #d2691e");
-      selectedFruit = null;
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
+
+    function createBoard() {
+      shuffledCards = shuffle([...cards, ...cards.map(c => ({ ...c, isWord: true }))]);
+      container.innerHTML = "";
+      shuffledCards.forEach((card, index) => {
+        const div = document.createElement("div");
+        div.classList.add("card");
+        div.dataset.index = index;
+
+        if (card.isWord) {
+          div.textContent = card.text;
+          div.classList.add("word-card");
+        } else {
+          const img = document.createElement("img");
+          img.src = "game9_assets/" + card.img;
+          div.appendChild(img);
+        }
+
+        div.addEventListener("click", () => handleSelect(div, card));
+        container.appendChild(div);
+      });
+    }
+
+    function handleSelect(div, card) {
+      if (matched.includes(card.text) || selected.includes(div)) return;
+
+      div.style.backgroundColor = "#ffe0b2";
+      selected.push(div);
+
+      if (selected.length === 2) {
+        const [first, second] = selected;
+        const firstCard = shuffledCards[first.dataset.index];
+        const secondCard = shuffledCards[second.dataset.index];
+
+        if (firstCard.text === secondCard.text && firstCard.isWord !== secondCard.isWord) {
+          matched.push(card.text);
+          playAudio(firstCard.audio);
+          selected = [];
+          first.style.backgroundColor = "#c8e6c9";
+          second.style.backgroundColor = "#c8e6c9";
+        } else {
+          setTimeout(() => {
+            first.style.backgroundColor = "#fff";
+            second.style.backgroundColor = "#fff";
+            selected = [];
+          }, 600);
+        }
+      }
+    }
+
+    function playAudio(src) {
+      const audio = document.getElementById("audioPlayer");
+      audio.src = src;
+      audio.play();
+    }
+
+    document.getElementById("retryBtn").addEventListener("click", createBoard);
+
+    createBoard();
   </script>
 </body>
 </html>
