@@ -10,9 +10,10 @@
   --roll-btn: #ff6b35;
   --again-btn: #4caf50;
   --next-btn: #2196f3;
+  --prev-btn: #ff9800;
   --home-btn: #9c27b0;
   --bg1: #fffbea;
-  --cube-border-color: #b23a48; /* 與 round6 一致 */
+  --cube-border-color: #b23a48; /* 與 round5 一致 */
   --cube-border: 6px solid var(--cube-border-color);
   --cube-border-radius: 12px;
 }
@@ -88,6 +89,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 .bottom{ width:100%; padding:12px 10px 22px; display:flex; justify-content:center; gap:10px; }
 .bottom button{ border:none; padding:10px 12px; border-radius:12px; color:#fff; font-weight:800; cursor:pointer; font-size:4.6vw; }
 #againBtn{ background:var(--again-btn) }
+#prevBtn{ background:var(--prev-btn) }
 #nextBtn{ background:var(--next-btn) }
 #homeBtn{ background:var(--home-btn) }
 
@@ -130,6 +132,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 
 <div class="bottom">
   <button id="againBtn">閣耍一擺</button>
+  <button id="prevBtn">前一回</button>
   <button id="nextBtn">後一回</button>
   <button id="homeBtn">轉去遊戲頭頁</button>
 </div>
@@ -140,14 +143,14 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
-/* ---------- DATA ---------- */
+/* ---------- DATA (第3回: fruit13..fruit18) ---------- */
 const fruits = [
-  { name: "棗仔",  roman: "tsó-á",    img: "game9_assets/fruit13.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3" },
-  { name: "柚仔",  roman: "iū-á",     img: "game9_assets/fruit14.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3" },
-  { name: "李仔",  roman: "lí-á",     img: "game9_assets/fruit15.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3227.mp3" },
-  { name: "柿仔",  roman: "khī-á",    img: "game9_assets/fruit16.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3" },
-  { name: "荔枝",  roman: "nāi-tsi",  img: "game9_assets/fruit17.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3" },
-  { name: "龍眼",  roman: "lîng-gíng",img: "game9_assets/fruit18.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12106.mp3" }
+  { name: "棗仔", roman: "tsó-á",    img: "game9_assets/fruit13.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8491.mp3" },
+  { name: "柚仔", roman: "iū-á",     img: "game9_assets/fruit14.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5085.mp3" },
+  { name: "李仔", roman: "lí-á",     img: "game9_assets/fruit15.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3227.mp3" },
+  { name: "柿仔", roman: "khī-á",    img: "game9_assets/fruit16.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5087.mp3" },
+  { name: "荔枝", roman: "nāi-tsi",  img: "game9_assets/fruit17.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6646.mp3" },
+  { name: "龍眼", roman: "lîng-gíng",img: "game9_assets/fruit18.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12106.mp3" }
 ];
 
 /* base rotations that make each face exactly front+upright */
@@ -182,6 +185,7 @@ const playPronBtn = document.getElementById('playPron');
 const againBtn = document.getElementById('againBtn');
 const nextBtn = document.getElementById('nextBtn');
 const homeBtn = document.getElementById('homeBtn');
+const prevBtn = document.getElementById('prevBtn');
 
 const rollSound = document.getElementById('rollSound');
 const dingSound = document.getElementById('dingSound');
@@ -399,6 +403,7 @@ playPronBtn.addEventListener('click', ()=>{
 rollBtn.addEventListener('click', ()=>{ rollDice(); });
 againBtn.addEventListener('click', ()=>{ rollDice(); });
 nextBtn.addEventListener('click', ()=>{ window.location.href='game9_round8.html'; }); /* 指向下一回 */
+prevBtn.addEventListener('click', ()=>{ window.location.href='game9_round6.html'; }); /* 前一回 */
 homeBtn.addEventListener('click', ()=>{ window.location.href='index.html'; });
 
 /* image missing safety */
@@ -409,9 +414,9 @@ document.querySelectorAll('.face img').forEach(img=>{
 /* attempt quick preload for roll candidates (non-blocking) */
 (async function preloadRollCandidates(){
   for(const s of rollCandidates){
-    try{ 
-      rollSound.src = s; rollSound.load(); 
-      console.log('preload roll candidate', s); 
+    try{
+      rollSound.src = s; rollSound.load();
+      console.log('preload roll candidate', s);
       break;
     }catch(e){ continue; }
   }
