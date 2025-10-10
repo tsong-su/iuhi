@@ -12,86 +12,58 @@
   }
   *{box-sizing:border-box}
   body{
-    margin:0; font-family:"Microsoft JhengHei", "Noto Sans TC", sans-serif;
-    background: linear-gradient(180deg,#fffaf0 0%, #fff3df 100%);
-    color:#222;
-    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    margin:0; font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:linear-gradient(180deg,#fffaf0 0%,#fff3df 100%);
+    color:#222; min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
   }
   header{
-    height:var(--header-h);
-    width:100%;
+    height:var(--header-h); width:100%;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:8px 12px; text-align:center;
   }
   .title-row{
     display:flex; align-items:center; gap:10px;
     font-size:clamp(20px,5vw,30px);
-    font-weight:800;
-    color:#ff6f00;
+    font-weight:800; color:#ff6f00;
   }
-  .title-row img{ width:44px; height:44px; object-fit:contain; }
-  .subtitle{
-    margin-top:6px;
-    font-size:clamp(14px,2.6vw,18px);
-    color:#1565c0;
-  }
-  .view-hint{
-    margin-top:4px;
-    font-size:clamp(16px,3vw,20px);
-    color:#d81b60;
-    font-weight:800;
-  }
-  main{ width:100%; display:flex; flex-direction:column; align-items:center; gap:8px; padding:6px 0; }
+  .title-row img{width:44px;height:44px;object-fit:contain;}
+  .subtitle{margin-top:6px;font-size:clamp(14px,2.6vw,18px);color:#1565c0;}
+  .view-hint{margin-top:4px;font-size:clamp(16px,3vw,20px);color:#d81b60;font-weight:800;}
+  main{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0;}
   .grid-area{
-    width:100%;
-    max-width:720px;
-    height:var(--grid-h);
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    grid-template-rows:repeat(4,1fr);
-    gap:8px;
-    padding: 0 4%;
+    width:100%;max-width:720px;height:var(--grid-h);
+    display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);
+    gap:8px;padding:0 4%;
   }
   .cell{
-    border-radius:14px;
-    border:2px solid rgba(0,0,0,0.12);
-    display:flex; align-items:center; justify-content:center;
-    padding:6px;
-    text-align:center;
-    cursor:pointer;
-    transition: transform .12s ease, box-shadow .12s ease;
-    user-select:none;
-    overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
-    font-weight:700;
-    font-size: clamp(16px, 3vw, 22px);
-    min-height: 44px;
+    border-radius:14px;border:2px solid rgba(0,0,0,0.12);
+    display:flex;align-items:center;justify-content:center;
+    padding:6px;text-align:center;cursor:pointer;
+    transition:transform .12s ease,box-shadow .12s ease;
+    user-select:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+    font-weight:700;font-size:clamp(16px,3vw,22px);min-height:44px;
   }
-  .cell:active{ transform: translateY(2px); }
-  #grid-cn .cell{ background: #e3f2fd; color:#0b2340; }
-  #grid-tw .cell{ background: #fff0f6; color:#2b1f2f; }
-  .cell.selected{ outline:4px solid rgba(33,150,243,0.85); outline-offset:-6px; }
-  .cell.matched{ pointer-events:none; color:#fff; }
-  footer{
-    height:var(--footer-h);
-    width:100%;
-    display:flex; align-items:center; justify-content:center; gap:12px; padding:8px;
+  .cell:active{transform:translateY(2px);}
+  #grid-cn .cell{background:#e3f2fd;color:#0b2340;}
+  #grid-tw .cell{background:#fff0f6;color:#2b1f2f;}
+  .cell.selected{outline:4px solid rgba(33,150,243,0.85);outline-offset:-6px;}
+  .cell.matched{pointer-events:none;color:#fff;}
+  footer{height:var(--footer-h);width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px;}
+  button.btn{
+    padding:10px 14px;border-radius:10px;border:none;font-weight:800;
+    font-size:clamp(14px,2.4vw,18px);cursor:pointer;color:#fff;
   }
-  button.btn {
-    padding:10px 14px; border-radius:10px; border:none; font-weight:800; font-size:clamp(14px,2.4vw,18px);
-    cursor:pointer; color:#fff;
+  #btn-restart{background:#ffb74d}
+  #btn-prev{background:#3498db}
+  #btn-next{background:#4fc3f7}
+  #btn-home{background:#81c784}
+  #victory{
+    position:fixed;left:50%;top:44%;transform:translate(-50%,-50%) scale(.2);
+    font-size:clamp(28px,6vw,48px);color:#e91e63;font-weight:900;opacity:0;
+    transition:all .45s cubic-bezier(.2,.9,.2,1);pointer-events:none;
   }
-  #btn-restart{ background:#ffb74d }
-  #btn-prev{ background:#3498db }
-  #btn-next{ background:#4fc3f7 }
-  #btn-home{ background:#81c784 }
-  #victory {
-    position: fixed; left:50%; top:44%; transform:translate(-50%,-50%) scale(.2);
-    font-size: clamp(28px,6vw,48px); color:#e91e63; font-weight:900; opacity:0;
-    transition: all .45s cubic-bezier(.2,.9,.2,1);
-    pointer-events:none;
-  }
-  #victory.show { transform:translate(-50%,-50%) scale(1.2); opacity:1; }
-  @media (min-width:900px){ :root{ --header-h:12vh; --footer_h:10vh; } }
+  #victory.show{transform:translate(-50%,-50%) scale(1.2);opacity:1;}
 </style>
 </head>
 <body>
@@ -106,8 +78,8 @@
 </header>
 
 <main>
-  <div id="grid-cn" class="grid-area" aria-label="華語格子"></div>
-  <div id="grid-tw" class="grid-area" aria-label="台語格子"></div>
+  <div id="grid-cn" class="grid-area"></div>
+  <div id="grid-tw" class="grid-area"></div>
   <div id="victory">有夠 gâu！</div>
 </main>
 
@@ -122,140 +94,115 @@
 <audio id="victoryAudio" src="game9_assets/victory.mp3" preload="auto"></audio>
 
 <script>
-// --- 三回水果資料 ---
-const ROUND_DATA = {
+const ROUND_DATA={
   1:'game9_assets/fruits_part1.json',
   2:'game9_assets/fruits_part2.json',
   3:[
-    {id:'fruit9', chinese:'蓮霧', taiwanese:'蓮霧', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3'},
-    {id:'fruit15', chinese:'李子', taiwanese:'李仔', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3227.mp3'},
-    {id:'fruit35', chinese:'山竺', taiwanese:'山竹', audio:'game9_assets/fruit35.mp3'},
-    {id:'fruit36', chinese:'哈密瓜', taiwanese:'網仔瓜', audio:'game9_assets/fruit36.mp3'},
-    {id:'fruit37', chinese:'奇異果', taiwanese:'猴頭果', audio:'game9_assets/fruit37.mp3'},
-    {id:'fruit38', chinese:'酪梨', taiwanese:'鱷梨仔', audio:'game9_assets/fruit38.mp3'},
-    {id:'fruit39', chinese:'金橘', taiwanese:'金棗', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4614.mp3'},
-    {id:'fruit40', chinese:'火龍果', taiwanese:'火龍果', audio:'game9_assets/fruit40.mp3'},
-    {id:'fruit41', chinese:'葡萄柚', taiwanese:'葡萄柚', audio:'game9_assets/fruit41.mp3'},
-    {id:'fruit42', chinese:'椪柑', taiwanese:'椪柑', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8535.mp3'},
-    {id:'fruit43', chinese:'藍莓', taiwanese:'藍莓', audio:'game9_assets/fruit43.mp3'},
-    {id:'fruit44', chinese:'小玉西瓜', taiwanese:'小玉仔', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/295.mp3'},
-    {id:'fruit45', chinese:'椰子', taiwanese:'椰子', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9575.mp3'},
-    {id:'fruit46', chinese:'番茄', taiwanese:'柑仔蜜', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5090.mp3'},
-    {id:'fruit47', chinese:'虎頭柑', taiwanese:'虎頭柑', audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4649.mp3'},
-    {id:'fruit48', chinese:'肚臍橙', taiwanese:'肚臍柑', audio:'game9_assets/fruit48.mp3'}
+    {id:'fruit9',chinese:'蓮霧',taiwanese:'蓮霧',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11322.mp3'},
+    {id:'fruit15',chinese:'李子',taiwanese:'李仔',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3227.mp3'},
+    {id:'fruit35',chinese:'山竺',taiwanese:'山竹',audio:'game9_assets/fruit35.mp3'},
+    {id:'fruit36',chinese:'哈密瓜',taiwanese:'網仔瓜',audio:'game9_assets/fruit36.mp3'},
+    {id:'fruit37',chinese:'奇異果',taiwanese:'猴頭果',audio:'game9_assets/fruit37.mp3'},
+    {id:'fruit38',chinese:'酪梨',taiwanese:'鱷梨仔',audio:'game9_assets/fruit38.mp3'},
+    {id:'fruit39',chinese:'金橘',taiwanese:'金棗',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4614.mp3'},
+    {id:'fruit40',chinese:'火龍果',taiwanese:'火龍果',audio:'game9_assets/fruit40.mp3'},
+    {id:'fruit41',chinese:'葡萄柚',taiwanese:'葡萄柚',audio:'game9_assets/fruit41.mp3'},
+    {id:'fruit42',chinese:'椪柑',taiwanese:'椪柑',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8535.mp3'},
+    {id:'fruit43',chinese:'藍莓',taiwanese:'藍莓',audio:'game9_assets/fruit43.mp3'},
+    {id:'fruit44',chinese:'小玉西瓜',taiwanese:'小玉仔',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/295.mp3'},
+    {id:'fruit45',chinese:'椰子',taiwanese:'椰子',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9575.mp3'},
+    {id:'fruit46',chinese:'番茄',taiwanese:'柑仔蜜',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/5/5090.mp3'},
+    {id:'fruit47',chinese:'虎頭柑',taiwanese:'虎頭柑',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4649.mp3'},
+    {id:'fruit48',chinese:'肚臍橙',taiwanese:'肚臍柑',audio:'game9_assets/fruit48.mp3'}
   ]
 };
+const COLORS=["#FF5733","#FF8D1A","#FFC300","#DAF7A6","#33FF57","#1AFF8D","#33FFF6","#3380FF","#8D33FF","#FF33F6","#FF3380","#FF6666","#66FF66","#66FFFF","#6666FF","#FFCC00"];
 
-const COLOR_PALETTE = [
-  "#FF5733","#FF8D1A","#FFC300","#DAF7A6",
-  "#33FF57","#1AFF8D","#33FFF6","#3380FF",
-  "#8D33FF","#FF33F6","#FF3380","#FF6666",
-  "#66FF66","#66FFFF","#6666FF","#FFCC00"
-];
+const gridCn=document.getElementById('grid-cn');
+const gridTw=document.getElementById('grid-tw');
+const titleText=document.getElementById('titleText');
+const victoryEl=document.getElementById('victory');
+const wrongAudio=document.getElementById('wrongAudio');
+const victoryAudio=document.getElementById('victoryAudio');
+const btnPrev=document.getElementById('btn-prev');
 
-const gridCn = document.getElementById('grid-cn');
-const gridTw = document.getElementById('grid-tw');
-const titleText = document.getElementById('titleText');
-const victoryEl = document.getElementById('victory');
-const wrongAudio = document.getElementById('wrongAudio');
-const victoryAudio = document.getElementById('victoryAudio');
+let round=1,pairs=[],selected=null,matchedCount=0,playingFinalFlow=false;
 
-let round=1, pairs=[], selected=null, matchedCount=0, playingFinalFlow=false;
-
-// --- 載入回合資料 ---
 async function loadRound(r){
   round=r; matchedCount=0; selected=null; playingFinalFlow=false; pairs=[];
   victoryEl.classList.remove('show');
   titleText.textContent=`華台水果語詞配對 - 第${round}回`;
 
+  // 第1回時隱藏「前一回」
+  btnPrev.style.display=(round===1)?'none':'inline-block';
+
   try{
     let data=[];
     if(round===3){
       data=ROUND_DATA[3];
-    } else {
-      const res = await fetch(ROUND_DATA[round],{cache:'no-cache'});
-      if(!res.ok) throw new Error('fetch failed');
+    }else{
+      const res=await fetch(ROUND_DATA[round],{cache:'no-cache'});
       let arr=await res.json(); arr=Array.isArray(arr)?arr:arr.fruits;
       data=arr.slice(0,16);
     }
-    pairs=data.map((it,i)=>{
-      return {
-        id: it.id ?? (i+1),
-        chinese: it.chinese ?? it.name ?? `水果${i+1}`,
-        taiwanese: it.taiwanese ?? `台語${i+1}`,
-        audio: it.audio ?? null,
-        color: COLOR_PALETTE[i%COLOR_PALETTE.length]
-      }
-    });
+    pairs=data.map((it,i)=>({id:it.id??(i+1),chinese:it.chinese??it.name??`水果${i+1}`,taiwanese:it.taiwanese??`台語${i+1}`,audio:it.audio??null,color:COLORS[i%COLORS.length]}));
     renderGrids();
-  }catch(err){
-    console.error('loadRound error', err);
-    gridCn.innerHTML = '<div style="padding:16px;color:#a00">無法載入資料</div>';
+  }catch(e){
+    console.error(e);
+    gridCn.innerHTML='<div style="padding:16px;color:#a00">無法載入資料</div>';
     gridTw.innerHTML='';
   }
 }
 
 function renderGrids(){
   gridCn.innerHTML=''; gridTw.innerHTML='';
-  matchedCount=0; selected=null; victoryEl.classList.remove('show');
-
   pairs.forEach(p=>{
-    const d = document.createElement('div');
-    d.className='cell'; d.textContent=p.chinese;
-    d.dataset.pairId=p.id; d.dataset.type='cn';
-    d.addEventListener('click',()=>onCellClick(d));
-    gridCn.appendChild(d);
+    const c=document.createElement('div');
+    c.className='cell'; c.textContent=p.chinese; c.dataset.id=p.id; c.dataset.type='cn';
+    c.onclick=()=>onClick(c); gridCn.appendChild(c);
   });
-
   const shuffled=pairs.slice().sort(()=>Math.random()-0.5);
   shuffled.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='cell'; d.textContent=p.taiwanese;
-    d.dataset.pairId=p.id; d.dataset.type='tw';
-    d.addEventListener('click',()=>onCellClick(d));
-    gridTw.appendChild(d);
+    const t=document.createElement('div');
+    t.className='cell'; t.textContent=p.taiwanese; t.dataset.id=p.id; t.dataset.type='tw';
+    t.onclick=()=>onClick(t); gridTw.appendChild(t);
   });
 }
 
-function onCellClick(el){
-  if(playingFinalFlow||el.classList.contains('matched')) return;
-  if(!selected){ selected={el, id:el.dataset.pairId, type:el.dataset.type}; el.classList.add('selected'); return; }
-  if(selected.el===el){ el.classList.remove('selected'); selected=null; return; }
+function onClick(el){
+  if(playingFinalFlow||el.classList.contains('matched'))return;
+  if(!selected){selected={el,id:el.dataset.id,type:el.dataset.type};el.classList.add('selected');return;}
+  if(selected.el===el){el.classList.remove('selected');selected=null;return;}
   el.classList.add('selected');
-  const first=selected, second={el, id:el.dataset.pairId, type:el.dataset.type};
-  if(first.id===second.id && first.type!==second.type){
+  const first=selected,second={el,id:el.dataset.id,type:el.dataset.type};
+  if(first.id===second.id&&first.type!==second.type){
     const pair=pairs.find(p=>p.id==first.id);
     const color=pair.color;
-    first.el.classList.add('matched'); second.el.classList.add('matched');
-    first.el.style.background=color; second.el.style.background=color;
-    first.el.style.color='#fff'; second.el.style.color='#fff';
+    first.el.classList.add('matched');second.el.classList.add('matched');
+    first.el.style.background=color;second.el.style.background=color;
+    first.el.style.color='#fff';second.el.style.color='#fff';
     matchedCount++;
-    if(pair.audio){ new Audio(pair.audio).play().catch(()=>{}); }
+    if(pair.audio){new Audio(pair.audio).play().catch(()=>{});}
     if(matchedCount===pairs.length){
       playingFinalFlow=true;
-      setTimeout(()=>{ victoryAudio.play().catch(()=>{}); victoryEl.classList.add('show'); setTimeout(()=>{playingFinalFlow=false;},2500); },1000);
+      setTimeout(()=>{victoryAudio.play().catch(()=>{});victoryEl.classList.add('show');setTimeout(()=>playingFinalFlow=false,2500);},700);
     }
-  } else {
-    try{ wrongAudio.currentTime=0; wrongAudio.play().catch(()=>{}); }catch(e){}
-    first.el.classList.add('shake'); second.el.classList.add('shake');
-    setTimeout(()=>{ first.el.classList.remove('shake','selected'); second.el.classList.remove('shake','selected'); },380);
+  }else{
+    wrongAudio.currentTime=0;wrongAudio.play().catch(()=>{});
+    setTimeout(()=>{first.el.classList.remove('selected');second.el.classList.remove('selected');},350);
   }
-  if(!first.el.classList.contains('matched')) first.el.classList.remove('selected');
-  if(!second.el.classList.contains('matched')) second.el.classList.remove('selected');
+  if(!first.el.classList.contains('matched'))first.el.classList.remove('selected');
+  if(!second.el.classList.contains('matched'))second.el.classList.remove('selected');
   selected=null;
 }
 
-// --- 按鈕事件 ---
-document.getElementById('btn-restart').addEventListener('click',()=>loadRound(round));
-document.getElementById('btn-prev').addEventListener('click',()=>{
-  if(round>1){ loadRound(round-1); } else { alert('已是第一回'); }
-});
-document.getElementById('btn-next').addEventListener('click',()=>{
-  if(round<3){ loadRound(round+1); } else { alert('已是最後一回'); }
-});
-document.getElementById('btn-home').addEventListener('click',()=>{location.href='index.html';});
+// 按鈕
+document.getElementById('btn-restart').onclick=()=>loadRound(round);
+document.getElementById('btn-prev').onclick=()=>{if(round>1)loadRound(round-1)};
+document.getElementById('btn-next').onclick=()=>{if(round<3)loadRound(round+1)};
+document.getElementById('btn-home').onclick=()=>location.href='index.html';
 
-// 初始載入第1回
+// 初始
 loadRound(1);
 </script>
 </body>
