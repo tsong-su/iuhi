@@ -137,6 +137,7 @@ main{ width:100%; max-width:520px; padding:8px 12px 18px; display:flex; flex-dir
 <audio id="fruitSound" preload="auto"></audio>
 
 <script>
+// 第5回水果資料
 const fruits = [
   { name: "檸檬", roman: "lê-bóng", img: "game9_assets/fruit25.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12515.mp3" },
   { name: "蘋果", roman: "phông-kó", img: "game9_assets/fruit26.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13020.mp3" },
@@ -146,6 +147,7 @@ const fruits = [
   { name: "鳥梨仔", roman: "tsiáu-lâi-á", img: "game9_assets/fruit30.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8120.mp3" }
 ];
 
+// 骰子旋轉角度對應
 const faceTarget = [
   { x: 0, y: 0 },
   { x: 0, y: 180 },
@@ -203,6 +205,7 @@ window.addEventListener('resize', updateCubeSize);
 window.addEventListener('orientationchange', updateCubeSize);
 updateCubeSize();
 
+// 撥放骰子音效與合成聲
 let audioCtx = null;
 let synthNodes = null;
 function startSynthRoll(){
