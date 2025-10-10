@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>果子圖片 & 台語果子名配對 - 第6回</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --card-size:120px;
+  --gap:8px;
+  --max-width:1000px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;background:#fff;color:#222;text-align:center;}
+header{padding:12px;}
+h1{margin:0;font-size:18px;color:#cc5500;}
+.hint{margin-top:8px;margin-bottom:10px;font-weight:700;color:#d35400;}
+.wrap{width: calc(100% - 16px); max-width: var(--max-width); margin:0 auto;}
+.grid{display:grid;grid-template-columns: repeat(4, 1fr);gap: var(--gap);padding:6px;width:100%;}
+.card{
+  width:100%; height: var(--card-size);
+  border-radius:10px;border:1.4px solid #ddd;
+  display:flex;align-items:center;justify-content:center;
+  background:#fafafa;overflow:hidden;cursor:pointer;
+  padding:6px;transition: transform .08s ease,border-color .12s ease, background .12s ease;
+}
+.card:active{transform: scale(.995);}
+.card img{
+  max-width:78%; max-height:72%; object-fit:contain; display:block; border-radius:6px; pointer-events:none;
+}
+.fruit-text{
+  font-weight:700;color:#111;text-align:center;line-height:1.1;
+  padding:2px 4px;user-select:none;
+  font-size: var(--font-size);
+  word-break: break-word;
+}
+.matched{pointer-events:none;}
+.selected{outline:3px solid #ffd28a;outline-offset:-6px;}
+.wrong{outline:3px solid rgba(230,57,70,0.9);outline-offset:-6px;}
+#victory{
+  position: fixed; top:42%; left:50%;
+  transform: translate(-50%, -50%) scale(.4);
+  font-size:2.4rem;font-weight:900;color:#d64545;
+  opacity:0; z-index:2200;
+  transition: transform .45s ease, opacity .35s ease; pointer-events:none; background:transparent;
+}
+#victory.show{transform: translate(-50%, -50%) scale(1.4);opacity:1;}
+.bottom{
+  position: fixed; left:0; right:0; bottom:0;
+  background:#fff8dc;border-top:1px solid #e6ddd0;
+  padding:10px 8px; display:flex; justify-content:space-around; gap:8px; z-index:1200;
+}
+.bottom button{
+  color:#fff; border:none; padding:10px 14px; border-radius:8px; font-size:1rem; cursor:pointer; min-width:88px; font-weight:700;
+}
+.btn1{background:#3498db;} /* 閣耍一擺 */
+.btn2{background:#2ecc71;} /* 前一回 */
+.btn3{background:#e67e22;} /* 後一回 */
+.btn4{background:#9b59b6;} /* 轉去遊戲頭頁 */
+@media (max-width:480px){.hint{font-size:1.8rem;}}
+@media (min-width:900px){:root {--card-size:150px;}}
+</style>
+</head>
+<body>
+<header class="wrap">
+<h1>果子圖片 & 台語果子名配對 — 第6回</h1>
+<div class="hint">📱 建議直式觀看效果最佳</div>
+</header>
+<main class="wrap">
+<div id="grid" class="grid" aria-live="polite"></div>
+</main>
+<div id="victory">有夠 gâu！</div>
+<div class="bottom">
+  <button class="btn1" onclick="location.reload()">閣耍一擺</button>
+  <button class="btn2" onclick="location.href='game9_fruit5.html'">前一回</button>
+  <button class="btn3" onclick="alert('已是最後一回');">後一回</button>
+  <button class="btn4" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+</div>
+<audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
+<audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
+<script>
+const ROUND_FRUITS=[
+  {id:'fruit36',taiwanese:'網仔瓜',audio:'game9_assets/fruit36.mp3'},
+  {id:'fruit37',taiwanese:'猴頭果',audio:'game9_assets/fruit37.mp3'},
+  {id:'fruit38',taiwanese:'鱷梨仔',audio:'game9_assets/fruit38.mp3'},
+  {id:'fruit39',taiwanese:'金棗',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4614.mp3'},
+  {id:'fruit41',taiwanese:'葡萄柚',audio:'game9_assets/fruit41.mp3'},
+  {id:'fruit44',taiwanese:'小玉仔',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/295.mp3'},
+  {id:'fruit45',taiwanese:'椰子',audio:'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9575.mp3'},
+  {id:'fruit48',taiwanese:'肚臍柑',audio:'game9_assets/fruit48.mp3'}
+];
+
+const PALETTE=["#FFB74D","#4DB6AC","#9575CD","#F06292","#64B5F6","#FFD54F","#81C784","#FF8A65"];
+const grid=document.getElementById('grid');
+const wrongAudio=document.getElementById('wrongAudio');
+const victoryAudio=document.getElementById('victoryAudio');
+const victoryEl=document.getElementById('victory');
+let deck=[], firstPick=null, lock=false, matched=0, colorMap={};
+
+function computeSizes(){
+  const wrapPad=20, columns=4;
+  const availableW=Math.min(window.innerWidth-wrapPad,980);
+  const cardW=Math.floor((availableW-(columns-1)*8)/columns);
+  const final=Math.max(100, Math.min(160, cardW));
+  document.documentElement.style.setProperty('--card-size', final+'px');
+  const chars=3;
+  const fontPx=Math.floor((final*0.65)/chars);
+  document.documentElement.style.setProperty('--font-size', fontPx+'px');
+  return {card:final,font:fontPx};
+}
+function setupResponsive(){computeSizes(); window.addEventListener('resize',()=>computeSizes());}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr;}
+
+function initGame(){
+  grid.innerHTML=''; deck=[]; firstPick=null; lock=false; matched=0; colorMap={};
+  const colors=shuffle(PALETTE.slice());
+  ROUND_FRUITS.forEach((f,idx)=>{colorMap[f.id]=colors[idx%colors.length];});
+  ROUND_FRUITS.forEach(f=>{
+    deck.push({id:f.id,type:'img',data:f});
+    deck.push({id:f.id,type:'text',data:f});
+  });
+  shuffle(deck);
+  deck.forEach(cardObj=>{
+    const el=document.createElement('div'); el.className='card';
+    el.dataset.id=cardObj.id; el.dataset.type=cardObj.type;
+    el.setAttribute('role','button'); el.setAttribute('tabindex','0');
+    if(cardObj.type==='img'){
+      const img=document.createElement('img'); img.src=`game9_assets/${cardObj.id}.png`; img.alt=cardObj.data.taiwanese;
+      img.onerror=()=>{img.style.opacity=0.6; img.alt='圖片載入失敗';};
+      el.appendChild(img);
+    }else{
+      const span=document.createElement('span'); span.className='fruit-text'; span.textContent=cardObj.data.taiwanese; el.appendChild(span);
+    }
+    el.addEventListener('click',()=>onPick(el));
+    el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onPick(el);}});
+    grid.appendChild(el);
+  });
+}
+
+function onPick(el){
+  if(lock) return; if(el.classList.contains('matched')) return;
+  if(!firstPick){firstPick=el; el.classList.add('selected'); return;}
+  if(firstPick===el){firstPick.classList.remove('selected'); firstPick=null; return;}
+  el.classList.add('selected');
+  const idA=firstPick.dataset.id; const idB=el.dataset.id;
+  const typeA=firstPick.dataset.type; const typeB=el.dataset.type;
+  if(idA===idB && typeA!==typeB){
+    const bg=colorMap[idA]||'#f0f7ee';
+    [firstPick,el].forEach(node=>{node.classList.remove('selected'); node.classList.add('matched'); node.style.backgroundColor=bg; node.style.borderColor='#ddd';});
+    const fruitObj=ROUND_FRUITS.find(f=>f.id===idA);
+    if(fruitObj && fruitObj.audio){
+      const audio = new Audio(fruitObj.audio);
+      audio.play();
+      matched++; firstPick=null;
+      if(matched===ROUND_FRUITS.length){
+        audio.onended = ()=>{setTimeout(()=>{victoryAudio.currentTime=0; victoryAudio.play(); victoryEl.classList.add('show'); setTimeout(()=>victoryEl.classList.remove('show'),2200);},500);}
+      }
+    }
+  }else{
+    try{wrongAudio.currentTime=0; wrongAudio.play();}catch(e){}
+    firstPick.classList.add('wrong'); el.classList.add('wrong'); lock=true;
+    setTimeout(()=>{firstPick.classList.remove('wrong','selected'); el.classList.remove('wrong','selected'); firstPick=null; lock=false;},700);
+  }
+}
+
+setupResponsive();
+initGame();
+</script>
+</body>
+</html>
