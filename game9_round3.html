@@ -54,9 +54,10 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 .bottom button{
   color:#fff; border:none; padding:10px 14px; border-radius:8px; font-size:1rem; cursor:pointer; min-width:88px; font-weight:700;
 }
-.btn1{background:#3498db;}
-.btn2{background:#2ecc71;}
-.btn3{background:#e67e22;}
+.btn1{background:#3498db;} /* 閣耍一擺 */
+.btn2{background:#2ecc71;} /* 前一回 */
+.btn3{background:#e67e22;} /* 後一回 */
+.btn4{background:#d64545;} /* 轉去遊戲頭頁 */
 @media (max-width:480px){.hint{font-size:1.8rem;}}
 @media (min-width:900px){:root {--card-size:150px;}}
 </style>
@@ -72,8 +73,9 @@ h1{margin:0;font-size:18px;color:#cc5500;}
 <div id="victory">有夠 gâu！</div>
 <div class="bottom">
   <button class="btn1" onclick="location.reload()">閣耍一擺</button>
-  <button class="btn2" onclick="location.href='game9_round4.html'">後一回</button>
-  <button class="btn3" onclick="location.href='index.html'">轉去遊戲頭頁</button>
+  <button class="btn2" onclick="location.href='game9_round2.html'">前一回</button>
+  <button class="btn3" onclick="location.href='game9_round4.html'">後一回</button>
+  <button class="btn4" onclick="location.href='index.html'">轉去遊戲頭頁</button>
 </div>
 <audio id="wrongAudio" src="game9_assets/wrong1.mp3" preload="auto"></audio>
 <audio id="victoryAudio" src="game9_assets/victory2.mp3" preload="auto"></audio>
