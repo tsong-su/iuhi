@@ -19,7 +19,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* header: 標題 + 兩隻石虎，固定在同一行 */
     header {
       width: 100%;
       background-color: #FFECB3;
@@ -35,13 +34,13 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      white-space: nowrap;           /* 盡量維持同一行 */
+      white-space: nowrap;
       overflow: hidden;
     }
 
     header h1 {
       margin: 0;
-      font-size: clamp(1.0rem, 4.5vw, 1.6rem); /* 視窗縮放自適應，避免換行 */
+      font-size: clamp(1.0rem, 4.5vw, 1.6rem);
       color: #2E7D32;
       font-weight: 700;
       letter-spacing: 0.6px;
@@ -55,7 +54,6 @@
       flex-shrink: 0;
     }
 
-    /* 主區塊：兩欄 Grid（手機直式也維持 2 列）*/
     main.game-links {
       width: 100%;
       max-width: 720px;
@@ -67,7 +65,6 @@
       justify-items: center;
     }
 
-    /* 按鈕通用樣式（保留各按鈕不同背景） */
     .game-link {
       display: block;
       width: 100%;
@@ -78,43 +75,45 @@
       text-align: center;
       font-weight: 700;
       font-size: 1rem;
-      line-height: 1.2;
+      line-height: 1.3;
       box-shadow: 2px 4px 8px rgba(0,0,0,0.12);
       transition: transform .12s ease, filter .12s ease;
-      color: white; /* 預設白字（個別按鈕可 override） */
-      border: 3px solid rgba(0,0,0,0.06); /* 預設淡框，個別 override */
+      color: white;
+      border: 3px solid rgba(0,0,0,0.06);
       word-break: break-word;
     }
+
     .game-link:active { transform: scale(0.99); }
 
-    /* 各按鈕顏色與明顯框線（保持您原本配色，但加強框線） */
-    .game1 { background: #ff6f61; box-shadow: 2px 4px 8px rgba(255,111,97,0.35); border-color: #d9483b; }
-    .game2 { background: #fbc02d; color:#4a4a4a; box-shadow: 2px 4px 8px rgba(251,192,45,0.25); border-color: #b88709; }
-    .game3 { background: #4fc3f7; color:#004e8a; box-shadow: 2px 4px 8px rgba(79,195,247,0.25); border-color: #2aa0d9; }
-    .game4 { background: #81c784; color:#1b5e20; box-shadow: 2px 4px 8px rgba(129,199,132,0.25); border-color: #4da160; }
-    .game8 { background: #ba68c8; color:white; box-shadow: 2px 4px 8px rgba(186,104,200,0.25); border-color: #8f46a8; }
-    .game9 { background: #ff8c42; color:white; box-shadow: 2px 4px 8px rgba(255,140,66,0.25); border-color: #e06b25; }
-    .game9r { background: #ff7043; color:white; box-shadow: 2px 4px 8px rgba(255,112,67,0.25); border-color: #d9532d; }
-    .game9d { background: #f06292; color:white; box-shadow: 2px 4px 8px rgba(240,98,146,0.25); border-color: #c54b78; }
+    .game1 { background: #ff6f61; border-color: #d9483b; }
+    .game2 { background: #fbc02d; color:#4a4a4a; border-color: #b88709; }
+    .game3 { background: #4fc3f7; color:#004e8a; border-color: #2aa0d9; }
+    .game4 { background: #81c784; color:#1b5e20; border-color: #4da160; }
+    .game8 { background: #ba68c8; border-color: #8f46a8; }
+    .game9 { background: #ff8c42; border-color: #e06b25; }
+    .game9r { background: #ff7043; border-color: #d9532d; }
+    .game9d { background: #f06292; border-color: #c54b78; }
 
     .game-link:hover {
       filter: brightness(0.96);
       transform: translateY(-2px);
     }
 
-    /* footer */
+    /* footer：鮮豔背景與對比文字 */
     footer {
       width: 100%;
-      background-color: #fffde7;
-      padding: 8px 0;
+      background-color: #FFB74D; /* 橘黃漸層 */
+      background-image: linear-gradient(90deg, #FFCA28, #FFA726);
+      padding: 10px 0;
       text-align: center;
-      color: #666;
-      font-size: 0.9rem;
-      box-shadow: 0 -2px 4px rgba(0,0,0,0.03);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.15);
       flex-shrink: 0;
+      letter-spacing: 0.5px;
     }
 
-    /* 當手機螢幕非常窄時，讓文字與圖示縮小避免換行 */
     @media (max-width: 340px) {
       .icon { width: 46px; height: 46px; }
       header h1 { font-size: 1rem; }
@@ -125,29 +124,27 @@
 </head>
 <body>
   <header>
-    <div class="title-wrap" aria-hidden="false">
-      <!-- 左側石虎（保留） -->
+    <div class="title-wrap">
       <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="石虎圖案">
       <h1>Lē-gio̍k的互動小遊戲</h1>
-      <!-- 右側石虎（保留） -->
       <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="石虎圖案">
     </div>
   </header>
 
-  <main class="game-links" role="navigation" aria-label="遊戲選單">
-    <!-- 保留您原本的所有按鈕與文字（順序、class 與名稱） -->
+  <main class="game-links">
     <a href="game1.html" class="game-link game1">字詞重組塌空</a>
     <a href="game2.html" class="game-link game2">字詞 suá 位講看覓</a>
     <a href="game3.html" class="game-link game3">華台語詞配對遊戲</a>
     <a href="game4.html" class="game-link game4">臺灣各縣市地圖<br>注音符號郵票<br>配對遊戲</a>
     <a href="game8.html" class="game-link game8">咱來撚骰仔</a>
     <a href="game9.html" class="game-link game9">華台水果語詞配對</a>
-    <a href="game9_round1.html" class="game-link game9r">果子圖片 & 台語果子名配對</a>
+    <!-- 修改名稱：固定分成兩行 -->
+    <a href="game9_round1.html" class="game-link game9r">果子圖片 &<br>台語果子名配對</a>
     <a href="game9_round5.html" class="game-link game9d">台語果子骰仔遊戲</a>
   </main>
 
   <footer>
-    © 2025 Lē-gio̍k Studio｜歡迎互動學台語
+    © 2025 Lē-gio̍k Game room｜歡迎互動學台語
   </footer>
 </body>
 </html>
