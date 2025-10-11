@@ -1,106 +1,153 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lē-gio̍k的互動小遊戲</title>
   <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+
     body {
-      font-family: "Noto Sans TC", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to bottom, #fff7e6, #ffeccc);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #FFF176; /* 活潑檸檬黃 */
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* header: 標題 + 兩隻石虎，固定在同一行 */
+    header {
+      width: 100%;
+      background-color: #FFECB3;
+      padding: 10px 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    header .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;           /* 盡量維持同一行 */
       overflow: hidden;
     }
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    header img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-    }
-
     header h1 {
-      font-size: 1.6em;
-      color: #444;
       margin: 0;
-      text-align: center;
+      font-size: clamp(1.0rem, 4.5vw, 1.6rem); /* 視窗縮放自適應，避免換行 */
+      color: #2E7D32;
+      font-weight: 700;
+      letter-spacing: 0.6px;
     }
 
-    .button-container {
+    .icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    /* 主區塊：兩欄 Grid（手機直式也維持 2 列）*/
+    main.game-links {
+      width: 100%;
+      max-width: 720px;
+      padding: 18px 6%;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      width: 90%;
-      margin-top: 40px;
-      max-width: 400px;
+      gap: 12px;
+      align-items: center;
+      justify-items: center;
     }
 
-    .game-button {
-      background-color: #fffdf6;
-      color: #333;
-      border: 2px solid #cc6600;
-      border-radius: 12px;
-      padding: 16px 0;
-      font-size: 1.1em;
-      text-align: center;
+    /* 按鈕通用樣式（保留各按鈕不同背景） */
+    .game-link {
+      display: block;
+      width: 100%;
+      max-width: 360px;
       text-decoration: none;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-      transition: all 0.2s;
+      border-radius: 18px;
+      padding: 12px 10px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.2;
+      box-shadow: 2px 4px 8px rgba(0,0,0,0.12);
+      transition: transform .12s ease, filter .12s ease;
+      color: white; /* 預設白字（個別按鈕可 override） */
+      border: 3px solid rgba(0,0,0,0.06); /* 預設淡框，個別 override */
+      word-break: break-word;
+    }
+    .game-link:active { transform: scale(0.99); }
+
+    /* 各按鈕顏色與明顯框線（保持您原本配色，但加強框線） */
+    .game1 { background: #ff6f61; box-shadow: 2px 4px 8px rgba(255,111,97,0.35); border-color: #d9483b; }
+    .game2 { background: #fbc02d; color:#4a4a4a; box-shadow: 2px 4px 8px rgba(251,192,45,0.25); border-color: #b88709; }
+    .game3 { background: #4fc3f7; color:#004e8a; box-shadow: 2px 4px 8px rgba(79,195,247,0.25); border-color: #2aa0d9; }
+    .game4 { background: #81c784; color:#1b5e20; box-shadow: 2px 4px 8px rgba(129,199,132,0.25); border-color: #4da160; }
+    .game8 { background: #ba68c8; color:white; box-shadow: 2px 4px 8px rgba(186,104,200,0.25); border-color: #8f46a8; }
+    .game9 { background: #ff8c42; color:white; box-shadow: 2px 4px 8px rgba(255,140,66,0.25); border-color: #e06b25; }
+    .game9r { background: #ff7043; color:white; box-shadow: 2px 4px 8px rgba(255,112,67,0.25); border-color: #d9532d; }
+    .game9d { background: #f06292; color:white; box-shadow: 2px 4px 8px rgba(240,98,146,0.25); border-color: #c54b78; }
+
+    .game-link:hover {
+      filter: brightness(0.96);
+      transform: translateY(-2px);
     }
 
-    .game-button:hover {
-      background-color: #fff0cc;
-      transform: scale(1.05);
-    }
-
+    /* footer */
     footer {
-      margin-top: auto;
-      padding: 10px;
-      font-size: 0.9em;
-      color: #777;
+      width: 100%;
+      background-color: #fffde7;
+      padding: 8px 0;
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.03);
+      flex-shrink: 0;
     }
 
-    @media (min-width: 600px) {
-      body {
-        justify-content: flex-start;
-      }
-      header h1 {
-        font-size: 2em;
-      }
-      .game-button {
-        font-size: 1.2em;
-      }
+    /* 當手機螢幕非常窄時，讓文字與圖示縮小避免換行 */
+    @media (max-width: 340px) {
+      .icon { width: 46px; height: 46px; }
+      header h1 { font-size: 1rem; }
+      .game-link { padding: 10px 8px; font-size: 0.94rem; border-radius: 14px; }
+      main.game-links { gap: 8px; padding-left: 6%; padding-right: 6%; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Lē-gio̍k的互動小遊戲</h1>
-    <img src="tiger.png" alt="石虎圖案">
+    <div class="title-wrap" aria-hidden="false">
+      <!-- 左側石虎（保留） -->
+      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="石虎圖案">
+      <h1>Lē-gio̍k的互動小遊戲</h1>
+      <!-- 右側石虎（保留） -->
+      <img class="icon" src="https://v1.padlet.pics/1/image.webp?t=c_limit%2Cdpr_2%2Ch_703%2Cw_703&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F692208d6cee840fe038871e73286b1ae405fd973%2F051d2223fcc07b69b19cd724e30f8da6-h-2136d672f3b170e49363278416ae02ba.png" alt="石虎圖案">
+    </div>
   </header>
 
-  <div class="button-container">
-    <a href="game1.html" class="game-button">台語字詞排序</a>
-    <a href="game2.html" class="game-button">水果配對遊戲</a>
-    <a href="game3.html" class="game-button">客台語配對</a>
-    <a href="game9.html" class="game-button">水果骰仔遊戲</a>
-  </div>
+  <main class="game-links" role="navigation" aria-label="遊戲選單">
+    <!-- 保留您原本的所有按鈕與文字（順序、class 與名稱） -->
+    <a href="game1.html" class="game-link game1">字詞重組塌空</a>
+    <a href="game2.html" class="game-link game2">字詞 suá 位講看覓</a>
+    <a href="game3.html" class="game-link game3">華台語詞配對遊戲</a>
+    <a href="game4.html" class="game-link game4">臺灣各縣市地圖<br>注音符號郵票<br>配對遊戲</a>
+    <a href="game8.html" class="game-link game8">咱來撚骰仔</a>
+    <a href="game9.html" class="game-link game9">華台水果語詞配對</a>
+    <a href="game9_round1.html" class="game-link game9r">果子圖片 & 台語果子名配對</a>
+    <a href="game9_round5.html" class="game-link game9d">台語果子骰仔遊戲</a>
+  </main>
 
   <footer>
-    © 2025 Lē-gio̍k 教學互動設計
+    © 2025 Lē-gio̍k Studio｜歡迎互動學台語
   </footer>
 </body>
 </html>
