@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>高雄市互動地圖（點擊播放台語＋舊地名對照）</title>
+<style>
+  :root{--accent:#ffd54f;--map-max-width:1200px}
+  body{font-family: "Noto Sans TC", system-ui, -apple-system, "Helvetica Neue", Arial; margin:20px; display:flex; flex-direction:column; align-items:center; gap:18px; color:#222}
+  #mapWrapper{width:100%; max-width:var(--map-max-width);}
+  #mapContainer{width:100%; background:transparent;}
+  svg {width:100%; height:auto; display:block;}
+  .infoBox{width:100%; max-width:var(--map-max-width); background:rgba(255,255,255,0.95); padding:12px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  .titles{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .titleLabel{font-weight:700}
+  .nameCurrent{font-size:1.2rem}
+  .oldName{color:#444; opacity:.9}
+  .controls{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap}
+  button{padding:8px 12px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer}
+  button.primary{background:var(--accent); border-color:#e6b800}
+  .legend{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  .legend .sw{width:22px; height:14px; border-radius:3px; border:1px solid #999}
+  /* 點擊/滑鼠互動樣式 (將會套用到 svg path) */
+  .map-area{transition:fill .18s, stroke .12s, opacity .12s; cursor:pointer}
+  .map-area:hover{filter:brightness(1.08); transform:translateZ(0)}
+  .selected{stroke:#000 !important; stroke-width:2 !important}
+  @media (max-width:700px){ :root{--map-max-width:900px} .infoBox{font-size:0.95rem} }
+</style>
+</head>
+<body>
+  <h2>高雄市互動地圖（點擊播放台語 + 舊地名對照）</h2>
+
+  <div id="mapWrapper">
+    <div id="mapContainer">載入中…</div>
+  </div>
+
+  <div class="infoBox" id="info">
+    <div class="titles">
+      <div><span class="titleLabel">現行區名：</span><span id="currentName" class="nameCurrent">（尚未選取）</span></div>
+      <div><span class="titleLabel">舊地名：</span><span id="oldName" class="oldName">（尚未選取）</span></div>
+    </div>
+
+    <div class="controls">
+      <button id="playBtn" class="primary" disabled>▶ 播放台語發音</button>
+      <button id="resetBtn">重置選取</button>
+      <button id="downloadSVG">下載當前 SVG（含顏色）</button>
+    </div>
+
+    <div style="margin-top:10px;color:#666;font-size:0.95rem">
+      ※ 點選地圖內任一區塊會播放台語發音（請先把音檔放在 <code>audio/taiwanese/</code> 資料夾，檔名範例： <code>鳳山區.mp3</code>）。若找不到音檔會顯示「無音檔」訊息。
+    </div>
+  </div>
+
+<script>
+/* ---------- 設定區（可修改） ---------- */
+/* 1) SVG 路徑（相對同目錄） */
+const SVG_PATH = 'Blank_Kaohsiung_map.svg';
+
+/* 2) 舊地名對照（草稿 — 我已先塞入初稿，日後可由我再精查） */
+/* key 若為 SVG 內 path 的 id 或 title 字串，請依實際 SVG 調整 */
+const oldNames = {
+  "鹽埕區":"鹽埕",
+  "鼓山區":"壽山 / 打狗山",
+  "左營區":"左營庄（舊城、興隆庄）",
+  "楠梓區":"楠仔坑 / 楠梓庄",
+  "三民區":"（市區合併多舊庄，需細分）",
+  "新興區":"新堀江（市區舊名需查）",
+  "前金區":"前金（舊稱）",
+  "苓雅區":"連雅寮（連雅）",
+  "前鎮區":"前鎮（埠頭周邊舊稱）",
+  "旗津區":"旗津 / 旗後",
+  "小港區":"紅毛港",
+  "鳳山區":"下淡水埔 / 埤頭街",
+  "林園區":"林子邊（林園）",
+  "大寮區":"大寮庄",
+  "大樹區":"大樹庄",
+  "大社區":"大社庄",
+  "仁武區":"仁武庄",
+  "鳥松區":"鳥松庄（澄清湖周邊）",
+  "岡山區":"岡山庄 / 阿公店（需核證）",
+  "橋頭區":"橋頭庄",
+  "燕巢區":"燕巢庄",
+  "田寮區":"田寮庄",
+  "阿蓮區":"阿蓮庄",
+  "路竹區":"路竹庄",
+  "湖內區":"湖內庄",
+  "茄萣區":"茄萣 / 茄仔墘",
+  "永安區":"永安",
+  "彌陀區":"彌陀",
+  "梓官區":"梓官庄",
+  "旗山區":"旗山庄 / 竹頭崎",
+  "美濃區":"美濃庄",
+  "六龜區":"六龜",
+  "甲仙區":"甲仙",
+  "杉林區":"杉林",
+  "內門區":"內門",
+  "茂林區":"茂林（原住民地名）",
+  "桃源區":"桃源",
+  "那瑪夏區":"那瑪夏（原住民社名）"
+};
+
+/* 3) 播音檔基本路徑（台語） */
+const AUDIO_BASE = 'audio/taiwanese/'; // 檔名示例： 'audio/taiwanese/鳳山區.mp3'
+
+/* 4) 若 SVG 裡面的 path id 與「現行區名」不一致，請在 nameMap 裡建立對應：
+   nameMap["SVG內的id或title字串"] = "現行區名（上表的 key）"
+*/
+const nameMap = {
+  // 若您的 SVG path id 就是中文區名（例如 "鳳山區"），此處可保持空
+  // 範例： "d-123":"鳳山區"
+};
+
+/* ---------- 程式邏輯（不需改） ---------- */
+const mapContainer = document.getElementById('mapContainer');
+const currentNameEl = document.getElementById('currentName');
+const oldNameEl = document.getElementById('oldName');
+const playBtn = document.getElementById('playBtn');
+const resetBtn = document.getElementById('resetBtn');
+const downloadSVGbtn = document.getElementById('downloadSVG');
+
+let selectedId = null;
+let audioEl = new Audio();
+
+function safeText(s){ return s ? s.toString().trim() : ''; }
+
+function showInfo(name){
+  currentNameEl.textContent = name || '（尚未選取）';
+  oldNameEl.textContent = (oldNames[name] || '（無舊地名資料）');
+}
+
+/* 下載當前內嵌 svg（含目前顏色）*/
+downloadSVGbtn.addEventListener('click', ()=>{
+  const svgEl = mapContainer.querySelector('svg');
+  if(!svgEl){ alert('尚未載入 SVG'); return; }
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svgEl);
+  const blob = new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'kaohsiung_colored_map.svg';
+  document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+});
+
+/* reset */
+resetBtn.addEventListener('click', ()=>{
+  if(selectedId){
+    const prev = document.getElementById(selectedId);
+    if(prev) prev.classList.remove('selected');
+  }
+  selectedId = null;
+  audioEl.pause(); audioEl.currentTime = 0;
+  playBtn.disabled = true;
+  showInfo('');
+});
+
+/* play */
+playBtn.addEventListener('click', ()=>{
+  if(!selectedId) return;
+  const name = resolveNameFromElement(selectedId);
+  const audioPath = AUDIO_BASE + encodeURIComponent(name) + '.mp3';
+  audioEl.src = audioPath;
+  audioEl.play().catch(e => {
+    alert('無法播放：找不到音檔或瀏覽器阻擋自動播放。\n\n預設音檔路徑：' + audioPath);
+  });
+});
+
+/* 把 SVG 內聯到頁面，並增加互動 */
+async function loadAndInlineSVG(){
+  try{
+    const res = await fetch(SVG_PATH);
+    if(!res.ok) throw new Error('SVG 讀取失敗：'+res.status);
+    const svgText = await res.text();
+    mapContainer.innerHTML = svgText;
+
+    // 找到 svg 元素
+    const svgEl = mapContainer.querySelector('svg');
+    if(!svgEl) throw new Error('SVG 裡找不到 <svg> 元素');
+
+    // 統一為每個區塊套上 class, cursor 與事件
+    // 假設行政區是 path / g / polygon / rect 等矢量物件
+    const selector = 'path, polygon, rect, g';
+    const elems = Array.from(svgEl.querySelectorAll(selector)).filter(e=>{
+      // 篩出看起來像行政區的 element（有 id 或 title）
+      return (e.id && e.id.trim()) || e.querySelector && e.querySelector('title');
+    });
+
+    // 若 elems 為空，改為盡量抓所有 path
+    const targetElems = elems.length ? elems : Array.from(svgEl.querySelectorAll('path'));
+
+    // 自動分配顏色（若 SVG 已有顏色可保留）
+    const palette = generatePalette(targetElems.length);
+
+    targetElems.forEach((el, idx)=>{
+      el.classList.add('map-area');
+      // 讀取可能的名稱：優先 id、再 title、再 data-name
+      let rawName = el.getAttribute('id') || (el.querySelector && el.querySelector('title') ? el.querySelector('title').textContent : '') || el.getAttribute('data-name') || '';
+      rawName = rawName.trim();
+
+      // 若 nameMap 有對應，取對應後的現行區名
+      let displayName = nameMap[rawName] || rawName;
+      // 若 displayName 為空，但 palette 需要 index, 仍給 id
+      if(!displayName){
+        // 以 Wikipedia 列表順序可能沒有直接對應，先用 id 或索引命名（使用者可後續修改 nameMap）
+        displayName = rawName || ('區塊-'+(idx+1));
+      }
+
+      // 若 element 沒有 fill 或是 fill=none，才填色
+      const curFill = el.getAttribute('fill');
+      if(!curFill || curFill === 'none' || curFill === '#ffffff' || curFill === 'white'){
+        el.setAttribute('fill', palette[idx]);
+      }
+      // 設置預設描邊（中等粗細）
+      el.setAttribute('stroke', '#333333');
+      el.setAttribute('stroke-width', '0.8');
+
+      // 儲存顯示名於 dataset，方便事件使用
+      el.dataset.displayName = displayName;
+
+      // 事件：hover 提示 (title)
+      let titleEl = el.querySelector && el.querySelector('title');
+      if(!titleEl){
+        titleEl = document.createElementNS('http://www.w3.org/2000/svg','title');
+        el.appendChild && el.appendChild(titleEl);
+      }
+      titleEl.textContent = displayName;
+
+      // 點擊事件
+      el.addEventListener('click', (ev)=>{
+        // 取消先前選取
+        if(selectedId){
+          const prev = document.getElementById(selectedId);
+          if(prev) prev.classList.remove('selected');
+        }
+        // 設為選取
+        // 先確保元素有 id，若沒有就動態加 id
+        if(!el.id) el.id = 'area-' + Math.random().toString(36).slice(2,9);
+        selectedId = el.id;
+        el.classList.add('selected');
+
+        const name = el.dataset.displayName || resolveNameFromElement(el.id);
+        showInfo(name);
+        // 啟用播放按鈕
+        playBtn.disabled = false;
+
+        // 立即嘗試播放（自動播放可能被瀏覽器封鎖，使用者可按播放）
+        const audioPath = AUDIO_BASE + encodeURIComponent(name) + '.mp3';
+        audioEl.src = audioPath;
+        audioEl.play().catch(()=>{/*不強制出錯提醒*/});
+      });
+
+      // 觸控友好：增加 touchend 以支援手機
+      el.addEventListener('touchend', (e)=>{ e.preventDefault(); el.dispatchEvent(new Event('click')); });
+    });
+
+    // 初始顯示空白狀態
+    showInfo('');
+
+  }catch(err){
+    console.error(err);
+    mapContainer.innerHTML = '<div style="color:#900;padding:12px;background:#fff3f3;border-radius:6px">載入 SVG 失敗：'+err.message+'</div>';
+  }
+}
+
+/* 判斷元素名（解析 id 或 dataset） */
+function resolveNameFromElement(elRef){
+  let el = (typeof elRef === 'string') ? document.getElementById(elRef) : elRef;
+  if(!el) return '';
+  return el.dataset.displayName || el.getAttribute('id') || (el.querySelector && el.querySelector('title') ? el.querySelector('title').textContent : '') || '';
+}
+
+/* 產生 palette — 高對比鮮豔色系 */
+function generatePalette(n){
+  const hues = [];
+  for(let i=0;i<n;i++){
+    const hue = Math.round((i*(360/n))%360);
+    // HSL 轉 RGB via CSS string — 使用較飽和的色彩
+    hues.push(`hsl(${hue} 80% 60%)`);
+  }
+  return hues;
+}
+
+/* 啟動載入 */
+loadAndInlineSVG();
+
+</script>
+</body>
+</html>
