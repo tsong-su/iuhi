@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖（修正版）</title>
+<title>高雄市38區新舊地名互動地圖（修正版2）</title>
 <style>
   :root{
     --bg:#f9f6ef;
@@ -13,28 +13,31 @@
     --label-font: "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, Arial;
   }
   html,body{height:100%; margin:0; background:var(--bg); font-family:var(--label-font); color:var(--title-color)}
-  .page {display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px; box-sizing:border-box;}
+  .page{display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px; box-sizing:border-box;}
   h1{margin:8px 0 0 0; font-size:1.25rem; text-align:center;}
   .subtitle{margin:0; font-size:0.95rem; color:#666; text-align:center;}
-
-  .map-stage{width:100%; max-width:960px; height: calc(100vh - 170px); max-height:1300px; background:transparent; border-radius:10px; overflow:hidden; position:relative;}
-  #svgWrap{width:100%; height:100%;}
-
-  /* svg label styles (these classes applied to created <text> elements) */
-  .label-new { font: 700 12px / 1 "Noto Sans TC", sans-serif; fill: var(--new-color); text-anchor:middle; pointer-events:none; }
-  .label-old { font: 400 12px / 1 "Noto Sans TC", sans-serif; fill: var(--old-color); text-anchor:middle; pointer-events:none; }
-
-  .popup{position:absolute; display:none; min-width:220px; max-width:320px; background:white; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.08); padding:10px 12px; z-index:50;}
+  .map-stage{width:100%; max-width:980px; height: calc(100vh - 170px); max-height:1200px; background:transparent; border-radius:10px; overflow:hidden; position:relative;}
+  #svgObject{width:100%; height:100%; border:0; display:block;}
+  /* overlay labels (HTML elements) */
+  .label {
+    position:absolute;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    text-align:center;
+    line-height:1.05;
+    white-space:nowrap;
+  }
+  .label .new { font-weight:700; color:var(--new-color); font-size:13px; }
+  .label .old { font-weight:400; color:var(--old-color); font-size:13px; margin-top:2px; }
+  .popup{position:absolute; display:none; min-width:220px; max-width:320px; background:white; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.08); padding:10px 12px; z-index:60;}
   .popup h3{margin:0 0 6px 0; font-size:1rem}
-  .popup .muted{color:#666; font-size:0.9rem}
+  .muted{color:#666; font-size:0.95rem}
   .audioRow{display:flex; gap:10px; margin-top:8px}
   .audioBtn{background:#ddd;border-radius:8px;padding:8px 10px;border:none;color:#666;cursor:not-allowed}
-
   .note{margin-top:6px;color:#555;font-size:0.90rem;text-align:center}
   @media (max-width:640px){
-    h1{font-size:1.05rem}
-    .map-stage{height: calc(100vh - 120px);}
-    .label-new, .label-old { font-size:13px; }
+    .map-stage{height: calc(100vh - 140px);}
+    .label .new, .label .old { font-size:14px; }
     .popup{min-width:72%; left:14% !important; right:auto}
   }
 </style>
@@ -45,7 +48,13 @@
     <div class="subtitle">📱 建議直式觀看效果最佳</div>
 
     <div class="map-stage" id="stage">
-      <div id="svgWrap">載入地圖…</div>
+      <!-- embed svg via object for stable scaling -->
+      <object id="svgObject" type="image/svg+xml" data="https://raw.githubusercontent.com/tsong-su/iuhi/main/map_assets/Blank_Kaohsiung_map.svg"></object>
+
+      <!-- HTML overlay container for labels -->
+      <div id="labelsLayer" style="position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; z-index:50;"></div>
+
+      <!-- popup -->
       <div id="popup" class="popup" role="dialog" aria-live="polite">
         <h3 id="popupNew">新地名</h3>
         <div id="popupOld" class="muted">舊地名</div>
@@ -56,14 +65,14 @@
       </div>
     </div>
 
-    <div class="note">※ 本圖為基礎地圖，後續會拆成 4 回遊戲（本版本已自動把 38 區標記新／舊地名並以四群色系上色）。</div>
+    <div class="note">※ 本圖為基礎地圖，後續會拆成 4 回遊戲（目前已依四群上色並在圖上顯示新／舊中文）。</div>
   </div>
 
 <script>
 /* ========== Config ========== */
 const RAW_SVG_URL = 'https://raw.githubusercontent.com/tsong-su/iuhi/main/map_assets/Blank_Kaohsiung_map.svg';
 
-/* grouping arrays (no "區") */
+/* group definitions (no "區") */
 const groups = {
   center: ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:   ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -73,248 +82,201 @@ const groups = {
 
 const groupColor = { center:'#f4a261', east:'#a29bfe', north:'#b8e994', mount:'#48c9b0' };
 
-/* placeData now contains both Chinese old name (old_ch) and 臺羅 (old_tl) */
+/* placeData: show only Chinese (new_ch / old_ch) on map labels */
 const placeData = {
-  "楠梓": { new_ch:"楠梓", new_tl:"Lâm-tsú", old_ch:"楠仔坑", old_tl:"Lâm-á-khenn" },
-  "左營": { new_ch:"左營", new_tl:"Tsó-iânn", old_ch:"興隆里", old_tl:"Hing-liông-lí" },
-  "鼓山": { new_ch:"鼓山", new_tl:"Kóo-san", old_ch:"打狗山", old_tl:"Tánn-kóo-san" },
-  "三民": { new_ch:"三民", new_tl:"Sam-bîn", old_ch:"三塊厝", old_tl:"Sann-tè-tshù" },
-  "鹽埕": { new_ch:"鹽埕", new_tl:"Iâm-tiann", old_ch:"鹽埕埔", old_tl:"Iâm-tiann-poo" },
-  "前金": { new_ch:"前金", new_tl:"Tsiân-kim", old_ch:"前衿", old_tl:"Tsiân-khim" },
-  "新興": { new_ch:"新興", new_tl:"Sin-hing", old_ch:"逮港埔", old_tl:"Tāi-káng-poo" },
-  "苓雅": { new_ch:"苓雅", new_tl:"Lîng-ngá", old_ch:"笭仔寮", old_tl:"Lîng-á-liâu" },
-  "旗津": { new_ch:"旗津", new_tl:"Kî-tin", old_ch:"旗後", old_tl:"Kî-āu" },
-  "前鎮": { new_ch:"前鎮", new_tl:"Tsiân-tìn", old_ch:"前鎮", old_tl:"Tsiân-tìn" },
-  "小港": { new_ch:"小港", new_tl:"Sió-káng", old_ch:"港仔墘", old_tl:"Káng-á kînn" },
+  "楠梓": { new_ch:"楠梓", old_ch:"楠仔坑" },
+  "左營": { new_ch:"左營", old_ch:"興隆里" },
+  "鼓山": { new_ch:"鼓山", old_ch:"打狗山" },
+  "三民": { new_ch:"三民", old_ch:"三塊厝" },
+  "鹽埕": { new_ch:"鹽埕", old_ch:"鹽埕埔" },
+  "前金": { new_ch:"前金", old_ch:"前衿" },
+  "新興": { new_ch:"新興", old_ch:"逮港埔" },
+  "苓雅": { new_ch:"苓雅", old_ch:"笭仔寮" },
+  "旗津": { new_ch:"旗津", old_ch:"旗後" },
+  "前鎮": { new_ch:"前鎮", old_ch:"前鎮" },
+  "小港": { new_ch:"小港", old_ch:"港仔墘" },
 
-  "大樹": { new_ch:"大樹", new_tl:"Tuā-tshiū", old_ch:"大樹跤", old_tl:"Tuā-tshiū-kha" },
-  "大寮": { new_ch:"大寮", new_tl:"Tuā-liâu", old_ch:"大藔", old_tl:"Tuā-liâu" },
-  "林園": { new_ch:"林園", new_tl:"Lîm-hn̂g", old_ch:"頂林仔邊", old_tl:"Tíng-nâ-á-pinn" },
-  "大社": { new_ch:"大社", new_tl:"Tuā-siā", old_ch:"三奶壇", old_tl:"Sam-nái-tuânn" },
-  "仁武": { new_ch:"仁武", new_tl:"Jîn-bú", old_ch:"仁武鎮", old_tl:"Jîn-bú-tìn" },
-  "鳥松": { new_ch:"鳥松", new_tl:"Tsiáu-tshìng", old_ch:"鳥松跤", old_tl:"Tsiáu-tshìng-kha" },
-  "鳳山": { new_ch:"鳳山", new_tl:"Hōng-suann", old_ch:"下埤頭", old_tl:"Ē-pi-thâu" },
+  "大樹": { new_ch:"大樹", old_ch:"大樹跤" },
+  "大寮": { new_ch:"大寮", old_ch:"大藔" },
+  "林園": { new_ch:"林園", old_ch:"頂林仔邊" },
+  "大社": { new_ch:"大社", old_ch:"三奶壇" },
+  "仁武": { new_ch:"仁武", old_ch:"仁武鎮" },
+  "鳥松": { new_ch:"鳥松", old_ch:"鳥松跤" },
+  "鳳山": { new_ch:"鳳山", old_ch:"下埤頭" },
 
-  "茄萣": { new_ch:"茄萣", new_tl:"Ka-tiānn", old_ch:"茄苳萣仔", old_tl:"Ka-tang-tiānn-á" },
-  "永安": { new_ch:"永安", new_tl:"Íng-an", old_ch:"烏樹林", old_tl:"Oo-tshiū-nâ" },
-  "彌陀": { new_ch:"彌陀", new_tl:"Mî-tô", old_ch:"彌陀港", old_tl:"Bî-lô-káng" },
-  "梓官": { new_ch:"梓官", new_tl:"Tsú-kuann", old_ch:"梓官", old_tl:"Tsú-kuann" },
-  "湖內": { new_ch:"湖內", new_tl:"Ôo-lāi", old_ch:"大湖", old_tl:"Tuā-ôo" },
-  "路竹": { new_ch:"路竹", new_tl:"Lōo-tik", old_ch:"半路竹", old_tl:"Puànn-lōo-tik" },
-  "岡山": { new_ch:"岡山", new_tl:"Kong-san", old_ch:"阿公店", old_tl:"A-kong-tiàm" },
-  "橋頭": { new_ch:"橋頭", new_tl:"Kiô-thâu", old_ch:"橋仔頭", old_tl:"Kiô-á-thâu" },
-  "阿蓮": { new_ch:"阿蓮", new_tl:"A-lian", old_ch:"阿嗹社", old_tl:"A-lian-siā" },
-  "田寮": { new_ch:"田寮", new_tl:"Tshân-liâu", old_ch:"田藔", old_tl:"Tshân-liâu" },
-  "燕巢": { new_ch:"燕巢", new_tl:"Iàn-tsâu", old_ch:"援剿右", old_tl:"Uān-tsâu-iū" },
+  "茄萣": { new_ch:"茄萣", old_ch:"茄苳萣仔" },
+  "永安": { new_ch:"永安", old_ch:"烏樹林" },
+  "彌陀": { new_ch:"彌陀", old_ch:"彌陀港" },
+  "梓官": { new_ch:"梓官", old_ch:"梓官" },
+  "湖內": { new_ch:"湖內", old_ch:"大湖" },
+  "路竹": { new_ch:"路竹", old_ch:"半路竹" },
+  "岡山": { new_ch:"岡山", old_ch:"阿公店" },
+  "橋頭": { new_ch:"橋頭", old_ch:"橋仔頭" },
+  "阿蓮": { new_ch:"阿蓮", old_ch:"阿嗹社" },
+  "田寮": { new_ch:"田寮", old_ch:"田藔" },
+  "燕巢": { new_ch:"燕巢", old_ch:"援剿右" },
 
-  "內門": { new_ch:"內門", new_tl:"Lāi-bûn", old_ch:"羅漢內門", old_tl:"Lô-hàn-lāi-bûn" },
-  "旗山": { new_ch:"旗山", new_tl:"Kî-san", old_ch:"蕃薯藔", old_tl:"Han-tsî-liâu" },
-  "杉林": { new_ch:"杉林", new_tl:"Sam-nâ", old_ch:"楠梓仙", old_tl:"Lâm-tsú-sian" },
-  "美濃": { new_ch:"美濃", new_tl:"Bi-long", old_ch:"瀰濃", old_tl:"Bî-long" },
-  "甲仙": { new_ch:"甲仙", new_tl:"Kah-sian", old_ch:"阿里關", old_tl:"A-lí-kuan" },
-  "六龜": { new_ch:"六龜", new_tl:"La̍k-ku", old_ch:"六龜里社", old_tl:"La̍k-ku-lí-siā" },
-  "那瑪夏": { new_ch:"那瑪夏", new_tl:"Na-má-siah", old_ch:"蚊子只", old_tl:"Mangacun" },
-  "桃源": { new_ch:"桃源", new_tl:"Thô-guân", old_ch:"雅爾", old_tl:"Ngani" },
-  "茂林": { new_ch:"茂林", new_tl:"Bōo-lîm", old_ch:"屯仔", old_tl:"Tūn-á" }
+  "內門": { new_ch:"內門", old_ch:"羅漢內門" },
+  "旗山": { new_ch:"旗山", old_ch:"蕃薯藔" },
+  "杉林": { new_ch:"杉林", old_ch:"楠梓仙" },
+  "美濃": { new_ch:"美濃", old_ch:"瀰濃" },
+  "甲仙": { new_ch:"甲仙", old_ch:"阿里關" },
+  "六龜": { new_ch:"六龜", old_ch:"六龜里社" },
+  "那瑪夏": { new_ch:"那瑪夏", old_ch:"蚊子只" },
+  "桃源": { new_ch:"桃源", old_ch:"雅爾" },
+  "茂林": { new_ch:"茂林", old_ch:"屯仔" }
 };
 
-/* helper: find group */
+/* helper */
 function findGroup(name){
   for(const k in groups) if(groups[k].includes(name)) return k;
   return null;
 }
 
-/* ========== render inline SVG and labels ========== */
-const wrap = document.getElementById('svgWrap');
+/* main: when object loads, create labels overlay based on element bounding rect */
+const obj = document.getElementById('svgObject');
+const labelsLayer = document.getElementById('labelsLayer');
 const popup = document.getElementById('popup');
 const popupNew = document.getElementById('popupNew');
 const popupOld = document.getElementById('popupOld');
-const stage = document.getElementById('stage');
+let lastAreas = [];
 
-async function init(){
-  try{
-    const res = await fetch(RAW_SVG_URL);
-    if(!res.ok) throw new Error('SVG load failed: ' + res.status);
-    const svgText = await res.text();
+obj.addEventListener('load', ()=> {
+  try {
+    const svgDoc = obj.contentDocument;
+    const svg = svgDoc.querySelector('svg');
+    if(!svg) { console.error('SVG not found inside object'); return; }
 
-    // Inline the SVG
-    wrap.innerHTML = svgText;
-    const svg = wrap.querySelector('svg');
-    if(!svg) throw new Error('<svg> not found in file');
-
-    // ensure preserveAspectRatio to keep entire map visible
-    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-
-    // attempt to hide any large black frames that cover map
-    Array.from(svg.querySelectorAll('path, rect')).forEach(el=>{
-      try{
-        const bb = el.getBBox();
-        const svgBB = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width ? (svg.viewBox.baseVal.width * svg.viewBox.baseVal.height) : (svg.clientWidth*svg.clientHeight);
-        if(bb && svgBB){
-          const area = bb.width*bb.height;
-          if(area / svgBB > 0.5){
-            const stroke = (el.getAttribute('stroke')||'').toLowerCase();
-            const sw = parseFloat(el.getAttribute('stroke-width')||0);
-            if((stroke.includes('black') || stroke === '#000' || sw > 3)){
-              el.style.display = 'none';
+    // attempt to hide a giant black frame element (heuristic)
+    try{
+      Array.from(svg.querySelectorAll('path,rect')).forEach(el=>{
+        try{
+          const bb = el.getBBox();
+          const svgBB = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width ? (svg.viewBox.baseVal.width * svg.viewBox.baseVal.height) : (svg.clientWidth*svg.clientHeight);
+          if(bb && svgBB){
+            const area = bb.width*bb.height;
+            if(area / svgBB > 0.5){
+              const stroke = (el.getAttribute('stroke')||'').toLowerCase();
+              const sw = parseFloat(el.getAttribute('stroke-width')||0);
+              if((stroke.includes('black') || stroke === '#000' || sw > 3)){
+                el.style.display = 'none';
+              }
             }
           }
-        }
-      }catch(e){}
-    });
+        }catch(e){}
+      });
+    }catch(e){}
 
-    // gather candidate areas (prefer elements with <title>)
-    const candidates = Array.from(svg.querySelectorAll('path, polygon, rect, g'));
+    // find area elements (prefer having title)
+    const candidates = Array.from(svg.querySelectorAll('path,polygon,rect,g'));
     const areas = candidates.filter(el=>{
       const t = el.querySelector && el.querySelector('title');
       return (t && t.textContent && t.textContent.trim()) || (el.id && el.id.trim());
     });
     const targetEls = areas.length ? areas : Array.from(svg.querySelectorAll('path'));
+    lastAreas = targetEls;
 
-    // create label group on top
-    const svgNS = "http://www.w3.org/2000/svg";
-    let labelGroup = svg.querySelector('#__labels');
-    if(!labelGroup){
-      labelGroup = document.createElementNS(svgNS,'g');
-      labelGroup.setAttribute('id','__labels');
-      svg.appendChild(labelGroup);
-    }
-
-    // for each area, compute central point in SVG coordinates and create two-line label
+    // color each element by group
     targetEls.forEach(el=>{
-      // get title Chinese name if exists
+      // read title chinese name
       let titleText = '';
-      try{ const t = el.querySelector && el.querySelector('title'); if(t) titleText = t.textContent.trim(); }catch(e){}
+      try { const t = el.querySelector && el.querySelector('title'); if(t) titleText = t.textContent.trim(); } catch(e){}
       let name = '';
-      if(titleText){
+      if(titleText) {
         const m = titleText.match(/^[\u4e00-\u9fff]+/);
         if(m && m[0]) name = m[0].replace(/區$/,'');
       }
-      if(!name) name = (el.id||'').replace(/^_+/,'') || '未知';
-
+      if(!name) name = (el.id||'').replace(/^_+/,'') || '';
       el.dataset.name = name;
 
-      // set fill color by group if empty
-      const curFill = (el.getAttribute('fill')||'').toLowerCase();
-      const grp = findGroup(name);
-      const base = grp ? groupColor[grp] : '#e0e0e0';
-      if(!curFill || curFill === 'none' || curFill === '#ffffff' || curFill === 'white'){
-        el.setAttribute('fill', base);
+      // color
+      const g = findGroup(name);
+      if(g){
+        const base = groupColor[g];
+        // apply only if no fill or white
+        const curFill = (el.getAttribute('fill')||'').toLowerCase();
+        if(!curFill || curFill === 'none' || curFill === '#ffffff' || curFill === 'white'){
+          el.setAttribute('fill', base);
+        }
       }
+      // stroke
       el.setAttribute('stroke','#ffffff');
       el.setAttribute('stroke-width','1');
 
-      // compute bbox center in local svg coords, but account for transforms:
-      let cx=0, cy=0;
-      try{
-        const bb = el.getBBox();
-        cx = bb.x + bb.width/2;
-        cy = bb.y + bb.height/2;
-        // transform point by element's CTM to svg's user coords
-        let pt = svg.createSVGPoint();
-        pt.x = cx; pt.y = cy;
-        const m = el.getCTM();
-        if(m){
-          const transformed = pt.matrixTransform(m);
-          cx = transformed.x; cy = transformed.y;
-        } else {
-          // if no CTM, keep as is
-        }
-      }catch(e){
-        // fallback: place at center of svg viewbox
-        try{
-          const vb = svg.viewBox.baseVal;
-          cx = vb.x + vb.width/2; cy = vb.y + vb.height/2;
-        }catch(err){}
-      }
-
-      // create group for two-line label
-      const gLabel = document.createElementNS(svgNS,'g');
-      gLabel.setAttribute('data-for', name);
-      gLabel.setAttribute('transform', `translate(${cx},${cy})`);
-      gLabel.style.pointerEvents = 'none';
-
-      // text: new (ch)
-      const tNew = document.createElementNS(svgNS,'text');
-      tNew.setAttribute('class','label-new');
-      tNew.setAttribute('y', -6);
-      tNew.textContent = placeData[name] ? placeData[name].new_ch : name;
-
-      // text: old (ch + 臺羅 in parentheses)
-      const tOld = document.createElementNS(svgNS,'text');
-      tOld.setAttribute('class','label-old');
-      tOld.setAttribute('y', 12);
-      const oldCh = placeData[name] ? placeData[name].old_ch : '';
-      const oldTl = placeData[name] ? placeData[name].old_tl : '';
-      tOld.textContent = oldCh ? (oldCh + (oldTl ? ('　('+oldTl+')') : '')) : (oldTl || '');
-
-      labelGroup.appendChild(gLabel);
-      gLabel.appendChild(tNew);
-      gLabel.appendChild(tOld);
-
-      // interaction: click -> popup
-      const onClick = (ev) => { ev.stopPropagation(); showPopup(el, ev); };
+      // click handler: show popup
+      const onClick = (ev) => {
+        ev.stopPropagation();
+        showPopup(name, ev);
+      };
       el.addEventListener('click', onClick);
       el.addEventListener('touchend', (e)=>{ e.preventDefault(); onClick(e); });
-      el.addEventListener('mouseenter', ()=> el.style.filter = 'brightness(1.08)');
-      el.addEventListener('mouseleave', ()=> el.style.filter = '');
     });
 
-    // Recompute labels on window resize (recalculate transformed centers)
-    window.addEventListener('resize', ()=> {
-      Array.from(svg.querySelectorAll('#__labels > g')).forEach(gLabel=>{
-        const name = gLabel.getAttribute('data-for');
-        const area = targetEls.find(a=>a.dataset.name === name);
-        if(area){
-          try{
-            const bb = area.getBBox();
-            let cx = bb.x + bb.width/2;
-            let cy = bb.y + bb.height/2;
-            let pt = svg.createSVGPoint(); pt.x = cx; pt.y = cy;
-            const m = area.getCTM();
-            if(m){ const t = pt.matrixTransform(m); cx = t.x; cy = t.y; }
-            gLabel.setAttribute('transform', `translate(${cx},${cy})`);
-          }catch(e){}
-        }
+    // create labels overlay by computing each element's screen bbox and centering an HTML div
+    function placeLabels(){
+      labelsLayer.innerHTML = '';
+      const stageRect = document.getElementById('stage').getBoundingClientRect();
+      targetEls.forEach(el=>{
+        try{
+          const bbox = el.getBoundingClientRect(); // screen coords
+          if(bbox.width < 6 && bbox.height < 6) return; // skip tiny
+          const cx = bbox.left + bbox.width/2;
+          const cy = bbox.top + bbox.height/2;
+          // convert to labelsLayer coordinates
+          const lx = cx - stageRect.left;
+          const ly = cy - stageRect.top;
+
+          const name = el.dataset.name || '';
+          const pd = placeData[name] || {};
+          // create label div
+          const div = document.createElement('div');
+          div.className = 'label';
+          div.style.left = lx + 'px';
+          div.style.top = ly + 'px';
+          div.innerHTML = `<div class="new">${pd.new_ch || name}</div><div class="old">${pd.old_ch || ''}</div>`;
+          labelsLayer.appendChild(div);
+        }catch(e){}
       });
-    });
+    }
 
-    // click outside to hide popup
-    document.addEventListener('click', ()=> { popup.style.display = 'none'; });
+    // initial placement after small delay (allow rendering)
+    setTimeout(placeLabels, 300);
 
-  }catch(err){
-    wrap.innerHTML = '<div style="padding:18px;color:#900;background:#fff;border-radius:8px">載入地圖失敗：'+err.message+'</div>';
-    console.error(err);
+    // reposition on resize & scroll & object resize
+    window.addEventListener('resize', ()=> setTimeout(placeLabels,200));
+    window.addEventListener('scroll', ()=> setTimeout(placeLabels,200));
+    // also periodically reposition in case object scales later
+    let repositionTimer = setInterval(placeLabels, 1200);
+    // stop reposition after some seconds to avoid infinite timer
+    setTimeout(()=> clearInterval(repositionTimer), 8000);
+
+    // clicking outside closes popup
+    document.addEventListener('click', ()=> { document.getElementById('popup').style.display = 'none'; });
+
+  } catch(err){
+    console.error('object load error', err);
   }
-}
+});
 
-/* popup positioning using stage rect */
-function showPopup(areaEl, ev){
-  const name = areaEl.dataset.name || '';
+/* popup handler */
+function showPopup(name, ev){
   const pd = placeData[name] || {};
-  document.getElementById('popupNew').textContent = (pd.new_ch || name) + (pd.new_tl ? ('　('+pd.new_tl+')') : '');
-  document.getElementById('popupOld').textContent = (pd.old_ch ? pd.old_ch : '') + (pd.old_tl ? ('　('+pd.old_tl+')') : '');
-
-  const stageRect = document.getElementById('stage').getBoundingClientRect();
-  let clientX = ev.clientX || (ev.touches && ev.touches[0] && ev.touches[0].clientX) || (stageRect.left + stageRect.width/2);
-  let clientY = ev.clientY || (ev.touches && ev.touches[0] && ev.touches[0].clientY) || (stageRect.top + stageRect.height/2);
-
-  const px = clientX - stageRect.left + 8;
-  const py = clientY - stageRect.top + 8;
+  document.getElementById('popupNew').textContent = (pd.new_ch || name);
+  document.getElementById('popupOld').textContent = (pd.old_ch || '');
+  const stage = document.getElementById('stage');
+  const rect = stage.getBoundingClientRect();
+  let clientX = ev.clientX || (ev.touches && ev.touches[0] && ev.touches[0].clientX) || (rect.left + rect.width/2);
+  let clientY = ev.clientY || (ev.touches && ev.touches[0] && ev.touches[0].clientY) || (rect.top + rect.height/2);
+  let left = clientX - rect.left + 8;
+  let top = clientY - rect.top + 8;
   const popupEl = document.getElementById('popup');
-  // basic overflow handling
-  const pw = Math.min(320, stageRect.width - 16);
-  const ph = 160;
-  let left = px; let top = py;
-  if(left + pw > stageRect.width) left = Math.max(8, px - pw - 8);
-  if(top + ph > stageRect.height) top = Math.max(8, py - ph - 8);
-
+  const pw = Math.min(320, rect.width - 16), ph = 160;
+  if(left + pw > rect.width) left = Math.max(8, clientX - rect.left - pw - 8);
+  if(top + ph > rect.height) top = Math.max(8, clientY - rect.top - ph - 8);
   popupEl.style.left = left + 'px';
   popupEl.style.top = top + 'px';
   popupEl.style.display = 'block';
 }
-
-init();
 </script>
 </body>
 </html>
