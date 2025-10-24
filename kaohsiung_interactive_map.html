@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖（修正版2）</title>
+<title>高雄市38區新舊地名互動地圖</title>
 <style>
   :root{
     --bg:#f9f6ef;
@@ -13,32 +13,50 @@
     --label-font: "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, Arial;
   }
   html,body{height:100%; margin:0; background:var(--bg); font-family:var(--label-font); color:var(--title-color)}
-  .page{display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px; box-sizing:border-box;}
+  .page{display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px; box-sizing:border-box;}
   h1{margin:8px 0 0 0; font-size:1.25rem; text-align:center;}
   .subtitle{margin:0; font-size:0.95rem; color:#666; text-align:center;}
-  .map-stage{width:100%; max-width:980px; height: calc(100vh - 170px); max-height:1200px; background:transparent; border-radius:10px; overflow:hidden; position:relative;}
-  #svgObject{width:100%; height:100%; border:0; display:block;}
-  /* overlay labels (HTML elements) */
-  .label {
-    position:absolute;
-    transform:translate(-50%,-50%);
-    pointer-events:none;
-    text-align:center;
-    line-height:1.05;
-    white-space:nowrap;
+
+  .map-stage{
+    width:100%;
+    max-width:980px;
+    height: calc(100vh - 170px);
+    max-height:1200px;
+    background:transparent;
+    border-radius:10px;
+    overflow:hidden;
+    position:relative;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
   }
-  .label .new { font-weight:700; color:var(--new-color); font-size:13px; }
-  .label .old { font-weight:400; color:var(--old-color); font-size:13px; margin-top:2px; }
-  .popup{position:absolute; display:none; min-width:220px; max-width:320px; background:white; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.08); padding:10px 12px; z-index:60;}
-  .popup h3{margin:0 0 6px 0; font-size:1rem}
-  .muted{color:#666; font-size:0.95rem}
-  .audioRow{display:flex; gap:10px; margin-top:8px}
-  .audioBtn{background:#ddd;border-radius:8px;padding:8px 10px;border:none;color:#666;cursor:not-allowed}
-  .note{margin-top:6px;color:#555;font-size:0.90rem;text-align:center}
+
+  object#svgObject{ width:100%; height:100%; display:block; border:0; }
+
+  /* HTML overlay labels (two-line, centered) */
+  #labelsLayer{ position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; z-index:30; }
+  .label{
+    position:absolute;
+    transform: translate(-50%,-50%);
+    text-align:center;
+    white-space:nowrap;
+    pointer-events:none;
+    line-height:1.05;
+  }
+  .label .new { font-weight:700; color:var(--new-color); font-size:13px; text-shadow: 0 1px 0 rgba(255,255,255,0.2);}
+  .label .old { font-weight:400; color:var(--old-color); font-size:13px; margin-top:2px; text-shadow: 0 1px 0 rgba(255,255,255,0.2); }
+
+  /* popup */
+  .popup{ position:absolute; display:none; min-width:220px; max-width:320px; background:#fff; border-radius:10px; box-shadow:0 8px 28px rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.08); padding:10px 12px; z-index:60; }
+  .popup h3{ margin:0 0 6px 0; font-size:1rem }
+  .muted{ color:#666; font-size:0.95rem }
+  .audioRow{ display:flex; gap:10px; margin-top:8px }
+  .audioBtn{ background:#ddd; border-radius:8px; padding:8px 10px; border:none; color:#666; cursor:not-allowed }
+
+  .note{ margin-top:6px; color:#555; font-size:0.90rem; text-align:center; }
+
   @media (max-width:640px){
-    .map-stage{height: calc(100vh - 140px);}
+    .map-stage{ height: calc(100vh - 140px); }
     .label .new, .label .old { font-size:14px; }
-    .popup{min-width:72%; left:14% !important; right:auto}
+    .popup{ min-width:72%; left:14% !important; right:auto }
   }
 </style>
 </head>
@@ -48,11 +66,11 @@
     <div class="subtitle">📱 建議直式觀看效果最佳</div>
 
     <div class="map-stage" id="stage">
-      <!-- embed svg via object for stable scaling -->
+      <!-- object 載入 SVG；若你要改成相對路徑，可把 RAW_SVG_URL 改為 "map_assets/Blank_Kaohsiung_map.svg" -->
       <object id="svgObject" type="image/svg+xml" data="https://raw.githubusercontent.com/tsong-su/iuhi/main/map_assets/Blank_Kaohsiung_map.svg"></object>
 
-      <!-- HTML overlay container for labels -->
-      <div id="labelsLayer" style="position:absolute; left:0; top:0; right:0; bottom:0; pointer-events:none; z-index:50;"></div>
+      <!-- html overlay for labels -->
+      <div id="labelsLayer"></div>
 
       <!-- popup -->
       <div id="popup" class="popup" role="dialog" aria-live="polite">
@@ -65,14 +83,14 @@
       </div>
     </div>
 
-    <div class="note">※ 本圖為基礎地圖，後續會拆成 4 回遊戲（目前已依四群上色並在圖上顯示新／舊中文）。</div>
+    <div class="note">※ 本圖為基礎地圖，後續會拆成 4 回遊戲（本版本已以四大色系區分群組並顯示新／舊中文）。</div>
   </div>
 
 <script>
-/* ========== Config ========== */
+/* === Configuration === */
 const RAW_SVG_URL = 'https://raw.githubusercontent.com/tsong-su/iuhi/main/map_assets/Blank_Kaohsiung_map.svg';
 
-/* group definitions (no "區") */
+/* group definitions (no '區') */
 const groups = {
   center: ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:   ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -80,9 +98,9 @@ const groups = {
   mount:  ["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
 };
 
-const groupColor = { center:'#f4a261', east:'#a29bfe', north:'#b8e994', mount:'#48c9b0' };
+const groupColor = { center:'#ffb3b3', east:'#d1b3ff', north:'#d4f5b3', mount:'#b3e6e6' };
 
-/* placeData: show only Chinese (new_ch / old_ch) on map labels */
+/* placeData: only Chinese new_ch / old_ch for labels */
 const placeData = {
   "楠梓": { new_ch:"楠梓", old_ch:"楠仔坑" },
   "左營": { new_ch:"左營", old_ch:"興隆里" },
@@ -127,108 +145,109 @@ const placeData = {
   "茂林": { new_ch:"茂林", old_ch:"屯仔" }
 };
 
-/* helper */
+/* helper to find which group a name belongs to */
 function findGroup(name){
   for(const k in groups) if(groups[k].includes(name)) return k;
   return null;
 }
 
-/* main: when object loads, create labels overlay based on element bounding rect */
+/* === Main: when object loads, color areas, create overlay labels, bind events === */
 const obj = document.getElementById('svgObject');
 const labelsLayer = document.getElementById('labelsLayer');
 const popup = document.getElementById('popup');
 const popupNew = document.getElementById('popupNew');
 const popupOld = document.getElementById('popupOld');
-let lastAreas = [];
 
-obj.addEventListener('load', ()=> {
-  try {
+obj.addEventListener('load', () => {
+  try{
     const svgDoc = obj.contentDocument;
     const svg = svgDoc.querySelector('svg');
-    if(!svg) { console.error('SVG not found inside object'); return; }
+    if(!svg) { console.error('SVG not found'); return; }
 
-    // attempt to hide a giant black frame element (heuristic)
+    // ensure viewBox/preserveAspectRatio present if missing
+    if(!svg.getAttribute('viewBox')){
+      const w = svg.getAttribute('width') || svg.viewBox.baseVal.width || svg.clientWidth;
+      const h = svg.getAttribute('height') || svg.viewBox.baseVal.height || svg.clientHeight;
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    }
+    svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+
+    // hide any very large black frame paths/rects (heuristic)
     try{
       Array.from(svg.querySelectorAll('path,rect')).forEach(el=>{
         try{
           const bb = el.getBBox();
-          const svgBB = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width ? (svg.viewBox.baseVal.width * svg.viewBox.baseVal.height) : (svg.clientWidth*svg.clientHeight);
-          if(bb && svgBB){
-            const area = bb.width*bb.height;
-            if(area / svgBB > 0.5){
-              const stroke = (el.getAttribute('stroke')||'').toLowerCase();
-              const sw = parseFloat(el.getAttribute('stroke-width')||0);
-              if((stroke.includes('black') || stroke === '#000' || sw > 3)){
-                el.style.display = 'none';
-              }
+          const vb = svg.viewBox.baseVal;
+          const svgArea = vb && vb.width && vb.height ? vb.width * vb.height : (svg.clientWidth * svg.clientHeight);
+          const area = bb.width * bb.height;
+          if(svgArea && (area / svgArea) > 0.5){
+            const stroke = (el.getAttribute('stroke') || '').toLowerCase();
+            const sw = parseFloat(el.getAttribute('stroke-width') || 0);
+            if((stroke.includes('black') || stroke === '#000' || sw > 3)){
+              el.style.display = 'none';
             }
           }
         }catch(e){}
       });
     }catch(e){}
 
-    // find area elements (prefer having title)
+    // pick candidate area elements (prefer elements with <title>)
     const candidates = Array.from(svg.querySelectorAll('path,polygon,rect,g'));
     const areas = candidates.filter(el=>{
       const t = el.querySelector && el.querySelector('title');
       return (t && t.textContent && t.textContent.trim()) || (el.id && el.id.trim());
     });
     const targetEls = areas.length ? areas : Array.from(svg.querySelectorAll('path'));
-    lastAreas = targetEls;
 
-    // color each element by group
-    targetEls.forEach(el=>{
-      // read title chinese name
+    // color areas, set stroke, and bind click
+    targetEls.forEach(el => {
+      // read title (e.g. "小港區 Xiaogang District")
       let titleText = '';
-      try { const t = el.querySelector && el.querySelector('title'); if(t) titleText = t.textContent.trim(); } catch(e){}
+      try{ const t = el.querySelector && el.querySelector('title'); if(t) titleText = t.textContent.trim(); }catch(e){}
       let name = '';
-      if(titleText) {
+      if(titleText){
         const m = titleText.match(/^[\u4e00-\u9fff]+/);
         if(m && m[0]) name = m[0].replace(/區$/,'');
       }
       if(!name) name = (el.id||'').replace(/^_+/,'') || '';
+
       el.dataset.name = name;
 
-      // color
+      // apply group color only if fill is none/white/empty
       const g = findGroup(name);
       if(g){
         const base = groupColor[g];
-        // apply only if no fill or white
         const curFill = (el.getAttribute('fill')||'').toLowerCase();
-        if(!curFill || curFill === 'none' || curFill === '#ffffff' || curFill === 'white'){
+        if(!curFill || curFill === 'none' || curFill === '#ffffff' || curFill === 'white') {
           el.setAttribute('fill', base);
         }
       }
-      // stroke
       el.setAttribute('stroke','#ffffff');
       el.setAttribute('stroke-width','1');
 
-      // click handler: show popup
-      const onClick = (ev) => {
-        ev.stopPropagation();
-        showPopup(name, ev);
-      };
+      // click -> popup
+      const onClick = (ev) => { ev.stopPropagation(); showPopup(name, ev); };
       el.addEventListener('click', onClick);
       el.addEventListener('touchend', (e)=>{ e.preventDefault(); onClick(e); });
+      el.addEventListener('mouseenter', ()=> el.style.filter = 'brightness(1.06)');
+      el.addEventListener('mouseleave', ()=> el.style.filter = '');
     });
 
-    // create labels overlay by computing each element's screen bbox and centering an HTML div
+    // function to place HTML labels overlay based on element screen bbox
     function placeLabels(){
       labelsLayer.innerHTML = '';
       const stageRect = document.getElementById('stage').getBoundingClientRect();
-      targetEls.forEach(el=>{
+      targetEls.forEach(el => {
         try{
           const bbox = el.getBoundingClientRect(); // screen coords
-          if(bbox.width < 6 && bbox.height < 6) return; // skip tiny
+          if(bbox.width < 6 && bbox.height < 6) return;
           const cx = bbox.left + bbox.width/2;
           const cy = bbox.top + bbox.height/2;
-          // convert to labelsLayer coordinates
           const lx = cx - stageRect.left;
           const ly = cy - stageRect.top;
 
           const name = el.dataset.name || '';
           const pd = placeData[name] || {};
-          // create label div
           const div = document.createElement('div');
           div.className = 'label';
           div.style.left = lx + 'px';
@@ -239,40 +258,38 @@ obj.addEventListener('load', ()=> {
       });
     }
 
-    // initial placement after small delay (allow rendering)
-    setTimeout(placeLabels, 300);
+    // initial placement (delay to allow rendering)
+    setTimeout(placeLabels, 250);
+    // reposition on window resize/scroll
+    window.addEventListener('resize', ()=> setTimeout(placeLabels,120));
+    window.addEventListener('scroll', ()=> setTimeout(placeLabels,120));
+    // periodic reposition for a few seconds to catch late rendering
+    let t = setInterval(placeLabels, 900);
+    setTimeout(()=> clearInterval(t), 7000);
 
-    // reposition on resize & scroll & object resize
-    window.addEventListener('resize', ()=> setTimeout(placeLabels,200));
-    window.addEventListener('scroll', ()=> setTimeout(placeLabels,200));
-    // also periodically reposition in case object scales later
-    let repositionTimer = setInterval(placeLabels, 1200);
-    // stop reposition after some seconds to avoid infinite timer
-    setTimeout(()=> clearInterval(repositionTimer), 8000);
-
-    // clicking outside closes popup
+    // click outside popup closes it
     document.addEventListener('click', ()=> { document.getElementById('popup').style.display = 'none'; });
 
-  } catch(err){
-    console.error('object load error', err);
+  }catch(err){
+    console.error('SVG processing error:', err);
   }
 });
 
-/* popup handler */
+/* popup show */
 function showPopup(name, ev){
   const pd = placeData[name] || {};
   document.getElementById('popupNew').textContent = (pd.new_ch || name);
   document.getElementById('popupOld').textContent = (pd.old_ch || '');
-  const stage = document.getElementById('stage');
-  const rect = stage.getBoundingClientRect();
-  let clientX = ev.clientX || (ev.touches && ev.touches[0] && ev.touches[0].clientX) || (rect.left + rect.width/2);
-  let clientY = ev.clientY || (ev.touches && ev.touches[0] && ev.touches[0].clientY) || (rect.top + rect.height/2);
-  let left = clientX - rect.left + 8;
-  let top = clientY - rect.top + 8;
+
+  const stageRect = document.getElementById('stage').getBoundingClientRect();
+  let clientX = ev.clientX || (ev.touches && ev.touches[0] && ev.touches[0].clientX) || (stageRect.left + stageRect.width/2);
+  let clientY = ev.clientY || (ev.touches && ev.touches[0] && ev.touches[0].clientY) || (stageRect.top + stageRect.height/2);
+  let left = clientX - stageRect.left + 8;
+  let top = clientY - stageRect.top + 8;
   const popupEl = document.getElementById('popup');
-  const pw = Math.min(320, rect.width - 16), ph = 160;
-  if(left + pw > rect.width) left = Math.max(8, clientX - rect.left - pw - 8);
-  if(top + ph > rect.height) top = Math.max(8, clientY - rect.top - ph - 8);
+  const pw = Math.min(320, stageRect.width - 16), ph = 160;
+  if(left + pw > stageRect.width) left = Math.max(8, clientX - stageRect.left - pw - 8);
+  if(top + ph > stageRect.height) top = Math.max(8, clientY - stageRect.top - ph - 8);
   popupEl.style.left = left + 'px';
   popupEl.style.top = top + 'px';
   popupEl.style.display = 'block';
