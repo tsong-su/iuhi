@@ -7,30 +7,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap">
 <style>
-:root{
-  --bg:#fffbea; --ink:#222; --muted:#5b6470; --border:#e5e7eb;
-  --core:#e74c3c;      /* 市中心－紅 */
-  --east:#9b59b6;      /* 東區－紫 */
-  --north:#27ae60;     /* 北區－綠 */
-  --mountain:#3498db;  /* 山區－藍 */
-}
+:root{ --bg:#fffbea; --ink:#222; --muted:#5b6470; --border:#e5e7eb;
+       --core:#F87171; --east:#C084FC; --north:#4ADE80; --mountain:#60A5FA; }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
 header{padding:16px 16px 8px}
 h1{margin:0;text-align:center;font-weight:700;font-size:clamp(20px,3.2vw,26px)}
 .sub{margin:4px 0 10px;text-align:center;color:#666;font-size:13px}
 .groupbar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 6px}
-.groupbar button{
-  font:inherit;padding:6px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer
-}
-.groupbar button[data-group="core"].is-on{background:var(--core);color:#fff;border-color:transparent}
-.groupbar button[data-group="east"].is-on{background:var(--east);color:#fff;border-color:transparent}
-.groupbar button[data-group="north"].is-on{background:var(--north);color:#fff;border-color:transparent}
-.groupbar button[data-group="mountain"].is-on{background:var(--mountain);color:#fff;border-color:transparent}
+.groupbar button{font:inherit;padding:6px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer}
+.groupbar button[data-group="core"].is-on{background:var(--core);color:#111;border-color:transparent}
+.groupbar button[data-group="east"].is-on{background:var(--east);color:#111;border-color:transparent}
+.groupbar button[data-group="north"].is-on{background:var(--north);color:#111;border-color:transparent}
+.groupbar button[data-group="mountain"].is-on{background:var(--mountain);color:#111;border-color:transparent}
 
 main{max-width:1200px;margin:8px auto;padding:0 16px}
 .card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:10px}
-.view{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background:#fafafa}
+.view{position:relative;width:100%;height:calc(100vh - 220px);min-height:60vh;overflow:hidden;border-radius:10px;background:#fafafa;display:flex;align-items:center;justify-content:center}
 .view svg{display:block;width:100%;height:100%}
 .view svg path,.view svg polygon,.view svg polyline{vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
 
@@ -39,29 +32,20 @@ main{max-width:1200px;margin:8px auto;padding:0 16px}
 @keyframes flash { 0%{filter:brightness(1.35)} 50%{filter:brightness(1)} 100%{filter:brightness(1.35)} }
 .flash{animation:flash 1s ease 1}
 
-/* 新地名標籤 */
 .label-wrap{pointer-events:none}
-.label-new{
-  text-anchor:middle; paint-order:stroke; stroke:#fff; stroke-width:2; user-select:none;
-  font:700 13px/1.05 "Noto Sans TC",sans-serif; fill:#0f172a;
-}
+.label-new{text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:2;user-select:none;font:700 13px/1.05 "Noto Sans TC",sans-serif;fill:#0f172a;}
 @media (max-width:640px){ .label-new{font-size:14px} }
 
-/* 浮窗（新舊不同色） */
-.popup{
-  position:absolute;display:none;min-width:240px;max-width:min(320px,90%);
-  background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px;z-index:60
-}
+.popup{position:absolute;display:none;min-width:240px;max-width:min(320px,90%);background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.08);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px;z-index:60}
 .popup h3{margin:0 0 4px 0;font-size:1.05rem;color:#0f172a}
-.popup .newP{color:#0f6a9a;font-weight:600}
-.popup .old{color:#4b5563;margin-top:4px}
+.popup .newP{color:#0f766e;font-weight:700}
+.popup .old{color:#374151;margin-top:4px}
 .popup .oldP{color:#7c3aed}
 .popup .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer}
 .btn.play{background:#f1f5f9}
 
-footer{padding:16px 0 28px;text-align:center;color:#777;font-size:12px}
+footer{padding:12px 0 20px;text-align:center;color:#777;font-size:12px}
 </style>
 </head>
 <body>
@@ -309,190 +293,72 @@ const popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popOld=$("#pop-old"), p
 const btnNew=$("#btn-new"), btnOld=$("#btn-old");
 const groupbar=$("#groupbar");
 
-/* ==== 分群與資料（38區） ==== */
-const GROUPS = {
-  core:    ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
-  east:    ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
-  north:   ["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
-  mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
-};
-const DATA = {
-  "楠梓":{ old:"楠仔坑", newPoj:"Lâm-tsú", oldPoj:"Lâm-á-khenn" },
-  "左營":{ old:"埤仔頭", newPoj:"Tsó-iânn", oldPoj:"Pi-á-thâu" },
-  "鼓山":{ old:"打狗山", newPoj:"Kóo-san", oldPoj:"Tánn-kóo-san" },
-  "三民":{ old:"三塊厝", newPoj:"Sam-bîn", oldPoj:"Sann-tè-tshù" },
-  "鹽埕":{ old:"鹽埕埔", newPoj:"Iâm-tiânn", oldPoj:"Iâm-tiânn-poo" },
-  "前金":{ old:"前衿", newPoj:"Tsiân-kim", oldPoj:"Tsiân-khim" },
-  "新興":{ old:"逮港埔", newPoj:"Sin-hing", oldPoj:"Tāi-káng-poo" },
-  "苓雅":{ old:"笭仔寮", newPoj:"Lîng-ngá", oldPoj:"Lîng-á-liâu" },
-  "旗津":{ old:"旗後", newPoj:"Kî-tin", oldPoj:"Kî-āu" },
-  "前鎮":{ old:"前鎮", newPoj:"Tsiân-tìn", oldPoj:"Tsiân-tìn" },
-  "小港":{ old:"港仔墘", newPoj:"Sió-káng", oldPoj:"Káng-á kînn" },
+const GROUPS={core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
+east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
+north:["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
+mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]};
+const DATA={"楠梓":{old:"楠仔坑",newPoj:"Lâm-tsú",oldPoj:"Lâm-á-khenn"},"左營":{old:"埤仔頭",newPoj:"Tsó-iânn",oldPoj:"Pi-á-thâu"},"鼓山":{old:"打狗山",newPoj:"Kóo-san",oldPoj:"Tánn-kóo-san"},"三民":{old:"三塊厝",newPoj:"Sam-bîn",oldPoj:"Sann-tè-tshù"},"鹽埕":{old:"鹽埕埔",newPoj:"Iâm-tiânn",oldPoj:"Iâm-tiânn-poo"},"前金":{old:"前衿",newPoj:"Tsiân-kim",oldPoj:"Tsiân-khim"},"新興":{old:"逮港埔",newPoj:"Sin-hing",oldPoj:"Tāi-káng-poo"},"苓雅":{old:"笭仔寮",newPoj:"Lîng-ngá",oldPoj:"Lîng-á-liâu"},"旗津":{old:"旗後",newPoj:"Kî-tin",oldPoj:"Kî-āu"},"前鎮":{old:"前鎮",newPoj:"Tsiân-tìn",oldPoj:"Tsiân-tìn"},"小港":{old:"港仔墘",newPoj:"Sió-káng",oldPoj:"Káng-á kînn"},"大樹":{old:"大樹跤",newPoj:"Tuā-tshiū",oldPoj:"Tuā-tshiū-kha"},"大寮":{old:"大藔",newPoj:"Tuā-liâu",oldPoj:"Tuā-liâu"},"林園":{old:"頂林仔邊",newPoj:"Lîm-hn̂g",oldPoj:"Tíng-nâ-á-pinn"},"大社":{old:"三奶壇",newPoj:"Tuā-siā",oldPoj:"Sam-nái-tuânn"},"仁武":{old:"仁武庄",newPoj:"Jîn-bú",oldPoj:"Jîn-bú-tsng"},"鳥松":{old:"鳥松跤",newPoj:"Tsiáu-tshîng",oldPoj:"Tsiáu-tshîng-kha"},"鳳山":{old:"下埤頭",newPoj:"Hōng-suann",oldPoj:"Ē-pi-thâu"},"茄萣":{old:"茄苳萣仔",newPoj:"Ka-tiānn",oldPoj:"Ka-tang-tiānn-á"},"永安":{old:"烏樹林",newPoj:"Íng-an",oldPoj:"Oo-tshiū-nâ"},"彌陀":{old:"彌陀港",newPoj:"Mî-tô",oldPoj:"Bî-lô-káng"},"梓官":{old:"梓官",newPoj:"Tsú-kuann",oldPoj:"Tsú-kuann"},"湖內":{old:"大湖",newPoj:"Ôo-lāi",oldPoj:"Tuā-ôo"},"路竹":{old:"半路竹",newPoj:"Lōo-tik",oldPoj:"Puànn-lōo-tik"},"岡山":{old:"阿公店",newPoj:"Kong-san",oldPoj:"A-kong-tiàm"},"橋頭":{old:"橋仔頭",newPoj:"Kiô-thâu",oldPoj:"Kiô-á-thâu"},"阿蓮":{old:"阿嗹社",newPoj:"A-lian",oldPoj:"A-lian-siā"},"田寮":{old:"田藔",newPoj:"Tshân-liâu",oldPoj:"Tshân-liâu"},"燕巢":{old:"援剿右",newPoj:"Iàn-tsâu",oldPoj:"Uān-tsâu-iū"},"內門":{old:"羅漢內門",newPoj:"Lāi-bûn",oldPoj:"Lô-hàn-lāi-bûn"},"旗山":{old:"蕃薯藔",newPoj:"Kî-san",oldPoj:"Han-tsî-liâu"},"杉林":{old:"楠梓仙",newPoj:"Sam-nâ",oldPoj:"Lâm-tsú-sian"},"美濃":{old:"瀰濃",newPoj:"Bi-long",oldPoj:"Bî-long"},"甲仙":{old:"阿里關",newPoj:"Kah-sian",oldPoj:"A-lí-kuan"},"六龜":{old:"六龜里社",newPoj:"La̍k-ku",oldPoj:"La̍k-ku-lí-siā"},"那瑪夏":{old:"蚊子只",newPoj:"Na-má-siah",oldPoj:"Mangacun"},"桃源":{old:"雅爾",newPoj:"Thô-guân",oldPoj:"Ngani"},"茂林":{old:"多納",newPoj:"Bōo-lîm",oldPoj:"Tona"}};
+const GROUP_COLOR={core:"var(--core)",east:"var(--east)",north:"var(--north)",mountain:"var(--mountain)"};
 
-  "大樹":{ old:"大樹跤", newPoj:"Tuā-tshiū", oldPoj:"Tuā-tshiū-kha" },
-  "大寮":{ old:"大藔",   newPoj:"Tuā-liâu", oldPoj:"Tuā-liâu" },
-  "林園":{ old:"頂林仔邊", newPoj:"Lîm-hn̂g", oldPoj:"Tíng-nâ-á-pinn" },
-  "大社":{ old:"三奶壇", newPoj:"Tuā-siā",  oldPoj:"Sam-nái-tuânn" },
-  "仁武":{ old:"仁武庄", newPoj:"Jîn-bú",   oldPoj:"Jîn-bú-tsng" },
-  "鳥松":{ old:"鳥松跤", newPoj:"Tsiáu-tshîng", oldPoj:"Tsiáu-tshîng-kha" },
-  "鳳山":{ old:"下埤頭", newPoj:"Hōng-suann", oldPoj:"Ē-pi-thâu" },
-
-  "茄萣":{ old:"茄苳萣仔", newPoj:"Ka-tiānn", oldPoj:"Ka-tang-tiānn-á" },
-  "永安":{ old:"烏樹林",   newPoj:"Íng-an",  oldPoj:"Oo-tshiū-nâ" },
-  "彌陀":{ old:"彌陀港",   newPoj:"Mî-tô",   oldPoj:"Bî-lô-káng" },
-  "梓官":{ old:"梓官",     newPoj:"Tsú-kuann", oldPoj:"Tsú-kuann" },
-  "湖內":{ old:"大湖",     newPoj:"Ôo-lāi",  oldPoj:"Tuā-ôo" },
-  "路竹":{ old:"半路竹",   newPoj:"Lōo-tik", oldPoj:"Puànn-lōo-tik" },
-  "岡山":{ old:"阿公店",   newPoj:"Kong-san", oldPoj:"A-kong-tiàm" },
-  "橋頭":{ old:"橋仔頭",   newPoj:"Kiô-thâu", oldPoj:"Kiô-á-thâu" },
-  "阿蓮":{ old:"阿嗹社",   newPoj:"A-lian",  oldPoj:"A-lian-siā" },
-  "田寮":{ old:"田藔",     newPoj:"Tshân-liâu", oldPoj:"Tshân-liâu" },
-  "燕巢":{ old:"援剿右",   newPoj:"Iàn-tsâu",  oldPoj:"Uān-tsâu-iū" },
-
-  "內門":{ old:"羅漢內門", newPoj:"Lāi-bûn",  oldPoj:"Lô-hàn-lāi-bûn" },
-  "旗山":{ old:"蕃薯藔",   newPoj:"Kî-san",   oldPoj:"Han-tsî-liâu" },
-  "杉林":{ old:"楠梓仙",   newPoj:"Sam-nâ",   oldPoj:"Lâm-tsú-sian" },
-  "美濃":{ old:"瀰濃",     newPoj:"Bi-long",  oldPoj:"Bî-long" },
-  "甲仙":{ old:"阿里關",   newPoj:"Kah-sian", oldPoj:"A-lí-kuan" },
-  "六龜":{ old:"六龜里社", newPoj:"La̍k-ku",  oldPoj:"La̍k-ku-lí-siā" },
-  "那瑪夏":{ old:"蚊子只",  newPoj:"Na-má-siah", oldPoj:"Mangacun" },
-  "桃源":{ old:"雅爾",     newPoj:"Thô-guân", oldPoj:"Ngani" },
-  "茂林":{ old:"多納",     newPoj:"Bōo-lîm",  oldPoj:"Tona" }
-};
-const GROUP_COLOR = { core:"var(--core)", east:"var(--east)", north:"var(--north)", mountain:"var(--mountain)" };
 function stripQu(s){return s.replace(/區$/,'');}
-function pad2(n){return String(n).padStart(2,'0');}
-function chineseNameFromTitle(t){const m=(t||'').match(/([\u4E00-\u9FFF]+)區/);return m?m[1]:(t||'').trim();}
+function zhFromAny(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): ''; }
 
 const svg = $("#viewport svg");
 if(svg){
-  // 保證 viewBox 與置中
-  if(!svg.hasAttribute("viewBox")){
-    try{ const b=svg.getBBox(); svg.setAttribute("viewBox",`${b.x} ${b.y} ${b.width} ${b.height}`); }
-    catch{ svg.setAttribute("viewBox",`0 0 ${svg.getAttribute("width")||1000} ${svg.getAttribute("height")||600}`); }
-  }
+  if(!svg.hasAttribute("viewBox")){ try{ const b=svg.getBBox(); svg.setAttribute("viewBox",b.x+" "+b.y+" "+b.width+" "+b.height); }catch{} }
   svg.setAttribute("preserveAspectRatio","xMidYMid meet");
   svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
 
-  // 收集 38 區
-  const items = [];
-  $$("path[id]", svg).forEach(el=>{
+  const items=[];
+  $$("path[id], polygon[id], polyline[id]", svg).forEach(el=>{
     const t = el.querySelector("title");
-    const label = chineseNameFromTitle(t?.textContent || "");
-    const newName = stripQu(label);
-    if(!newName || !DATA[newName]) return;
-    const group = Object.entries(GROUPS).find(([g,list])=>list.includes(newName))?.[0];
+    const raw = zhFromAny(t?.textContent || el.getAttribute("data-name") || el.getAttribute("inkscape:label") || el.getAttribute("id") || "");
+    const nm = stripQu(raw);
+    if(!DATA[nm]) return;
+    const group = Object.entries(GROUPS).find(([g,list])=>list.includes(nm))?.[0];
     if(!group) return;
-    items.push({ el, id: el.getAttribute("id"), newName, oldName: DATA[newName].old, newPoj: DATA[newName].newPoj, oldPoj: DATA[newName].oldPoj, group });
+    items.push({ el, newName:nm, oldName: DATA[nm].old, newPoj: DATA[nm].newPoj, oldPoj: DATA[nm].oldPoj, group });
   });
 
-  // 著色
-  items.forEach(d=>{ d.el.classList.add("district"); d.el.setAttribute("fill", GROUP_COLOR[d.group]); d.el.setAttribute("stroke", "#333"); d.el.setAttribute("stroke-width","0.8"); });
+  items.forEach(d=>{ d.el.classList.add("district"); d.el.setAttribute("fill", GROUP_COLOR[d.group]); d.el.setAttribute("stroke", "#1f2937"); d.el.setAttribute("stroke-width","0.8"); });
 
-  // 新地名標籤
-  let labelLayer = document.createElementNS("http://www.w3.org/2000/svg","g");
-  labelLayer.setAttribute("data-label-layer","1"); labelLayer.classList.add("label-wrap");
-  svg.appendChild(labelLayer);
-  items.forEach(d=>{
-    const b = d.el.getBBox(); const cx=b.x+b.width/2; const cy=b.y+b.height/2;
-    const t1 = document.createElementNS("http://www.w3.org/2000/svg","text");
-    t1.setAttribute("x",cx); t1.setAttribute("y",cy); t1.setAttribute("class","label-new");
-    t1.setAttribute("fill", GROUP_COLOR[d.group]);
-    t1.textContent = d.newName + "區";
-    labelLayer.appendChild(t1);
-    d._label=t1;
-  });
+  const layer=document.createElementNS("http://www.w3.org/2000/svg","g");
+  layer.setAttribute("data-label-layer","1"); layer.classList.add("label-wrap"); svg.appendChild(layer);
+  items.forEach(d=>{ const b=d.el.getBBox(); const cx=b.x+b.width/2; const cy=b.y+b.height/2;
+    const t1=document.createElementNS("http://www.w3.org/2000/svg","text");
+    t1.setAttribute("x",cx); t1.setAttribute("y",cy); t1.setAttribute("class","label-new"); t1.textContent=d.newName; layer.appendChild(t1); d._label=t1; });
 
-  // 群組切換：只顯示該群並自動放大到滿版
-  let currentGroup = "core";
-  function unionBBox(list){
-    let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
-    list.forEach(d=>{ const b=d.el.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height); });
-    return {x:x1,y:y1,w:x2-x1,h:y2-y1};
-  }
-  function applyViewTo(list){
-    const b = unionBBox(list);
-    const pad= Math.max(b.w,b.h)*0.12;
-    svg.setAttribute("viewBox", `${b.x-pad} ${b.y-pad} ${b.w+pad*2} ${b.h+pad*2}`);
-  }
-  function updateGroup(){
-    items.forEach(d=>{
-      const on = (d.group===currentGroup);
-      d.el.style.display = on? "" : "none";
-      if(d._label) d._label.style.display = on? "" : "none";
-    });
-    applyViewTo(items.filter(d=>d.group===currentGroup));
-  }
-  // 初始顯示全 38 區（不縮放、全部上色與標籤顯示）
+  let currentGroup="core";
+  function bbox(list){let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity; list.forEach(d=>{ const b=d.el.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height); }); return {x:x1,y:y1,w:x2-x1,h:y2-y1}; }
+  function zoomTo(list){ const b=bbox(list); const pad=Math.max(b.w,b.h)*0.10; svg.setAttribute("viewBox",(b.x-pad)+" "+(b.y-pad)+" "+(b.w+pad*2)+" "+(b.h+pad*2)); }
+  function updateGroup(){ items.forEach(d=>{ const on=(d.group===currentGroup); d.el.style.display=on?'':'none'; if(d._label) d._label.style.display=on?'':'none'; }); zoomTo(items.filter(d=>d.group===currentGroup)); }
+  groupbar.addEventListener("click",(e)=>{ const btn=e.target.closest("button[data-group]"); if(!btn) return; currentGroup=btn.dataset.group; $$("#groupbar button").forEach(b=>b.classList.toggle("is-on", b===btn)); updateGroup(); });
 
-  groupbar.addEventListener("click",(e)=>{
-    const btn = e.target.closest("button[data-group]"); if(!btn) return;
-    currentGroup = btn.dataset.group;
-    $$("#groupbar button").forEach(b=>b.classList.toggle("is-on", b===btn));
-    updateGroup();
-  });
+  const audioNew=new Audio(), audioOld=new Audio();
+  audioNew.addEventListener("ended",()=>{ audioOld.play().catch(()=>{}); });
+  function playFor(d){ const idx=GROUPS[d.group].indexOf(d.newName)+1; const prefix=String(idx).padStart(2,'0');
+    const newSrc="map_assets/"+prefix+d.newName+"_new.mp3"; const oldSrc="map_assets/"+prefix+d.oldName+"_old.mp3";
+    audioNew.src=encodeURI(newSrc); audioOld.src=encodeURI(oldSrc); audioNew.play().catch(()=>{ console.warn("無法播放：",newSrc); }); }
 
-  // 浮窗與音檔自動播放（new -> old），並避免遮到被點擊區：放在區塊外側角落
-  const audioNew = new Audio(); const audioOld = new Audio();
-  audioNew.addEventListener("ended", ()=>{ audioOld.play().catch(()=>{}); });
+  function placePopupAwayFrom(d){ const r=viewport.getBoundingClientRect(); const b=d.el.getBBox();
+    const pt=svg.createSVGPoint(); pt.x=b.x+b.width/2; pt.y=b.y+b.height/2; const c=pt.matrixTransform(svg.getScreenCTM());
+    const left=c.x-r.left < r.width/2, top=c.y-r.top < r.height/2;
+    popup.style.left=(left? (r.width-300):12)+'px'; popup.style.top=(top? (r.height-180):12)+'px'; }
+  function showPopup(d){ popNew.textContent=d.newName; popNewPoj.textContent=d.newPoj; popOld.textContent=d.oldName; popOldPoj.textContent=d.oldPoj; popup.style.display='block'; btnNew.onclick=()=>audioNew.play().catch(()=>{}); btnOld.onclick=()=>audioOld.play().catch(()=>{}); }
+  items.forEach(d=>{ d.el.addEventListener("click",()=>{ d.el.classList.remove("flash"); void d.el.offsetWidth; d.el.classList.add("flash"); placePopupAwayFrom(d); showPopup(d); playFor(d); }); });
 
-  function placePopupAwayFrom(d){
-    const r = viewport.getBoundingClientRect();
-    const pt = svg.createSVGPoint();
-    const b = d.el.getBBox();
-    pt.x = b.x + b.width/2; pt.y = b.y + b.height/2;
-    const c = pt.matrixTransform(svg.getScreenCTM());
-    const leftSide = c.x - r.left < r.width/2;
-    const topSide  = c.y - r.top  < r.height/2;
-    const x = leftSide ? (r.width - 300) : 12;
-    const y = topSide  ? (r.height - 180) : 12;
-    popup.style.left = x + "px"; popup.style.top = y + "px";
-  }
-
-  function playFor(d){
-    const idx = GROUPS[d.group].indexOf(d.newName) + 1;
-    const prefix = String(idx).padStart(2,'0');
-    audioNew.src = `map_assets/${prefix}${d.newName}_new.mp3`;
-    audioOld.src = `map_assets/${prefix}${d.oldName}_old.mp3`;
-    audioNew.play().catch(()=>{});
-  }
-
-  function showPopup(d){
-    popNew.textContent = d.newName;  popNewPoj.textContent = d.newPoj;
-    popOld.textContent = d.oldName;  popOldPoj.textContent = d.oldPoj;
-    popup.style.display = "block";
-    btnNew.onclick = ()=> audioNew.play().catch(()=>{});
-    btnOld.onclick = ()=> audioOld.play().catch(()=>{});
-  }
-
-  items.forEach(d=>{
-    d.el.addEventListener("click",(e)=>{
-      d.el.classList.remove("flash"); void d.el.offsetWidth; d.el.classList.add("flash");
-      placePopupAwayFrom(d);
-      showPopup(d);
-      playFor(d);
-    });
-  });
-
-  // 山區九區「視覺合併」：將遠端三區（那瑪夏/桃源/茂林）平移貼近其它山區
-  (function mergeMountain(){
-    const near = items.filter(d=>d.group==='mountain' && !['那瑪夏','桃源','茂林'].includes(d.newName));
-    const far  = items.filter(d=>d.group==='mountain' && ['那瑪夏','桃源','茂林'].includes(d.newName));
-    if(near.length===0 || far.length===0) return;
-    const wrap = document.createElementNS("http://www.w3.org/2000/svg","g");
-    // 把其 label 也一起包進來
+  (function(){
+    const FAR=['那瑪夏','桃源','茂林'];
+    const near=items.filter(d=>d.group==='mountain'&&!FAR.includes(d.newName));
+    const far=items.filter(d=>d.group==='mountain'&&FAR.includes(d.newName));
+    if(!near.length||!far.length) return;
+    const wrap=document.createElementNS("http://www.w3.org/2000/svg","g");
     far.forEach(d=>{ if(d._label) wrap.appendChild(d._label); wrap.appendChild(d.el); });
     svg.appendChild(wrap);
-    function bboxOf(nodes){
-      let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
-      nodes.forEach(n=>{ const b=n.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height); });
-      return {x:x1,y:y1,w:x2-x1,h:y2-y1};
-    }
-    const bNear = bboxOf(near.map(d=>d.el));
-    const bFar  = bboxOf(far.map(d=>d.el));
-    const tx = (bNear.x + bNear.w + bFar.w*0.05) - bFar.x;
-    const ty = (bNear.y + bNear.h*0.1) - bFar.y;
-    wrap.setAttribute("transform", `translate(${tx},${ty})`);
+    const bb=(nodes)=>{let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity; nodes.forEach(n=>{const b=n.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height);}); return {x:x1,y:y1,w:x2-x1,h:y2-y1};};
+    const bn=bb(near.map(d=>d.el)), bf=bb(far.map(d=>d.el));
+    const tx=(bn.x+bn.w*0.82)-bf.x, ty=(bn.y+bn.h*0.05)-bf.y;
+    wrap.setAttribute("transform","translate("+tx+","+ty+")");
   })();
 
 }
