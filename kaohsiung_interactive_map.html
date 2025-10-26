@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap">
 <style>
-:root{ --bg:#fffbea; --ink:#222; --muted:#5b6470; --border:#e5e7eb;
+:root{ --bg:#fffbea; --ink:#111; --muted:#5b6470; --border:#e5e7eb;
        --core:#F87171; --east:#C084FC; --north:#4ADE80; --mountain:#60A5FA; }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
@@ -16,10 +16,11 @@ h1{margin:0;text-align:center;font-weight:700;font-size:clamp(20px,3.2vw,26px)}
 .sub{margin:4px 0 10px;text-align:center;color:#666;font-size:13px}
 .groupbar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:6px 0 6px}
 .groupbar button{font:inherit;padding:6px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer}
-.groupbar button[data-group="core"].is-on{background:var(--core);color:#111;border-color:transparent}
-.groupbar button[data-group="east"].is-on{background:var(--east);color:#111;border-color:transparent}
-.groupbar button[data-group="north"].is-on{background:var(--north);color:#111;border-color:transparent}
-.groupbar button[data-group="mountain"].is-on{background:var(--mountain);color:#111;border-color:transparent}
+.groupbar button.is-on[data-group="core"]{background:var(--core)}
+.groupbar button.is-on[data-group="east"]{background:var(--east)}
+.groupbar button.is-on[data-group="north"]{background:var(--north)}
+.groupbar button.is-on[data-group="mountain"]{background:var(--mountain)}
+.groupbar button.is-on{color:#111;border-color:transparent}
 
 main{max-width:1200px;margin:8px auto;padding:0 16px}
 .card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:10px}
@@ -27,8 +28,8 @@ main{max-width:1200px;margin:8px auto;padding:0 16px}
 .view svg{display:block;width:100%;height:100%}
 .view svg path,.view svg polygon,.view svg polyline{vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
 
-.district{cursor:pointer;transition:filter .15s}
-.district:hover{filter:brightness(1.05)}
+.district{cursor:pointer;transition:filter .15s, opacity .2s}
+.dim{opacity:.25;filter:grayscale(0.2)}
 @keyframes flash { 0%{filter:brightness(1.35)} 50%{filter:brightness(1)} 100%{filter:brightness(1.35)} }
 .flash{animation:flash 1s ease 1}
 
@@ -310,7 +311,7 @@ if(svg){
   svg.setAttribute("width","100%"); svg.setAttribute("height","100%");
 
   const items=[];
-  $$("path[id], polygon[id], polyline[id]", svg).forEach(el=>{
+  $$("path[id]", svg).forEach(el=>{
     const t = el.querySelector("title");
     const raw = zhFromAny(t?.textContent || el.getAttribute("data-name") || el.getAttribute("inkscape:label") || el.getAttribute("id") || "");
     const nm = stripQu(raw);
@@ -320,47 +321,43 @@ if(svg){
     items.push({ el, newName:nm, oldName: DATA[nm].old, newPoj: DATA[nm].newPoj, oldPoj: DATA[nm].oldPoj, group });
   });
 
+  // 著色（全區顯示，僅在切換群組時淡出其他群）
   items.forEach(d=>{ d.el.classList.add("district"); d.el.setAttribute("fill", GROUP_COLOR[d.group]); d.el.setAttribute("stroke", "#1f2937"); d.el.setAttribute("stroke-width","0.8"); });
 
+  // 新地名標籤（常駐，不含「區」）
   const layer=document.createElementNS("http://www.w3.org/2000/svg","g");
   layer.setAttribute("data-label-layer","1"); layer.classList.add("label-wrap"); svg.appendChild(layer);
   items.forEach(d=>{ const b=d.el.getBBox(); const cx=b.x+b.width/2; const cy=b.y+b.height/2;
     const t1=document.createElementNS("http://www.w3.org/2000/svg","text");
     t1.setAttribute("x",cx); t1.setAttribute("y",cy); t1.setAttribute("class","label-new"); t1.textContent=d.newName; layer.appendChild(t1); d._label=t1; });
 
+  // 群組切換：不隱藏，只把非該群透明度調低
   let currentGroup="core";
-  function bbox(list){let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity; list.forEach(d=>{ const b=d.el.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height); }); return {x:x1,y:y1,w:x2-x1,h:y2-y1}; }
-  function zoomTo(list){ const b=bbox(list); const pad=Math.max(b.w,b.h)*0.10; svg.setAttribute("viewBox",(b.x-pad)+" "+(b.y-pad)+" "+(b.w+pad*2)+" "+(b.h+pad*2)); }
-  function updateGroup(){ items.forEach(d=>{ const on=(d.group===currentGroup); d.el.style.display=on?'':'none'; if(d._label) d._label.style.display=on?'':'none'; }); zoomTo(items.filter(d=>d.group===currentGroup)); }
-  groupbar.addEventListener("click",(e)=>{ const btn=e.target.closest("button[data-group]"); if(!btn) return; currentGroup=btn.dataset.group; $$("#groupbar button").forEach(b=>b.classList.toggle("is-on", b===btn)); updateGroup(); });
+  function updateGroup(){
+    items.forEach(d=>{ d.el.classList.toggle("dim", d.group!==currentGroup); });
+    $$("#groupbar button").forEach(b=>b.classList.toggle("is-on", b.dataset.group===currentGroup));
+  }
+  groupbar.addEventListener("click",(e)=>{ const btn=e.target.closest("button[data-group]"); if(!btn) return; currentGroup=btn.dataset.group; updateGroup(); });
+  updateGroup(); // 初始
 
+  // 音檔（new -> old），點擊即屬使用者手勢，行動裝置可播放
   const audioNew=new Audio(), audioOld=new Audio();
   audioNew.addEventListener("ended",()=>{ audioOld.play().catch(()=>{}); });
+  function buildSrc(prefix, name, kind){ return "map_assets/"+prefix+name+"_"+kind+".mp3"; }
   function playFor(d){ const idx=GROUPS[d.group].indexOf(d.newName)+1; const prefix=String(idx).padStart(2,'0');
-    const newSrc="map_assets/"+prefix+d.newName+"_new.mp3"; const oldSrc="map_assets/"+prefix+d.oldName+"_old.mp3";
-    audioNew.src=encodeURI(newSrc); audioOld.src=encodeURI(oldSrc); audioNew.play().catch(()=>{ console.warn("無法播放：",newSrc); }); }
+    const newSrc=buildSrc(prefix,d.newName,"new"), oldSrc=buildSrc(prefix,d.oldName,"old");
+    audioNew.src=encodeURI(newSrc); audioOld.src=encodeURI(oldSrc);
+    audioNew.play().catch(()=>{ console.warn("無法播放：",newSrc); });
+  }
 
-  function placePopupAwayFrom(d){ const r=viewport.getBoundingClientRect(); const b=d.el.getBBox();
-    const pt=svg.createSVGPoint(); pt.x=b.x+b.width/2; pt.y=b.y+b.height/2; const c=pt.matrixTransform(svg.getScreenCTM());
-    const left=c.x-r.left < r.width/2, top=c.y-r.top < r.height/2;
-    popup.style.left=(left? (r.width-300):12)+'px'; popup.style.top=(top? (r.height-180):12)+'px'; }
-  function showPopup(d){ popNew.textContent=d.newName; popNewPoj.textContent=d.newPoj; popOld.textContent=d.oldName; popOldPoj.textContent=d.oldPoj; popup.style.display='block'; btnNew.onclick=()=>audioNew.play().catch(()=>{}); btnOld.onclick=()=>audioOld.play().catch(()=>{}); }
-  items.forEach(d=>{ d.el.addEventListener("click",()=>{ d.el.classList.remove("flash"); void d.el.offsetWidth; d.el.classList.add("flash"); placePopupAwayFrom(d); showPopup(d); playFor(d); }); });
+  // 浮框：出現在點擊點旁邊並避免超出畫面
+  function placePopupNearPointer(evt){ const r=viewport.getBoundingClientRect(); let x=evt.clientX - r.left + 12; let y=evt.clientY - r.top + 12;
+    const pw=popup.offsetWidth||280, ph=popup.offsetHeight||160;
+    if(x+pw>r.width) x=r.width-pw-12; if(y+ph>r.height) y=r.height-ph-12; if(x<12) x=12; if(y<12) y=12;
+    popup.style.left=x+"px"; popup.style.top=y+"px"; }
+  function showPopup(d){ popNew.textContent=d.newName; popNewPoj.textContent=d.newPoj; popOld.textContent=d.oldName; popOldPoj.textContent=d.oldPoj; popup.style.display="block"; btnNew.onclick=()=>audioNew.play().catch(()=>{}); btnOld.onclick=()=>audioOld.play().catch(()=>{}); }
 
-  (function(){
-    const FAR=['那瑪夏','桃源','茂林'];
-    const near=items.filter(d=>d.group==='mountain'&&!FAR.includes(d.newName));
-    const far=items.filter(d=>d.group==='mountain'&&FAR.includes(d.newName));
-    if(!near.length||!far.length) return;
-    const wrap=document.createElementNS("http://www.w3.org/2000/svg","g");
-    far.forEach(d=>{ if(d._label) wrap.appendChild(d._label); wrap.appendChild(d.el); });
-    svg.appendChild(wrap);
-    const bb=(nodes)=>{let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity; nodes.forEach(n=>{const b=n.getBBox(); x1=Math.min(x1,b.x); y1=Math.min(y1,b.y); x2=Math.max(x2,b.x+b.width); y2=Math.max(y2,b.y+b.height);}); return {x:x1,y:y1,w:x2-x1,h:y2-y1};};
-    const bn=bb(near.map(d=>d.el)), bf=bb(far.map(d=>d.el));
-    const tx=(bn.x+bn.w*0.82)-bf.x, ty=(bn.y+bn.h*0.05)-bf.y;
-    wrap.setAttribute("transform","translate("+tx+","+ty+")");
-  })();
-
+  items.forEach(d=>{ d.el.addEventListener("click",(evt)=>{ d.el.classList.remove("flash"); void d.el.offsetWidth; d.el.classList.add("flash"); placePopupNearPointer(evt); showPopup(d); playFor(d); }); });
 }
 </script>
 </body>
