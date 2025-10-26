@@ -10,7 +10,7 @@
     --ink:#111827; --muted:#6b7280; --bg:#fafafa;
     --red:#f87171;      /* 市中心 */
     --purple:#c4b5fd;   /* 東區   */
-    --ylg:#91d65f;      /* 北區(稍微加深) */
+    --ylg:#6cbf3b;      /* 北區(更深黃綠) */
     --cyan:#99f6e4;     /* 山區   */
     --card:rgba(255,255,255,.96);
     --stroke:#ffffff;
@@ -27,15 +27,15 @@
   .btn.north{background:var(--ylg);color:#111}
   .btn.mount{background:var(--cyan);color:#111}
   .mapwrap{position:relative;flex:1;min-height:0;border-top:1px solid #e5e7eb}
-  /* 讓地圖自適應視口，但由 viewBox 決定可見區域 */
   svg#stage{display:block;width:100vw;height:calc(100vh - 168px);background:#fff}
   @media (max-width:768px){ svg#stage{height:calc(100vh - 186px)} }
+
   /* 浮窗 */
   .tip{
-    position:absolute;min-width:240px;max-width:86vw;pointer-events:auto;z-index:10;
+    position:absolute;min-width:220px;max-width:86vw;pointer-events:auto;z-index:10;
     background:var(--card);backdrop-filter:saturate(140%) blur(6px);
     border:1px solid rgba(0,0,0,.06);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.18);
-    padding:12px;opacity:0;transform:translate(-50%,-10px) scale(.98);
+    padding:10px;opacity:0;transform:translate(-50%,-10px) scale(.98);
     transition:opacity .22s ease, transform .22s ease;
   }
   .tip.show{opacity:1;transform:translate(-50%,-14px) scale(1)}
@@ -45,15 +45,17 @@
   .btns{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
   .btnplay{padding:6px 10px;font-size:13px;border-radius:10px;border:1px solid #d1d5db;background:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
   .btnplay[disabled]{opacity:.45;cursor:not-allowed}
+
   /* 點擊回饋 */
   @keyframes ringPulse{0%{filter:brightness(1);stroke-width:1}40%{filter:brightness(1.55);stroke-width:2.4}100%{filter:brightness(1);stroke-width:1}}
   .hoverable{transition:filter .25s ease}
   .hoverable:hover{filter:brightness(1.12)}
+
   /* 初始雙行標籤（上新/下舊） */
   .label{ font-size:13px; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; text-anchor:middle; pointer-events:none }
   .label-new{ fill:#b91c1c; font-weight:700 }
   .label-old{ fill:#111827; font-weight:600 }
-  /* 底部工具列 */
+
   .footerbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:10px 12px}
 </style>
 </head>
@@ -79,16 +81,17 @@
       <p id="tipPyNew" class="py"></p>
       <p id="tipPyOld" class="py"></p>
       <div class="btns">
-        <button id="btnPlayNew" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg> 新地名</button>
-        <button id="btnPlayOld" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg> 舊地名</button>
+        <button id="btnPlayNew" class="btnplay">▶ 新地名</button>
+        <button id="btnPlayOld" class="btnplay">▶ 舊地名</button>
       </div>
       <audio id="aud" preload="none"></audio>
     </div>
 
-    <!-- 主畫布：由程式把外部 SVG 的「內層節點」注入到 #svgHost，再計算全圖 bbox 設定 viewBox -->
+    <!-- 主畫布：labelsLayer 放在 svgHost 內，與地圖同 transform -->
     <svg id="stage" preserveAspectRatio="xMidYMid meet" aria-label="高雄市行政區互動地圖">
-      <g id="svgHost"></g>
-      <g id="labelsLayer"></g>
+      <g id="svgHost">
+        <g id="labelsLayer"></g>
+      </g>
     </svg>
   </div>
 
@@ -162,7 +165,7 @@ const IDX = Object.fromEntries(ORDER.map((n,i)=>[n,String(i+1).padStart(2,'0')])
 /* ---------- DOM ---------- */
 const stage  = document.getElementById('stage');
 const host   = document.getElementById('svgHost');
-const labels = document.getElementById('labelsLayer');
+let   labels = host.querySelector('#labelsLayer');
 const tip    = document.getElementById('tip');
 const tNew   = document.getElementById('tipNew');
 const tOld   = document.getElementById('tipOld');
@@ -178,16 +181,19 @@ let allZones = [];
 let fullBBox = null;
 let curViewBox = null;
 
-/* ---------- 啟動：把 SVG 內層節點「注入」，先算 bbox 設 viewBox，再畫標籤 ---------- */
+/* ---------- 啟動：抓 SVG 內層節點 → 注入 host → 先算 bbox 設 viewBox → 再畫標籤 ---------- */
 (async function init(){
   const raw = await fetch(SVG_URL,{mode:'cors'}).then(r=>r.text());
+  // 取出內層內容，避免 svg 套 svg 造成座標偏移
   const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/i,'').replace(/<\/svg>\s*$/i,'').trim();
-  host.innerHTML = inner;
+  // 把地圖放進 host，並在其內部最後補上 labelsLayer（與地圖共享相同 transform）
+  host.innerHTML = inner + '<g id="labelsLayer"></g>';
+  labels = host.querySelector('#labelsLayer');
 
-  // 隱藏原本 SVG 的 <text>（避免與我們的標籤重疊）
+  // 隱藏原 SVG 文字，避免和我們的標籤重疊
   host.querySelectorAll('text').forEach(t=>t.setAttribute('display','none'));
 
-  // 先收集行政區幾何
+  // 收集行政區
   allZones = [];
   host.querySelectorAll('path,polygon').forEach(el=>{
     const t = el.querySelector('title');
@@ -219,7 +225,7 @@ let curViewBox = null;
   fullBBox = unionBBoxOf(host);
   setViewBox(fullBBox, 1.0);
 
-  // 再畫「上新 / 下舊」雙行標籤
+  // 再畫「上新 / 下舊」雙行標籤（座標與地圖同 transform，不再錯位）
   renderLabels();
 
   // 點空白收合浮窗
@@ -235,8 +241,8 @@ let curViewBox = null;
   });
   btnReset.addEventListener('click', ()=>{
     grpBtns.forEach(x=>x.dataset.active='0');
-    allZones.forEach(z=>z.el.style.display='');
-    setViewBox(fullBBox, 1.0);
+    allZones.forEach(z=>z.el.style.display='');  // 全顯示
+    setViewBox(fullBBox, 1.0);                   // 回全圖
   });
 })();
 
@@ -292,20 +298,23 @@ function autoPlayNew(name){
 }
 function play(src){ aud.pause(); aud.src=src; aud.play().catch(()=>{}); }
 
+/* 浮窗偏向右上、邊界避讓 */
 function placeTipBeside(elem){
   const hostRect = stage.getBoundingClientRect();
   const r = elem.getBoundingClientRect();
   const cx = r.left + r.width/2;
   const cy = r.top  + r.height/2;
-  const onLeft = cx < (hostRect.left + hostRect.width/2);
-  const onTop  = cy < (hostRect.top  + hostRect.height/2);
-  let dx = onLeft ? +110 : -110;
-  let dy = onTop  ? +46  : -46;
+
+  // 偏右上
+  let dx = +110, dy = -46;
+
   let left = cx - hostRect.left + dx + window.scrollX;
   let top  = cy - hostRect.top  + dy + window.scrollY;
+
   const pad = 12;
   left = Math.max(pad, Math.min(left, hostRect.width - pad));
-  top  = Math.max(pad, Math.min(top,  hostRect.height- pad));
+  top  = Math.max(pad, Math.min(top,  hostRect.height - pad));
+
   tip.style.left = `${left}px`;
   tip.style.top  = `${top}px`;
 }
@@ -345,7 +354,7 @@ function unionBBoxOf(container){
       }
     }catch(_){}
   });
-  // 如果意外抓不到，回退到這個安全盒
+  // 回退安全盒
   return bb || {x:0,y:0,width:1143.062,height:1440.995};
 }
 function unionBBox(a,b){ return {x:Math.min(a.x,b.x), y:Math.min(a.y,b.y), width:Math.max(a.x+a.width,b.x+b.width)-Math.min(a.x,b.x), height:Math.max(a.y+a.height,b.y+b.height)-Math.min(a.y,b.y)}; }
