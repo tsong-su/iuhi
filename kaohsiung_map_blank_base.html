@@ -1,20 +1,118 @@
-<script>
-/* ========== 0) 目標 SVG 抓取（相容 v1 結構） ========== */
-const STAGE = document.querySelector('svg#stage') || document.querySelector('svg');
-const ROOT  = (document.getElementById('svgRoot')) || STAGE;
-if(!STAGE||!ROOT){ console.warn('[map] 找不到 SVG 畫布'); }
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<title>高雄市38區新舊地名互動地圖 v5.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111827; --muted:#6b7280; --bg:#fafafa;
+    --red:#f87171;      /* 市中心 */
+    --purple:#c4b5fd;   /* 東區   */
+    --ylg:#9FDF72;      /* 北區   (加深) */
+    --cyan:#99f6e4;     /* 山區   */
+    --card:rgba(255,255,255,.96);
+    --stroke:#ffffff;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
+  .app{display:flex;flex-direction:column;min-height:100vh}
+  header{padding:12px 16px 6px}
+  h1{margin:0 0 6px;font-size:18px}
+  .hint{margin:0;color:var(--muted);font-size:14px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 12px}
+  .btn{padding:8px 12px;border:1px solid #d1d5db;border-radius:10px;background:#fff;cursor:pointer;font-size:14px}
+  .btn.center{background:var(--red);color:#111}
+  .btn.east{background:var(--purple);color:#111}
+  .btn.north{background:var(--ylg);color:#111}
+  .btn.mount{background:var(--cyan);color:#111}
+  .mapwrap{position:relative;flex:1;min-height:0;border-top:1px solid #e5e7eb}
+  svg#stage{display:block;width:100vw;height:calc(100vh - 168px);background:#fff}
+  @media (max-width:768px){ svg#stage{height:calc(100vh - 186px)} }
+  /* 浮窗 */
+  .tip{
+    position:absolute;min-width:240px;max-width:86vw;pointer-events:auto;z-index:10;
+    background:var(--card);backdrop-filter:saturate(140%) blur(6px);
+    border:1px solid rgba(0,0,0,.06);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.18);
+    padding:12px;opacity:0;transform:translate(-50%,-10px) scale(.98);
+    transition:opacity .22s ease, transform .22s ease;
+  }
+  .tip.show{opacity:1;transform:translate(-50%,-14px) scale(1)}
+  .tip h3{margin:0 0 2px;color:#b91c1c;font-size:16px;font-weight:700}
+  .tip h4{margin:0 0 6px;color:#111827;font-size:15px;font-weight:600}
+  .py{margin:0;color:#334155;font-size:14px;line-height:1.25}
+  .btns{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  .btnplay{padding:6px 10px;font-size:13px;border-radius:10px;border:1px solid #d1d5db;background:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btnplay svg{width:14px;height:14px}
+  .btnplay[disabled]{opacity:.45;cursor:not-allowed}
+  /* 點擊回饋 */
+  @keyframes ringPulse{0%{filter:brightness(1);stroke-width:1}40%{filter:brightness(1.55);stroke-width:2.5}100%{filter:brightness(1);stroke-width:1}}
+  .hoverable{transition:filter .25s ease}
+  .hoverable:hover{filter:brightness(1.12)}
+  /* 初始雙行標籤（上新/下舊） */
+  .label{ font-size:13px; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; text-anchor:middle; pointer-events:none }
+  .label-new{ fill:#b91c1c; font-weight:700 }
+  .label-old{ fill:#111827; font-weight:600 }
+  /* 底部工具列 */
+  .footerbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:10px 12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>高雄市38區新舊地名互動地圖</h1>
+    <p class="hint">📱 建議直式觀看效果最佳</p>
+  </header>
 
-/* ========== 1) 資料：四群與 新/舊/拼音（拼音僅在彈窗出現） ========== */
+  <div class="toolbar">
+    <button class="btn center" data-group="center">市中心</button>
+    <button class="btn east"   data-group="east">市郊–東</button>
+    <button class="btn north"  data-group="north">市郊–北</button>
+    <button class="btn mount"  data-group="mount">山區</button>
+  </div>
+
+  <div class="mapwrap">
+    <!-- 浮窗 -->
+    <div id="tip" class="tip" role="dialog" aria-live="polite">
+      <h3 id="tipNew"></h3>
+      <h4 id="tipOld"></h4>
+      <p id="tipPyNew" class="py"></p>
+      <p id="tipPyOld" class="py"></p>
+      <div class="btns">
+        <button id="btnPlayNew" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 新地名</button>
+        <button id="btnPlayOld" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 舊地名</button>
+      </div>
+      <audio id="aud" preload="none"></audio>
+    </div>
+
+    <!-- 主畫布（若頁面沒有內嵌 SVG，腳本會自動載入 map_assets/Blank_Kaohsiung_map.svg） -->
+    <svg id="stage" viewBox="0 0 1143.062 1440.995" preserveAspectRatio="xMidYMid meet" aria-label="高雄市行政區互動地圖">
+      <g id="svgRoot"></g>
+      <g id="labelsLayer"></g>
+    </svg>
+  </div>
+
+  <div class="footerbar">
+    <button id="btnReset" class="btn">🔄 全部顯示</button>
+  </div>
+</div>
+
+<script>
+/* =========================
+   1) 路徑與分群、資料
+========================= */
+const SVG_URL = 'map_assets/Blank_Kaohsiung_map.svg'; // 若頁面未內嵌，將自動載入這份
+
 const GROUPS = {
   center: ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:   ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
   north:  ["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
   mount:  ["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
 };
-const COLOR = { center:'#f87171', east:'#c4b5fd', north:'#9FDF72', mount:'#99f6e4' };
+const COLOR = { center:'var(--red)', east:'var(--purple)', north:'var(--ylg)', mount:'var(--cyan)' };
 const whichGroup = n => GROUPS.center.includes(n)?'center':GROUPS.east.includes(n)?'east':GROUPS.north.includes(n)?'north':GROUPS.mount.includes(n)?'mount':null;
 
-/* 新/舊名稱 + 台語拼音（拼音只在彈窗用） */
+/* 新/舊名稱 + 台語拼音（拼音只在彈窗用；初始地圖不顯示拼音） */
 const D = {
   "楠梓":{old:"楠仔坑",      pyNew:"Lâm-tsú",        pyOld:"Lâm-á-khenn"},
   "左營":{old:"埤仔頭",      pyNew:"Tsó-iânn",       pyOld:"Pi-á-thâu"},
@@ -55,7 +153,7 @@ const D = {
   "桃源":{old:"雅爾",        pyNew:"Thô-guân",       pyOld:"Ngani/Ngá-ní"},
   "茂林":{old:"多納",        pyNew:"Bōo-lîm",        pyOld:"Tō-na"}
 };
-/* 音檔編號表（01~38） */
+/* 音檔順序（01–38，供自動拼檔名用） */
 const ORDER = [
   "楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港",
   "大樹","大寮","林園","大社","仁武","鳥松","鳳山",
@@ -64,152 +162,236 @@ const ORDER = [
 ];
 const IDX = Object.fromEntries(ORDER.map((n,i)=>[n,String(i+1).padStart(2,'0')]));
 
-/* ========== 2) 工具 ========== */
-const pureName = s => (s||'').replace(/區.*$/,'').replace(/\s*\(.+?\)\s*$/,'').replace(/\s*[A-Za-z].*$/,'').trim();
-const unionBBox = (acc,b)=>!acc?b:{x:Math.min(acc.x,b.x),y:Math.min(acc.y,b.y),width:Math.max(acc.x+acc.width,b.x+b.width)-Math.min(acc.x,b.x),height:Math.max(acc.y+acc.height,b.y+b.height)-Math.min(acc.y,b.y)};
-function bboxOf(container){
-  let bb=null; container.querySelectorAll('path,polygon').forEach(el=>{ try{const b=el.getBBox(); if(b.width>0&&b.height>0) bb=unionBBox(bb,b);}catch(_){}}); return bb;
-}
-function fitFull(){
-  const bb = bboxOf(ROOT) || {x:0,y:0,width:1143.062,height:1440.995};
-  const pad=0.06, x=bb.x-bb.width*pad, y=bb.y-bb.height*pad, w=bb.width*(1+2*pad), h=bb.height*(1+2*pad);
-  STAGE.setAttribute('viewBox',[x,y,w,h].join(' '));
-}
+/* =========================
+   2) DOM 參照
+========================= */
+const stage  = document.getElementById('stage');
+const root   = document.getElementById('svgRoot');
+const labels = document.getElementById('labelsLayer');
+const tip    = document.getElementById('tip');
+const tNew   = document.getElementById('tipNew');
+const tOld   = document.getElementById('tipOld');
+const tPyN   = document.getElementById('tipPyNew');
+const tPyO   = document.getElementById('tipPyOld');
+const btnN   = document.getElementById('btnPlayNew');
+const btnO   = document.getElementById('btnPlayOld');
+const aud    = document.getElementById('aud');
+const btnReset = document.getElementById('btnReset');
+const grpBtns  = document.querySelectorAll('.toolbar .btn');
 
-/* ========== 3) 啟動：上色 → 產生新/舊「雙行」標籤 → 點擊浮窗（含拼音與音檔） ========== */
-(function init(){
-  if(!STAGE||!ROOT) return;
+/* =========================
+   3) 啟動流程：若未內嵌，載入 SVG → 上色與互動 → 雙行標籤 → 全圖
+========================= */
+let allZones = [];
+let fullBBox = null;
 
-  // A) 先保持你 v1 的完整圖，不刪任何東西（原檔沒有黑框，就不會動它）。
-  //    若之後你看到黑框，代表那是外部資源或新檔加入，我再幫你定點移除。
+(async function init(){
+  // 若 #svgRoot 內沒有 path/polygon，代表未內嵌 → fetch 外部 SVG 注入
+  if(!root.querySelector('path,polygon')){
+    try{
+      const txt = await fetch(SVG_URL, {mode:'cors'}).then(r=>r.text());
+      root.innerHTML = txt;
+    }catch(_){}
+  }
+  // 隱藏原 SVG 文字，避免跟我們的標籤重疊
+  root.querySelectorAll('text').forEach(t=>t.setAttribute('display','none'));
 
-  // B) 隱藏原 SVG 裡舊的 <text>（避免與我們的雙行標籤重疊）
-  ROOT.querySelectorAll('text').forEach(t=>t.setAttribute('display','none'));
-
-  // C) 依四群上色，並綁定點擊。
-  const zones=[];
-  ROOT.querySelectorAll('path,polygon').forEach(el=>{
+  // 著色、互動
+  allZones = [];
+  root.querySelectorAll('path,polygon').forEach(el=>{
     const t = el.querySelector('title');
-    let name = pureName(t && t.textContent);
+    let name = t && t.textContent ? t.textContent.trim() : '';
+    name = name.replace(/區.*$/,'').replace(/\s*\(.+?\)\s*$/,'').replace(/\s*[A-Za-z].*$/,'');
     if(!name) return;
-    const g = whichGroup(name); if(!g) return;
-    el.setAttribute('fill', COLOR[g]);
-    el.setAttribute('stroke', '#ffffff');
+    const grp = whichGroup(name); if(!grp) return;
+
+    el.classList.add('hoverable');
+    el.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(
+      {center:'--red', east:'--purple', north:'--ylg', mount:'--cyan'}[grp]
+    ).trim());
+    el.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--stroke').trim());
     el.setAttribute('stroke-width','1');
-    el.style.transition='filter .25s ease';
-    el.addEventListener('mouseenter', ()=>el.style.filter='brightness(1.12)'); 
-    el.addEventListener('mouseleave', ()=>el.style.filter='');
 
     el.addEventListener('click', (ev)=>{
       ev.stopPropagation();
-      // 點擊回饋（外框亮度漸強淡出）
+      // 回饋動畫
       el.style.animation='none'; void el.offsetWidth; el.style.animation='ringPulse 1s ease';
+      // 自動播放新地名音檔
+      autoPlayNew(name);
+      // 顯示浮窗（含拼音）
       showTip(name, el);
     });
 
-    zones.push({name, el});
+    allZones.push({name, grp, el});
   });
 
-  // D) 在地圖上建立「雙行標籤」層：上新（紅）、下舊（黑）。**不顯示拼音**
-  let layer = STAGE.querySelector('#labelsLayer');
-  if(!layer){
-    layer = document.createElementNS('http://www.w3.org/2000/svg','g');
-    layer.setAttribute('id','labelsLayer');
-    STAGE.appendChild(layer);
-  }
-  layer.innerHTML='';
-  zones.forEach(({name,el})=>{
-    const info = D[name]; if(!info) return;
+  // 產生初始雙行標籤（上新/下舊）
+  renderLabels();
+
+  // 全圖 viewBox
+  fullBBox = unionBBoxOf(root);
+  fitTo(fullBBox, 1.0);
+
+  // 點空白收合
+  document.addEventListener('click', hideTip, {capture:true});
+
+  // 群組切換
+  grpBtns.forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const g = b.dataset.group;
+      grpBtns.forEach(x=>x.dataset.active = (x===b?'1':'0'));
+      showOnlyGroup(g);
+    });
+  });
+  btnReset.addEventListener('click', ()=>{
+    grpBtns.forEach(x=>x.dataset.active='0');
+    allZones.forEach(z=>z.el.style.display='');  // 全顯示
+    fitTo(fullBBox, 1.0);                        // 回全圖
+  });
+
+})();
+
+/* 初始雙行標籤 */
+function renderLabels(){
+  labels.innerHTML = '';
+  for(const {name, el} of allZones){
+    const info = D[name]; if(!info) continue;
     try{
       const b = el.getBBox();
       const cx = b.x + b.width/2;
       const cy = b.y + b.height/2;
-
-      // 新地名（紅）
       const t1 = document.createElementNS('http://www.w3.org/2000/svg','text');
       t1.setAttribute('x', cx);
       t1.setAttribute('y', cy - 4);
       t1.setAttribute('class','label label-new');
       t1.textContent = name;
 
-      // 舊地名（黑）
       const t2 = document.createElementNS('http://www.w3.org/2000/svg','text');
       t2.setAttribute('x', cx);
       t2.setAttribute('y', cy + 14);
       t2.setAttribute('class','label label-old');
       t2.textContent = info.old || '';
 
-      layer.appendChild(t1);
-      layer.appendChild(t2);
+      labels.appendChild(t1); labels.appendChild(t2);
     }catch(_){}
-  });
+  }
+}
 
-  // E) 一開啟就全圖
-  fitFull();
-
-  // F) 點空白關閉彈窗
-  document.addEventListener('click', ()=>{const tp=document.getElementById('tip'); if(tp) tp.classList.remove('show');},{capture:true});
-})();
-
-/* ========== 4) 標籤樣式（注入 CSS） ========== */
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes ringPulse{ 0%{filter:brightness(1);stroke-width:1} 40%{filter:brightness(1.55);stroke-width:2.5} 100%{filter:brightness(1);stroke-width:1} }
-  .label{ font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial; font-size:13px;
-          paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; text-anchor:middle; pointer-events:none; }
-  .label-new{ fill:#b91c1c; font-weight:700; }
-  .label-old{ fill:#111827; font-weight:600; }
-`;
-document.head.appendChild(style);
-
-/* ========== 5) 浮窗：貼旁邊、邊界避讓、顯示拼音與播放鍵 ========== */
-/* 你的 v1 應該已有這些元素（若沒有可在頁面加上）：#tip, #tipNew, #tipOld, #tipPyNew, #tipPyOld, #btnPlayNew, #btnPlayOld, #aud */
-const tip = document.getElementById('tip');
-const tNew = document.getElementById('tipNew');
-const tOld = document.getElementById('tipOld');
-const tPyN = document.getElementById('tipPyNew');
-const tPyO = document.getElementById('tipPyOld');
-const btnN = document.getElementById('btnPlayNew');
-const btnO = document.getElementById('btnPlayOld');
-const aud  = document.getElementById('aud');
-
+/* 浮窗（含括號羅馬字，兩鍵重播；但點區會自動播放新名） */
 function showTip(name, elem){
   const d = D[name] || {};
-  // 顯示：新（含括號拼音）、舊（含括號拼音）
   tNew.textContent = d.pyNew ? `${name}（${d.pyNew}）` : name;
   tOld.textContent = d.old ? (d.pyOld ? `${d.old}（${d.pyOld}）` : d.old) : '';
   tPyN.textContent = d.pyNew || '';
   tPyO.textContent = d.pyOld || '';
 
-  // 音檔：map_assets/sounds/01楠梓_new.mp3 / 01楠仔坑_old.mp3
+  // 準備按鈕重播
   const idx = IDX[name];
-  const newSrc = idx ? `map_assets/sounds/${idx}${name}_new.mp3` : '';
-  const oldSrc = (idx && d.old) ? `map_assets/sounds/${idx}${d.old}_old.mp3` : '';
+  const newSrc = idx ? `map_assets/${idx}${name}_new.mp3` : '';
+  const oldSrc = (idx && d.old) ? `map_assets/${idx}${d.old}_old.mp3` : '';
   btnN.disabled = !newSrc; btnO.disabled = !oldSrc;
   btnN.onclick = ()=> play(newSrc);
   btnO.onclick = ()=> play(oldSrc);
 
-  placeTip(elem); tip.classList.add('show');
-  const closeOnce = (ev)=>{ if(!tip.contains(ev.target)) { tip.classList.remove('show'); window.removeEventListener('click',closeOnce,true);} };
-  setTimeout(()=>window.addEventListener('click',closeOnce,true),0);
+  placeTipBeside(elem);
+  tip.classList.add('show');
+}
+function hideTip(){ tip.classList.remove('show'); }
+
+/* 自動播放新地名 */
+function autoPlayNew(name){
+  const idx = IDX[name];
+  if(!idx) return;
+  const src = `map_assets/${idx}${name}_new.mp3`;
+  play(src);
 }
 
-function play(src){ if(!src) return; aud.pause(); aud.src=src; aud.play().catch(()=>{}); }
+/* 播放器（沒檔案就靜默） */
+function play(src){
+  aud.pause(); aud.src = src; aud.play().catch(()=>{});
+}
 
-/* 自動避讓：根據被點區塊所在象限，往外偏移；再做邊界裁切 */
-function placeTip(el){
-  const host = STAGE.getBoundingClientRect();
-  const r = el.getBoundingClientRect();
-  const cx = r.left + r.width/2, cy = r.top + r.height/2;
-  const onLeft = cx < (host.left + host.width/2);
-  const onTop  = cy < (host.top  + host.height/2);
+/* 浮窗定位：自動避開區塊與邊緣 */
+function placeTipBeside(elem){
+  const hostRect = stage.getBoundingClientRect();
+  const r = elem.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  const cy = r.top  + r.height/2;
+
+  const onLeft = cx < (hostRect.left + hostRect.width/2);
+  const onTop  = cy < (hostRect.top  + hostRect.height/2);
+
   let dx = onLeft ? +110 : -110;
   let dy = onTop  ? +46  : -46;
-  let left = cx - host.left + dx + window.scrollX;
-  let top  = cy - host.top  + dy + window.scrollY;
-  const pad=12, w=tip.offsetWidth||260, h=tip.offsetHeight||140;
-  left = Math.max(pad, Math.min(left, host.width - pad));
-  top  = Math.max(pad, Math.min(top,  host.height- pad));
-  tip.style.left = left+'px'; tip.style.top = top+'px';
+
+  let left = cx - hostRect.left + dx + window.scrollX;
+  let top  = cy - hostRect.top  + dy + window.scrollY;
+
+  const pad = 12;
+  left = Math.max(pad, Math.min(left, hostRect.width - pad));
+  top  = Math.max(pad, Math.min(top,  hostRect.height - pad));
+
+  tip.style.left = `${left}px`;
+  tip.style.top  = `${top}px`;
 }
+
+/* 四群顯示：只顯示該群並放大 1.6×；可拖曳（指標事件） */
+let curViewBox = {...stage.viewBox.baseVal};
+function showOnlyGroup(g){
+  const targets = allZones.filter(z=>z.grp===g);
+  const others  = allZones.filter(z=>z.grp!==g);
+  targets.forEach(z=>z.el.style.display='');
+  others.forEach(z=>z.el.style.display='none');
+  const bb = unionBBox(targets.map(z=>z.el.getBBox()));
+  fitTo(bb, 1.6);
+}
+
+/* viewBox 切換（放大/還原） */
+function fitTo(bb, scale){
+  const pad = 0.06;
+  const x = bb.x - bb.width*pad;
+  const y = bb.y - bb.height*pad;
+  const w = bb.width*(1+2*pad);
+  const h = bb.height*(1+2*pad);
+  const vw = w/scale;
+  const vh = h/scale;
+  const cx = x + w/2;
+  const cy = y + h/2;
+  const vx = cx - vw/2;
+  const vy = cy - vh/2;
+  stage.setAttribute('viewBox', [vx,vy,vw,vh].join(' '));
+  curViewBox = {x:vx,y:vy,width:vw,height:vh};
+}
+
+/* 拖曳移動 */
+let dragging=false, last={x:0,y:0};
+stage.addEventListener('pointerdown', e=>{
+  dragging=true; last={x:e.clientX, y:e.clientY}; stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  const dx = e.clientX - last.x;
+  const dy = e.clientY - last.y;
+  last = {x:e.clientX, y:e.clientY};
+  const rect = stage.getBoundingClientRect();
+  const kx = curViewBox.width / rect.width;
+  const ky = curViewBox.height/ rect.height;
+  curViewBox.x -= dx * kx;
+  curViewBox.y -= dy * ky;
+  stage.setAttribute('viewBox', [curViewBox.x,curViewBox.y,curViewBox.width,curViewBox.height].join(' '));
+});
+stage.addEventListener('pointerup',   ()=>dragging=false);
+stage.addEventListener('pointercancel',()=>dragging=false);
+
+/* 工具：bbox 聯集 */
+function unionBBoxOf(container){
+  let bb=null;
+  container.querySelectorAll('path,polygon').forEach(el=>{
+    try{ const b=el.getBBox(); if(b && b.width>0 && b.height>0) bb = bb? unionBBox(bb,b):b; }catch(_){}
+  });
+  return bb || {x:0,y:0,width:1143.062,height:1440.995};
+}
+function unionBBox(list){ return list.reduce((acc,b)=>acc?{x:Math.min(acc.x,b.x),y:Math.min(acc.y,b.y),width:Math.max(acc.x+acc.width,b.x+b.width)-Math.min(acc.x,b.x),height:Math.max(acc.y+acc.height,b.y+b.height)-Math.min(acc.y,b.y)}:b, null); }
 </script>
+</body>
+</html>
