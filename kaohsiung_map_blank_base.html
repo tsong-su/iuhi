@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<title>高雄市38區新舊地名互動地圖</title>
+<style>
+  :root{
+    --ink:#1f2937; --muted:#6b7280; --bg:#fafafa;
+    --red:#f87171;     /* 市中心 暖紅 */
+    --purple:#c4b5fd;  /* 東區    紫 */
+    --ylg:#bbf7d0;     /* 北區  黃綠 */
+    --cyan:#99f6e4;    /* 山區 藍綠 */
+    --card:rgba(255,255,255,.92);
+  }
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
+  header{padding:14px 16px 8px}
+  h1{margin:0 0 6px 0;font-size:20px;line-height:1.2}
+  .hint{margin:0;color:var(--muted);font-size:14px}
+  .wrap{padding:8px 10px 18px}
+  .mapbox{position:relative;border:1px solid #e5e7eb;border-radius:14px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.06);overflow:hidden}
+  svg{display:block;width:100%;height:calc(100vh - 160px);max-height:980px}
+  @media (max-width:720px){
+    svg{height:calc(100vh - 180px)}
+  }
+  /* 浮動資訊卡 */
+  .tooltip{
+    position:absolute;min-width:220px;max-width:86vw;pointer-events:none;
+    background:var(--card);backdrop-filter:saturate(140%) blur(6px);
+    border:1px solid rgba(0,0,0,.06);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.16);
+    padding:12px 12px 10px;opacity:0;transform:translate(-50%,-14px) scale(.98);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .tooltip.show{opacity:1;transform:translate(-50%,-18px) scale(1)}
+  .tooltip h3{margin:0 0 2px;font-size:16px;color:#b91c1c;font-weight:700}
+  .tooltip h4{margin:0 0 6px;font-size:15px;color:#111827;font-weight:600}
+  .py{margin:0;color:#4b5563;font-size:14px;line-height:1.25}
+  .btns{margin-top:8px;display:flex;gap:8px}
+  .btn{
+    pointer-events:auto;padding:6px 10px;font-size:13px;border-radius:10px;border:1px dashed #cbd5e1;
+    background:#f3f4f6;color:#9ca3af;cursor:not-allowed;
+  }
+  /* hover 提亮 */
+  .area-hover{transition:filter .3s ease}
+  .area-hover:hover{filter:brightness(1.15)}
+  /* 說明色塊 */
+  .legend{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px 2px;color:#374151}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #e5e7eb;border-radius:999px;padding:4px 10px 4px 4px}
+  .dot{width:14px;height:14px;border-radius:50%}
+</style>
+</head>
+<body>
+  <header>
+    <h1>高雄市38區新舊地名互動地圖</h1>
+    <p class="hint">📱 建議直式觀看效果最佳</p>
+  </header>
+
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:var(--red)"></span>市中心</span>
+    <span class="chip"><span class="dot" style="background:var(--purple)"></span>市郊–東</span>
+    <span class="chip"><span class="dot" style="background:var(--ylg)"></span>市郊–北</span>
+    <span class="chip"><span class="dot" style="background:var(--cyan)"></span>山區</span>
+  </div>
+
+  <div class="wrap">
+    <div class="mapbox">
+      <div id="tip" class="tooltip" role="dialog" aria-live="polite"></div>
+      <svg id="stage" viewBox="0 0 1143.062 1440.995" preserveAspectRatio="xMidYMid meet" aria-label="高雄市行政區互動地圖">
+        <g id="svgRoot"></g>
+      </svg>
+    </div>
+  </div>
+
+<script>
+/* ---------- 1) 你的 SVG 來源 ---------- */
+/* 若你改放本地檔案，改成 'map_assets/Blank_Kaohsiung_map.svg' 即可 */
+const SVG_URL = 'https://raw.githubusercontent.com/tsong-su/iuhi/refs/heads/main/map_assets/Blank_Kaohsiung_map.svg';
+
+/* ---------- 2) 四群分色與資料（採用你最新修正版） ---------- */
+const GROUPS = {
+  center: ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
+  east:   ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
+  north:  ["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
+  mount:  ["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
+};
+const GROUP_COLOR = { center:'var(--red)', east:'var(--purple)', north:'var(--ylg)', mount:'var(--cyan)' };
+
+/* 新／舊地名 + 台語拼音（採兩行顯示拼音；鍵名用「新地名」） */
+const DATA = {
+  "楠梓":{old:"楠仔坑", pyNew:"Lâm-tsú", pyOld:"Lâm-á-khenn"},
+  "左營":{old:"埤仔頭", pyNew:"Tsó-iânn", pyOld:"Pi-á-thâu"},
+  "鼓山":{old:"打狗山", pyNew:"Kóo-san", pyOld:"Tánn-kóo-san"},
+  "三民":{old:"三塊厝", pyNew:"Sam-bîn", pyOld:"Sann-tè-tshù"},
+  "鹽埕":{old:"鹽埕埔", pyNew:"Iâm-tiânn", pyOld:"Iâm-tiânn-poo"},
+  "前金":{old:"前衿",   pyNew:"Tsiân-kim", pyOld:"Tsiân-khim"},
+  "新興":{old:"逮港埔", pyNew:"Sin-hing",  pyOld:"Tāi-káng-poo"},
+  "苓雅":{old:"笭仔寮", pyNew:"Lîng-ngá",  pyOld:"Lîng-á-liâu"},
+  "旗津":{old:"旗後",   pyNew:"Kî-tin",    pyOld:"Kî-āu"},
+  "前鎮":{old:"前鎮",   pyNew:"Tsiân-tìn", pyOld:"Tsiân-tìn"},
+  "小港":{old:"港仔墘", pyNew:"Sió-káng",  pyOld:"Káng-á kînn"},
+
+  "大樹":{old:"大樹跤", pyNew:"Tuā-tshiū", pyOld:"Tuā-tshiū-kha"},
+  "大寮":{old:"大藔",   pyNew:"Tuā-liâu",  pyOld:"Tuā-liâu"},
+  "林園":{old:"頂林仔邊", pyNew:"Lîm-hn̂g", pyOld:"Tíng-nâ-á-pinn"},
+  "大社":{old:"三奶壇",  pyNew:"Tuā-siā",   pyOld:"Sam-nái-tuânn"},
+  "仁武":{old:"仁武庄",  pyNew:"Jîn-bú",    pyOld:"Jîn-bú-tsng"},
+  "鳥松":{old:"鳥松跤",  pyNew:"Tsiáu-tshîng", pyOld:"Tsiáu-tshîng-kha"},
+  "鳳山":{old:"下埤頭",  pyNew:"Hōng-suann",   pyOld:"Ē-pi-thâu"},
+
+  "茄萣":{old:"茄苳萣仔", pyNew:"Ka-tiānn",   pyOld:"Ka-tang-tiānn-á"},
+  "永安":{old:"烏樹林",   pyNew:"Íng-an",     pyOld:"Oo-tshiū-nâ"},
+  "彌陀":{old:"彌陀港",   pyNew:"Mî-tô",      pyOld:"Bî-lô-káng"},
+  "梓官":{old:"梓官",     pyNew:"Tsú-kuann",  pyOld:"Tsú-kuann"},
+  "湖內":{old:"大湖",     pyNew:"Ôo-lāi",     pyOld:"Tuā-ôo"},
+  "路竹":{old:"半路竹",   pyNew:"Lōo-tik",    pyOld:"Puànn-lōo-tik"},
+  "岡山":{old:"阿公店",   pyNew:"Kong-san",   pyOld:"A-kong-tiàm"},
+  "橋頭":{old:"橋仔頭",   pyNew:"Kiô-thâu",   pyOld:"Kiô-á-thâu"},
+  "阿蓮":{old:"阿嗹社",   pyNew:"A-lian",     pyOld:"A-lian-siā"},
+  "田寮":{old:"田藔",     pyNew:"Tshân-liâu", pyOld:"Tshân-liâu"},
+  "燕巢":{old:"援剿右",   pyNew:"Iàn-tsâu",   pyOld:"Uān-tsâu-iū"},
+
+  "內門":{old:"羅漢內門", pyNew:"Lāi-bûn",    pyOld:"Lô-hàn-lāi-bûn"},
+  "旗山":{old:"蕃薯藔",   pyNew:"Kî-san",     pyOld:"Han-tsî-liâu"},
+  "杉林":{old:"楠梓仙",   pyNew:"Sam-nâ",     pyOld:"Lâm-tsú-sian"},
+  "美濃":{old:"瀰濃",     pyNew:"Bi-long",    pyOld:"Bî-long"},
+  "甲仙":{old:"阿里關",   pyNew:"Kah-sian",   pyOld:"A-lí-kuan"},
+  "六龜":{old:"六龜里社", pyNew:"La̍k-ku",     pyOld:"La̍k-ku-lí-siā"},
+  "那瑪夏":{old:"蚊子只",  pyNew:"Na-má-siah", pyOld:"Mangacun/Báng-á-tsí"},
+  "桃源":{old:"雅爾",     pyNew:"Thô-guân",   pyOld:"Ngani/Ngá-ní"},
+  "茂林":{old:"多納",     pyNew:"Bōo-lîm",    pyOld:"Tō-na"}
+};
+
+/* 四群查詢 */
+function whichGroup(name){
+  if(GROUPS.center.includes(name)) return 'center';
+  if(GROUPS.east.includes(name))   return 'east';
+  if(GROUPS.north.includes(name))  return 'north';
+  if(GROUPS.mount.includes(name))  return 'mount';
+  return null;
+}
+
+/* ---------- 3) 主流程：載入 SVG → 清理 → 上色 → 綁定互動 ---------- */
+const svgRoot = document.getElementById('svgRoot');
+const stage = document.getElementById('stage');
+const tip = document.getElementById('tip');
+
+async function loadSVG(){
+  const res = await fetch(SVG_URL, {mode:'cors'});
+  const txt = await res.text();
+  svgRoot.innerHTML = txt;
+
+  // 清掉覆蓋全圖的大矩形 / 邊框
+  const total = stage.viewBox.baseVal;
+  const totalArea = total.width * total.height;
+  svgRoot.querySelectorAll('rect,path,polygon').forEach(el=>{
+    try{
+      const bb = el.getBBox();
+      const a = bb.width*bb.height;
+      if(a/totalArea > 0.25 && !el.querySelector('title')) el.remove();
+    }catch(e){}
+  });
+
+  // 給每個行政區上色、加互動
+  const zones = svgRoot.querySelectorAll('path,polygon');
+  zones.forEach(z=>{
+    let t = z.querySelector('title');
+    let n = (t && t.textContent ? t.textContent.trim() : '').replace(/區.*$/,''); // 取中文區名（去掉「區…」尾註）
+    if(!n){ return; }
+
+    const g = whichGroup(n);
+    if(!g) return;
+
+    // 著色 + hover
+    z.classList.add('area-hover');
+    z.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue(
+      {center:'--red',east:'--purple',north:'--ylg',mount:'--cyan'}[g]
+    ).trim());
+    z.setAttribute('stroke','#ffffff');
+    z.setAttribute('stroke-width','1');
+
+    // 點擊浮窗
+    z.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const d = DATA[n];
+      const bbox = z.getBBox();
+      const cx = bbox.x + bbox.width/2;
+      const cy = bbox.y + bbox.height/2;
+      let html = '';
+      if(d){
+        html = `
+          <h3>${n}</h3>
+          <h4>${d.old}</h4>
+          <p class="py">${d.pyNew}</p>
+          <p class="py">${d.pyOld}</p>
+          <div class="btns">
+            <button class="btn" aria-disabled="true">▶ 新地名</button>
+            <button class="btn" aria-disabled="true">▶ 舊地名</button>
+          </div>`;
+      }else{
+        html = `<h3>${n}</h3><h4>（暫無對照資料）</h4>`;
+      }
+      tip.innerHTML = html;
+
+      // 轉畫面座標
+      const pt = stage.createSVGPoint();
+      pt.x = cx; pt.y = cy;
+      const ctm = stage.getScreenCTM();
+      const screen = pt.matrixTransform(ctm);
+      const hostRect = stage.getBoundingClientRect();
+
+      tip.style.left = (screen.x - hostRect.left) + 'px';
+      tip.style.top  = (screen.y - hostRect.top - 8) + 'px';
+      tip.classList.add('show');
+
+      // 點其他地方關閉
+      const hide = ()=>{ tip.classList.remove('show'); window.removeEventListener('click', hide, true); };
+      setTimeout(()=>window.addEventListener('click', hide, {once:true, capture:true}), 0);
+    });
+  });
+}
+
+/* 載入 */
+loadSVG().catch(err=>{
+  svgRoot.innerHTML = `<text x="20" y="40" fill="#b91c1c" font-size="16">載入 SVG 失敗，請檢查路徑：${SVG_URL}</text>`;
+});
+</script>
+</body>
+</html>
