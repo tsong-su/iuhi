@@ -10,7 +10,7 @@
     --ink:#111827; --muted:#6b7280; --bg:#fafafa;
     --red:#f87171;      /* 市中心 */
     --purple:#c4b5fd;   /* 東區   */
-    --ylg:#9FDF72;      /* 北區   (加深) */
+    --ylg:#91d65f;      /* 北區(稍微加深) */
     --cyan:#99f6e4;     /* 山區   */
     --card:rgba(255,255,255,.96);
     --stroke:#ffffff;
@@ -27,6 +27,7 @@
   .btn.north{background:var(--ylg);color:#111}
   .btn.mount{background:var(--cyan);color:#111}
   .mapwrap{position:relative;flex:1;min-height:0;border-top:1px solid #e5e7eb}
+  /* 讓地圖自適應視口，但由 viewBox 決定可見區域 */
   svg#stage{display:block;width:100vw;height:calc(100vh - 168px);background:#fff}
   @media (max-width:768px){ svg#stage{height:calc(100vh - 186px)} }
   /* 浮窗 */
@@ -43,10 +44,9 @@
   .py{margin:0;color:#334155;font-size:14px;line-height:1.25}
   .btns{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
   .btnplay{padding:6px 10px;font-size:13px;border-radius:10px;border:1px solid #d1d5db;background:#ffffff;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-  .btnplay svg{width:14px;height:14px}
   .btnplay[disabled]{opacity:.45;cursor:not-allowed}
   /* 點擊回饋 */
-  @keyframes ringPulse{0%{filter:brightness(1);stroke-width:1}40%{filter:brightness(1.55);stroke-width:2.5}100%{filter:brightness(1);stroke-width:1}}
+  @keyframes ringPulse{0%{filter:brightness(1);stroke-width:1}40%{filter:brightness(1.55);stroke-width:2.4}100%{filter:brightness(1);stroke-width:1}}
   .hoverable{transition:filter .25s ease}
   .hoverable:hover{filter:brightness(1.12)}
   /* 初始雙行標籤（上新/下舊） */
@@ -79,14 +79,14 @@
       <p id="tipPyNew" class="py"></p>
       <p id="tipPyOld" class="py"></p>
       <div class="btns">
-        <button id="btnPlayNew" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 新地名</button>
-        <button id="btnPlayOld" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> 舊地名</button>
+        <button id="btnPlayNew" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg> 新地名</button>
+        <button id="btnPlayOld" class="btnplay"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M8 5v14l11-7z"/></svg> 舊地名</button>
       </div>
       <audio id="aud" preload="none"></audio>
     </div>
 
-    <!-- 主畫布（程式會把外部 SVG 內容抓回來「內嵌注入」在 #svgHost 裡，再計算全圖） -->
-    <svg id="stage" viewBox="0 0 1143.062 1440.995" preserveAspectRatio="xMidYMid meet" aria-label="高雄市行政區互動地圖">
+    <!-- 主畫布：由程式把外部 SVG 的「內層節點」注入到 #svgHost，再計算全圖 bbox 設定 viewBox -->
+    <svg id="stage" preserveAspectRatio="xMidYMid meet" aria-label="高雄市行政區互動地圖">
       <g id="svgHost"></g>
       <g id="labelsLayer"></g>
     </svg>
@@ -98,12 +98,9 @@
 </div>
 
 <script>
-/* =========================
-   0) 基本設定
-========================= */
-const SVG_URL = 'map_assets/Blank_Kaohsiung_map.svg'; // 你已移除黑框的那一份
+/* ---------- 路徑 / 分群 / 名稱與拼音 ---------- */
+const SVG_URL = 'map_assets/Blank_Kaohsiung_map.svg';
 
-/* 分群與色系 */
 const GROUPS = {
   center: ["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:   ["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -113,7 +110,6 @@ const GROUPS = {
 const COLOR = { center:'var(--red)', east:'var(--purple)', north:'var(--ylg)', mount:'var(--cyan)' };
 const whichGroup = n => GROUPS.center.includes(n)?'center':GROUPS.east.includes(n)?'east':GROUPS.north.includes(n)?'north':GROUPS.mount.includes(n)?'mount':null;
 
-/* 新/舊名稱 + 台語拼音（浮窗顯示用；初始不顯示拼音） */
 const D = {
   "楠梓":{old:"楠仔坑",      pyNew:"Lâm-tsú",        pyOld:"Lâm-á-khenn"},
   "左營":{old:"埤仔頭",      pyNew:"Tsó-iânn",       pyOld:"Pi-á-thâu"},
@@ -154,7 +150,7 @@ const D = {
   "桃源":{old:"雅爾",        pyNew:"Thô-guân",       pyOld:"Ngani/Ngá-ní"},
   "茂林":{old:"多納",        pyNew:"Bōo-lîm",        pyOld:"Tō-na"}
 };
-/* 音檔順序（01–38） */
+
 const ORDER = [
   "楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港",
   "大樹","大寮","林園","大社","仁武","鳥松","鳳山",
@@ -163,9 +159,7 @@ const ORDER = [
 ];
 const IDX = Object.fromEntries(ORDER.map((n,i)=>[n,String(i+1).padStart(2,'0')]));
 
-/* =========================
-   1) 讀入 SVG 並「內嵌注入」
-========================= */
+/* ---------- DOM ---------- */
 const stage  = document.getElementById('stage');
 const host   = document.getElementById('svgHost');
 const labels = document.getElementById('labelsLayer');
@@ -182,21 +176,18 @@ const grpBtns  = document.querySelectorAll('.toolbar .btn');
 
 let allZones = [];
 let fullBBox = null;
+let curViewBox = null;
 
+/* ---------- 啟動：把 SVG 內層節點「注入」，先算 bbox 設 viewBox，再畫標籤 ---------- */
 (async function init(){
-  // 讀入 SVG 文字
-  const raw = await fetch(SVG_URL, {mode:'cors'}).then(r=>r.text());
-  // 去掉最外層 <svg ...>...</svg> 外殼，只保留內部節點（避免 svg 套 svg 導致視窗錯位）
-  const inner = raw
-    .replace(/^[\s\S]*?<svg[^>]*>/i,'')
-    .replace(/<\/svg>\s*$/i,'')
-    .trim();
+  const raw = await fetch(SVG_URL,{mode:'cors'}).then(r=>r.text());
+  const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/i,'').replace(/<\/svg>\s*$/i,'').trim();
   host.innerHTML = inner;
 
-  // 清掉原 SVG 內建文字，避免與我們的標籤重疊
+  // 隱藏原本 SVG 的 <text>（避免與我們的標籤重疊）
   host.querySelectorAll('text').forEach(t=>t.setAttribute('display','none'));
 
-  // 收集行政區 path/polygon，依 <title> 抓中文名
+  // 先收集行政區幾何
   allZones = [];
   host.querySelectorAll('path,polygon').forEach(el=>{
     const t = el.querySelector('title');
@@ -224,12 +215,12 @@ let fullBBox = null;
     allZones.push({name, grp, el});
   });
 
-  // 初始雙行標籤（上新/下舊）
-  renderLabels();
-
-  // 設定「全圖 viewBox」
+  // ★ 先計算全圖包圍盒與設定 viewBox（確保一開啟就是完整 38 區）
   fullBBox = unionBBoxOf(host);
-  fitTo(fullBBox, 1.0);
+  setViewBox(fullBBox, 1.0);
+
+  // 再畫「上新 / 下舊」雙行標籤
+  renderLabels();
 
   // 點空白收合浮窗
   document.addEventListener('click', hideTip, {capture:true});
@@ -244,14 +235,12 @@ let fullBBox = null;
   });
   btnReset.addEventListener('click', ()=>{
     grpBtns.forEach(x=>x.dataset.active='0');
-    allZones.forEach(z=>z.el.style.display='');  // 全顯示
-    fitTo(fullBBox, 1.0);                        // 回全圖
+    allZones.forEach(z=>z.el.style.display='');
+    setViewBox(fullBBox, 1.0);
   });
 })();
 
-/* =========================
-   2) 標籤、浮窗、播放、視窗
-========================= */
+/* ---------- 標籤 / 浮窗 / 播放 ---------- */
 function renderLabels(){
   labels.innerHTML = '';
   for(const {name, el} of allZones){
@@ -284,7 +273,6 @@ function showTip(name, elem){
   tPyN.textContent = d.pyNew || '';
   tPyO.textContent = d.pyOld || '';
 
-  // 播放鍵（重播）
   const idx = IDX[name];
   const newSrc = idx ? `map_assets/${idx}${name}_new.mp3` : '';
   const oldSrc = (idx && d.old) ? `map_assets/${idx}${d.old}_old.mp3` : '';
@@ -300,50 +288,39 @@ function hideTip(){ tip.classList.remove('show'); }
 function autoPlayNew(name){
   const idx = IDX[name];
   if(!idx) return;
-  const src = `map_assets/${idx}${name}_new.mp3`;
-  play(src);
+  play(`map_assets/${idx}${name}_new.mp3`);
 }
-function play(src){
-  aud.pause(); aud.src = src; aud.play().catch(()=>{});
-}
+function play(src){ aud.pause(); aud.src=src; aud.play().catch(()=>{}); }
 
-/* 浮窗貼旁邊、邊界避讓 */
 function placeTipBeside(elem){
   const hostRect = stage.getBoundingClientRect();
   const r = elem.getBoundingClientRect();
   const cx = r.left + r.width/2;
   const cy = r.top  + r.height/2;
-
   const onLeft = cx < (hostRect.left + hostRect.width/2);
   const onTop  = cy < (hostRect.top  + hostRect.height/2);
-
   let dx = onLeft ? +110 : -110;
   let dy = onTop  ? +46  : -46;
-
   let left = cx - hostRect.left + dx + window.scrollX;
   let top  = cy - hostRect.top  + dy + window.scrollY;
-
   const pad = 12;
   left = Math.max(pad, Math.min(left, hostRect.width - pad));
-  top  = Math.max(pad, Math.min(top,  hostRect.height - pad));
-
+  top  = Math.max(pad, Math.min(top,  hostRect.height- pad));
   tip.style.left = `${left}px`;
   tip.style.top  = `${top}px`;
 }
 
-/* 四群只顯示＋放大 */
-let curViewBox = {...stage.viewBox.baseVal};
+/* ---------- 視窗 / 群組 ---------- */
 function showOnlyGroup(g){
   const targets = allZones.filter(z=>z.grp===g);
   const others  = allZones.filter(z=>z.grp!==g);
   targets.forEach(z=>z.el.style.display='');
   others.forEach(z=>z.el.style.display='none');
   const bb = unionBBox(targets.map(z=>z.el.getBBox()));
-  fitTo(bb, 1.6);
+  setViewBox(bb, 1.6);
 }
 
-/* viewBox 置中縮放到指定 bbox（scale>1 放大） */
-function fitTo(bb, scale){
+function setViewBox(bb, scale){
   const pad = 0.06;
   const x = bb.x - bb.width*pad;
   const y = bb.y - bb.height*pad;
@@ -351,43 +328,27 @@ function fitTo(bb, scale){
   const h = bb.height*(1+2*pad);
   const vw = w/scale;
   const vh = h/scale;
-  const cx = x + w/2;
-  const cy = y + h/2;
-  const vx = cx - vw/2;
-  const vy = cy - vh/2;
+  const cx = x + w/2, cy = y + h/2;
+  const vx = cx - vw/2, vy = cy - vh/2;
   stage.setAttribute('viewBox', [vx,vy,vw,vh].join(' '));
   curViewBox = {x:vx,y:vy,width:vw,height:vh};
 }
 
-/* 拖曳移動（群組放大時使用） */
-let dragging=false, last={x:0,y:0};
-stage.addEventListener('pointerdown', e=>{
-  dragging=true; last={x:e.clientX, y:e.clientY}; stage.setPointerCapture(e.pointerId);
-});
-stage.addEventListener('pointermove', e=>{
-  if(!dragging) return;
-  const dx = e.clientX - last.x;
-  const dy = e.clientY - last.y;
-  last = {x:e.clientX, y:e.clientY};
-  const rect = stage.getBoundingClientRect();
-  const kx = curViewBox.width / rect.width;
-  const ky = curViewBox.height/ rect.height;
-  curViewBox.x -= dx * kx;
-  curViewBox.y -= dy * ky;
-  stage.setAttribute('viewBox', [curViewBox.x,curViewBox.y,curViewBox.width,curViewBox.height].join(' '));
-});
-stage.addEventListener('pointerup',   ()=>dragging=false);
-stage.addEventListener('pointercancel',()=>dragging=false);
-
-/* bbox 工具 */
+/* ---------- bbox 工具 ---------- */
 function unionBBoxOf(container){
   let bb=null;
   container.querySelectorAll('path,polygon').forEach(el=>{
-    try{ const b=el.getBBox(); if(b && b.width>0 && b.height>0) bb = bb? unionBBox(bb,b):b; }catch(_){}
+    try{
+      const b=el.getBBox();
+      if(b && b.width>0 && b.height>0){
+        bb = bb ? unionBBox(bb,b) : b;
+      }
+    }catch(_){}
   });
+  // 如果意外抓不到，回退到這個安全盒
   return bb || {x:0,y:0,width:1143.062,height:1440.995};
 }
-function unionBBox(list){ return list.reduce((acc,b)=>acc?{x:Math.min(acc.x,b.x),y:Math.min(acc.y,b.y),width:Math.max(acc.x+acc.width,b.x+b.width)-Math.min(acc.x,b.x),height:Math.max(acc.y+acc.height,b.y+b.height)-Math.min(acc.x,b.x)}:b, null); }
+function unionBBox(a,b){ return {x:Math.min(a.x,b.x), y:Math.min(a.y,b.y), width:Math.max(a.x+a.width,b.x+b.width)-Math.min(a.x,b.x), height:Math.max(a.y+a.height,b.y+b.height)-Math.min(a.y,b.y)}; }
 </script>
 </body>
 </html>
