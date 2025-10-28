@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>高雄市38區新舊地名互動地圖 v6.13</title>
+<title>高雄市38區新舊地名互動地圖 v6.13a</title>
 <style>
   html,body{margin:0;height:100%;font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;background:#f7f8fb;color:#0f172a;text-align:center}
   h1{margin:10px 0 4px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#555;font-size:.95rem}
 
-  /* 四顆群組按鈕：滿版四等分（手機也一列） */
   .groupbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:980px;margin:10px auto;padding:0 12px}
   .groupbar button{
     border:0;border-radius:14px;padding:10px 6px;font-size:1rem;color:#fff;cursor:pointer;
@@ -17,7 +16,6 @@
   }
   @media (max-width:420px){.groupbar button{font-size:.95rem;padding:10px 4px}}
   .groupbar button.is-on{outline:2px solid #fff;transform:translateY(-1px)}
-  /* 按鈕漸層與徽章搭配 */
   .btn-core {background:linear-gradient(145deg,#6FA8DC,#9EC6F2)}  .btn-core  .badge{background:#e7f2ff}
   .btn-east {background:linear-gradient(145deg,#93C47D,#B5D99F)}  .btn-east  .badge{background:#e9f7ec}
   .btn-north{background:linear-gradient(145deg,#F6B26B,#FFD79C)}  .btn-north .badge{background:#fff1e3}
@@ -34,27 +32,13 @@
   }
   object{width:100%;height:100%}
 
-  /* 當前群組 vs 其他群組（淡化） */
-  .dimmed{opacity:.15;transition:opacity .28s ease}
+  /* 群組淡化/描邊 */
   .strong-stroke{stroke:#1f2937;stroke-width:.9}
   .light-stroke{stroke:#a0aec0;stroke-width:.6}
 
-  /* 群組閃爍（亮度 + 外光暈） */
-  @keyframes groupFlash{
-    0%{filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))}
-    50%{filter:brightness(1.65) drop-shadow(0 0 10px rgba(255,255,255,.9))}
-    100%{filter:brightness(1) drop-shadow(0 0 0 rgba(255,255,255,0))}
-  }
+  /* 群組閃爍（Web Animations 有備援 class） */
+  @keyframes groupFlash{0%{filter:brightness(1)}50%{filter:brightness(1.65)}100%{filter:brightness(1)}}
   .flash-group{animation:groupFlash 1.4s ease}
-
-  /* 單一行政區強光邊框（外暈+內光，手機清楚） */
-  @keyframes glowStrong{
-    0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0)) drop-shadow(0 0 0 rgba(0,0,0,0))}
-    40%{filter:drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 3px rgba(0,0,0,.35))}
-    80%{filter:drop-shadow(0 0 10px rgba(255,255,255,.9)) drop-shadow(0 0 2px rgba(0,0,0,.25))}
-    100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0)) drop-shadow(0 0 0 rgba(0,0,0,0))}
-  }
-  .glow{animation:glowStrong 1.6s ease;stroke:#000;stroke-width:3px!important}
 
   /* 浮框 */
   .popup{position:absolute;display:none;background:#fff;border-radius:12px;padding:10px;z-index:60;
@@ -87,7 +71,6 @@
     <div id="mapbox">
       <object id="svgMap" data="map_assets/Blank_Kaohsiung_map.svg" type="image/svg+xml" aria-label="Kaohsiung Map"></object>
 
-      <!-- 浮框 -->
       <div class="popup" id="popup">
         <h3 id="pop-new">—</h3>
         <div class="newP" id="pop-new-poj">—</div>
@@ -104,10 +87,10 @@
   <footer><a href="https://tsong-su.github.io/iuhi/index.html">🏠 回遊戲首頁</a></footer>
 
 <script>
-/* ===== 顏色（HEX 直寫至 SVG 以避免 <object> 作用域問題） ===== */
+/* ===== 顏色 ===== */
 const COLORS={ core:"#6FA8DC", east:"#93C47D", north:"#F6B26B", mountain:"#B4A7D6" };
 
-/* ===== 群組與資料（依你確認） ===== */
+/* ===== 群組與資料 ===== */
 const GROUPS={
   core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -155,7 +138,7 @@ const DATA={
   "茂林":{old:"多納", newPoj:"Bōo-lîm", oldPoj:"Tō-na"}
 };
 
-/* ===== 小工具 ===== */
+/* ===== 工具 ===== */
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 function stripQu(s){return (s||"").replace(/區$/,'');}
 function onlyHan(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g);return m?m.join(''):'';}
@@ -172,88 +155,109 @@ function getNameFromShape(el){
 }
 
 /* ===== 狀態 ===== */
-let svgDoc=null, items=[], currentGroup="core";
+let svgDoc=null, items=[], itemsByGroup={core:[],east:[],north:[],mountain:[]}, currentGroup="core";
 const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popOld=$("#pop-old"), popOldPoj=$("#pop-old-poj");
 const audioNew=new Audio(), audioOld=new Audio();
 
-/* ===== 載入 SVG：一進頁就四色上色＆綁定事件 ===== */
+/* ===== 幫手：邊框強閃（更明顯） ===== */
+function pulseStroke(el, ms=1600){
+  // 設定非縮放描邊避免縮放變細
+  el.style.setProperty('vector-effect','non-scaling-stroke');
+  const prevStroke = el.style.stroke || '';
+  const prevWidth  = el.style.strokeWidth || '';
+  // 白邊 4px
+  el.style.stroke = '#ffffff';
+  el.style.strokeWidth = '4px';
+  // 外光暈（WAAPI 優先）
+  if(el.animate){
+    el.animate([
+      { filter:'drop-shadow(0 0 0 rgba(255,255,255,0))' },
+      { filter:'drop-shadow(0 0 14px rgba(255,255,255,1))', offset:.45 },
+      { filter:'drop-shadow(0 0 0 rgba(255,255,255,0))' }
+    ], { duration: ms, easing:'ease' });
+  }
+  setTimeout(()=>{ el.style.stroke = prevStroke; el.style.strokeWidth = prevWidth; }, ms);
+}
+
+/* ===== 載入 SVG ===== */
 $("#svgMap").addEventListener("load",()=>{
   svgDoc=$("#svgMap").contentDocument;
   if(!svgDoc) return;
 
   const svgEl=svgDoc.querySelector("svg");
-  try{
-    if(svgEl && !svgEl.getAttribute("viewBox")){
-      const b=svgEl.getBBox(); svgEl.setAttribute("viewBox",`${b.x} ${b.y} ${b.width} ${b.height}`);
-    }
-  }catch(e){}
+  try{ if(svgEl && !svgEl.getAttribute("viewBox")){ const b=svgEl.getBBox(); svgEl.setAttribute("viewBox",`${b.x} ${b.y} ${b.width} ${b.height}`); } }catch(e){}
   if(svgEl){ svgEl.setAttribute("preserveAspectRatio","xMidYMid meet"); svgEl.setAttribute("width","100%"); svgEl.setAttribute("height","100%"); }
 
-  items=[];
+  items=[]; itemsByGroup={core:[],east:[],north:[],mountain:[]};
+
   svgDoc.querySelectorAll("path, polygon, polyline").forEach(el=>{
     const nm = stripQu(getNameFromShape(el));
     if(!nm || !DATA[nm]) return;
-    const g = Object.entries(GROUPS).find(([k,v])=>v.includes(nm))?.[0];
-    if(!g) return;
+    const grp = (Object.entries(GROUPS).find(([k,v])=>v.includes(nm))||[])[0];
+    if(!grp) return;
 
-    const color = COLORS[g];
-    el.style.fill = color;           // 直接 HEX
-    el.setAttribute("fill", color);  // 雙保險
+    const color = COLORS[grp];
+    el.style.fill = color; el.setAttribute("fill", color);
     el.classList.add("strong-stroke");
     el.style.cursor="pointer";
 
-    el.addEventListener("click",(evt)=>onDistrictClick(evt,{el,newName:nm,group:g}));
-    items.push({el,newName:nm,group:g});
+    el.addEventListener("click",(evt)=>onDistrictClick(evt,{el,newName:nm,group:grp}));
+    items.push({el,newName:nm,group:grp});
+    itemsByGroup[grp].push(el);
   });
 
-  // 初始：四群組全亮（未淡化）
-  setAllNormal();
+  setAllNormal(); // 一進頁四區全亮
 });
 
-/* ===== 群組切換：其他淡化 + 整群強烈閃爍 ===== */
+/* ===== 群組切換 ===== */
 function setAllNormal(){
   items.forEach(d=>{
-    d.el.classList.remove("dimmed","light-stroke");
-    d.el.classList.add("strong-stroke");
+    d.el.style.opacity = '1';
+    d.el.classList.remove('light-stroke');
+    d.el.classList.add('strong-stroke');
   });
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
 function updateGroupDim(){
+  // 先全部淡化
   items.forEach(d=>{
-    const on = d.group===currentGroup;
-    d.el.classList.toggle("dimmed", !on);
-    d.el.classList.toggle("light-stroke", !on);
-    d.el.classList.toggle("strong-stroke", on);
-    d.el.style.fill = COLORS[d.group];
-    d.el.setAttribute("fill", COLORS[d.group]);
+    d.el.style.opacity = (d.group===currentGroup) ? '1' : '0.15';
+    d.el.classList.toggle('light-stroke', d.group!==currentGroup);
+    d.el.classList.toggle('strong-stroke', d.group===currentGroup);
   });
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
-function flashWholeGroup(g){
-  items.filter(d=>d.group===g).forEach(d=>{
-    d.el.classList.add("flash-group");
-    setTimeout(()=>d.el.classList.remove("flash-group"),1400);
+function flashGroupNow(groupKey){
+  const arr = itemsByGroup[groupKey] || [];
+  if(arr.length===0) return;
+  // 以 WAAPI 做亮度動畫；若不支援則使用備援 class
+  arr.forEach(el=>{
+    if(el.animate){
+      el.animate([{filter:'brightness(1)'},{filter:'brightness(1.65)'},{filter:'brightness(1)'}],{duration:1200,easing:'ease'});
+    }else{
+      el.classList.add('flash-group'); setTimeout(()=>el.classList.remove('flash-group'),1200);
+    }
   });
 }
+
 $$("#groupbar button").forEach(btn=>{
   btn.addEventListener("click",()=>{
-    currentGroup = btn.dataset.group;
-    updateGroupDim();
-    flashWholeGroup(currentGroup);   // ← 強化：按鈕會讓整群再閃一次
+    currentGroup = btn.dataset.group;      // core / east / north / mountain
+    updateGroupDim();                       // 其他三群淡化
+    flashGroupNow(currentGroup);            // 目標群組必閃
     popup.style.display="none";
   });
 });
 
-/* ===== 點單一行政區：白光強閃 + 浮框 + 自動播放 ===== */
+/* ===== 點單一行政區 ===== */
 function onDistrictClick(evt,d){
-  d.el.classList.add("glow");                // ← 強化：更粗更亮 1.6s
-  setTimeout(()=>d.el.classList.remove("glow"),1600);
+  pulseStroke(d.el, 1600);  // 更強邊框閃
 
   const info=DATA[d.newName]||{};
-  popNew.textContent = d.newName;
-  popNewPoj.textContent = info.newPoj || "";
-  popOld.textContent = info.old || "";
-  popOldPoj.textContent = info.oldPoj || "";
+  $("#pop-new").textContent = d.newName;
+  $("#pop-new-poj").textContent = info.newPoj || "";
+  $("#pop-old").textContent = info.old || "";
+  $("#pop-old-poj").textContent = info.oldPoj || "";
 
   const box=$("#mapbox").getBoundingClientRect();
   popup.style.display="block";
@@ -266,27 +270,16 @@ function onDistrictClick(evt,d){
 
   $("#btn-new").onclick=()=>playNewOnly(d);
   $("#btn-old").onclick=()=>playOldOnly(d);
-
-  autoPlaySequence(d);                        // 新→0.6秒→舊
+  autoPlaySequence(d); // 新→0.6秒→舊
 }
 
 /* ===== 音檔播放 ===== */
-const audioGapMs = 600;
+const audioNew=new Audio(), audioOld=new Audio(), audioGapMs=600;
 function stopAll(){ [audioNew,audioOld].forEach(a=>{try{a.pause();}catch{} a.currentTime=0;}); }
 function idxInGroup(group, name){ return GROUPS[group].indexOf(name)+1; }
 function newSrc(group,name){ return "map_assets/"+String(idxInGroup(group,name)).padStart(2,"0")+name+"_new.mp3"; }
-function oldSrc(group,name){
-  const oldName=(DATA[name]&&DATA[name].old)||name;
-  return "map_assets/"+String(idxInGroup(group,name)).padStart(2,"0")+oldName+"_old.mp3";
-}
-function autoPlaySequence(d){
-  stopAll();
-  audioNew.src = encodeURI(newSrc(d.group, d.newName));
-  audioOld.src = encodeURI(oldSrc(d.group, d.newName));
-  audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), audioGapMs);
-  audioOld.onended = null;
-  audioNew.play().catch(()=>{});
-}
+function oldSrc(group,name){ const oldName=(DATA[name]&&DATA[name].old)||name; return "map_assets/"+String(idxInGroup(group,name)).padStart(2,"0")+oldName+"_old.mp3"; }
+function autoPlaySequence(d){ stopAll(); audioNew.src=encodeURI(newSrc(d.group,d.newName)); audioOld.src=encodeURI(oldSrc(d.group,d.newName)); audioNew.onended=()=>setTimeout(()=>audioOld.play().catch(()=>{}),audioGapMs); audioOld.onended=null; audioNew.play().catch(()=>{}); }
 function playNewOnly(d){ stopAll(); audioNew.src=encodeURI(newSrc(d.group,d.newName)); audioNew.play().catch(()=>{}); }
 function playOldOnly(d){ stopAll(); audioOld.src=encodeURI(oldSrc(d.group,d.newName)); audioOld.play().catch(()=>{}); }
 
