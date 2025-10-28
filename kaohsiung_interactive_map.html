@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖 v6.8</title>
+<title>高雄市38區新舊地名互動地圖 v6.9</title>
 <style>
   :root{
-    --core:#3A7BD5;      /* 市中心 */
-    --east:#56ab2f;      /* 市郊-東區 */
-    --north:#ff9966;     /* 市郊-北區 */
-    --mountain:#6a83f7;  /* 山區 */
+    /* 柔和且彼此區隔的四色 */
+    --core:#84B6F4;      /* 市中心：柔藍 */
+    --east:#8FD19E;      /* 市郊-東區：柔綠 */
+    --north:#FFB58A;     /* 市郊-北區：柔橘 */
+    --mountain:#C6B2FF;  /* 山區：柔紫 */
+
     --ink:#0f172a; --card:#fff; --border:#e5e7eb;
   }
   *{box-sizing:border-box}
@@ -20,33 +22,32 @@
   h1{margin:6px 0 4px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#444}
 
-  /* 四顆群組按鈕：滿版四等分，不換行（手機也一列） */
+  /* 四顆群組：滿版四等分（手機也一列） */
   .groupbar{
     display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
-    max-width:980px; margin:10px auto 10px; padding:0 12px;
+    max-width:980px; margin:10px auto; padding:0 12px;
   }
   .groupbar button{
     border:0;border-radius:14px;padding:10px 6px;font-size:1rem;color:#fff;cursor:pointer;
-    box-shadow:0 4px 10px rgba(0,0,0,.25);transition:filter .2s, transform .02s; position:relative; line-height:1.1;
+    box-shadow:0 4px 10px rgba(0,0,0,.18);transition:filter .2s, transform .02s; position:relative; line-height:1.1;
   }
-  @media (max-width:420px){
-    .groupbar button{font-size:.95rem; padding:10px 4px}
-  }
-  .groupbar button:hover{filter:brightness(1.08)} .groupbar button:active{transform:translateY(1px)}
+  @media (max-width:420px){ .groupbar button{font-size:.95rem; padding:10px 4px} }
+  .groupbar button:hover{filter:brightness(1.06)} .groupbar button:active{transform:translateY(1px)}
   .groupbar button.is-on{outline:2px solid #fff}
-  .btn-core{background:linear-gradient(145deg,#3A7BD5,#00d2ff)}
-  .btn-east{background:linear-gradient(145deg,#56ab2f,#a8e063)}
-  .btn-north{background:linear-gradient(145deg,#ff9966,#ff5e62)}
-  .btn-mount{background:linear-gradient(145deg,#6a83f7,#9aa8ff)}
+  /* 漸層也降彩，與填色一致 */
+  .btn-core{background:linear-gradient(145deg,#84B6F4,#6aa6ff)}
+  .btn-east{background:linear-gradient(145deg,#8FD19E,#74c488)}
+  .btn-north{background:linear-gradient(145deg,#FFB58A,#ff9966)}
+  .btn-mount{background:linear-gradient(145deg,#C6B2FF,#a991ff)}
   .badge{
     position:absolute;top:-6px;right:-8px;border-radius:999px;min-width:22px;height:22px;padding:0 6px;
     display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#000;box-shadow:0 2px 6px rgba(0,0,0,.28);
     background:rgba(255,255,255,.92)
   }
-  .btn-core  .badge{background:#a9d4ff}
-  .btn-east  .badge{background:#c9f7b6}
-  .btn-north .badge{background:#ffd1b8}
-  .btn-mount .badge{background:#dcd9ff}
+  .btn-core  .badge{background:#d9e9ff}
+  .btn-east  .badge{background:#dcf7e1}
+  .btn-north .badge{background:#ffe1cf}
+  .btn-mount .badge{background:#efe7ff}
 
   main{max-width:980px;margin:0 auto;padding:0 12px 10px}
   #mapbox{
@@ -57,14 +58,17 @@
   }
   object{width:100%;height:100%}
 
-  .dim{opacity:.35; transition:opacity .25s ease}
+  /* 淡化用：改成非常明顯（15% 不透明＋淡描邊） */
+  .dimmed{opacity:.15 !important; transition:opacity .25s ease}
+  .strong-stroke{stroke:#1f2937 !important; stroke-width:0.9 !important}
+  .light-stroke{stroke:#9ca3af !important; stroke-width:0.6 !important}
 
   /* 點選區塊的閃光註記（加粗邊 + 白色光暈） */
   @keyframes glow {0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}
     30%{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
     60%{filter:drop-shadow(0 0 10px rgba(255,255,255,1))}
     100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}}
-  .glow{animation:glow 1.6s ease; stroke:#111; stroke-width:1.8 !important}
+  .glow{animation:glow 1.6s ease; stroke:#0f172a !important; stroke-width:2 !important}
   .flash{animation:flash .8s ease} @keyframes flash{0%{fill-opacity:.5}100%{fill-opacity:1}}
 
   /* 浮框：小巧、亮色按鈕 */
@@ -77,8 +81,8 @@
   .newP{color:#00796b;font-weight:800} .old{color:#374151;margin-top:4px} .oldP{color:#6a1b9a}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
   .btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
-  .btn.play{background:linear-gradient(145deg,#42a5f5,#0d47a1)}
-  .btn.old {background:linear-gradient(145deg,#ff8a65,#d84315)}
+  .btn.play{background:linear-gradient(145deg,#64b5f6,#1565c0)}
+  .btn.old {background:linear-gradient(145deg,#ffa27a,#e66a3a)}
 
   footer{padding:12px 0}
   footer a{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(145deg,#4CAF50,#2e7d32);padding:8px 16px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.22)}
@@ -126,7 +130,6 @@ const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.quer
 function stripQu(s){return (s||"").replace(/區$/,'');}
 function onlyHan(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
 function getNameFromShape(el){
-  // 1) 讀自身 <title>；2) 父層 <g> 的 <title>；3) id/label。
   const selfT = el.querySelector && el.querySelector('title');
   if(selfT && selfT.textContent) return onlyHan(selfT.textContent.trim());
   const p = el.parentNode;
@@ -212,18 +215,14 @@ $("#svgMap").addEventListener("load",()=>{
   shapes.forEach(el=>{
     const raw = getNameFromShape(el);
     if(!raw) return;
-    const nm = stripQu(raw);              // e.g. 「小港區」→「小港」
-    if(!DATA[nm]) return;                 // 僅收錄 38 區
+    const nm = stripQu(raw);
+    if(!DATA[nm]) return;
     const group = Object.entries(GROUPS).find(([g,list])=>list.includes(nm))?.[0];
     if(!group) return;
 
     // 初始上色（四色分區）＋邊線
-    // 用 style.fill 可覆蓋父層 <g fill="#ddd">
-    el.style.fill = getComputedStyle(document.documentElement)
-                    .getPropertyValue(GROUP_COLOR[group].replace('var','').replace(/[()]/g,'').trim()) || "";
-    el.setAttribute("fill", GROUP_COLOR[group]);      // 雙保險
-    el.setAttribute("stroke", "#1f2937");
-    el.setAttribute("stroke-width", "0.8");
+    el.setAttribute("fill", GROUP_COLOR[group]);
+    el.classList.add("strong-stroke");
     el.style.cursor="pointer";
 
     el.addEventListener("click",(evt)=>onDistrictClick(evt, {
@@ -233,14 +232,18 @@ $("#svgMap").addEventListener("load",()=>{
     items.push({el, newName:nm, oldName:DATA[nm].old, newPoj:DATA[nm].newPoj, oldPoj:DATA[nm].oldPoj, group});
   });
 
-  updateGroup(); // 初始顯示四色，且讓非當前群組淡化
+  updateGroup(); // 初始顯示：core 高亮，其餘淡化（你可改成全亮，見下行註解）
+  // currentGroup = "core"; updateGroup();
 });
 
-/* 群組切換：顏色保留，非當前群組加 .dim */
+/* 群組切換：當前群組 100% 不透明＋深描邊；其他群組 15% 不透明＋淡描邊 */
 function updateGroup(){
   items.forEach(d=>{
-    d.el.classList.toggle("dim", d.group!==currentGroup);
-    d.el.setAttribute("fill", GROUP_COLOR[d.group]); // 再保險一次顏色
+    const isCur = d.group===currentGroup;
+    d.el.classList.toggle("dimmed", !isCur);
+    d.el.classList.toggle("light-stroke", !isCur);
+    d.el.classList.toggle("strong-stroke", isCur);
+    d.el.setAttribute("fill", GROUP_COLOR[d.group]); // 確保色值不被覆蓋
   });
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
@@ -256,7 +259,7 @@ function autoPlaySequence(d){
   audioOld.src = encodeURI(oldSrc);
   audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), 600);
   audioOld.onended = null;
-  audioNew.play().catch(()=>{ /* 靜默失敗 */ });
+  audioNew.play().catch(()=>{});
 }
 
 /* 重聽（單播） */
@@ -299,7 +302,7 @@ function onDistrictClick(evt,d){
   autoPlaySequence(d);
 }
 
-/* 上方 4 顆按鈕：切換群組（地圖即時連動） */
+/* 上方 4 顆按鈕：切換群組（地圖即時連動，其他群組大幅淡化） */
 $$("#groupbar button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     currentGroup=btn.dataset.group; updateGroup();
