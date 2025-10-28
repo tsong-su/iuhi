@@ -3,34 +3,33 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖 v6.5</title>
+<title>高雄市38區新舊地名互動地圖 v6.6</title>
 <style>
   :root{
-    /* 群組主色（與按鈕一致） */
-    --core:#3A7BD5;       /* 市中心 */
-    --east:#56ab2f;       /* 市郊-東區 */
-    --north:#ff9966;      /* 市郊-北區 */
-    --mountain:#6a83f7;   /* 山區（更鮮豔藍紫） */
+    --core:#3A7BD5;      /* 市中心 */
+    --east:#56ab2f;      /* 市郊-東區 */
+    --north:#ff9966;     /* 市郊-北區 */
+    --mountain:#6a83f7;  /* 山區（鮮豔藍紫） */
 
-    --ink:#0f172a; --border:#e5e7eb; --card:#fff;
+    --ink:#0f172a; --card:#fff; --border:#e5e7eb;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;background:#f6f7f9;color:var(--ink);text-align:center}
   h1{margin:10px 0 6px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#444}
 
-  /* 上方四顆群組按鈕：單行、可水平滑動、不換行 */
+  /* 上方 4 顆群組按鈕：手機一列可滑動，確保不被切掉 */
   .groupbar{
     display:flex; gap:10px; justify-content:flex-start;
-    margin:10px auto; padding:0 12px; max-width:980px;
-    overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; white-space:nowrap;
+    margin:10px auto; padding:0 12px 0 12px; max-width:980px;
+    overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;
+    scroll-padding-right:20px;
   }
   .groupbar::-webkit-scrollbar{display:none}
   .groupbar button{
     position:relative; border:0; border-radius:14px; padding:10px 22px;
-    font-size:1rem; color:#fff; cursor:pointer;
+    font-size:1rem; color:#fff; cursor:pointer; flex:0 0 auto; white-space:nowrap;
     box-shadow:0 4px 10px rgba(0,0,0,.25); transition:filter .2s, transform .02s;
-    white-space:nowrap; flex:0 0 auto;
   }
   .groupbar button:hover{filter:brightness(1.08)} .groupbar button:active{transform:translateY(1px)}
   .groupbar button.is-on{outline:2px solid #fff}
@@ -56,38 +55,31 @@
   }
   object{width:100%;height:100%}
 
-  /* 非當前群組淡化顯示（不隱藏） */
+  /* 非當前群組的淡化 */
   .dim{opacity:.35; transition:opacity .25s ease}
 
-  /* 點選區塊的「閃光註記」 */
-  @keyframes glow {
-    0%{ filter:drop-shadow(0 0 0 rgba(255,255,255,0)); }
-    30%{ filter:drop-shadow(0 0 6px rgba(255,255,255,.9)); }
-    60%{ filter:drop-shadow(0 0 10px rgba(255,255,255,1)); }
-    100%{ filter:drop-shadow(0 0 0 rgba(255,255,255,0)); }
-  }
-  .glow{
-    animation:glow 1.6s ease;
-    stroke:#111; stroke-width:1.8 !important;
-  }
+  /* 點選區塊的閃光註記（邊框加粗 + 白色光暈） */
+  @keyframes glow {0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}
+    30%{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
+    60%{filter:drop-shadow(0 0 10px rgba(255,255,255,1))}
+    100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}}
+  .glow{animation:glow 1.6s ease; stroke:#111; stroke-width:1.8 !important}
   .flash{animation:flash .8s ease} @keyframes flash{0%{fill-opacity:.5}100%{fill-opacity:1}}
 
-  /* 浮框：縮小且手機優化 */
+  /* 浮框：縮小、手機最優先 */
   .popup{
-    position:absolute; display:none; min-width:200px; max-width:min(300px, 90%);
+    position:absolute; display:none; min-width:190px; max-width:min(300px, 85%);
     background:#fff; border-radius:12px; border:1px solid rgba(0,0,0,.08);
     box-shadow:0 10px 28px rgba(0,0,0,.18); padding:10px; z-index:60
   }
   .popup h3{margin:0 0 4px; font-size:1.02rem}
   .newP{color:#00796b;font-weight:800} .old{color:#374151;margin-top:4px} .oldP{color:#6a1b9a}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  /* 鮮豔漸層重聽鈕 */
   .btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
   .btn.play{background:linear-gradient(145deg,#42a5f5,#0d47a1)}
   .btn.old {background:linear-gradient(145deg,#ff8a65,#d84315)}
-
   @media (max-width:600px){
-    .popup{min-width:180px; padding:8px}
+    .popup{min-width:170px; padding:8px}
     .popup h3{font-size:1rem}
     .row .btn{padding:6px 10px; font-size:.92rem}
   }
@@ -109,10 +101,9 @@
   </div>
 
   <div id="mapbox">
-    <!-- 以 <object> 載入你的 SVG -->
     <object id="svgMap" data="map_assets/Blank_Kaohsiung_map.svg" type="image/svg+xml" aria-label="Kaohsiung Map"></object>
 
-    <!-- 彈出卡（資料＋重聽） -->
+    <!-- 浮框（資料＋重聽按鈕） -->
     <div class="popup" id="popup">
       <h3 id="pop-new">—</h3>
       <div class="newP" id="pop-new-poj">—</div>
@@ -134,8 +125,17 @@
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 function stripQu(s){return (s||"").replace(/區$/,'');}
 function zhFromAny(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
+function getNameFromPath(el){
+  // 1) 自身包含 <title> 2) 父層 <g> 的 <title> 3) 自身 id / label
+  const selfTitle = el.querySelector && el.querySelector('title');
+  if(selfTitle && selfTitle.textContent) return zhFromAny(selfTitle.textContent.trim());
+  const parentTitle = el.parentNode && el.parentNode.querySelector && el.parentNode.querySelector('title');
+  if(parentTitle && parentTitle.textContent) return zhFromAny(parentTitle.textContent.trim());
+  const idName = el.getAttribute('data-name') || el.getAttribute('inkscape:label') || el.getAttribute('id') || '';
+  return zhFromAny(idName);
+}
 
-/* 群組／資料（完全依你確認的 38 區表；不做任何改動） */
+/* 群組／資料（你確認的 38 區表；不改動） */
 const GROUPS={
   core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -182,8 +182,6 @@ const DATA={
   "桃源":{old:"雅爾", newPoj:"Thô-guân", oldPoj:"Ngani"},
   "茂林":{old:"多納", newPoj:"Bōo-lîm", oldPoj:"Tō-na"}
 };
-
-/* 顏色 map */
 const GROUP_COLOR={ core:"var(--core)", east:"var(--east)", north:"var(--north)", mountain:"var(--mountain)" };
 
 let svgDoc=null, items=[], currentGroup="core";
@@ -191,7 +189,7 @@ const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popO
 const btnNew=$("#btn-new"), btnOld=$("#btn-old");
 const audioNew=new Audio(), audioOld=new Audio();
 
-/* 載入 SVG 後：抓 path -> 套色 -> 綁事件 */
+/* 載入 SVG 後：抓所有 path（不只限有 id），從 title 或父層 title 取區名，正確上色並綁事件 */
 $("#svgMap").addEventListener("load",()=>{
   svgDoc=$("#svgMap").contentDocument;
   if(!svgDoc) return;
@@ -206,15 +204,15 @@ $("#svgMap").addEventListener("load",()=>{
   if(svgEl){ svgEl.setAttribute("preserveAspectRatio","xMidYMid meet"); svgEl.setAttribute("width","100%"); svgEl.setAttribute("height","100%"); }
 
   items=[];
-  $$("path[id]", svgDoc).forEach(el=>{
-    const t=el.querySelector("title");
-    const raw=zhFromAny(t?.textContent || el.getAttribute("data-name") || el.getAttribute("inkscape:label") || el.getAttribute("id") || "");
-    const nm=stripQu(raw);
-    if(!DATA[nm]) return;  // 僅收錄 38 區
+  $$("path", svgDoc).forEach(el=>{
+    const rawName = getNameFromPath(el);
+    if(!rawName) return;
+    const nm=stripQu(rawName);
+    if(!DATA[nm]) return; // 僅收錄 38 區
     const group = Object.entries(GROUPS).find(([g,list])=>list.includes(nm))?.[0];
     if(!group) return;
 
-    // 初始上色 + 邊線
+    // 初始上色（四色分區）＋邊線
     el.setAttribute("fill", GROUP_COLOR[group]);
     el.setAttribute("stroke", "#1f2937");
     el.setAttribute("stroke-width", "0.8");
@@ -227,12 +225,18 @@ $("#svgMap").addEventListener("load",()=>{
     items.push({el, newName:nm, oldName:DATA[nm].old, newPoj:DATA[nm].newPoj, oldPoj:DATA[nm].oldPoj, group});
   });
 
-  updateGroup(); // 初始讓非當前群組淡化
+  // 初始即顯示四色分區；同時讓非當前群組淡化
+  updateGroup();
 });
 
-/* 群組切換：非當前群組 .dim（淡化，不隱藏） */
+/* 群組切換：顏色保留，非當前群組僅「淡化」 */
 function updateGroup(){
-  items.forEach(d=> d.el.classList.toggle("dim", d.group!==currentGroup));
+  items.forEach(d=>{
+    // 保持本群組原色，其他群組加上 .dim
+    d.el.classList.toggle("dim", d.group!==currentGroup);
+    // 再次確保 fill 是正確群組色（避免外部樣式覆蓋）
+    d.el.setAttribute("fill", GROUP_COLOR[d.group]);
+  });
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
 
@@ -250,7 +254,7 @@ function autoPlaySequence(d){
   audioNew.play().catch(()=>{ console.warn("無法播放新名：", newSrc); });
 }
 
-/* 重聽單播 */
+/* 重聽（單播） */
 function playNewOnly(d){
   stopAll();
   const idx = GROUPS[d.group].indexOf(d.newName)+1;
@@ -269,19 +273,15 @@ function stopAll(){ [audioNew,audioOld].forEach(a=>{try{a.pause();}catch{} a.cur
 
 /* 點區塊：顯示浮框 + 閃光註記 + 自動播放 */
 function onDistrictClick(evt,d){
-  // 閃光＋加粗邊框（2 秒後移除）
   d.el.classList.add("glow","flash");
   setTimeout(()=>d.el.classList.remove("glow"), 2000);
 
-  // 浮框資料
-  popNew.textContent=d.newName;      popNewPoj.textContent=d.newPoj||"";
-  popOld.textContent=d.oldName;      popOldPoj.textContent=d.oldPoj||"";
+  $("#pop-new").textContent=d.newName;      $("#pop-new-poj").textContent=d.newPoj||"";
+  $("#pop-old").textContent=d.oldName;      $("#pop-old-poj").textContent=d.oldPoj||"";
 
-  // 重聽
-  btnNew.onclick=()=>playNewOnly(d);
-  btnOld.onclick=()=>playOldOnly(d);
+  $("#btn-new").onclick=()=>playNewOnly(d);
+  $("#btn-old").onclick=()=>playOldOnly(d);
 
-  // 浮框位置：避免超出
   const box=$("#mapbox").getBoundingClientRect();
   popup.style.display="block";
   const w=popup.offsetWidth, h=popup.offsetHeight;
@@ -291,15 +291,16 @@ function onDistrictClick(evt,d){
   if(left < 8) left = 8; if(top < 8) top = 8;
   popup.style.left=left+"px"; popup.style.top=top+"px";
 
-  // 自動播放：新 → 0.6s → 舊
-  autoPlaySequence(d);
+  autoPlaySequence(d); // 自動播放 新→0.6→舊
 }
 
 /* 上方 4 顆按鈕：切換群組（地圖即時連動） */
 $$("#groupbar button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     currentGroup=btn.dataset.group; updateGroup();
-    popup.style.display="none"; // 切群組時收起浮框
+    popup.style.display="none";
+    // 確保最後一顆「山區」在手機不被切掉
+    btn.scrollIntoView({inline:"nearest", behavior:"smooth", block:"nearest"});
   });
 });
 
