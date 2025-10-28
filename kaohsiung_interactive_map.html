@@ -3,33 +3,31 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖 v6.6</title>
+<title>高雄市38區新舊地名互動地圖 v6.7</title>
 <style>
   :root{
     --core:#3A7BD5;      /* 市中心 */
     --east:#56ab2f;      /* 市郊-東區 */
     --north:#ff9966;     /* 市郊-北區 */
-    --mountain:#6a83f7;  /* 山區（鮮豔藍紫） */
-
+    --mountain:#6a83f7;  /* 山區 */
     --ink:#0f172a; --card:#fff; --border:#e5e7eb;
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;background:#f6f7f9;color:var(--ink);text-align:center}
-  h1{margin:10px 0 6px;font-size:1.5rem;font-weight:800}
+
+  header{padding:10px 12px 6px}
+  h1{margin:6px 0 4px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#444}
 
-  /* 上方 4 顆群組按鈕：手機一列可滑動，確保不被切掉 */
+  /* 四顆群組按鈕：滿版四等分，不換行 */
   .groupbar{
-    display:flex; gap:10px; justify-content:flex-start;
-    margin:10px auto; padding:0 12px 0 12px; max-width:980px;
-    overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;
-    scroll-padding-right:20px;
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    max-width:980px; margin:10px auto 10px; padding:0 12px;
   }
-  .groupbar::-webkit-scrollbar{display:none}
   .groupbar button{
-    position:relative; border:0; border-radius:14px; padding:10px 22px;
-    font-size:1rem; color:#fff; cursor:pointer; flex:0 0 auto; white-space:nowrap;
-    box-shadow:0 4px 10px rgba(0,0,0,.25); transition:filter .2s, transform .02s;
+    border:0;border-radius:14px;padding:10px 8px;font-size:1rem;color:#fff;cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);transition:filter .2s, transform .02s; position:relative
   }
   .groupbar button:hover{filter:brightness(1.08)} .groupbar button:active{transform:translateY(1px)}
   .groupbar button.is-on{outline:2px solid #fff}
@@ -47,18 +45,20 @@
   .btn-north .badge{background:#ffd1b8}
   .btn-mount .badge{background:#dcd9ff}
 
-  /* 地圖容器 */
+  /* 主區塊：讓地圖吃滿可視高度，不留底部大空白 */
+  main{max-width:980px;margin:0 auto;padding:0 12px 10px}
   #mapbox{
-    width:100%; max-width:980px; margin:0 auto; aspect-ratio:1/1;
+    width:100%; height:calc(100vh - 230px);  /* 依實際標題/按鈕高度抓估值，手機不留白 */
+    min-height:420px;                         /* 平板/桌機也好看 */
     position:relative; background:#fff; border-radius:14px; border:1px solid var(--border);
     box-shadow:0 8px 18px rgba(0,0,0,.06); overflow:hidden;
   }
   object{width:100%;height:100%}
 
-  /* 非當前群組的淡化 */
+  /* 非當前群組淡化（不隱藏） */
   .dim{opacity:.35; transition:opacity .25s ease}
 
-  /* 點選區塊的閃光註記（邊框加粗 + 白色光暈） */
+  /* 點選區塊的閃光註記 */
   @keyframes glow {0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}
     30%{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
     60%{filter:drop-shadow(0 0 10px rgba(255,255,255,1))}
@@ -66,9 +66,9 @@
   .glow{animation:glow 1.6s ease; stroke:#111; stroke-width:1.8 !important}
   .flash{animation:flash .8s ease} @keyframes flash{0%{fill-opacity:.5}100%{fill-opacity:1}}
 
-  /* 浮框：縮小、手機最優先 */
+  /* 浮框：小巧、亮色按鈕 */
   .popup{
-    position:absolute; display:none; min-width:190px; max-width:min(300px, 85%);
+    position:absolute; display:none; min-width:180px; max-width:min(300px, 85%);
     background:#fff; border-radius:12px; border:1px solid rgba(0,0,0,.08);
     box-shadow:0 10px 28px rgba(0,0,0,.18); padding:10px; z-index:60
   }
@@ -78,20 +78,17 @@
   .btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
   .btn.play{background:linear-gradient(145deg,#42a5f5,#0d47a1)}
   .btn.old {background:linear-gradient(145deg,#ff8a65,#d84315)}
-  @media (max-width:600px){
-    .popup{min-width:170px; padding:8px}
-    .popup h3{font-size:1rem}
-    .row .btn{padding:6px 10px; font-size:.92rem}
-  }
 
-  footer{padding:14px 0}
+  footer{padding:12px 0}
   footer a{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(145deg,#4CAF50,#2e7d32);padding:8px 16px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.22)}
 </style>
 </head>
 <body>
-  <h1>高雄市38區新舊地名互動地圖</h1>
-  <p class="notice">📱 建議直式觀看效果最佳</p>
-  <p class="notice">👆 點行政區看新舊地名並播放音檔</p>
+  <header>
+    <h1>高雄市38區新舊地名互動地圖</h1>
+    <p class="notice">📱 建議直式觀看效果最佳</p>
+    <p class="notice">👆 點行政區看新舊地名並播放音檔</p>
+  </header>
 
   <div class="groupbar" id="groupbar">
     <button class="btn-core is-on"  data-group="core">市中心區<span class="badge">11</span></button>
@@ -100,21 +97,23 @@
     <button class="btn-mount"        data-group="mountain">山區<span class="badge">9</span></button>
   </div>
 
-  <div id="mapbox">
-    <object id="svgMap" data="map_assets/Blank_Kaohsiung_map.svg" type="image/svg+xml" aria-label="Kaohsiung Map"></object>
+  <main>
+    <div id="mapbox">
+      <object id="svgMap" data="map_assets/Blank_Kaohsiung_map.svg" type="image/svg+xml" aria-label="Kaohsiung Map"></object>
 
-    <!-- 浮框（資料＋重聽按鈕） -->
-    <div class="popup" id="popup">
-      <h3 id="pop-new">—</h3>
-      <div class="newP" id="pop-new-poj">—</div>
-      <div class="old"  id="pop-old">—</div>
-      <div class="oldP" id="pop-old-poj">—</div>
-      <div class="row">
-        <button class="btn play" id="btn-new">播放新地名</button>
-        <button class="btn old"  id="btn-old">播放舊地名</button>
+      <!-- 浮框（資料＋重聽） -->
+      <div class="popup" id="popup">
+        <h3 id="pop-new">—</h3>
+        <div class="newP" id="pop-new-poj">—</div>
+        <div class="old"  id="pop-old">—</div>
+        <div class="oldP" id="pop-old-poj">—</div>
+        <div class="row">
+          <button class="btn play" id="btn-new">播放新地名</button>
+          <button class="btn old"  id="btn-old">播放舊地名</button>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <footer>
     <a href="https://tsong-su.github.io/iuhi/index.html">🏠 回遊戲首頁</a>
@@ -126,22 +125,26 @@ const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.quer
 function stripQu(s){return (s||"").replace(/區$/,'');}
 function zhFromAny(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
 function getNameFromPath(el){
-  // 1) 自身包含 <title> 2) 父層 <g> 的 <title> 3) 自身 id / label
-  const selfTitle = el.querySelector && el.querySelector('title');
-  if(selfTitle && selfTitle.textContent) return zhFromAny(selfTitle.textContent.trim());
-  const parentTitle = el.parentNode && el.parentNode.querySelector && el.parentNode.querySelector('title');
-  if(parentTitle && parentTitle.textContent) return zhFromAny(parentTitle.textContent.trim());
+  // 依 v6.2 的 SVG 結構：title 在 path 內，或在父層 <g> 內
+  const selfT = el.querySelector && el.querySelector('title');
+  if(selfT && selfT.textContent) return zhFromAny(selfT.textContent.trim());
+  const par = el.parentNode;
+  if(par && par.querySelector){
+    const pT = par.querySelector('title');
+    if(pT && pT.textContent) return zhFromAny(pT.textContent.trim());
+  }
   const idName = el.getAttribute('data-name') || el.getAttribute('inkscape:label') || el.getAttribute('id') || '';
   return zhFromAny(idName);
 }
 
-/* 群組／資料（你確認的 38 區表；不改動） */
+/* 38 區群組（依你確認） */
 const GROUPS={
   core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
   north:["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
   mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
 };
+/* 新舊地名 + POJ（依你確認；不動） */
 const DATA={
   "楠梓":{old:"楠仔坑", newPoj:"Lâm-tsú", oldPoj:"Lâm-á-khenn"},
   "左營":{old:"埤仔頭", newPoj:"Tsó-iânn", oldPoj:"Pi-á-thâu"},
@@ -189,7 +192,7 @@ const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popO
 const btnNew=$("#btn-new"), btnOld=$("#btn-old");
 const audioNew=new Audio(), audioOld=new Audio();
 
-/* 載入 SVG 後：抓所有 path（不只限有 id），從 title 或父層 title 取區名，正確上色並綁事件 */
+/* 載入 SVG 後：抓所有 path（從 title/父層 title 取名），正確上色並綁事件 */
 $("#svgMap").addEventListener("load",()=>{
   svgDoc=$("#svgMap").contentDocument;
   if(!svgDoc) return;
@@ -225,17 +228,14 @@ $("#svgMap").addEventListener("load",()=>{
     items.push({el, newName:nm, oldName:DATA[nm].old, newPoj:DATA[nm].newPoj, oldPoj:DATA[nm].oldPoj, group});
   });
 
-  // 初始即顯示四色分區；同時讓非當前群組淡化
-  updateGroup();
+  updateGroup(); // 初始顯示四色，且讓非當前群組淡化
 });
 
-/* 群組切換：顏色保留，非當前群組僅「淡化」 */
+/* 群組切換：顏色保留，非當前群組加 .dim */
 function updateGroup(){
   items.forEach(d=>{
-    // 保持本群組原色，其他群組加上 .dim
     d.el.classList.toggle("dim", d.group!==currentGroup);
-    // 再次確保 fill 是正確群組色（避免外部樣式覆蓋）
-    d.el.setAttribute("fill", GROUP_COLOR[d.group]);
+    d.el.setAttribute("fill", GROUP_COLOR[d.group]); // 再保險一次顏色
   });
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
@@ -291,7 +291,7 @@ function onDistrictClick(evt,d){
   if(left < 8) left = 8; if(top < 8) top = 8;
   popup.style.left=left+"px"; popup.style.top=top+"px";
 
-  autoPlaySequence(d); // 自動播放 新→0.6→舊
+  autoPlaySequence(d);
 }
 
 /* 上方 4 顆按鈕：切換群組（地圖即時連動） */
@@ -299,8 +299,6 @@ $$("#groupbar button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     currentGroup=btn.dataset.group; updateGroup();
     popup.style.display="none";
-    // 確保最後一顆「山區」在手機不被切掉
-    btn.scrollIntoView({inline:"nearest", behavior:"smooth", block:"nearest"});
   });
 });
 
