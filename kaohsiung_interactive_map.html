@@ -3,6 +3,104 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>高雄市38區新舊地名互動地圖 v6.13b</title>
+<style>
+html,body{margin:0;height:100%;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f7f8fb;color:#0f172a;text-align:center}
+h1{margin:10px 0 4px;font-size:1.5rem;font-weight:800}
+.notice{margin:2px 0;color:#555;font-size:.95rem}
+.groupbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:980px;margin:10px auto;padding:0 12px}
+.groupbar button{border:0;border-radius:14px;padding:10px 6px;font-size:1rem;color:#fff;cursor:pointer;
+box-shadow:0 4px 10px rgba(0,0,0,.18);transition:all .2s;position:relative;line-height:1.1}
+@media(max-width:420px){.groupbar button{font-size:.95rem;padding:10px 4px}}
+.groupbar button.is-on{outline:2px solid #fff;transform:translateY(-1px)}
+.btn-core{background:linear-gradient(145deg,#6FA8DC,#9EC6F2)} .btn-east{background:linear-gradient(145deg,#93C47D,#B5D99F)}
+.btn-north{background:linear-gradient(145deg,#F6B26B,#FFD79C)} .btn-mount{background:linear-gradient(145deg,#B4A7D6,#D2C4F2)}
+.badge{position:absolute;top:-6px;right:-8px;border-radius:50%;min-width:22px;height:22px;padding:0 6px;
+display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#333;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+main{max-width:980px;margin:0 auto;padding:0 12px 10px}
+#mapbox{width:100%;height:calc(100vh - 230px);min-height:420px;position:relative;background:#fff;border-radius:14px;
+border:1px solid #e5e7eb;box-shadow:0 8px 18px rgba(0,0,0,.08);overflow:hidden}
+#mapContainer svg{width:100%;height:100%}
+.dimmed{opacity:.15}
+.strong-stroke{stroke:#1f2937;stroke-width:.9}
+.light-stroke{stroke:#a0aec0;stroke-width:.6}
+@keyframes glow{0%{filter:none}50%{filter:drop-shadow(0 0 12px #fff)}100%{filter:none}}
+.glow{animation:glow 1.4s ease}
+.popup{position:absolute;display:none;background:#fff;border-radius:12px;padding:10px;z-index:60;
+border:1px solid rgba(0,0,0,.08);box-shadow:0 10px 24px rgba(0,0,0,.18);min-width:190px;max-width:min(300px,85%)}
+.popup h3{margin:0 0 4px;font-size:1.05rem;font-weight:800}
+.newP{color:#00796b;font-weight:800}.old{margin-top:2px}.oldP{color:#6a1b9a;font-weight:700}
+.row{display:flex;gap:8px;margin-top:8px;justify-content:center;flex-wrap:wrap}
+.btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+.btn.play{background:linear-gradient(145deg,#64b5f6,#1565c0)}.btn.old{background:linear-gradient(145deg,#ffa27a,#e66a3a)}
+footer{padding:12px 0}
+footer a{display:inline-block;background:linear-gradient(145deg,#4CAF50,#2e7d32);color:#fff;
+padding:8px 16px;border-radius:12px;text-decoration:none;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+</style>
+</head>
+<body>
+<h1>高雄市38區新舊地名互動地圖</h1>
+<p class="notice">📱 建議直式觀看效果最佳</p>
+<p class="notice">👆 點行政區看新舊地名並播放音檔</p>
+
+<div class="groupbar" id="groupbar">
+<button class="btn-core is-on" data-group="core">市中心<span class="badge">11</span></button>
+<button class="btn-east" data-group="east">市郊-東區<span class="badge">7</span></button>
+<button class="btn-north" data-group="north">市郊-北區<span class="badge">11</span></button>
+<button class="btn-mount" data-group="mountain">山區<span class="badge">9</span></button>
+</div>
+
+<main>
+<div id="mapbox">
+  <div id="mapContainer">載入地圖中...</div>
+  <div class="popup" id="popup">
+    <h3 id="pop-new">—</h3>
+    <div class="newP" id="pop-new-poj">—</div>
+    <div class="old" id="pop-old">—</div>
+    <div class="oldP" id="pop-old-poj">—</div>
+    <div class="row">
+      <button class="btn play" id="btn-new">播放新地名</button>
+      <button class="btn old" id="btn-old">播放舊地名</button>
+    </div>
+  </div>
+</div>
+</main>
+<footer><a href="https://tsong-su.github.io/iuhi/index.html">🏠 回遊戲首頁</a></footer>
+
+<script>
+const COLORS={core:"#6FA8DC",east:"#93C47D",north:"#F6B26B",mountain:"#B4A7D6"};
+const GROUPS={core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
+east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
+north:["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
+mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]};
+const DATA={"鳳山":{old:"下埤頭",newPoj:"Hōng-suann",oldPoj:"Ē-pi-thâu"}};
+let svg, items=[], currentGroup="core";
+
+fetch("map_assets/Blank_Kaohsiung_map.svg").then(r=>r.text()).then(txt=>{
+  document.getElementById("mapContainer").innerHTML=txt;
+  svg=document.querySelector("#mapContainer svg");
+  svg.querySelectorAll("path,polygon,polyline").forEach(el=>{
+    el.style.cursor="pointer";
+    el.addEventListener("click",()=>el.classList.add("glow"));
+  });
+}).catch(e=>{
+  document.getElementById("mapContainer").innerText="地圖載入失敗："+e;
+});
+
+document.querySelectorAll("#groupbar button").forEach(btn=>{
+  btn.onclick=()=>{
+    currentGroup=btn.dataset.group;
+    document.querySelectorAll("#groupbar button").forEach(b=>b.classList.toggle("is-on",b===btn));
+  };
+});
+</script>
+</body>
+</html>
+!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>高雄市38區新舊地名互動地圖 v6.13a</title>
 <style>
   html,body{margin:0;height:100%;font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;background:#f7f8fb;color:#0f172a;text-align:center}
