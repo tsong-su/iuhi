@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>高雄市38區新舊地名互動地圖 v6.7</title>
+<title>高雄市38區新舊地名互動地圖 v6.8</title>
 <style>
   :root{
     --core:#3A7BD5;      /* 市中心 */
@@ -20,14 +20,17 @@
   h1{margin:6px 0 4px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#444}
 
-  /* 四顆群組按鈕：滿版四等分，不換行 */
+  /* 四顆群組按鈕：滿版四等分，不換行（手機也一列） */
   .groupbar{
     display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
     max-width:980px; margin:10px auto 10px; padding:0 12px;
   }
   .groupbar button{
-    border:0;border-radius:14px;padding:10px 8px;font-size:1rem;color:#fff;cursor:pointer;
-    box-shadow:0 4px 10px rgba(0,0,0,.25);transition:filter .2s, transform .02s; position:relative
+    border:0;border-radius:14px;padding:10px 6px;font-size:1rem;color:#fff;cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);transition:filter .2s, transform .02s; position:relative; line-height:1.1;
+  }
+  @media (max-width:420px){
+    .groupbar button{font-size:.95rem; padding:10px 4px}
   }
   .groupbar button:hover{filter:brightness(1.08)} .groupbar button:active{transform:translateY(1px)}
   .groupbar button.is-on{outline:2px solid #fff}
@@ -45,20 +48,18 @@
   .btn-north .badge{background:#ffd1b8}
   .btn-mount .badge{background:#dcd9ff}
 
-  /* 主區塊：讓地圖吃滿可視高度，不留底部大空白 */
   main{max-width:980px;margin:0 auto;padding:0 12px 10px}
   #mapbox{
-    width:100%; height:calc(100vh - 230px);  /* 依實際標題/按鈕高度抓估值，手機不留白 */
-    min-height:420px;                         /* 平板/桌機也好看 */
+    width:100%; height:calc(100vh - 230px);
+    min-height:420px;
     position:relative; background:#fff; border-radius:14px; border:1px solid var(--border);
     box-shadow:0 8px 18px rgba(0,0,0,.06); overflow:hidden;
   }
   object{width:100%;height:100%}
 
-  /* 非當前群組淡化（不隱藏） */
   .dim{opacity:.35; transition:opacity .25s ease}
 
-  /* 點選區塊的閃光註記 */
+  /* 點選區塊的閃光註記（加粗邊 + 白色光暈） */
   @keyframes glow {0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}
     30%{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
     60%{filter:drop-shadow(0 0 10px rgba(255,255,255,1))}
@@ -91,9 +92,9 @@
   </header>
 
   <div class="groupbar" id="groupbar">
-    <button class="btn-core is-on"  data-group="core">市中心區<span class="badge">11</span></button>
-    <button class="btn-east"         data-group="east">市郊區–東區<span class="badge">7</span></button>
-    <button class="btn-north"        data-group="north">市郊區–北區<span class="badge">11</span></button>
+    <button class="btn-core is-on"  data-group="core">市中心<span class="badge">11</span></button>
+    <button class="btn-east"         data-group="east">市郊-東區<span class="badge">7</span></button>
+    <button class="btn-north"        data-group="north">市郊-北區<span class="badge">11</span></button>
     <button class="btn-mount"        data-group="mountain">山區<span class="badge">9</span></button>
   </div>
 
@@ -123,18 +124,18 @@
 /* 小工具 */
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 function stripQu(s){return (s||"").replace(/區$/,'');}
-function zhFromAny(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
-function getNameFromPath(el){
-  // 依 v6.2 的 SVG 結構：title 在 path 內，或在父層 <g> 內
+function onlyHan(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
+function getNameFromShape(el){
+  // 1) 讀自身 <title>；2) 父層 <g> 的 <title>；3) id/label。
   const selfT = el.querySelector && el.querySelector('title');
-  if(selfT && selfT.textContent) return zhFromAny(selfT.textContent.trim());
-  const par = el.parentNode;
-  if(par && par.querySelector){
-    const pT = par.querySelector('title');
-    if(pT && pT.textContent) return zhFromAny(pT.textContent.trim());
+  if(selfT && selfT.textContent) return onlyHan(selfT.textContent.trim());
+  const p = el.parentNode;
+  if(p && p.querySelector){
+    const pT = p.querySelector('title');
+    if(pT && pT.textContent) return onlyHan(pT.textContent.trim());
   }
   const idName = el.getAttribute('data-name') || el.getAttribute('inkscape:label') || el.getAttribute('id') || '';
-  return zhFromAny(idName);
+  return onlyHan(idName);
 }
 
 /* 38 區群組（依你確認） */
@@ -192,7 +193,7 @@ const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popO
 const btnNew=$("#btn-new"), btnOld=$("#btn-old");
 const audioNew=new Audio(), audioOld=new Audio();
 
-/* 載入 SVG 後：抓所有 path（從 title/父層 title 取名），正確上色並綁事件 */
+/* 載入 SVG 後：抓所有 path/polygon/polyline，從 <title> or 父層<title> 取中文名，上色並綁事件 */
 $("#svgMap").addEventListener("load",()=>{
   svgDoc=$("#svgMap").contentDocument;
   if(!svgDoc) return;
@@ -207,16 +208,20 @@ $("#svgMap").addEventListener("load",()=>{
   if(svgEl){ svgEl.setAttribute("preserveAspectRatio","xMidYMid meet"); svgEl.setAttribute("width","100%"); svgEl.setAttribute("height","100%"); }
 
   items=[];
-  $$("path", svgDoc).forEach(el=>{
-    const rawName = getNameFromPath(el);
-    if(!rawName) return;
-    const nm=stripQu(rawName);
-    if(!DATA[nm]) return; // 僅收錄 38 區
+  const shapes = svgDoc.querySelectorAll("path, polygon, polyline");
+  shapes.forEach(el=>{
+    const raw = getNameFromShape(el);
+    if(!raw) return;
+    const nm = stripQu(raw);              // e.g. 「小港區」→「小港」
+    if(!DATA[nm]) return;                 // 僅收錄 38 區
     const group = Object.entries(GROUPS).find(([g,list])=>list.includes(nm))?.[0];
     if(!group) return;
 
     // 初始上色（四色分區）＋邊線
-    el.setAttribute("fill", GROUP_COLOR[group]);
+    // 用 style.fill 可覆蓋父層 <g fill="#ddd">
+    el.style.fill = getComputedStyle(document.documentElement)
+                    .getPropertyValue(GROUP_COLOR[group].replace('var','').replace(/[()]/g,'').trim()) || "";
+    el.setAttribute("fill", GROUP_COLOR[group]);      // 雙保險
     el.setAttribute("stroke", "#1f2937");
     el.setAttribute("stroke-width", "0.8");
     el.style.cursor="pointer";
@@ -251,7 +256,7 @@ function autoPlaySequence(d){
   audioOld.src = encodeURI(oldSrc);
   audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), 600);
   audioOld.onended = null;
-  audioNew.play().catch(()=>{ console.warn("無法播放新名：", newSrc); });
+  audioNew.play().catch(()=>{ /* 靜默失敗 */ });
 }
 
 /* 重聽（單播） */
