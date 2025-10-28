@@ -13,6 +13,8 @@
   body{margin:0;font-family:"Noto Sans TC",system-ui,"Microsoft JhengHei",sans-serif;background:#f6f7f9;color:var(--ink);text-align:center}
   h1{margin:10px 0 6px;font-size:1.5rem;font-weight:800}
   .notice{margin:2px 0;color:#444}
+
+  /* 群組按鈕（立體漸層 + 徽章） */
   .groupbar{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px auto}
   .groupbar button{
     position:relative;border:0;border-radius:14px;padding:10px 22px;font-size:1rem;color:#fff;cursor:pointer;
@@ -32,18 +34,22 @@
   .btn-core .badge{background:#a9d4ff} .btn-east .badge{background:#c9f7b6}
   .btn-north .badge{background:#ffd1b8} .btn-mount .badge{background:#e8d1ff}
 
+  /* 地圖容器 */
   #mapbox{width:100%;max-width:900px;margin:0 auto;aspect-ratio:1/1;position:relative;background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 8px 18px rgba(0,0,0,.06)}
   object{width:100%;height:100%}
   .dim{opacity:.28;transition:opacity .25s ease}
+  .flash{animation:flash .8s ease} @keyframes flash{0%{fill-opacity:.5}100%{fill-opacity:1}}
 
+  /* 浮框（只顯示資料與兩顆重聽按鈕；點區塊時自動播放已內建於 JS） */
   .popup{position:absolute;display:none;min-width:240px;max-width:min(320px,90%);background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.08);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px;z-index:60}
   .popup h3{margin:0 0 4px;font-size:1.05rem}
   .newP{color:#0f766e;font-weight:700} .old{color:#374151;margin-top:4px} .oldP{color:#7c3aed}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
   .btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
   .btn.play{background:linear-gradient(145deg,#607d8b,#263238)} .btn.old{background:linear-gradient(145deg,#6d4c41,#3e2723)}
-  footer{padding:14px 0} footer a{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(145deg,#4CAF50,#2e7d32);padding:8px 16px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.22)}
-  .flash{animation:flash .8s ease} @keyframes flash{0%{fill-opacity:.5}100%{fill-opacity:1}}
+
+  footer{padding:14px 0}
+  footer a{display:inline-block;text-decoration:none;color:#fff;background:linear-gradient(145deg,#4CAF50,#2e7d32);padding:8px 16px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.22)}
 </style>
 </head>
 <body>
@@ -59,10 +65,8 @@
   </div>
 
   <div id="mapbox">
-    <!-- 用 <object> 載入你的 SVG -->
     <object id="svgMap" data="map_assets/Blank_Kaohsiung_map.svg" type="image/svg+xml" aria-label="Kaohsiung Map"></object>
 
-    <!-- 彈出卡 -->
     <div class="popup" id="popup">
       <h3 id="pop-new">—</h3>
       <div class="newP" id="pop-new-poj">—</div>
@@ -80,12 +84,12 @@
   </footer>
 
 <script>
-/* ====== 工具 ====== */
+/* 工具 */
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
 function stripQu(s){return (s||"").replace(/區$/,'');}
 function zhFromAny(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g); return m? m.join(''): '';}
 
-/* ====== 群組／資料（完全依你確認的 38 區表；不改動） ====== */
+/* 群組／資料：完全依你確認的 38 區表（不改動） */
 const GROUPS={
   core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
   east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
@@ -137,23 +141,21 @@ const GROUP_COLOR={core:"var(--core)",east:"var(--east)",north:"var(--north)",mo
 let svgDoc=null, items=[], currentGroup="core";
 const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popOld=$("#pop-old"), popOldPoj=$("#pop-old-poj");
 const btnNew=$("#btn-new"), btnOld=$("#btn-old");
+const audioNew=new Audio(), audioOld=new Audio();
 
-/* 載入 SVG 後：建立 items，依群組上色，綁定互動 */
+/* 載入 SVG 後建立 items，塗色，綁定互動 */
 $("#svgMap").addEventListener("load",()=>{
   svgDoc=$("#svgMap").contentDocument;
   if(!svgDoc) return;
+
   const svgEl=svgDoc.querySelector("svg");
-  // 若原 SVG 無 viewBox，動態補齊（避免平板溢出）
   try{
     if(svgEl && !svgEl.getAttribute("viewBox")){
       const b=svgEl.getBBox();
       svgEl.setAttribute("viewBox",`${b.x} ${b.y} ${b.width} ${b.height}`);
     }
   }catch(e){}
-  if(svgEl){
-    svgEl.setAttribute("preserveAspectRatio","xMidYMid meet");
-    svgEl.setAttribute("width","100%"); svgEl.setAttribute("height","100%");
-  }
+  if(svgEl){ svgEl.setAttribute("preserveAspectRatio","xMidYMid meet"); svgEl.setAttribute("width","100%"); svgEl.setAttribute("height","100%"); }
 
   items=[];
   $$("path[id]", svgDoc).forEach(el=>{
@@ -163,69 +165,102 @@ $("#svgMap").addEventListener("load",()=>{
     if(!DATA[nm]) return; // 僅收錄 38 區
     const group = Object.entries(GROUPS).find(([g,list])=>list.includes(nm))?.[0];
     if(!group) return;
-    // 上色 + 邊線
+
+    // 初始上色 + 邊線
     el.setAttribute("fill", GROUP_COLOR[group]);
     el.setAttribute("stroke", "#1f2937"); el.setAttribute("stroke-width", "0.8");
     el.style.cursor="pointer";
-    // 點擊顯示
+
+    // 點擊：自動播放新→(0.6s)→舊；浮框僅用於顯示與重聽
     el.addEventListener("click",(evt)=>onDistrictClick(evt, {el, newName:nm, oldName:DATA[nm].old, newPoj:DATA[nm].newPoj, oldPoj:DATA[nm].oldPoj, group}));
     items.push({el, newName:nm, oldName:DATA[nm].old, newPoj:DATA[nm].newPoj, oldPoj:DATA[nm].oldPoj, group});
   });
 
-  updateGroup(); // 初始淡化狀態
+  updateGroup(); // 讓預設群組以外的區塊淡化
 });
 
-/* 群組切換：非當前群組加 .dim（僅淡化，不隱藏） */
+/* 群組切換：非當前群組 .dim（淡化，不隱藏） */
 function updateGroup(){
   items.forEach(d=> d.el.classList.toggle("dim", d.group!==currentGroup));
   $$("#groupbar button").forEach(b=> b.classList.toggle("is-on", b.dataset.group===currentGroup));
 }
 
-/* 點區塊：顯示浮框、綁定單獨播放新/舊 */
+/* 自動播放：新 → 延遲 0.6 秒 → 舊 */
+function autoPlaySequence(d){
+  stopAll(); // 先停掉舊音
+  const idx = GROUPS[d.group].indexOf(d.newName)+1;
+  const prefix = String(idx).padStart(2,"0");
+  const newSrc = "map_assets/"+prefix+d.newName+"_new.mp3";
+  const oldSrc = "map_assets/"+prefix+d.oldName+"_old.mp3";
+
+  audioNew.src = encodeURI(newSrc);
+  audioOld.src = encodeURI(oldSrc);
+
+  audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), 600); // 0.6s 後播舊名
+  audioOld.onended = null;
+
+  audioNew.play().catch(()=>{ console.warn("無法播放新名：", newSrc); });
+}
+
+/* 重聽：只播新 或 只播舊（不連播） */
+function playNewOnly(d){
+  stopAll();
+  const idx = GROUPS[d.group].indexOf(d.newName)+1;
+  const prefix = String(idx).padStart(2,"0");
+  const src = "map_assets/"+prefix+d.newName+"_new.mp3";
+  audioNew.onended = null;
+  audioNew.src = encodeURI(src);
+  audioNew.play().catch(()=>{ console.warn("無法播放新名：", src); });
+}
+function playOldOnly(d){
+  stopAll();
+  const idx = GROUPS[d.group].indexOf(d.newName)+1;
+  const prefix = String(idx).padStart(2,"0");
+  const src = "map_assets/"+prefix+d.oldName+"_old.mp3";
+  audioOld.onended = null;
+  audioOld.src = encodeURI(src);
+  audioOld.play().catch(()=>{ console.warn("無法播放舊名：", src); });
+}
+function stopAll(){ [audioNew,audioOld].forEach(a=>{try{a.pause();}catch{} a.currentTime=0;}); }
+
+/* 點區塊：顯示浮框（資料）＋自動播放新→舊 */
 function onDistrictClick(evt,d){
   // 視覺微亮
   d.el.classList.add("flash"); setTimeout(()=>d.el.classList.remove("flash"),800);
 
-  // 填入內容
-  popNew.textContent=d.newName;      popNewPoj.textContent=d.newPoj||"";
-  popOld.textContent=d.oldName;      popOldPoj.textContent=d.oldPoj||"";
+  // 浮框資料
+  $("#pop-new").textContent=d.newName;      $("#pop-new-poj").textContent=d.newPoj||"";
+  $("#pop-old").textContent=d.oldName;      $("#pop-old-poj").textContent=d.oldPoj||"";
 
-  // 單獨播放（不自動連播）
-  btnNew.onclick = ()=> playAudio(d, "new");
-  btnOld.onclick = ()=> playAudio(d, "old");
+  // 重聽按鈕（單獨播放）
+  $("#btn-new").onclick=()=>playNewOnly(d);
+  $("#btn-old").onclick=()=>playOldOnly(d);
 
-  // 顯示位置：靠近點擊，避免出界
+  // 位置（避免超出）
   const box=$("#mapbox").getBoundingClientRect();
-  popup.style.display="block";
+  const popup=$("#popup"); popup.style.display="block";
   const w=popup.offsetWidth, h=popup.offsetHeight;
   let left=evt.clientX - box.left + 10, top=evt.clientY - box.top + 10;
   if(left + w > box.width) left = box.width - w - 8;
   if(top + h > box.height) top = box.height - h - 8;
   if(left < 8) left = 8; if(top < 8) top = 8;
   popup.style.left=left+"px"; popup.style.top=top+"px";
+
+  // 自動播放（新→0.6s→舊）
+  autoPlaySequence(d);
 }
 
-/* 音檔：使用 GROUPS 內索引 + 1 產生兩位數前綴（沿用 v6.2 規則） */
-const audioNew=new Audio(), audioOld=new Audio();
-function buildSrc(prefix, name, kind){ return "map_assets/"+prefix+name+"_"+kind+".mp3"; }
-function playAudio(d, kind){
-  const idx = GROUPS[d.group].indexOf(d.newName)+1;
-  const prefix = String(idx).padStart(2,"0");
-  const name = (kind==="new") ? d.newName : d.oldName;
-  const src = buildSrc(prefix, name, kind);
-  const a = (kind==="new") ? audioNew : audioOld;
-  a.src = encodeURI(src);
-  a.play().catch(()=>console.warn("無法播放：", src));
-}
-
-/* 上方四顆按鈕：切換群組 */
+/* 上方 4 顆按鈕：切換群組（地圖連動淡化） */
 $$("#groupbar button").forEach(btn=>{
-  btn.addEventListener("click",()=>{ currentGroup=btn.dataset.group; updateGroup(); popup.style.display="none"; });
+  btn.addEventListener("click",()=>{
+    currentGroup=btn.dataset.group; updateGroup();
+    $("#popup").style.display="none"; // 切群組時收起浮框
+  });
 });
 
-/* 點地圖外關閉浮框 */
+/* 地圖外點擊：關閉浮框 */
 document.addEventListener("click",(e)=>{
-  if(!e.target.closest("#mapbox") || e.target.closest("#groupbar")) popup.style.display="none";
+  if(!e.target.closest("#mapbox") || e.target.closest("#groupbar")) $("#popup").style.display="none";
 });
 </script>
 </body>
