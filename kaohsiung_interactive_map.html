@@ -1,98 +1,303 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>高雄市38區新舊地名互動地圖 v6.13b</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>高雄市38區新舊地名互動地圖 v6.13c</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap">
 <style>
-html,body{margin:0;height:100%;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f7f8fb;color:#0f172a;text-align:center}
-h1{margin:10px 0 4px;font-size:1.5rem;font-weight:800}
-.notice{margin:2px 0;color:#555;font-size:.95rem}
-.groupbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:980px;margin:10px auto;padding:0 12px}
-.groupbar button{border:0;border-radius:14px;padding:10px 6px;font-size:1rem;color:#fff;cursor:pointer;
-box-shadow:0 4px 10px rgba(0,0,0,.18);transition:all .2s;position:relative;line-height:1.1}
-@media(max-width:420px){.groupbar button{font-size:.95rem;padding:10px 4px}}
-.groupbar button.is-on{outline:2px solid #fff;transform:translateY(-1px)}
-.btn-core{background:linear-gradient(145deg,#6FA8DC,#9EC6F2)} .btn-east{background:linear-gradient(145deg,#93C47D,#B5D99F)}
-.btn-north{background:linear-gradient(145deg,#F6B26B,#FFD79C)} .btn-mount{background:linear-gradient(145deg,#B4A7D6,#D2C4F2)}
-.badge{position:absolute;top:-6px;right:-8px;border-radius:50%;min-width:22px;height:22px;padding:0 6px;
-display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#333;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-main{max-width:980px;margin:0 auto;padding:0 12px 10px}
-#mapbox{width:100%;height:calc(100vh - 230px);min-height:420px;position:relative;background:#fff;border-radius:14px;
-border:1px solid #e5e7eb;box-shadow:0 8px 18px rgba(0,0,0,.08);overflow:hidden}
-#mapContainer svg{width:100%;height:100%}
-.dimmed{opacity:.15}
-.strong-stroke{stroke:#1f2937;stroke-width:.9}
-.light-stroke{stroke:#a0aec0;stroke-width:.6}
-@keyframes glow{0%{filter:none}50%{filter:drop-shadow(0 0 12px #fff)}100%{filter:none}}
-.glow{animation:glow 1.4s ease}
-.popup{position:absolute;display:none;background:#fff;border-radius:12px;padding:10px;z-index:60;
-border:1px solid rgba(0,0,0,.08);box-shadow:0 10px 24px rgba(0,0,0,.18);min-width:190px;max-width:min(300px,85%)}
-.popup h3{margin:0 0 4px;font-size:1.05rem;font-weight:800}
-.newP{color:#00796b;font-weight:800}.old{margin-top:2px}.oldP{color:#6a1b9a;font-weight:700}
-.row{display:flex;gap:8px;margin-top:8px;justify-content:center;flex-wrap:wrap}
-.btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
-.btn.play{background:linear-gradient(145deg,#64b5f6,#1565c0)}.btn.old{background:linear-gradient(145deg,#ffa27a,#e66a3a)}
-footer{padding:12px 0}
-footer a{display:inline-block;background:linear-gradient(145deg,#4CAF50,#2e7d32);color:#fff;
-padding:8px 16px;border-radius:12px;text-decoration:none;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+  :root{
+    /* 柔和且區分度高的群組色（按鈕與地圖一致） */
+    --core:#f6a270;      /* 市中心：柔橘 */
+    --east:#8fcf97;      /* 市郊-東區：柔綠 */
+    --north:#f4c676;     /* 市郊-北區：柔黃橘 */
+    --mountain:#b9a6e6;  /* 山區：淡紫 */
+    --ink:#0f172a; --muted:#5b6470; --border:#e5e7eb; --bg:#f7f8fb;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
+  header{padding:14px 16px 8px}
+  h1{margin:0;text-align:center;font-weight:800;font-size:clamp(20px,3.2vw,26px)}
+  .sub{margin:6px 0 2px;text-align:center;color:#555;font-size:14px}
+  .tip{margin:0 0 6px;text-align:center;color:#666;font-size:14px}
+
+  /* 上方四顆群組按鈕（立體漸層＋徽章） */
+  .groupbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:980px;margin:8px auto 6px;padding:0 12px}
+  .groupbar button{
+    font:600 16px/1 "Noto Sans TC",sans-serif; padding:10px 6px; border:0; border-radius:14px; color:#fff; cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,.18); transition:all .2s; position:relative
+  }
+  .groupbar button.is-on{outline:2px solid #fff; transform:translateY(-1px)}
+  .btn-core {background:linear-gradient(145deg,#ffa96e,#ffcf9b)}
+  .btn-east {background:linear-gradient(145deg,#76c58a,#bfe9c6)}
+  .btn-north{background:linear-gradient(145deg,#f6c061,#ffe0a2)}
+  .btn-mount{background:linear-gradient(145deg,#b39de6,#d9cef6)}
+  .badge{
+    position:absolute;top:-6px;right:-8px;border-radius:999px;min-width:22px;height:22px;padding:0 6px;
+    display:flex;align-items:center;justify-content:center;font:800 12px/22px "Noto Sans TC",sans-serif;color:#333;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)
+  }
+
+  main{max-width:980px;margin:0 auto;padding:0 12px 10px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08);padding:10px}
+  .view{position:relative;width:100%;height:calc(100vh - 230px);min-height:420px;overflow:hidden;border-radius:12px;background:#fff}
+  .view svg{display:block;width:100%;height:100%}
+  .view svg path,.view svg polygon,.view svg polyline{vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+  .district{cursor:pointer;transition:filter .15s, opacity .25s}
+  .strong-stroke{stroke:#1f2937;stroke-width:.9}
+  .light-stroke{stroke:#a0aec0;stroke-width:.6}
+  .dim{opacity:.15; filter:grayscale(.15)}
+  /* 群組整體閃爍（按群組鈕時） */
+  @keyframes groupFlash{0%{filter:brightness(1)}50%{filter:brightness(1.65) drop-shadow(0 0 10px rgba(255,255,255,.85))}100%{filter:brightness(1)}}
+  .flash-group{animation:groupFlash 1.2s ease}
+  /* 單一行政區強烈邊框閃 */
+  @keyframes strokeGlow{0%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}45%{filter:drop-shadow(0 0 14px rgba(255,255,255,1))}100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}}
+  .glowForce{animation:strokeGlow 1.6s ease}
+
+  /* 浮框 */
+  .popup{position:absolute;display:none;min-width:220px;max-width:min(320px,90%);background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.08);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px;z-index:60}
+  .popup h3{margin:0 0 4px 0;font-size:1.05rem;font-weight:800;color:#0f172a}
+  .newP{color:#00796b;font-weight:800}
+  .old{color:#374151;margin-top:2px}
+  .oldP{color:#6a1b9a;font-weight:700}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+  .btn{padding:6px 10px;border-radius:10px;border:0;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.22)}
+  .btn.play{background:linear-gradient(145deg,#64b5f6,#1565c0)}
+  .btn.old {background:linear-gradient(145deg,#ffa27a,#e66a3a)}
+
+  footer{padding:12px 0 18px;text-align:center}
+  footer a{display:inline-block;background:linear-gradient(145deg,#4CAF50,#2e7d32);color:#fff;padding:8px 16px;border-radius:12px;text-decoration:none;box-shadow:0 3px 8px rgba(0,0,0,.22)}
 </style>
 </head>
 <body>
-<h1>高雄市38區新舊地名互動地圖</h1>
-<p class="notice">📱 建議直式觀看效果最佳</p>
-<p class="notice">👆 點行政區看新舊地名並播放音檔</p>
+  <header>
+    <h1>高雄市38區新舊地名互動地圖</h1>
+    <div class="sub">📱 建議直式觀看效果最佳</div>
+    <div class="tip">👆 點行政區看新舊地名並播放音檔</div>
 
-<div class="groupbar" id="groupbar">
-<button class="btn-core is-on" data-group="core">市中心<span class="badge">11</span></button>
-<button class="btn-east" data-group="east">市郊-東區<span class="badge">7</span></button>
-<button class="btn-north" data-group="north">市郊-北區<span class="badge">11</span></button>
-<button class="btn-mount" data-group="mountain">山區<span class="badge">9</span></button>
-</div>
-
-<main>
-<div id="mapbox">
-  <div id="mapContainer">載入地圖中...</div>
-  <div class="popup" id="popup">
-    <h3 id="pop-new">—</h3>
-    <div class="newP" id="pop-new-poj">—</div>
-    <div class="old" id="pop-old">—</div>
-    <div class="oldP" id="pop-old-poj">—</div>
-    <div class="row">
-      <button class="btn play" id="btn-new">播放新地名</button>
-      <button class="btn old" id="btn-old">播放舊地名</button>
+    <div class="groupbar" id="groupbar">
+      <button class="btn-core is-on" data-group="core">市中心<span class="badge">11</span></button>
+      <button class="btn-east" data-group="east">市郊-東區<span class="badge">7</span></button>
+      <button class="btn-north" data-group="north">市郊-北區<span class="badge">11</span></button>
+      <button class="btn-mount" data-group="mountain">山區<span class="badge">9</span></button>
     </div>
-  </div>
-</div>
-</main>
-<footer><a href="https://tsong-su.github.io/iuhi/index.html">🏠 回遊戲首頁</a></footer>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="view" id="viewport">
+
+        <!-- ⬇⬇ 把 v6.2 的整段 SVG 原封不動貼在這裡（含所有 <path> 與 <title>） ⬇⬇ -->
+        <!-- 例如：
+             <?xml version="1.0" ... ?>
+             <svg ...>
+               ... 38 區 path / polygon / polyline，每個都有 <title>「小港區 …」等 ...
+             </svg>
+        -->
+        <!-- ⬆⬆ 把 v6.2 的整段 SVG 原封不動貼在這裡 ⬆⬆ -->
+
+        <!-- 浮框 -->
+        <div class="popup" id="popup">
+          <h3 id="pop-new">—</h3>
+          <div class="newP" id="pop-new-poj">—</div>
+          <div class="old"  id="pop-old">—</div>
+          <div class="oldP" id="pop-old-poj">—</div>
+          <div class="row">
+            <button class="btn play" id="btn-new">播放新地名</button>
+            <button class="btn old"  id="btn-old">播放舊地名</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer><a href="https://tsong-su.github.io/iuhi/index.html">🏠 回遊戲首頁</a></footer>
 
 <script>
-const COLORS={core:"#6FA8DC",east:"#93C47D",north:"#F6B26B",mountain:"#B4A7D6"};
-const GROUPS={core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
-east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
-north:["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
-mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]};
-const DATA={"鳳山":{old:"下埤頭",newPoj:"Hōng-suann",oldPoj:"Ē-pi-thâu"}};
-let svg, items=[], currentGroup="core";
+/* -------------------- 資料區：群組、音檔對應 -------------------- */
+/* 群組名單（要與你 v6.2 的資料一致） */
+const GROUPS={
+  core:["楠梓","左營","鼓山","三民","鹽埕","前金","新興","苓雅","旗津","前鎮","小港"],
+  east:["大樹","大寮","林園","大社","仁武","鳥松","鳳山"],
+  north:["茄萣","永安","彌陀","梓官","湖內","路竹","岡山","橋頭","阿蓮","田寮","燕巢"],
+  mountain:["內門","旗山","杉林","美濃","甲仙","六龜","那瑪夏","桃源","茂林"]
+};
+/* 新舊地名與 POJ（依你確認的 38 區名單） */
+const DATA={
+  "楠梓":{old:"楠仔坑", newPoj:"Lâm-tsú",        oldPoj:"Lâm-á-khenn"},
+  "左營":{old:"埤仔頭", newPoj:"Tsó-iânn",      oldPoj:"Pi-á-thâu"},
+  "鼓山":{old:"打鼓山", newPoj:"Kóo-san",       oldPoj:"Tánn-kóo-san"},
+  "三民":{old:"三塊厝", newPoj:"Sam-bîn",       oldPoj:"Sann-tè-tshù"},
+  "鹽埕":{old:"鹽埕埔", newPoj:"Iâm-tiânn",     oldPoj:"Iâm-tiânn-poo"},
+  "前金":{old:"前衿",   newPoj:"Tsiân-kim",     oldPoj:"Tsiân-khim"},
+  "新興":{old:"逮港埔", newPoj:"Sin-hing",      oldPoj:"Tāi-káng-poo"},
+  "苓雅":{old:"笭仔寮", newPoj:"Lîng-ngá",      oldPoj:"Lîng-á-liâu"},
+  "旗津":{old:"旗後",   newPoj:"Kî-tin",        oldPoj:"Kî-āu"},
+  "前鎮":{old:"前鎮",   newPoj:"Tsiân-tìn",     oldPoj:"Tsiân-tìn"},
+  "小港":{old:"港仔墘", newPoj:"Sió-káng",      oldPoj:"Káng-á kînn"},
+  "大樹":{old:"大樹跤", newPoj:"Tuā-tshiū",     oldPoj:"Tuā-tshiū-kha"},
+  "大寮":{old:"大藔",   newPoj:"Tuā-liâu",      oldPoj:"Tuā-liâu"},
+  "林園":{old:"頂林仔邊", newPoj:"Lîm-hn̂g",    oldPoj:"Tíng-nâ-á-pinn"},
+  "大社":{old:"三奶壇", newPoj:"Tuā-siā",       oldPoj:"Sam-nái-tuânn"},
+  "仁武":{old:"仁武庄", newPoj:"Jîn-bú",        oldPoj:"Jîn-bú-tsng"},
+  "鳥松":{old:"鳥松跤", newPoj:"Tsiáu-tshîng",  oldPoj:"Tsiáu-tshîng-kha"},
+  "鳳山":{old:"下埤頭", newPoj:"Hōng-suann",    oldPoj:"Ē-pi-thâu"},
+  "茄萣":{old:"茄苳萣仔", newPoj:"Ka-tiānn",   oldPoj:"Ka-tang-tiānn-á"},
+  "永安":{old:"烏樹林", newPoj:"Íng-an",        oldPoj:"Oo-tshiū-nâ"},
+  "彌陀":{old:"彌陀港", newPoj:"Mî-tô",         oldPoj:"Bî-lô-káng"},
+  "梓官":{old:"梓官",   newPoj:"Tsú-kuann",     oldPoj:"Tsú-kuann"},
+  "湖內":{old:"大湖",   newPoj:"Ôo-lāi",        oldPoj:"Tuā-ôo"},
+  "路竹":{old:"半路竹", newPoj:"Lōo-tik",       oldPoj:"Puànn-lōo-tik"},
+  "岡山":{old:"阿公店", newPoj:"Kong-san",      oldPoj:"A-kong-tiàm"},
+  "橋頭":{old:"橋仔頭", newPoj:"Kiô-thâu",      oldPoj:"Kiô-á-thâu"},
+  "阿蓮":{old:"阿嗹社", newPoj:"A-lian",        oldPoj:"A-lian-siā"},
+  "田寮":{old:"田藔",   newPoj:"Tshân-liâu",    oldPoj:"Tshân-liâu"},
+  "燕巢":{old:"援剿右", newPoj:"Iàn-tsâu",      oldPoj:"Uān-tsâu-iū"},
+  "內門":{old:"羅漢內門", newPoj:"Lāi-bûn",     oldPoj:"Lô-hàn-lāi-bûn"},
+  "旗山":{old:"蕃薯藔", newPoj:"Kî-san",        oldPoj:"Han-tsî-liâu"},
+  "杉林":{old:"楠梓仙", newPoj:"Sam-nâ",        oldPoj:"Lâm-tsú-sian"},
+  "美濃":{old:"瀰濃",   newPoj:"Bi-long",       oldPoj:"Bî-long"},
+  "甲仙":{old:"阿里關", newPoj:"Kah-sian",      oldPoj:"A-lí-kuan"},
+  "六龜":{old:"六龜里社", newPoj:"La̍k-ku",     oldPoj:"La̍k-ku-lí-siā"},
+  "那瑪夏":{old:"蚊子只", newPoj:"Na-má-siah",  oldPoj:"Mangacun"},
+  "桃源":{old:"雅爾",   newPoj:"Thô-guân",      oldPoj:"Ngani"},
+  "茂林":{old:"多納",   newPoj:"Bōo-lîm",       oldPoj:"Tō-na"}
+};
+/* 群組顏色（與 CSS 同調） */
+const COLORS={ core:"var(--core)", east:"var(--east)", north:"var(--north)", mountain:"var(--mountain)" };
 
-fetch("map_assets/Blank_Kaohsiung_map.svg").then(r=>r.text()).then(txt=>{
-  document.getElementById("mapContainer").innerHTML=txt;
-  svg=document.querySelector("#mapContainer svg");
+/* -------------------- 共用小工具 -------------------- */
+const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>Array.from(e.querySelectorAll(s));
+function onlyHan(t){const m=(t||'').match(/[\u4E00-\u9FFF]+/g);return m?m.join(''):'';}
+function stripQu(s){return (s||"").replace(/區$/,'');}
+function getNameFromShape(el){
+  const t = el.querySelector && el.querySelector('title');
+  if(t && t.textContent) return onlyHan(t.textContent.trim()).replace(/市|高雄/,'').replace(/\s/g,'').replace(/區$/,'');
+  return stripQu(onlyHan(el.getAttribute('data-name')||el.getAttribute('id')||''));
+}
+function idxInGroup(group,name){return GROUPS[group].indexOf(name)+1;}
+function newSrc(g,n){return "map_assets/"+String(idxInGroup(g,n)).padStart(2,"0")+n+"_new.mp3";}
+function oldSrc(g,n){const o=(DATA[n]&&DATA[n].old)||n;return "map_assets/"+String(idxInGroup(g,n)).padStart(2,"0")+o+"_old.mp3";}
+
+/* -------------------- 初始掛載與配色 -------------------- */
+let items=[];             // {el,newName,oldName,group}
+let itemsByGroup={core:[],east:[],north:[],mountain:[]};
+let currentGroup="core";
+const viewport=$("#viewport");
+const popup=$("#popup"), popNew=$("#pop-new"), popNewPoj=$("#pop-new-poj"), popOld=$("#pop-old"), popOldPoj=$("#pop-old-poj");
+const btnNew=$("#btn-new"), btnOld=$("#btn-old");
+const audioNew=new Audio(), audioOld=new Audio(); const GAP=600;
+
+function initFromInlineSVG(){
+  const svg = $("#viewport svg");
+  if(!svg){ console.warn("找不到內嵌 SVG，請確認已貼上 v6.2 的 SVG。"); return; }
+
+  // 掃描所有 path/polygon/polyline：用 <title> 抓中文名，再查群組與資料
   svg.querySelectorAll("path,polygon,polyline").forEach(el=>{
-    el.style.cursor="pointer";
-    el.addEventListener("click",()=>el.classList.add("glow"));
+    const name = stripQu(getNameFromShape(el));
+    if(!name || !DATA[name]) return;
+    const group = (Object.entries(GROUPS).find(([k,v])=>v.includes(name))||[])[0];
+    if(!group) return;
+
+    // 上色 + 粗描邊
+    const color = getComputedStyle(document.documentElement).getPropertyValue(
+      {core:"--core",east:"--east",north:"--north",mountain:"--mountain"}[group]
+    ).trim();
+    el.style.fill=color; el.setAttribute("fill",color);
+    el.classList.add("district","strong-stroke");
+
+    // 點擊行政區
+    el.addEventListener("click",(evt)=>{
+      pulseStroke(el,1600);
+      const d={ el, group, newName:name, oldName:DATA[name].old, newPoj:DATA[name].newPoj, oldPoj:DATA[name].oldPoj };
+      showPopupAt(evt,d);
+      autoPlay(d);
+    });
+
+    items.push({el,newName:name,oldName:DATA[name].old,group});
+    itemsByGroup[group].push(el);
   });
-}).catch(e=>{
-  document.getElementById("mapContainer").innerText="地圖載入失敗："+e;
+
+  // 初始：四群都亮（不淡化）；僅標記目前 is-on
+  highlightGroup(currentGroup,false);
+}
+
+/* -------------------- 群組切換：淡化 + 閃爍 -------------------- */
+function highlightGroup(groupKey, doFlash=true){
+  currentGroup = groupKey;
+  items.forEach(d=>{
+    const on = (d.group===groupKey);
+    d.el.classList.toggle("dim", !on);
+    d.el.classList.toggle("strong-stroke", on);
+    d.el.classList.toggle("light-stroke", !on);
+  });
+  // 按鈕 is-on
+  $$("#groupbar button").forEach(b=>b.classList.toggle("is-on", b.dataset.group===groupKey));
+  // 目標群組閃一下
+  if(doFlash){
+    (itemsByGroup[groupKey]||[]).forEach(el=>{
+      if(el.animate){
+        el.animate([{filter:"brightness(1)"},{filter:"brightness(1.65)"},{filter:"brightness(1)"}],{duration:1200,easing:"ease"});
+      }else{
+        el.classList.add("flash-group"); setTimeout(()=>el.classList.remove("flash-group"),1200);
+      }
+    });
+  }
+}
+$("#groupbar").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button[data-group]"); if(!btn) return;
+  highlightGroup(btn.dataset.group,true);
+  popup.style.display="none";
 });
 
-document.querySelectorAll("#groupbar button").forEach(btn=>{
-  btn.onclick=()=>{
-    currentGroup=btn.dataset.group;
-    document.querySelectorAll("#groupbar button").forEach(b=>b.classList.toggle("is-on",b===btn));
-  };
-});
+/* -------------------- 邊框強光（單一行政區） -------------------- */
+function pulseStroke(el,ms=1600){
+  el.style.setProperty('vector-effect','non-scaling-stroke');
+  const ps=el.style.stroke, pw=el.style.strokeWidth;
+  el.style.stroke="#fff"; el.style.strokeWidth="4px";
+  if(el.animate){
+    el.animate([{filter:'drop-shadow(0 0 0 rgba(255,255,255,0))'},
+                {filter:'drop-shadow(0 0 14px rgba(255,255,255,1))',offset:.45},
+                {filter:'drop-shadow(0 0 0 rgba(255,255,255,0))'}],
+                {duration:ms,easing:'ease'});
+  }else{
+    el.classList.add("glowForce"); setTimeout(()=>el.classList.remove("glowForce"),ms);
+  }
+  setTimeout(()=>{ el.style.stroke=ps; el.style.strokeWidth=pw; }, ms);
+}
+
+/* -------------------- 浮框與音檔 -------------------- */
+function placePopupNear(evt){
+  const box=viewport.getBoundingClientRect();
+  const w=popup.offsetWidth||260, h=popup.offsetHeight||160;
+  let x=evt.clientX-box.left+12, y=evt.clientY-box.top+12;
+  if(x+w>box.width) x=box.width-w-12; if(y+h>box.height) y=box.height-h-12;
+  if(x<12) x=12; if(y<12) y=12;
+  popup.style.left=x+"px"; popup.style.top=y+"px";
+}
+function showPopupAt(evt,d){
+  $("#pop-new").textContent=d.newName;
+  $("#pop-new-poj").textContent=d.newPoj||"";
+  $("#pop-old").textContent=d.oldName||"";
+  $("#pop-old-poj").textContent=d.oldPoj||"";
+  popup.style.display="block";
+  placePopupNear(evt);
+  btnNew.onclick=()=>{ stopAll(); audioNew.play().catch(()=>{}); };
+  btnOld.onclick =()=>{ stopAll(); audioOld.play().catch(()=>{}); };
+}
+function stopAll(){ [audioNew,audioOld].forEach(a=>{try{a.pause();}catch{} a.currentTime=0;}); }
+function autoPlay(d){
+  stopAll();
+  audioNew.src=encodeURI(newSrc(d.group,d.newName));
+  audioOld.src=encodeURI(oldSrc(d.group,d.newName));
+  audioNew.onended=()=>setTimeout(()=>audioOld.play().catch(()=>{}),GAP);
+  audioOld.onended=null;
+  audioNew.play().catch(()=>{});
+}
+
+/* -------------------- 啟動 -------------------- */
+window.addEventListener("DOMContentLoaded", initFromInlineSVG);
 </script>
 </body>
 </html>
