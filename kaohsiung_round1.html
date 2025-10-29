@@ -97,10 +97,7 @@ svg text.label tspan{fill:#8a4b00;font-weight:800;font-size:10px}
   <div class="win-banner" id="winBanner">有夠 gâu 的！讚啦！</div>
 
 <script>
-/* ====== 市中心 11 區 ====== */
 const CITY_TITLES = ['楠梓區','左營區','鼓山區','三民區','鹽埕區','前金區','新興區','苓雅區','旗津區','前鎮區','小港區'];
-
-/* ====== 正確映射（你剛剛確認的內容） ====== */
 const PAIRS = [
   { id:'01', newName:'楠梓', oldName:'楠仔坑', roman:'Lâm-á-khenn' },
   { id:'02', newName:'左營', oldName:'埤仔頭', roman:'Pi-á-thâu' },
@@ -115,198 +112,141 @@ const PAIRS = [
   { id:'11', newName:'小港', oldName:'港仔墘', roman:'Káng-á-kînn' }
 ];
 
-/* 依你指定的檔名規則：map_assets/01楠梓_new.mp3、01楠仔坑_old.mp3 ... */
-function audioUrl(id2, label, kind){
-  const file = `${id2}${label}_${kind}.mp3`;
-  return `map_assets/${encodeURIComponent(file)}`;
-}
+const mapbox=document.getElementById('mapbox');
+const tray=document.getElementById('tray');
+const toast=document.getElementById('toast');
+const winBanner=document.getElementById('winBanner');
+const audioNew=new Audio(), audioOld=new Audio();
+const vVictory=new Audio('map_assets/victory.mp3'), vFinish1=new Audio('map_assets/finish1.mp3');
+let solved=0;
 
-const mapbox  = document.getElementById('mapbox');
-const tray    = document.getElementById('tray');
-const toast   = document.getElementById('toast');
-const winBanner = document.getElementById('winBanner');
+function audioUrl(id2,label,kind){return`map_assets/${encodeURIComponent(id2+label+'_'+kind+'.mp3')}`;}
 
-const audioNew = new Audio();
-const audioOld = new Audio();
-const vVictory = new Audio('map_assets/victory.mp3');
-const vFinish1 = new Audio('map_assets/finish1.mp3');
+function titleCN(el){const t=el.querySelector('title');return t?t.textContent.trim().split(/\s+/)[0]:'';}
 
-let solved = 0;
-
-const titleCN = el => {
-  const t = el.querySelector && el.querySelector('title');
-  if(!t) return '';
-  return t.textContent.trim().split(/\s+/)[0]; // 取「楠梓區」這種
-};
-
-/* 1) 載入 svg.txt → 塞進 mapbox */
 async function loadSVG(){
-  const res = await fetch('svg.txt', {cache:'no-store'});
-  const txt = await res.text();
-  mapbox.innerHTML = txt;
+  const res=await fetch('svg.txt',{cache:'no-store'});
+  const txt=await res.text();
+  mapbox.innerHTML=txt;
+  const svg=mapbox.querySelector('svg');
+  if(!svg)return;
 
-  // 安全地選到真正的 <svg>
-  const svg = mapbox.querySelector('svg');
-  if(!svg){ console.warn('找不到 <svg> 內容'); return; }
+  // 保留原 viewBox（不裁切），讓整張地圖出現
+  svg.removeAttribute('width');
+  svg.removeAttribute('height');
+  svg.classList.add('fadein');
 
-  // 2) 先加漸層
-  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-  const lg = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
-  lg.id='coreGrad'; lg.setAttribute('x1','0'); lg.setAttribute('x2','0'); lg.setAttribute('y1','0'); lg.setAttribute('y2','1');
-  const s1=document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#ffcf9b');
-  const s2=document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#ffb774');
-  lg.appendChild(s1); lg.appendChild(s2); defs.appendChild(lg); svg.prepend(defs);
-
-  // 3) 只保留市中心 11 區，其餘淡化後直接移除
-  const allPaths = Array.from(svg.querySelectorAll('path'));
-  const keep = []; const remove = [];
-  allPaths.forEach(p=>{
-    const name = titleCN(p);
-    if(CITY_TITLES.includes(name)){ keep.push(p); }
-    else{ remove.push(p); }
-  });
-  remove.forEach(p=>p.remove());
-
-  // 4) 給市中心區上樣式，並記下「不含『區』字」的名字
-  keep.forEach(p=>{
-    p.classList.add('core');
-    const cn = titleCN(p).replace(/區$/,'');
-    p.setAttribute('data-core-name', cn);
+  // 市中心 11 區上亮色，其餘半透明
+  const paths=svg.querySelectorAll('path');
+  paths.forEach(p=>{
+    const name=titleCN(p);
+    if(CITY_TITLES.includes(name)){
+      p.style.fill='url(#coreGrad)';
+      p.style.opacity='1';
+      p.setAttribute('data-core','1');
+    }else{
+      p.style.fill='#d9d9d9';
+      p.style.opacity='0.25';
+    }
   });
 
-  if(!keep.length) return;
+  // 加上漸層
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const grad=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  grad.id='coreGrad';grad.setAttribute('x1','0');grad.setAttribute('y1','0');grad.setAttribute('x2','0');grad.setAttribute('y2','1');
+  const s1=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s1.setAttribute('offset','0%');s1.setAttribute('stop-color','#ffce9b');
+  const s2=document.createElementNS('http://www.w3.org/2000/svg','stop');
+  s2.setAttribute('offset','100%');s2.setAttribute('stop-color','#ffb774');
+  grad.appendChild(s1);grad.appendChild(s2);defs.appendChild(grad);
+  svg.prepend(defs);
 
-  // 5) 重新 viewBox 只包住 11 區（滿版）
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  keep.forEach(p=>{
-    const b=p.getBBox();
-    minX=Math.min(minX,b.x); minY=Math.min(minY,b.y);
-    maxX=Math.max(maxX,b.x+b.width); maxY=Math.max(maxY,b.y+b.height);
-  });
-  const pad = Math.max(maxX-minX, maxY-minY)*0.10;
-  svg.setAttribute('viewBox', `${minX-pad} ${minY-pad} ${(maxX-minX)+pad*2} ${(maxY-minY)+pad*2}`);
-  svg.removeAttribute('width'); svg.removeAttribute('height');
-
-  // 6) 在圖上放「新地名＋拼音」固定標註
+  // 在圖上標新地名＋拼音
   PAIRS.forEach(meta=>{
-    const target = keep.find(p=>p.getAttribute('data-core-name')===meta.newName);
-    if(!target) return;
-    const b = target.getBBox(); const cx=b.x+b.width/2; const cy=b.y+b.height/2;
-    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('class','label'); t.setAttribute('x',cx); t.setAttribute('y',cy); t.setAttribute('text-anchor','middle');
-    t.textContent = meta.newName;
-    const ts = document.createElementNS('http://www.w3.org/2000/svg','tspan');
-    ts.setAttribute('x',cx); ts.setAttribute('dy','1.2em'); ts.textContent = meta.roman;
-    t.appendChild(ts); svg.appendChild(t);
+    const target=[...paths].find(p=>titleCN(p)===meta.newName+'區');
+    if(!target)return;
+    const b=target.getBBox(), cx=b.x+b.width/2, cy=b.y+b.height/2;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('class','label');t.setAttribute('x',cx);t.setAttribute('y',cy);
+    t.setAttribute('text-anchor','middle');
+    t.textContent=meta.newName;
+    const ts=document.createElementNS('http://www.w3.org/2000/svg','tspan');
+    ts.setAttribute('x',cx);ts.setAttribute('dy','1.2em');ts.textContent=meta.roman;
+    t.appendChild(ts);svg.appendChild(t);
   });
-
-  // 7) 淡入效果
-  requestAnimationFrame(()=> svg.classList.add('fadein'));
 }
 
-/* 生成下方拖曳籤 */
 function buildChips(){
-  tray.innerHTML=''; solved = 0;
-  const items = [...PAIRS].sort(()=>Math.random()-0.5);
-  for(const it of items){
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.setAttribute('data-name', it.newName);
-    chip.innerHTML = `<div>${it.oldName}</div><div class="poj">${it.roman}</div>`;
+  tray.innerHTML='';solved=0;
+  const arr=[...PAIRS].sort(()=>Math.random()-0.5);
+  arr.forEach(it=>{
+    const chip=document.createElement('div');
+    chip.className='chip';chip.dataset.name=it.newName;
+    chip.innerHTML=`<div>${it.oldName}</div><div class="poj">${it.roman}</div>`;
     tray.appendChild(chip);
-  }
+  });
   enableDrag();
 }
 
-/* 拖曳判定 */
 function enableDrag(){
-  let dragEl=null, offsetX=0, offsetY=0, origParent=null;
-
-  function onDown(e){
-    const t = e.target.closest('.chip'); if(!t) return; e.preventDefault();
-    dragEl = t; dragEl.classList.add('dragging');
-    const r = dragEl.getBoundingClientRect(); offsetX = e.clientX - r.left; offsetY = e.clientY - r.top;
-    origParent = dragEl.parentElement; mapbox.appendChild(dragEl);
-    dragEl.style.position='absolute'; dragEl.style.zIndex=99; move(e);
-    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up, {once:true});
+  let dragEl=null, offsetX=0, offsetY=0, orig=null;
+  function down(e){
+    const t=e.target.closest('.chip');if(!t)return;e.preventDefault();
+    dragEl=t;dragEl.classList.add('dragging');
+    const r=t.getBoundingClientRect();offsetX=e.clientX-r.left;offsetY=e.clientY-r.top;
+    orig=t.parentElement;mapbox.appendChild(t);
+    t.style.position='absolute';t.style.zIndex=9;move(e);
+    window.addEventListener('pointermove',move);
+    window.addEventListener('pointerup',up,{once:true});
   }
-
   function move(e){
-    if(!dragEl) return;
-    const host = mapbox.getBoundingClientRect();
-    let x = e.clientX - host.left - offsetX; let y = e.clientY - host.top - offsetY;
-    x = Math.max(0, Math.min(host.width  - dragEl.offsetWidth , x));
-    y = Math.max(0, Math.min(host.height - dragEl.offsetHeight, y));
-    dragEl.style.left = x+'px'; dragEl.style.top = y+'px';
+    if(!dragEl)return;
+    const b=mapbox.getBoundingClientRect();
+    dragEl.style.left=e.clientX-b.left-offsetX+'px';
+    dragEl.style.top=e.clientY-b.top-offsetY+'px';
   }
-
   function up(e){
-    if(!dragEl) return; window.removeEventListener('pointermove', move);
-    const expectName = dragEl.getAttribute('data-name');
-    const r = dragEl.getBoundingClientRect(); const center = {x:r.left+r.width/2, y:r.top+r.height/2};
-    const svg = mapbox.querySelector('svg'); let best=null, bestDist=1e9;
-
-    svg.querySelectorAll('path.core').forEach(el=>{
-      const b = el.getBBox(); const pt = svg.createSVGPoint();
-      pt.x = b.x + b.width/2; pt.y = b.y + b.height/2;
-      const s = pt.matrixTransform(el.getScreenCTM());
-      const d = Math.hypot(center.x - s.x, center.y - s.y);
-      const n = el.getAttribute('data-core-name');
-      if(d<bestDist){ best = {el, name:n, s}; bestDist = d; }
+    if(!dragEl)return;
+    const exp=dragEl.dataset.name;
+    const r=dragEl.getBoundingClientRect(), center={x:r.left+r.width/2,y:r.top+r.height/2};
+    const svg=mapbox.querySelector('svg');
+    let best=null,dist=1e9;
+    svg.querySelectorAll('[data-core="1"]').forEach(p=>{
+      const bb=p.getBBox(),pt=svg.createSVGPoint();
+      pt.x=bb.x+bb.width/2;pt.y=bb.y+bb.height/2;
+      const scr=pt.matrixTransform(p.getScreenCTM());
+      const d=Math.hypot(center.x-scr.x,center.y-scr.y);
+      if(d<dist){dist=d;best={el:p,name:titleCN(p).replace(/區$/,'')}}
     });
-
-    if(best && best.name===expectName && bestDist<90){
-      // 成功
-      dragEl.classList.remove('wrong'); dragEl.classList.add('correct');
-      dragEl.style.left = (best.s.x - mapbox.getBoundingClientRect().left) +'px';
-      dragEl.style.top  = (best.s.y - mapbox.getBoundingClientRect().top ) +'px';
-      dragEl.style.transform='translate(-50%,-50%)'; dragEl.onpointerdown=null;
-
-      best.el.classList.add('flash'); setTimeout(()=>best.el.classList.remove('flash'), 900);
-
-      const meta = PAIRS.find(p=>p.newName===expectName);
-      if(meta){
-        audioNew.src = audioUrl(meta.id, meta.newName, 'new');
-        audioOld.src = audioUrl(meta.id, meta.oldName, 'old');
-        // 先新地名 → 0.6 秒 → 舊地名
-        audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), 600);
-        audioNew.play().catch(()=>{});
-      }
-
-      solved++; showToast('✔️ 配對成功！');
-      if(solved>=PAIRS.length) setTimeout(winSequence, 600);
-
+    if(best && best.name===exp && dist<90){
+      dragEl.classList.add('correct');
+      const bb=best.el.getBBox(),pt=svg.createSVGPoint();
+      pt.x=bb.x+bb.width/2;pt.y=bb.y+bb.height/2;
+      const scr=pt.matrixTransform(best.el.getScreenCTM());
+      dragEl.style.left=scr.x-mapbox.getBoundingClientRect().left+'px';
+      dragEl.style.top=scr.y-mapbox.getBoundingClientRect().top+'px';
+      dragEl.style.transform='translate(-50%,-50%)';dragEl.onpointerdown=null;
+      const meta=PAIRS.find(p=>p.newName===exp);
+      audioNew.src=audioUrl(meta.id,meta.newName,'new');
+      audioOld.src=audioUrl(meta.id,meta.oldName,'old');
+      audioNew.onended=()=>setTimeout(()=>audioOld.play().catch(()=>{}),600);
+      audioNew.play().catch(()=>{});
+      solved++;showToast('✔️ 配對成功！');
+      if(solved>=PAIRS.length)setTimeout(winSequence,600);
     }else{
-      // 失敗
-      dragEl.classList.remove('correct'); dragEl.classList.add('wrong');
-      origParent.appendChild(dragEl);
-      dragEl.style.position=''; dragEl.style.left=''; dragEl.style.top=''; dragEl.style.transform='';
+      dragEl.classList.add('wrong');
+      orig.appendChild(dragEl);dragEl.style.position='';dragEl.style.left='';dragEl.style.top='';
     }
-    dragEl.classList.remove('dragging'); dragEl=null;
+    dragEl.classList.remove('dragging');dragEl=null;window.removeEventListener('pointermove',move);
   }
-
-  tray.addEventListener('pointerdown', onDown);
-  mapbox.addEventListener('pointerdown', onDown);
+  tray.addEventListener('pointerdown',down);
+  mapbox.addEventListener('pointerdown',down);
 }
 
-function showToast(msg){
-  toast.textContent = msg; toast.style.display='block';
-  setTimeout(()=> toast.style.display='none', 900);
-}
-
-function winSequence(){
-  winBanner.classList.add('show');
-  vVictory.currentTime=0; vVictory.play().catch(()=>{});
-  setTimeout(()=>{ vFinish1.currentTime=0; vFinish1.play().catch(()=>{}); }, 600);
-}
-
-document.getElementById('btn-restart').addEventListener('click',()=>window.location.reload());
-
-/* 初始化：先載入 SVG → 建籤 */
-window.addEventListener('load', async ()=>{
-  await loadSVG();
-  buildChips();
-});
+function showToast(m){toast.textContent=m;toast.style.display='block';setTimeout(()=>toast.style.display='none',900);}
+function winSequence(){winBanner.classList.add('show');vVictory.play();setTimeout(()=>vFinish1.play(),600);}
+document.getElementById('btn-restart').addEventListener('click',()=>location.reload());
+window.addEventListener('load',async()=>{await loadSVG();buildChips();});
 </script>
 </body>
 </html>
