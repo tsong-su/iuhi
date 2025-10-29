@@ -174,9 +174,7 @@
   <div id="gg" class="gg">有夠 gâu 的！讚啦！</div>
 
 <script>
-/* -----------------------
-   基本資料（市中心 11 區）
-------------------------*/
+/* ====== 市中心 11 區資料（與你提供一致） ====== */
 const CITY_CENTER = [
   { id:"01", newName:"楠梓", oldName:"楠仔坑", roman:"Lâm-á-khenn" },
   { id:"02", newName:"左營", oldName:"埤仔頭", roman:"Pi-á-thâu" },
@@ -190,67 +188,56 @@ const CITY_CENTER = [
   { id:"10", newName:"前鎮", oldName:"前鎮", roman:"Tsiân-tìn" },
   { id:"11", newName:"小港", oldName:"港仔墘", roman:"Káng-á-kînn" },
 ];
-// 方便比對 <title> 文字（svg 裡通常是「小港區 Xiaogang District」）
-const CITY_CENTER_TITLES = CITY_CENTER.map(x => x.newName + "區");
-
-/* 音檔位置（請放在 repo 的 map_assets/） */
-function newAudioPath(item){ return `map_assets/${item.id}${item.newName}_new.mp3`; }
-function oldAudioPath(item){ return `map_assets/${item.id}${item.oldName}_old.mp3`; }
+const TITLES = CITY_CENTER.map(x => x.newName + "區");
+function newAudioPath(it){ return `map_assets/${it.id}${it.newName}_new.mp3`; }
+function oldAudioPath(it){ return `map_assets/${it.id}${it.oldName}_old.mp3`; }
 const victorySnd = "map_assets/victory.mp3";
 const finishSnd  = "map_assets/finish1.mp3";
 
-let svgEl, svgRoot, zoomLayer;
-let solved = 0;
+let svgEl, solved = 0;
 
-/* -----------------------
-   載入 svg.txt 並注入
-------------------------*/
+/* 進來就載 svg.txt（強制防快取） */
 (async function boot(){
-  try{
-    const res = await fetch('svg.txt', {cache:'no-store'});
+  try {
+    const res = await fetch('svg.txt?ts=' + Date.now());
+    if (!res.ok) throw new Error('fetch svg.txt fail');
     const txt = await res.text();
+
     const holder = document.getElementById('mapbox');
-    holder.innerHTML = txt;                       // 直接把整個 <svg> 貼進來
-    svgEl  = holder.querySelector('svg');
-    svgRoot= svgEl; // 根 svg
-    svgEl.style.width = '100%';
+    holder.innerHTML = txt;
+    svgEl = holder.querySelector('svg');
+    if (!svgEl) throw new Error('no <svg> parsed');
+
+    svgEl.style.width  = '100%';
     svgEl.style.height = '100%';
+    svgEl.setAttribute('preserveAspectRatio','xMidYMid meet');
 
-    // 建一層包住全部，方便 transform
-    zoomLayer = document.createElementNS('http://www.w3.org/2000/svg','g');
-    while (svgEl.firstChild) zoomLayer.appendChild(svgEl.firstChild);
-    svgEl.appendChild(zoomLayer);
-    zoomLayer.setAttribute('id','zoomLayer');
-
-    paintAndFocus();
-    placeLabelsAndDrops();
-    buildTray();
-  }catch(e){
+    paintAndFocus();       // 著色＋聚焦
+    placeLabelsAndDrops(); // 新名標籤＋落點
+    buildTray();           // 拖曳卡片
+  } catch (e){
     console.error(e);
-    alert('讀取 svg.txt 失敗，請確認檔案在 repo 根目錄。');
+    alert('載入地圖失敗：請確認 repo 根目錄的 svg.txt 存在。');
   }
 })();
 
-/* -----------------------
-   著色 & 聚焦市中心
-------------------------*/
+/* 直接在原始節點上色；聚焦改「調整 viewBox」 */
 function paintAndFocus(){
-  // 走訪所有 path，依 title 判斷是否市中心
-  const paths = zoomLayer.querySelectorAll('path');
+  const allPaths = svgEl.querySelectorAll('path');
   const centerPaths = [];
-  paths.forEach(p=>{
-    const title = p.querySelector('title')?.textContent?.trim() || '';
-    let isCenter = CITY_CENTER_TITLES.some(t => title.startsWith(t));
-    if(isCenter){
+  allPaths.forEach(p=>{
+    const t = p.querySelector('title')?.textContent?.trim() || '';
+    if (TITLES.some(s => t.startsWith(s))){
       p.classList.add('kao-center');
       centerPaths.push(p);
     }else{
       p.classList.add('kao-other');
     }
   });
+  if (!centerPaths.length) return;
 
-  // 聚合市中心的 bbox
-  let minX= Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  // 算市中心聯集 bbox
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
   centerPaths.forEach(p=>{
     const b = p.getBBox();
     minX = Math.min(minX, b.x);
@@ -258,164 +245,120 @@ function paintAndFocus(){
     maxX = Math.max(maxX, b.x + b.width);
     maxY = Math.max(maxY, b.y + b.height);
   });
-  const padding = 20; // 內距
-  const box = { x:minX-padding, y:minY-padding, width:(maxX-minX)+padding*2, height:(maxY-minY)+padding*2 };
+  const pad = 20;
+  const x = minX - pad, y = minY - pad, w = (maxX-minX)+pad*2, h = (maxY-minY)+pad*2;
 
-  // 把市中心放大到滿版
-  const vb = svgEl.viewBox.baseVal;     // 全圖座標系
-  const viewW = vb && vb.width  ? vb.width  : svgEl.getBBox().width;
-  const viewH = vb && vb.height ? vb.height : svgEl.getBBox().height;
+  // 以改 viewBox 方式聚焦（最穩定）
+  svgEl.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
 
-  const sx = viewW / box.width;
-  const sy = viewH / box.height;
-  const scale = Math.min(sx, sy) * 0.92; // 讓邊緣留一點空間
-
-  const cx = box.x + box.width/2;
-  const cy = box.y + box.height/2;
-
-  // 平移使市中心置中，再縮放
-  const tx = viewW/2 - cx*scale;
-  const ty = viewH/2 - cy*scale;
-
-  zoomLayer.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
-
-  // 初始閃一下（整體）
+  // 閃光一次
   centerPaths.forEach(p=>p.classList.add('glow'));
   setTimeout(()=>centerPaths.forEach(p=>p.classList.remove('glow')), 900);
 }
 
-/* -----------------------
-   在地圖上放「新地名固定標籤」+「隱形落點」
-------------------------*/
-function svgPointToClient(svg, x, y){
-  const pt = svg.createSVGPoint();
+/* 工具：把 SVG 座標轉到畫面座標（放置標籤/落點） */
+function svgToScreen(x,y){
+  const pt = svgEl.createSVGPoint();
   pt.x = x; pt.y = y;
-  const ctm = svg.getScreenCTM();
-  return pt.matrixTransform(ctm);
+  return pt.matrixTransform(svgEl.getScreenCTM());
 }
 
+/* 新地名固定標籤 + 隱形落點 */
 function placeLabelsAndDrops(){
   const holder = document.getElementById('mapbox');
-  const mk = (cls)=>{ const d=document.createElement('div'); d.className=cls; holder.appendChild(d); return d; }
+  const make = cls => { const d=document.createElement('div'); d.className=cls; holder.appendChild(d); return d; };
 
-  CITY_CENTER.forEach(item=>{
-    // 找對應 path
-    const p = Array.from(zoomLayer.querySelectorAll('path'))
-      .find(el => {
-        const t=el.querySelector('title')?.textContent?.trim()||'';
-        return t.startsWith(item.newName+'區');
-      });
-    if(!p) return;
-
-    // 用 path bbox 中心當座標
+  CITY_CENTER.forEach(it=>{
+    const p = [...svgEl.querySelectorAll('path')].find(el=>{
+      const t = el.querySelector('title')?.textContent?.trim() || '';
+      return t.startsWith(it.newName+'區');
+    });
+    if (!p) return;
     const b = p.getBBox();
-    const mid = svgPointToClient(svgEl, b.x + b.width/2, b.y + b.height/2);
+    const mid = svgToScreen(b.x + b.width/2, b.y + b.height/2);
 
-    // 新地名標籤（固定）
-    const lab = mk('label');
-    lab.style.left = mid.x+'px';
-    lab.style.top  = mid.y+'px';
-    lab.innerHTML = `<b>${item.newName}</b><span>${item.roman}</span>`;
+    const lab = make('label');
+    lab.style.left = mid.x + 'px';
+    lab.style.top  = mid.y + 'px';
+    lab.innerHTML = `<b>${it.newName}</b><span>${it.roman}</span>`;
 
-    // 落點（隱形圓形，供判定）
-    const drop = mk('drop');
+    const drop = make('drop');
     drop.classList.add('drop');
-    drop.dataset.id = item.id;
-    drop.style.left = mid.x+'px';
-    drop.style.top  = mid.y+'px';
-  },0);
+    drop.dataset.id = it.id;
+    drop.style.left = mid.x + 'px';
+    drop.style.top  = mid.y + 'px';
+  });
 }
 
-/* -----------------------
-   產生可拖曳的舊地名卡片
-------------------------*/
+/* 產生拖曳卡片 */
 function buildTray(){
   const tray = document.getElementById('tray');
-  // 隨機排序
-  const arr = CITY_CENTER.slice().sort(()=>Math.random()-0.5);
-  arr.forEach(item=>{
+  const shuffled = CITY_CENTER.slice().sort(()=>Math.random()-0.5);
+  shuffled.forEach(it=>{
     const chip = document.createElement('div');
-    chip.className='chip';
-    chip.setAttribute('draggable','true');
-    chip.dataset.id = item.id;
-    chip.innerHTML = `${item.oldName}<small>${item.roman}</small>`;
-    chip.addEventListener('dragstart', onDragStart);
+    chip.className = 'chip';
+    chip.draggable = true;
+    chip.dataset.id = it.id;
+    chip.innerHTML = `${it.oldName}<small>${it.roman}</small>`;
+    chip.addEventListener('dragstart', e=>{
+      e.dataTransfer.setData('text/plain', it.id);
+    });
     tray.appendChild(chip);
   });
 
-  // 監聽拖放
   document.querySelectorAll('.drop').forEach(d=>{
-    d.addEventListener('dragover', e=>{ e.preventDefault(); });
-    d.addEventListener('dragenter', e=>{ e.preventDefault(); d.classList.add('ok'); });
-    d.addEventListener('dragleave', e=>{ d.classList.remove('ok'); });
+    d.addEventListener('dragover', e=>e.preventDefault());
+    d.addEventListener('dragenter', ()=>d.classList.add('ok'));
+    d.addEventListener('dragleave', ()=>d.classList.remove('ok'));
     d.addEventListener('drop', onDrop);
   });
 }
 
-let draggingId = null;
-function onDragStart(e){
-  draggingId = e.target.dataset.id;
-  e.dataTransfer.setData('text/plain', draggingId);
-}
-
-/* 正解後：播放「新→舊」，全部完成再 victory → 0.6s → finish1 */
-async function handleCorrect(dropEl, chipEl){
-  dropEl.classList.add('done'); dropEl.classList.remove('ok','bad');
-  chipEl.style.pointerEvents='none';
-  chipEl.style.opacity='.55';
-  chipEl.style.transform='scale(.96)';
-
-  const item = CITY_CENTER.find(x=>x.id===dropEl.dataset.id);
-
-  // 讓對應區塊閃一下
-  const targetPath = Array.from(zoomLayer.querySelectorAll('path')).find(el=>{
-    const t=el.querySelector('title')?.textContent?.trim()||'';
-    return t.startsWith(item.newName+'區');
-  });
-  if(targetPath){ targetPath.classList.add('glow'); setTimeout(()=>targetPath.classList.remove('glow'),800); }
-
-  // 播放 新→舊
-  await playSeq([ newAudioPath(item), oldAudioPath(item) ]);
-
-  solved++;
-  if(solved===CITY_CENTER.length){
-    // 全部完成
-    const gg = document.getElementById('gg');
-    gg.classList.add('show');
-    await playSound(victorySnd);
-    await wait(600);
-    await playSound(finishSnd);
-  }
-}
-function onDrop(e){
+/* 正解流程：區塊閃光 + 播放 新→舊；全部完成播 victory→0.6s→finish1 */
+async function onDrop(e){
   e.preventDefault();
   const dropId = e.currentTarget.dataset.id;
-  const dragId = draggingId || e.dataTransfer.getData('text/plain');
-  if(!dropId || !dragId) return;
+  const dragId = e.dataTransfer.getData('text/plain');
+  if (!dropId || !dragId) return;
 
-  if(dropId===dragId){
-    handleCorrect(e.currentTarget, document.querySelector(`.chip[data-id="${dragId}"]`));
+  if (dropId === dragId){
+    e.currentTarget.classList.add('done'); e.currentTarget.classList.remove('ok');
+    const chip = document.querySelector(`.chip[data-id="${dragId}"]`);
+    if (chip){ chip.style.opacity='.55'; chip.style.pointerEvents='none'; }
+
+    const it = CITY_CENTER.find(x=>x.id===dropId);
+    const target = [...svgEl.querySelectorAll('path')].find(el=>{
+      const t = el.querySelector('title')?.textContent?.trim() || '';
+      return t.startsWith(it.newName+'區');
+    });
+    if (target){ target.classList.add('glow'); setTimeout(()=>target.classList.remove('glow'),800); }
+
+    await playSeq([ newAudioPath(it), oldAudioPath(it) ]);
+    solved++;
+    if (solved === CITY_CENTER.length){
+      const gg = document.getElementById('gg');
+      gg.classList.add('show');
+      await playSound("map_assets/victory.mp3");
+      await new Promise(r=>setTimeout(r,600));
+      await playSound("map_assets/finish1.mp3");
+    }
   }else{
-    e.currentTarget.classList.remove('ok');
     e.currentTarget.classList.add('bad');
-    setTimeout(()=>e.currentTarget.classList.remove('bad'), 450);
+    setTimeout(()=>e.currentTarget.classList.remove('bad'), 420);
   }
 }
 
-/* -----------------------
-   音訊工具
-------------------------*/
+/* 音訊工具 */
 function playSound(src){
-  return new Promise((resolve)=>{
+  return new Promise(res=>{
     const a = new Audio(src);
-    a.addEventListener('ended', ()=>resolve(), {once:true});
-    a.play().catch(()=>resolve());
+    a.addEventListener('ended', ()=>res(), {once:true});
+    a.play().catch(()=>res());
   });
 }
 function playSeq(list){
   return list.reduce((p,src)=>p.then(()=>playSound(src)), Promise.resolve());
 }
-const wait = (ms)=>new Promise(r=>setTimeout(r,ms));
 </script>
 </body>
 </html>
