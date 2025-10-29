@@ -1,52 +1,74 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <title>高雄市－市中心區新舊地名配對</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;800&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;800;900&display=swap">
 <style>
 :root{
-  --bg:#FFF7F2; --ink:#6B3B00; --ink2:#5a3000; --card:#fff; --border:#e5e7eb;
-  --chip:#FFE0B2; --chipBorder:#FF9800; --good:#22c55e; --bad:#ef4444;
+  --bg:#FFF7F2;            /* 柔米色背景 */
+  --ink:#6B3B00;           /* 主要字色 */
+  --ink2:#542f00;
+  --card:#ffffff;
+  --border:#e8e6e3;
+  --chip:#FFE7C7;
+  --chipBorder:#ffb873;
+  --good:#22c55e;
+  --bad:#ef4444;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,Arial}
-h1{margin:.6rem 0 .2rem;text-align:center;font-weight:800;font-size:clamp(20px,3.8vw,30px);color:#7b341e}
-.p{text-align:center;margin:.1rem 0;color:#7b341e;font-size:14px}
-.wrapper{max-width:1100px;margin:0 auto;padding:0 10px 14px}
-.board{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.08);overflow:hidden}
+h1{margin:.7rem 0 .25rem;text-align:center;font-weight:900;letter-spacing:1px;color:#7b341e;font-size:clamp(20px,3.8vw,30px)}
+.p{margin:.1rem 0;text-align:center;color:#8a4b00;font-size:14px}
+.wrapper{max-width:1100px;margin:0 auto;padding:0 12px 16px}
+.board{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.08);overflow:hidden}
 .mapbox{position:relative;width:100%;height:72vh;min-height:520px;background:#fff}
-.mapbox svg{width:100%;height:100%;display:block}
-.mapbox svg path,.mapbox svg polygon,.mapbox svg polyline{vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
-.dimmed{opacity:.25;transition:opacity .35s}
+.mapbox svg{width:100%;height:100%;display:block;opacity:0;transform:translateY(8px);transition:opacity .6s ease, transform .6s ease}
+.mapbox svg.fadein{opacity:1;transform:translateY(0)}
+
+.mapbox svg path,.mapbox svg polygon,.mapbox svg polyline{
+  vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round
+}
 .core{fill:url(#coreGrad);stroke:#ffffff;stroke-width:1.2}
+.dim{opacity:.08}
+
 .flash{animation:ccFlash .9s ease-in-out 1}
 @keyframes ccFlash{
   0%{stroke:#ffb703;stroke-width:3;filter:drop-shadow(0 0 0 rgba(255,183,3,0))}
-  50%{stroke:#ff7a00;stroke-width:4.5;filter:drop-shadow(0 0 10px rgba(255,122,0,.55))}
+  50%{stroke:#ff7a00;stroke-width:4.5;filter:drop-shadow(0 0 12px rgba(255,122,0,.55))}
   100%{stroke:#000;stroke-width:.2;filter:drop-shadow(0 0 0 rgba(0,0,0,0))}
 }
-svg text.label{font-weight:900;fill:var(--ink2);paint-order:stroke;stroke:#fff;stroke-width:2.2px;stroke-linejoin:round;letter-spacing:.2px;font-size:12px}
+
+svg text.label{
+  font-weight:900;fill:var(--ink2);paint-order:stroke;stroke:#fff;stroke-width:2.2px;stroke-linejoin:round;
+  letter-spacing:.2px;font-size:12px
+}
 svg text.label tspan{fill:#8a4b00;font-weight:800;font-size:10px}
 
 .tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:12px;background:#fff;border-top:1px dashed var(--border)}
-.chip{user-select:none;touch-action:none;padding:10px 12px;border-radius:14px;border:2px solid var(--chipBorder);background:var(--chip);
-      box-shadow:0 3px 8px rgba(0,0,0,.12);font-weight:900;color:var(--ink2);
-      display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.chip{
+  user-select:none;touch-action:none;padding:10px 12px;border-radius:14px;border:2px solid var(--chipBorder);background:var(--chip);
+  box-shadow:0 3px 8px rgba(0,0,0,.12);font-weight:900;color:var(--ink2);
+  display:inline-flex;flex-direction:column;align-items:center;gap:2px
+}
 .chip .poj{font-size:12px;color:#8a4b00}
-.chip.dragging{opacity:.9;box-shadow:0 10px 24px rgba(0,0,0,.24)}
+.chip.dragging{opacity:.95;box-shadow:0 10px 24px rgba(0,0,0,.24)}
 .chip.correct{border-color:var(--good)}
 .chip.wrong{border-color:var(--bad);animation:shake .28s linear 1}
 @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
 
 .footer{text-align:center;padding:12px}
-.btn{display:inline-block;margin:0 6px;background:linear-gradient(145deg,#ffa96e,#ffcf9b);color:#fff;padding:9px 14px;border-radius:12px;
-     box-shadow:0 4px 12px rgba(0,0,0,.18);border:0;font-weight:900}
-.toast{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 12px;border-radius:10px;
-       box-shadow:0 8px 20px rgba(0,0,0,.25);font-weight:700;z-index:999;display:none}
+.btn{
+  display:inline-block;margin:0 6px;background:linear-gradient(145deg,#ffa96e,#ffcf9b);color:#fff;padding:9px 14px;border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);border:0;font-weight:900;text-decoration:none
+}
 
-/* 勝利大字 */
+.toast{
+  position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 12px;border-radius:10px;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);font-weight:700;z-index:999;display:none
+}
 .win-banner{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;
   font-weight:900;font-size:clamp(28px,7vw,56px);color:#ff9e42;text-shadow:0 10px 24px rgba(0,0,0,.18);
@@ -62,13 +84,9 @@ svg text.label tspan{fill:#8a4b00;font-weight:800;font-size:10px}
 
   <div class="wrapper">
     <div class="board">
-      <div class="mapbox" id="mapbox">
-        <!-- 這裡保留你已貼入的 v6.2 整份 <svg>…</svg>（38 區） -->
-      </div>
-
+      <div class="mapbox" id="mapbox"><!-- 這裡會用 JS 自動塞入 svg.txt 的內容 --></div>
       <div class="tray" id="tray"></div>
     </div>
-
     <div class="footer">
       <button class="btn" id="btn-restart">🔁 閣耍一擺</button>
       <a class="btn" href="https://tsong-su.github.io/iuhi/index.html">🏠 轉去遊戲首頁</a>
@@ -79,10 +97,10 @@ svg text.label tspan{fill:#8a4b00;font-weight:800;font-size:10px}
   <div class="win-banner" id="winBanner">有夠 gâu 的！讚啦！</div>
 
 <script>
-/* 市中心 11 區（用 <title> 的中文區名比對） */
+/* ====== 市中心 11 區 ====== */
 const CITY_TITLES = ['楠梓區','左營區','鼓山區','三民區','鹽埕區','前金區','新興區','苓雅區','旗津區','前鎮區','小港區'];
 
-/* 正確資料（你提供的版本；ID 對應音檔兩位數） */
+/* ====== 正確映射（你剛剛確認的內容） ====== */
 const PAIRS = [
   { id:'01', newName:'楠梓', oldName:'楠仔坑', roman:'Lâm-á-khenn' },
   { id:'02', newName:'左營', oldName:'埤仔頭', roman:'Pi-á-thâu' },
@@ -97,42 +115,41 @@ const PAIRS = [
   { id:'11', newName:'小港', oldName:'港仔墘', roman:'Káng-á-kînn' }
 ];
 
-/* 依你規則組音檔路徑（處理中文檔名） */
-function audioUrl(id2, label, kind){ // kind='new'|'old'
+/* 依你指定的檔名規則：map_assets/01楠梓_new.mp3、01楠仔坑_old.mp3 ... */
+function audioUrl(id2, label, kind){
   const file = `${id2}${label}_${kind}.mp3`;
   return `map_assets/${encodeURIComponent(file)}`;
 }
 
-/* DOM */
-const mapbox = document.getElementById('mapbox');
-const tray   = document.getElementById('tray');
-const toast  = document.getElementById('toast');
+const mapbox  = document.getElementById('mapbox');
+const tray    = document.getElementById('tray');
+const toast   = document.getElementById('toast');
 const winBanner = document.getElementById('winBanner');
 
-/* 音訊 */
 const audioNew = new Audio();
 const audioOld = new Audio();
-const vVictory = new Audio("map_assets/victory.mp3");
-const vFinish1 = new Audio("map_assets/finish1.mp3");
+const vVictory = new Audio('map_assets/victory.mp3');
+const vFinish1 = new Audio('map_assets/finish1.mp3');
 
 let solved = 0;
 
-/* 小工具 */
-const onlyHan = t => (t||'').match(/[\u4E00-\u9FFF]+/g)?.join('') || '';
 const titleCN = el => {
   const t = el.querySelector && el.querySelector('title');
   if(!t) return '';
-  // <title>小港區 Xiaogang District</title> → "小港區"
-  return t.textContent.trim().split(/\s+/)[0];
+  return t.textContent.trim().split(/\s+/)[0]; // 取「楠梓區」這種
 };
-const showToast = msg => { toast.textContent=msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none',900); };
-const pad2 = n => String(n).padStart(2,'0');
 
-/* 把 38 區 SVG 轉成「只有市中心 11 區」＋滿版 viewBox */
-function focusCityCenter() {
-  const svg = mapbox.querySelector('svg'); if(!svg) return;
+/* 1) 載入 svg.txt → 塞進 mapbox */
+async function loadSVG(){
+  const res = await fetch('svg.txt', {cache:'no-store'});
+  const txt = await res.text();
+  mapbox.innerHTML = txt;
 
-  // 漸層供 core 填色
+  // 安全地選到真正的 <svg>
+  const svg = mapbox.querySelector('svg');
+  if(!svg){ console.warn('找不到 <svg> 內容'); return; }
+
+  // 2) 先加漸層
   const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
   const lg = document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
   lg.id='coreGrad'; lg.setAttribute('x1','0'); lg.setAttribute('x2','0'); lg.setAttribute('y1','0'); lg.setAttribute('y2','1');
@@ -140,87 +157,76 @@ function focusCityCenter() {
   const s2=document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#ffb774');
   lg.appendChild(s1); lg.appendChild(s2); defs.appendChild(lg); svg.prepend(defs);
 
-  // 先把全部 path 抓出來，分成市中心 / 非市中心
+  // 3) 只保留市中心 11 區，其餘淡化後直接移除
   const allPaths = Array.from(svg.querySelectorAll('path'));
-  const inCenter = [];
-  const outCenter = [];
-
+  const keep = []; const remove = [];
   allPaths.forEach(p=>{
     const name = titleCN(p);
-    if(CITY_TITLES.includes(name)) { inCenter.push(p); }
-    else { outCenter.push(p); }
+    if(CITY_TITLES.includes(name)){ keep.push(p); }
+    else{ remove.push(p); }
   });
+  remove.forEach(p=>p.remove());
 
-  // 非市中心：直接移除（真正「拆出獨立圖」）
-  outCenter.forEach(p=>p.remove());
-
-  // 市中心：加 class 與 data-name，並記錄 bbox
-  inCenter.forEach(p=>{
+  // 4) 給市中心區上樣式，並記下「不含『區』字」的名字
+  keep.forEach(p=>{
     p.classList.add('core');
-    const cn = titleCN(p).replace(/區$/,''); // 例如 小港區 → 小港
+    const cn = titleCN(p).replace(/區$/,'');
     p.setAttribute('data-core-name', cn);
   });
 
-  if(inCenter.length===0) return;
+  if(!keep.length) return;
 
-  // 以剩餘 path 的聯集 bbox 設定新 viewBox（滿版）
-  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
-  inCenter.forEach(p=>{
-    const b = p.getBBox();
-    minX = Math.min(minX, b.x);
-    minY = Math.min(minY, b.y);
-    maxX = Math.max(maxX, b.x + b.width);
-    maxY = Math.max(maxY, b.y + b.height);
+  // 5) 重新 viewBox 只包住 11 區（滿版）
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  keep.forEach(p=>{
+    const b=p.getBBox();
+    minX=Math.min(minX,b.x); minY=Math.min(minY,b.y);
+    maxX=Math.max(maxX,b.x+b.width); maxY=Math.max(maxY,b.y+b.height);
   });
   const pad = Math.max(maxX-minX, maxY-minY)*0.10;
   svg.setAttribute('viewBox', `${minX-pad} ${minY-pad} ${(maxX-minX)+pad*2} ${(maxY-minY)+pad*2}`);
   svg.removeAttribute('width'); svg.removeAttribute('height');
 
-  // 加上新名＋拼音標籤（置於各區 bbox 中心）
+  // 6) 在圖上放「新地名＋拼音」固定標註
   PAIRS.forEach(meta=>{
-    const target = inCenter.find(p=>p.getAttribute('data-core-name')===meta.newName);
+    const target = keep.find(p=>p.getAttribute('data-core-name')===meta.newName);
     if(!target) return;
-    const b = target.getBBox();
-    const cx = b.x + b.width/2;
-    const cy = b.y + b.height/2;
-
+    const b = target.getBBox(); const cx=b.x+b.width/2; const cy=b.y+b.height/2;
     const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('class','label');
-    t.setAttribute('x', cx);
-    t.setAttribute('y', cy);
-    t.setAttribute('text-anchor','middle');
+    t.setAttribute('class','label'); t.setAttribute('x',cx); t.setAttribute('y',cy); t.setAttribute('text-anchor','middle');
     t.textContent = meta.newName;
-
     const ts = document.createElementNS('http://www.w3.org/2000/svg','tspan');
-    ts.setAttribute('x', cx); ts.setAttribute('dy','1.2em');
-    // 這裡顯示羅馬拼音（你給的）
-    ts.textContent = meta.roman;
-    t.appendChild(ts);
-    svg.appendChild(t);
+    ts.setAttribute('x',cx); ts.setAttribute('dy','1.2em'); ts.textContent = meta.roman;
+    t.appendChild(ts); svg.appendChild(t);
   });
+
+  // 7) 淡入效果
+  requestAnimationFrame(()=> svg.classList.add('fadein'));
 }
 
-/* 產生 11 個拖曳籤（舊地名＋拼音） */
+/* 生成下方拖曳籤 */
 function buildChips(){
-  tray.innerHTML=''; solved=0;
+  tray.innerHTML=''; solved = 0;
   const items = [...PAIRS].sort(()=>Math.random()-0.5);
   for(const it of items){
-    const chip = document.createElement('div'); chip.className='chip'; chip.setAttribute('data-name', it.newName);
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.setAttribute('data-name', it.newName);
     chip.innerHTML = `<div>${it.oldName}</div><div class="poj">${it.roman}</div>`;
     tray.appendChild(chip);
   }
   enableDrag();
 }
 
-/* 拖曳配對（pointer-based，手機穩定） */
+/* 拖曳判定 */
 function enableDrag(){
   let dragEl=null, offsetX=0, offsetY=0, origParent=null;
 
   function onDown(e){
     const t = e.target.closest('.chip'); if(!t) return; e.preventDefault();
-    dragEl=t; dragEl.classList.add('dragging');
-    const r=dragEl.getBoundingClientRect(); offsetX=e.clientX-r.left; offsetY=e.clientY-r.top;
-    origParent=dragEl.parentElement; mapbox.appendChild(dragEl);
+    dragEl = t; dragEl.classList.add('dragging');
+    const r = dragEl.getBoundingClientRect(); offsetX = e.clientX - r.left; offsetY = e.clientY - r.top;
+    origParent = dragEl.parentElement; mapbox.appendChild(dragEl);
     dragEl.style.position='absolute'; dragEl.style.zIndex=99; move(e);
     window.addEventListener('pointermove', move); window.addEventListener('pointerup', up, {once:true});
   }
@@ -229,67 +235,77 @@ function enableDrag(){
     if(!dragEl) return;
     const host = mapbox.getBoundingClientRect();
     let x = e.clientX - host.left - offsetX; let y = e.clientY - host.top - offsetY;
-    x = Math.max(0, Math.min(host.width - dragEl.offsetWidth, x));
+    x = Math.max(0, Math.min(host.width  - dragEl.offsetWidth , x));
     y = Math.max(0, Math.min(host.height - dragEl.offsetHeight, y));
-    dragEl.style.left=x+'px'; dragEl.style.top=y+'px';
+    dragEl.style.left = x+'px'; dragEl.style.top = y+'px';
   }
 
   function up(e){
     if(!dragEl) return; window.removeEventListener('pointermove', move);
-    const expectName = dragEl.getAttribute('data-name'); // 新名（目標）
+    const expectName = dragEl.getAttribute('data-name');
     const r = dragEl.getBoundingClientRect(); const center = {x:r.left+r.width/2, y:r.top+r.height/2};
     const svg = mapbox.querySelector('svg'); let best=null, bestDist=1e9;
 
     svg.querySelectorAll('path.core').forEach(el=>{
-      const b=el.getBBox(); const pt=svg.createSVGPoint(); pt.x=b.x+b.width/2; pt.y=b.y+b.height/2;
-      const s=pt.matrixTransform(el.getScreenCTM()); const d=Math.hypot(center.x-s.x, center.y-s.y);
-      const n=el.getAttribute('data-core-name'); if(d<bestDist){ best={el, name:n, s}; bestDist=d; }
+      const b = el.getBBox(); const pt = svg.createSVGPoint();
+      pt.x = b.x + b.width/2; pt.y = b.y + b.height/2;
+      const s = pt.matrixTransform(el.getScreenCTM());
+      const d = Math.hypot(center.x - s.x, center.y - s.y);
+      const n = el.getAttribute('data-core-name');
+      if(d<bestDist){ best = {el, name:n, s}; bestDist = d; }
     });
 
     if(best && best.name===expectName && bestDist<90){
-      // 正確：吸附到區域中心、閃光、播放音檔
+      // 成功
       dragEl.classList.remove('wrong'); dragEl.classList.add('correct');
-      dragEl.style.left=(best.s.x - mapbox.getBoundingClientRect().left)+'px';
-      dragEl.style.top =(best.s.y - mapbox.getBoundingClientRect().top )+'px';
+      dragEl.style.left = (best.s.x - mapbox.getBoundingClientRect().left) +'px';
+      dragEl.style.top  = (best.s.y - mapbox.getBoundingClientRect().top ) +'px';
       dragEl.style.transform='translate(-50%,-50%)'; dragEl.onpointerdown=null;
 
       best.el.classList.add('flash'); setTimeout(()=>best.el.classList.remove('flash'), 900);
 
-      // 播放新→舊
       const meta = PAIRS.find(p=>p.newName===expectName);
       if(meta){
         audioNew.src = audioUrl(meta.id, meta.newName, 'new');
         audioOld.src = audioUrl(meta.id, meta.oldName, 'old');
-        audioNew.onended = ()=> setTimeout(()=>audioOld.play().catch(()=>{}), 600);
+        // 先新地名 → 0.6 秒 → 舊地名
+        audioNew.onended = ()=> setTimeout(()=> audioOld.play().catch(()=>{}), 600);
         audioNew.play().catch(()=>{});
       }
 
       solved++; showToast('✔️ 配對成功！');
       if(solved>=PAIRS.length) setTimeout(winSequence, 600);
+
     }else{
+      // 失敗
       dragEl.classList.remove('correct'); dragEl.classList.add('wrong');
-      origParent.appendChild(dragEl); dragEl.style.position=''; dragEl.style.left=''; dragEl.style.top=''; dragEl.style.transform='';
+      origParent.appendChild(dragEl);
+      dragEl.style.position=''; dragEl.style.left=''; dragEl.style.top=''; dragEl.style.transform='';
     }
     dragEl.classList.remove('dragging'); dragEl=null;
   }
 
-  tray.addEventListener('pointerdown', onDown); mapbox.addEventListener('pointerdown', onDown);
+  tray.addEventListener('pointerdown', onDown);
+  mapbox.addEventListener('pointerdown', onDown);
 }
 
-/* 勝利兩段音效 + 文字動畫 */
+function showToast(msg){
+  toast.textContent = msg; toast.style.display='block';
+  setTimeout(()=> toast.style.display='none', 900);
+}
+
 function winSequence(){
   winBanner.classList.add('show');
   vVictory.currentTime=0; vVictory.play().catch(()=>{});
   setTimeout(()=>{ vFinish1.currentTime=0; vFinish1.play().catch(()=>{}); }, 600);
 }
 
-/* 重新開始 */
 document.getElementById('btn-restart').addEventListener('click',()=>window.location.reload());
 
-/* 啟動 */
-window.addEventListener('load', ()=>{
-  // 等你貼的 <svg> 進 DOM 後：「拆出市中心 → 滿版 → 標籤 → 產出籤」
-  setTimeout(()=>{ focusCityCenter(); buildChips(); }, 60);
+/* 初始化：先載入 SVG → 建籤 */
+window.addEventListener('load', async ()=>{
+  await loadSVG();
+  buildChips();
 });
 </script>
 </body>
