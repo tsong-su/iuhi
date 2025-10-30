@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高雄市－市中心區新舊地名互動地圖</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #fdf7f0;
+    font-family: "Noto Sans TC", sans-serif;
+    text-align: center;
+  }
+  h1 {
+    font-size: 1.2rem;
+    margin: 10px 0 5px;
+    color: #5b4a3d;
+  }
+  p {
+    font-size: 0.95rem;
+    color: #675847;
+    margin: 0 0 8px;
+  }
+  svg {
+    width: 95vw;
+    max-width: 700px;
+    height: auto;
+  }
+  #tooltip {
+    position: absolute;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    color: #357d8c;
+    pointer-events: none;
+    display: none;
+  }
+</style>
+</head>
+
+<body>
+  <h1>高雄市－市中心區新舊地名互動地圖</h1>
+  <p>📜請將舊地名拖曳至相對應新地名區域　🏠（暫未開放）</p>
+
+  <div style="display:flex; justify-content:center; align-items:center;">
+    <!-- 直接嵌入 city-center.svg -->
+    <object data="city-center.svg" type="image/svg+xml" id="mapSvg"></object>
+  </div>
+
+  <div id="tooltip"></div>
+
+  <script>
+    const tooltip = document.getElementById("tooltip");
+    const svgObject = document.getElementById("mapSvg");
+
+    svgObject.addEventListener("load", () => {
+      const svgDoc = svgObject.contentDocument;
+      const paths = svgDoc.querySelectorAll("path");
+
+      paths.forEach(path => {
+        const title = path.querySelector("title")?.textContent.trim() || "";
+        path.addEventListener("mousemove", e => {
+          tooltip.style.display = "block";
+          tooltip.textContent = title;
+          tooltip.style.left = e.pageX + 15 + "px";
+          tooltip.style.top = e.pageY - 25 + "px";
+        });
+        path.addEventListener("mouseleave", () => {
+          tooltip.style.display = "none";
+        });
+      });
+    });
+  </script>
+</body>
+</html>
