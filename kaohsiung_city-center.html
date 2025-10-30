@@ -1,250 +1,93 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>高雄市－市中心區新舊地名配對遊戲</title>
 <style>
-  :root{
-    --bg:#fdf6ef;      /* 柔米色 */
-    --ink:#3b2f2a;
-    --accent:#e7d2b4;  /* 說明/按鈕底色 */
-    --pill:#f4c7c7;    /* 舊地名框 */
-    --pill-b:#c76565;
-    --ok:#cfe8c8;      /* 配對成功區塊色 */
-  }
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: "Noto Sans TC", system-ui, -apple-system, "Segoe UI", sans-serif;
-    background:var(--bg);
-    color:var(--ink);
-    -webkit-tap-highlight-color: transparent;
-  }
-  header{
-    font-weight:800;
-    font-size:clamp(18px, 4.6vw, 28px);
-    text-align:center;
-    padding:10px 14px 6px;
-  }
-  .bar{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    padding:4px 10px 6px;
-    font-size:clamp(13px, 3.7vw, 16px);
-    color:#5b524d;
-  }
-  .bar .home{
-    padding:6px 10px; border-radius:12px; border:0; cursor:pointer;
-    background:#e9e0cf;
-    box-shadow:0 1px 0 rgba(0,0,0,.06) inset;
-  }
-  .wrap{
-    display:flex; flex-direction:column; gap:8px;
-    height:calc(100dvh - 110px); /* 讓手機直式盡量滿版 */
-    padding:0 10px 10px;
-  }
-  #mapBox{
-    position:relative;
-    flex:1 1 auto;
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 2px 10px rgba(0,0,0,.04) inset;
-    overflow:hidden;
-  }
-  #mapBox svg{ width:100%; height:100%; display:block; }
-  /* 小提示泡泡（hover） */
-  #tip{
-    position:fixed; z-index:50; pointer-events:none; display:none;
-    background:#fff; border:1px solid #ddd; border-radius:8px;
-    padding:6px 8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.12);
-  }
-  /* 拖曳托盤 */
-  #tray{
-    display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
-  }
-  .pill{
-    background:var(--pill); border:2px solid var(--pill-b);
-    padding:8px 12px; border-radius:12px; font-weight:700; cursor:grab;
-    user-select:none; font-size:clamp(14px, 3.9vw, 17px);
-    box-shadow:0 1px 0 rgba(0,0,0,.05) inset;
-  }
-  .dragging{ opacity:.6 }
-  /* 完成彈窗 */
-  #done{
-    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(.7);
-    background:#ffffffea; border:1px solid #ddd; border-radius:16px;
-    padding:16px 22px; font-size:20px; font-weight:800; color:#2e7d32;
-    backdrop-filter:saturate(140%) blur(2px);
-    display:none; z-index:100;
-    animation:pop .4s ease forwards;
-  }
-  @keyframes pop{
-    to{ transform:translate(-50%,-50%) scale(1) }
-  }
-  /* 手機直式優先 */
-  @media (min-width:768px){
-    .wrap{ height:calc(100dvh - 120px) }
-  }
+body{margin:0;font-family:"Noto Sans TC",sans-serif;background:#fdf6ef;text-align:center;}
+header{font-weight:700;margin-top:8px;font-size:1.2em;}
+.desc{display:flex;justify-content:center;align-items:center;gap:6px;font-size:.9em;margin-bottom:5px;color:#444}
+button#homeBtn{background:#e6dcc5;border:0;border-radius:10px;padding:4px 10px;cursor:pointer}
+#mapContainer{width:100%;height:60vh;margin:0 auto;overflow:hidden;border-radius:12px}
+#tray{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px}
+.dragItem{background:#f4c7c7;border:2px solid #b45;padding:8px 12px;border-radius:10px;cursor:grab;font-weight:600;font-size:.95em;user-select:none}
+.dragItem.dragging{opacity:.6}
+#popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:15px 25px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,.2);font-size:1.2em;color:#2e7d32}
+path:hover{fill:#d8f0d0;cursor:pointer}
 </style>
 </head>
 <body>
-  <header>高雄市－市中心區新舊地名配對遊戲</header>
-  <div class="bar">
-    📜請將舊地名拖曳至相對應新地名區域
-    <button class="home" id="homeBtn">🏠 轉去遊戲頭頁</button>
-  </div>
-
-  <div class="wrap">
-    <div id="mapBox"></div>
-    <div id="tray" aria-label="舊地名拖曳托盤"></div>
-  </div>
-
-  <div id="tip"></div>
-  <div id="done">有夠 gâu 的！讚啦！</div>
-
-  <!-- 音效 -->
-  <audio id="seVictory" src="map_assets/victory.mp3"></audio>
-  <audio id="seFinish"  src="map_assets/finish1.mp3"></audio>
-
+<header>高雄市－市中心區新舊地名配對遊戲</header>
+<div class="desc">
+📜請將舊地名拖曳至相對應新地名區域
+<button id="homeBtn">🏠轉去遊戲頭頁</button>
+</div>
+<div id="mapContainer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="320 1420 480 520" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;background:#fdf8f2">
+<g transform="scale(3.2)" stroke="#555" stroke-width="0.4" fill="#eee8dd">
+<path id="Nanzi" d="M460,1490 L475,1485 L490,1500 L480,1515 L460,1505 Z"><title>楠梓｜楠仔坑</title></path>
+<path id="Zuoying" d="M490,1500 L510,1495 L520,1510 L505,1525 L490,1515 Z"><title>左營｜埤仔頭</title></path>
+<path id="Gushan" d="M480,1520 L495,1530 L510,1525 L515,1545 L490,1540 Z"><title>鼓山｜打鼓山</title></path>
+<path id="Sanmin" d="M515,1540 L530,1535 L545,1550 L525,1565 L510,1560 Z"><title>三民｜三塊厝</title></path>
+<path id="Yancheng" d="M495,1565 L510,1560 L515,1580 L495,1585 L485,1570 Z"><title>鹽埕｜鹽埕埔</title></path>
+<path id="Qianjin" d="M515,1580 L530,1575 L540,1590 L520,1600 L510,1585 Z"><title>前金｜前衿</title></path>
+<path id="Xinxing" d="M540,1590 L555,1585 L565,1600 L550,1610 L535,1600 Z"><title>新興｜逮港埔</title></path>
+<path id="Lingya" d="M550,1610 L565,1605 L575,1620 L560,1630 L545,1620 Z"><title>苓雅｜笭仔寮</title></path>
+<path id="Qijin" d="M480,1580 L485,1605 L490,1615 L495,1600 L485,1585 Z"><title>旗津｜旗後</title></path>
+<path id="Qianzhen" d="M560,1630 L575,1625 L590,1640 L575,1650 L560,1640 Z"><title>前鎮｜前鎮</title></path>
+<path id="Xiaogang" d="M575,1650 L595,1645 L605,1660 L585,1670 L570,1660 Z"><title>小港｜港仔墘</title></path>
+</g>
+</svg>
+</div>
+<div id="tray"></div>
+<div id="popup">有夠 gâu 的！讚啦！</div>
 <script>
-const tip = document.getElementById('tip');
-document.getElementById('homeBtn').addEventListener('click', ()=>alert('暫未開放'));
-
-const MAP_PATH = 'map_assets/svg1.txt'; // 可用 .txt 或 .svg
-const NEW_OLD = [
-  // 依序：新地名, 舊地名, 羅馬
-  ["楠梓","楠仔坑","Lâm-á-khenn"],
-  ["左營","埤仔頭","Pi-á-thâu"],
-  ["鼓山","打鼓山","Tánn-kóo-san"],
-  ["三民","三塊厝","Sann-tè-tshù"],
-  ["鹽埕","鹽埕埔","Iâm-tiânn-poo"],
-  ["前金","前衿","Tsiân-khim"],
-  ["新興","逮港埔","Tāi-káng-poo"],
-  ["苓雅","笭仔寮","Lîng-á-liâu"],
-  ["旗津","旗後","Kî-āu"],
-  ["前鎮","前鎮","Tsiân-tìn"],
-  ["小港","港仔墘","Káng-á-kînn"],
+const list=[
+["Nanzi","楠梓","楠仔坑"],
+["Zuoying","左營","埤仔頭"],
+["Gushan","鼓山","打鼓山"],
+["Sanmin","三民","三塊厝"],
+["Yancheng","鹽埕","鹽埕埔"],
+["Qianjin","前金","前衿"],
+["Xinxing","新興","逮港埔"],
+["Lingya","苓雅","笭仔寮"],
+["Qijin","旗津","旗後"],
+["Qianzhen","前鎮","前鎮"],
+["Xiaogang","小港","港仔墘"]
 ];
-
-let doneCount = 0;
-
-(async function boot(){
-  const svgText = await fetch(MAP_PATH).then(r=>r.text());
-  // 去掉 xml/doctype 才能安全 innerHTML
-  const cleaned = svgText
-    .replace(/<\?xml[\s\S]*?\?>/i,'')
-    .replace(/<!DOCTYPE[\s\S]*?>/i,'');
-  const box = document.getElementById('mapBox');
-  box.innerHTML = cleaned;
-
-  /** 調整 SVG 尺寸屬性，確保滿版顯示 **/
-  const svg = box.querySelector('svg');
-  if(!svg){
-    console.error('未找到 <svg>，請確認 map_assets/svg1.txt 內容。');
-    box.innerHTML = '<div style="padding:20px;color:#a33">讀取失敗：svg1.txt 內容可能缺少 &lt;svg&gt; ...</div>';
-    return;
-  }
-  svg.removeAttribute('width');
-  svg.removeAttribute('height');
-  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-  svg.style.width = '100%';
-  svg.style.height = '100%';
-
-  /** 蒐集所有 path，讀取 <title>新｜舊>；掛上 hover 提示與 drop 區 **/
-  const districts = [];
-  svg.querySelectorAll('path').forEach((p)=>{
-    const t = p.querySelector('title');
-    if(!t) return;
-    const raw = t.textContent.trim();
-    // 允許「新｜舊」或「新地名｜舊地名」任一形式
-    const [newName, oldName] = raw.split('｜').map(s=>s?.trim());
-    if(!newName) return;
-    p.dataset.newName = newName;
-    p.dataset.oldName = oldName || '';
-    // hover 提示
-    p.addEventListener('pointerenter', (e)=>{
-      tip.style.display = 'block';
-      tip.textContent = oldName ? `${newName}｜${oldName}` : newName;
-    });
-    p.addEventListener('pointermove', (e)=>{
-      tip.style.left = (e.clientX+10)+'px';
-      tip.style.top  = (e.clientY+10)+'px';
-    });
-    p.addEventListener('pointerleave', ()=> tip.style.display='none');
-    // drop support
-    p.addEventListener('dragover', e=>e.preventDefault());
-    p.addEventListener('drop', onDropToPath);
-    districts.push(p);
-  });
-
-  /** 產生舊地名拖曳方塊（隨機順序） **/
-  const tray = document.getElementById('tray');
-  const shuffled = NEW_OLD.slice().sort(()=>Math.random()-0.5);
-  shuffled.forEach(([newName, oldName, roman], i)=>{
-    const el = document.createElement('div');
-    el.className = 'pill';
-    el.textContent = `${oldName} ${roman}`;
-    el.setAttribute('draggable','true');
-    el.dataset.newName = newName;
-    // DnD
-    el.addEventListener('dragstart', ()=> el.classList.add('dragging'));
-    el.addEventListener('dragend',   ()=> el.classList.remove('dragging'));
-    tray.appendChild(el);
-  });
-})();
-
-function onDropToPath(ev){
-  const drag = document.querySelector('.pill.dragging');
-  if(!drag) return;
-  const targetNew = this.dataset.newName;  // 由 <title> 解析出來
-  if(!targetNew) return;
-  // 比對：拖曳方塊想要配對的「新地名」
-  const want = drag.dataset.newName;
-  if(want === targetNew){
-    // 成功：區塊變色、播放音檔、合併顯示新舊名
-    this.style.fill = 'var(--ok)';
-    const oldName = this.dataset.oldName || '';
-    // 將 <title> 改成「新（舊）」讓 hover 一致
-    const t = this.querySelector('title');
-    if(t) t.textContent = `${targetNew}（${oldName}）`;
-
-    // 播放音檔（依 NEW_OLD 的順序 01..11 命名）
-    const idx = indexFromNew(want); // 1..11
-    if(idx){
-      playSeq(`map_assets/${pad2(idx)}${want}_new.mp3`,
-              `map_assets/${pad2(idx)}${oldName}_old.mp3`);
-    }
-
+document.getElementById("homeBtn").onclick=()=>alert("暫未開放");
+const tray=document.getElementById("tray");
+list.sort(()=>Math.random()-0.5).forEach(([id,n,o])=>{
+ let d=document.createElement("div");
+ d.className="dragItem";
+ d.textContent=o;
+ d.draggable=true;
+ d.dataset.id=id;
+ tray.appendChild(d);
+});
+const paths=document.querySelectorAll("svg path");
+let done=0;
+paths.forEach(p=>{
+ p.addEventListener("dragover",e=>e.preventDefault());
+ p.addEventListener("drop",e=>{
+  const drag=document.querySelector(".dragItem.dragging");
+  if(drag&&drag.dataset.id===p.id){
+    p.style.fill="#cfe8c8";
+    const t=p.querySelector("title");
+    const pair=list.find(x=>x[0]===p.id);
+    if(t&&pair)t.textContent=`${pair[1]}｜${pair[2]}`;
     drag.remove();
-    doneCount++;
-    if(doneCount===11) finishAll();
+    done++;
+    if(done===list.length){document.getElementById("popup").style.display="block";
+      setTimeout(()=>document.getElementById("popup").style.display="none",2500);}
   }
-}
-
-function indexFromNew(newName){
-  const i = NEW_OLD.findIndex(row=>row[0]===newName);
-  return i>=0 ? i+1 : 0;
-}
-function pad2(n){ return (n<10?'0':'')+n; }
-
-function playSeq(a,b){
-  const A = new Audio(a); A.play().catch(()=>{});
-  A.addEventListener('ended', ()=>{
-    setTimeout(()=>{ const B = new Audio(b); B.play().catch(()=>{}); }, 100);
-  });
-}
-
-function finishAll(){
-  const v = document.getElementById('seVictory');
-  const f = document.getElementById('seFinish');
-  const d = document.getElementById('done');
-  v.currentTime=0; v.play().catch(()=>{});
-  setTimeout(()=>{
-    f.currentTime=0; f.play().catch(()=>{});
-    d.style.display='block';
-    setTimeout(()=>d.style.display='none', 2600);
-  }, 600);
-}
+ });
+});
+document.querySelectorAll(".dragItem").forEach(d=>{
+ d.addEventListener("dragstart",()=>d.classList.add("dragging"));
+ d.addEventListener("dragend",()=>d.classList.remove("dragging"));
+});
 </script>
 </body>
 </html>
