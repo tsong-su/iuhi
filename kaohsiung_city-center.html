@@ -1,188 +1,249 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>高雄市－市中心區新舊地名配對遊戲</title>
 <style>
-  body {
-    font-family: "Noto Sans TC", sans-serif;
-    margin: 0;
-    background-color: #fdf8f2;
-    overflow: hidden;
-    text-align: center;
+  :root{
+    --bg:#fdf6ef;      /* 柔米色 */
+    --ink:#3b2f2a;
+    --accent:#e7d2b4;  /* 說明/按鈕底色 */
+    --pill:#f4c7c7;    /* 舊地名框 */
+    --pill-b:#c76565;
+    --ok:#cfe8c8;      /* 配對成功區塊色 */
   }
-  header {
-    font-weight: bold;
-    padding: 10px 5px 0;
-    font-size: 1.2em;
-    color: #444;
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Noto Sans TC", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-tap-highlight-color: transparent;
   }
-  .desc {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95em;
-    color: #555;
-    margin-bottom: 5px;
+  header{
+    font-weight:800;
+    font-size:clamp(18px, 4.6vw, 28px);
+    text-align:center;
+    padding:10px 14px 6px;
   }
-  button#homeBtn {
-    background-color: #e0cfa9;
-    border: none;
-    border-radius: 10px;
-    padding: 4px 10px;
-    cursor: pointer;
-    font-size: 0.9em;
+  .bar{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:4px 10px 6px;
+    font-size:clamp(13px, 3.7vw, 16px);
+    color:#5b524d;
   }
-  button#homeBtn:hover {
-    background-color: #edd9b6;
+  .bar .home{
+    padding:6px 10px; border-radius:12px; border:0; cursor:pointer;
+    background:#e9e0cf;
+    box-shadow:0 1px 0 rgba(0,0,0,.06) inset;
   }
-  #mapContainer {
-    position: relative;
-    width: 100%;
-    height: 65vh;
-    overflow: hidden;
+  .wrap{
+    display:flex; flex-direction:column; gap:8px;
+    height:calc(100dvh - 110px); /* 讓手機直式盡量滿版 */
+    padding:0 10px 10px;
   }
-  #mapContainer svg {
-    width: 100%;
-    height: 100%;
+  #mapBox{
+    position:relative;
+    flex:1 1 auto;
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04) inset;
+    overflow:hidden;
   }
-  #tray {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px;
+  #mapBox svg{ width:100%; height:100%; display:block; }
+  /* 小提示泡泡（hover） */
+  #tip{
+    position:fixed; z-index:50; pointer-events:none; display:none;
+    background:#fff; border:1px solid #ddd; border-radius:8px;
+    padding:6px 8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.12);
   }
-  .dragItem {
-    background: #f2c8c8;
-    border: 2px solid #c67;
-    border-radius: 10px;
-    padding: 6px 10px;
-    font-size: 0.9em;
-    cursor: grab;
-    user-select: none;
+  /* 拖曳托盤 */
+  #tray{
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
   }
-  .dragItem.dragging {
-    opacity: 0.6;
+  .pill{
+    background:var(--pill); border:2px solid var(--pill-b);
+    padding:8px 12px; border-radius:12px; font-weight:700; cursor:grab;
+    user-select:none; font-size:clamp(14px, 3.9vw, 17px);
+    box-shadow:0 1px 0 rgba(0,0,0,.05) inset;
   }
-  #popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.9);
-    padding: 15px 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    font-size: 1.3em;
-    color: #4a7c59;
-    display: none;
-    animation: popUp 1s ease;
+  .dragging{ opacity:.6 }
+  /* 完成彈窗 */
+  #done{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%) scale(.7);
+    background:#ffffffea; border:1px solid #ddd; border-radius:16px;
+    padding:16px 22px; font-size:20px; font-weight:800; color:#2e7d32;
+    backdrop-filter:saturate(140%) blur(2px);
+    display:none; z-index:100;
+    animation:pop .4s ease forwards;
   }
-  @keyframes popUp {
-    0% { transform: scale(0.5) translate(-50%, -50%); opacity: 0; }
-    100% { transform: scale(1) translate(-50%, -50%); opacity: 1; }
+  @keyframes pop{
+    to{ transform:translate(-50%,-50%) scale(1) }
+  }
+  /* 手機直式優先 */
+  @media (min-width:768px){
+    .wrap{ height:calc(100dvh - 120px) }
   }
 </style>
 </head>
 <body>
   <header>高雄市－市中心區新舊地名配對遊戲</header>
-  <div class="desc">
-    📜請將舊地名拖曳至相對應新地名區域　
-    <button id="homeBtn">🏠轉去遊戲頭頁</button>
+  <div class="bar">
+    📜請將舊地名拖曳至相對應新地名區域
+    <button class="home" id="homeBtn">🏠 轉去遊戲頭頁</button>
   </div>
 
-  <div id="mapContainer"></div>
-  <div id="tray"></div>
-  <div id="popup">有夠 gâu 的！讚啦！</div>
+  <div class="wrap">
+    <div id="mapBox"></div>
+    <div id="tray" aria-label="舊地名拖曳托盤"></div>
+  </div>
 
-  <audio id="victory" src="map_assets/victory.mp3"></audio>
-  <audio id="finish" src="map_assets/finish1.mp3"></audio>
+  <div id="tip"></div>
+  <div id="done">有夠 gâu 的！讚啦！</div>
+
+  <!-- 音效 -->
+  <audio id="seVictory" src="map_assets/victory.mp3"></audio>
+  <audio id="seFinish"  src="map_assets/finish1.mp3"></audio>
 
 <script>
-const cityList = [
-  {id:"Nanzi", old:"楠仔坑", roman:"Lâm-á-khenn"},
-  {id:"Zuoying", old:"埤仔頭", roman:"Pi-á-thâu"},
-  {id:"Gushan", old:"打鼓山", roman:"Tánn-kóo-san"},
-  {id:"Sanmin", old:"三塊厝", roman:"Sann-tè-tshù"},
-  {id:"Yancheng", old:"鹽埕埔", roman:"Iâm-tiânn-poo"},
-  {id:"Qianjin", old:"前衿", roman:"Tsiân-khim"},
-  {id:"Xinxing", old:"逮港埔", roman:"Tāi-káng-poo"},
-  {id:"Lingya", old:"笭仔寮", roman:"Lîng-á-liâu"},
-  {id:"Qijin", old:"旗後", roman:"Kî-āu"},
-  {id:"Qianzhen", old:"前鎮", roman:"Tsiân-tìn"},
-  {id:"Xiaogang", old:"港仔墘", roman:"Káng-á-kînn"}
+const tip = document.getElementById('tip');
+document.getElementById('homeBtn').addEventListener('click', ()=>alert('暫未開放'));
+
+const MAP_PATH = 'map_assets/svg1.txt'; // 可用 .txt 或 .svg
+const NEW_OLD = [
+  // 依序：新地名, 舊地名, 羅馬
+  ["楠梓","楠仔坑","Lâm-á-khenn"],
+  ["左營","埤仔頭","Pi-á-thâu"],
+  ["鼓山","打鼓山","Tánn-kóo-san"],
+  ["三民","三塊厝","Sann-tè-tshù"],
+  ["鹽埕","鹽埕埔","Iâm-tiânn-poo"],
+  ["前金","前衿","Tsiân-khim"],
+  ["新興","逮港埔","Tāi-káng-poo"],
+  ["苓雅","笭仔寮","Lîng-á-liâu"],
+  ["旗津","旗後","Kî-āu"],
+  ["前鎮","前鎮","Tsiân-tìn"],
+  ["小港","港仔墘","Káng-á-kînn"],
 ];
 
-let completed = 0;
+let doneCount = 0;
 
-// 顯示提示框
-document.getElementById("homeBtn").addEventListener("click", () => {
-  alert("首頁尚未開放");
-});
+(async function boot(){
+  const svgText = await fetch(MAP_PATH).then(r=>r.text());
+  // 去掉 xml/doctype 才能安全 innerHTML
+  const cleaned = svgText
+    .replace(/<\?xml[\s\S]*?\?>/i,'')
+    .replace(/<!DOCTYPE[\s\S]*?>/i,'');
+  const box = document.getElementById('mapBox');
+  box.innerHTML = cleaned;
 
-// 載入 SVG 地圖
-fetch("map_assets/svg1.txt")
-  .then(r => r.text())
-  .then(svgData => {
-    document.getElementById("mapContainer").innerHTML = svgData;
-    enableDragGame();
-  });
+  /** 調整 SVG 尺寸屬性，確保滿版顯示 **/
+  const svg = box.querySelector('svg');
+  if(!svg){
+    console.error('未找到 <svg>，請確認 map_assets/svg1.txt 內容。');
+    box.innerHTML = '<div style="padding:20px;color:#a33">讀取失敗：svg1.txt 內容可能缺少 &lt;svg&gt; ...</div>';
+    return;
+  }
+  svg.removeAttribute('width');
+  svg.removeAttribute('height');
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.style.width = '100%';
+  svg.style.height = '100%';
 
-function enableDragGame(){
-  const tray = document.getElementById("tray");
-  cityList.forEach(city=>{
-    const div = document.createElement("div");
-    div.className = "dragItem";
-    div.textContent = `${city.old} ${city.roman}`;
-    div.draggable = true;
-    div.dataset.target = city.id;
-    tray.appendChild(div);
-  });
-
-  const draggables = document.querySelectorAll(".dragItem");
-  draggables.forEach(item=>{
-    item.addEventListener("dragstart", ()=>item.classList.add("dragging"));
-    item.addEventListener("dragend", ()=>item.classList.remove("dragging"));
-  });
-
-  const paths = document.querySelectorAll("svg path");
-  paths.forEach(path=>{
-    path.addEventListener("dragover", e=>e.preventDefault());
-    path.addEventListener("drop", e=>{
-      const dragged = document.querySelector(".dragItem.dragging");
-      if(!dragged) return;
-      if(path.id === dragged.dataset.target){
-        path.style.fill = "#cce8c2";
-        dragged.remove();
-        completed++;
-        new Audio(`map_assets/${getIndexById(path.id)}_${path.id}_new.mp3`).play();
-        setTimeout(()=>{
-          new Audio(`map_assets/${getIndexById(path.id)}_${path.id}_old.mp3`).play();
-        },500);
-        if(completed === cityList.length) endGame();
-      }
+  /** 蒐集所有 path，讀取 <title>新｜舊>；掛上 hover 提示與 drop 區 **/
+  const districts = [];
+  svg.querySelectorAll('path').forEach((p)=>{
+    const t = p.querySelector('title');
+    if(!t) return;
+    const raw = t.textContent.trim();
+    // 允許「新｜舊」或「新地名｜舊地名」任一形式
+    const [newName, oldName] = raw.split('｜').map(s=>s?.trim());
+    if(!newName) return;
+    p.dataset.newName = newName;
+    p.dataset.oldName = oldName || '';
+    // hover 提示
+    p.addEventListener('pointerenter', (e)=>{
+      tip.style.display = 'block';
+      tip.textContent = oldName ? `${newName}｜${oldName}` : newName;
     });
+    p.addEventListener('pointermove', (e)=>{
+      tip.style.left = (e.clientX+10)+'px';
+      tip.style.top  = (e.clientY+10)+'px';
+    });
+    p.addEventListener('pointerleave', ()=> tip.style.display='none');
+    // drop support
+    p.addEventListener('dragover', e=>e.preventDefault());
+    p.addEventListener('drop', onDropToPath);
+    districts.push(p);
+  });
+
+  /** 產生舊地名拖曳方塊（隨機順序） **/
+  const tray = document.getElementById('tray');
+  const shuffled = NEW_OLD.slice().sort(()=>Math.random()-0.5);
+  shuffled.forEach(([newName, oldName, roman], i)=>{
+    const el = document.createElement('div');
+    el.className = 'pill';
+    el.textContent = `${oldName} ${roman}`;
+    el.setAttribute('draggable','true');
+    el.dataset.newName = newName;
+    // DnD
+    el.addEventListener('dragstart', ()=> el.classList.add('dragging'));
+    el.addEventListener('dragend',   ()=> el.classList.remove('dragging'));
+    tray.appendChild(el);
+  });
+})();
+
+function onDropToPath(ev){
+  const drag = document.querySelector('.pill.dragging');
+  if(!drag) return;
+  const targetNew = this.dataset.newName;  // 由 <title> 解析出來
+  if(!targetNew) return;
+  // 比對：拖曳方塊想要配對的「新地名」
+  const want = drag.dataset.newName;
+  if(want === targetNew){
+    // 成功：區塊變色、播放音檔、合併顯示新舊名
+    this.style.fill = 'var(--ok)';
+    const oldName = this.dataset.oldName || '';
+    // 將 <title> 改成「新（舊）」讓 hover 一致
+    const t = this.querySelector('title');
+    if(t) t.textContent = `${targetNew}（${oldName}）`;
+
+    // 播放音檔（依 NEW_OLD 的順序 01..11 命名）
+    const idx = indexFromNew(want); // 1..11
+    if(idx){
+      playSeq(`map_assets/${pad2(idx)}${want}_new.mp3`,
+              `map_assets/${pad2(idx)}${oldName}_old.mp3`);
+    }
+
+    drag.remove();
+    doneCount++;
+    if(doneCount===11) finishAll();
+  }
+}
+
+function indexFromNew(newName){
+  const i = NEW_OLD.findIndex(row=>row[0]===newName);
+  return i>=0 ? i+1 : 0;
+}
+function pad2(n){ return (n<10?'0':'')+n; }
+
+function playSeq(a,b){
+  const A = new Audio(a); A.play().catch(()=>{});
+  A.addEventListener('ended', ()=>{
+    setTimeout(()=>{ const B = new Audio(b); B.play().catch(()=>{}); }, 100);
   });
 }
 
-function getIndexById(id){
-  const index = cityList.findIndex(c=>c.id===id);
-  return (index+1).toString().padStart(2,"0");
-}
-
-function endGame(){
-  const victory = document.getElementById("victory");
-  const finish = document.getElementById("finish");
-  const popup = document.getElementById("popup");
-  victory.play();
+function finishAll(){
+  const v = document.getElementById('seVictory');
+  const f = document.getElementById('seFinish');
+  const d = document.getElementById('done');
+  v.currentTime=0; v.play().catch(()=>{});
   setTimeout(()=>{
-    finish.play();
-    popup.style.display="block";
-    setTimeout(()=>popup.style.display="none",3000);
-  },600);
+    f.currentTime=0; f.play().catch(()=>{});
+    d.style.display='block';
+    setTimeout(()=>d.style.display='none', 2600);
+  }, 600);
 }
 </script>
 </body>
