@@ -1,64 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 800 900"
+     viewBox="0 0 1000 1200"
      width="100%" height="100%"
      preserveAspectRatio="xMidYMid meet"
      style="background:#F8F4E3">
 
-  <!-- 市中心區 11 區（柔米色系） -->
-  <g id="nanzi" fill="#B4D6A0" stroke="#666" stroke-width="0.5">
-    <title>楠梓｜楠仔坑</title>
-    <path d="M180,80 L240,70 L260,120 L230,160 L180,140 Z" />
-  </g>
+  <!-- 說明：保守方案 B ─ 真實方位/相對位置正確、簡化邊界的示意輪廓。
+       北在上、南在下；左營/楠梓於北側，鼓山/鹽埕/前金/新興/苓雅在中段，
+       旗津為西側狹長半島，前鎮/小港於南段。-->
 
-  <g id="zuoying" fill="#A5C8E1" stroke="#666" stroke-width="0.5">
+  <defs>
+    <style><![CDATA[
+      .blk{stroke:#666; stroke-width:1.2; vector-effect:non-scaling-stroke;}
+      .c1{fill:#B7D9F3;}  /* 左營：淡藍 */
+      .c2{fill:#CBE7B6;}  /* 楠梓：淡綠 */
+      .c3{fill:#F9D0C7;}  /* 鼓山：淡粉 */
+      .c4{fill:#E9D8A6;}  /* 三民：淡黃 */
+      .c5{fill:#DCC6F2;}  /* 鹽埕：淡紫 */
+      .c6{fill:#BFE6D4;}  /* 前金：青綠 */
+      .c7{fill:#FFD7B8;}  /* 新興：淡橘 */
+      .c8{fill:#FFB3AE;}  /* 苓雅：粉橘 */
+      .c9{fill:#9EDFD0;}  /* 旗津：綠松 */
+      .c10{fill:#F3CA63;} /* 前鎮：金黃 */
+      .c11{fill:#C8B7E6;} /* 小港：淡薰衣草 */
+      .h:hover{filter:brightness(1.12);}
+    ]]></style>
+  </defs>
+
+  <!-- 北部：楠梓／左營（上端） -->
+  <g id="Zuoying" class="blk c1 h">
     <title>左營｜埤仔頭</title>
-    <path d="M240,70 L310,80 L320,130 L260,120 Z" />
+    <path d="M 360 150 L 520 150 L 520 250 L 480 280 L 380 260 L 360 210 Z"/>
   </g>
 
-  <g id="gushan" fill="#F6C1B8" stroke="#666" stroke-width="0.5">
+  <g id="Nanzi" class="blk c2 h">
+    <title>楠梓｜楠仔坑</title>
+    <path d="M 220 160 L 350 150 L 360 210 L 330 260 L 240 270 L 200 220 Z"/>
+  </g>
+
+  <!-- 西北沿海：鼓山 -->
+  <g id="Gushan" class="blk c3 h">
     <title>鼓山｜打鼓山</title>
-    <path d="M310,80 L360,90 L370,140 L320,130 Z" />
+    <path d="M 300 350 L 430 330 L 470 370 L 450 430 L 340 430 L 300 390 Z"/>
   </g>
 
-  <g id="sanmin" fill="#F2E1AA" stroke="#666" stroke-width="0.5">
+  <!-- 中央內陸：三民 -->
+  <g id="Sanmin" class="blk c4 h">
     <title>三民｜三塊厝</title>
-    <path d="M260,120 L320,130 L340,190 L280,180 Z" />
+    <path d="M 440 310 L 560 310 L 610 360 L 600 420 L 520 460 L 440 420 Z"/>
   </g>
 
-  <g id="yancheng" fill="#D8C0F1" stroke="#666" stroke-width="0.5">
+  <!-- 港區西側：鹽埕 -->
+  <g id="Yancheng" class="blk c5 h">
     <title>鹽埕｜鹽埕埔</title>
-    <path d="M360,90 L400,100 L410,150 L370,140 Z" />
+    <path d="M 430 450 L 520 460 L 540 520 L 480 560 L 420 520 L 410 490 Z"/>
   </g>
 
-  <g id="qianjin" fill="#A8E6CF" stroke="#666" stroke-width="0.5">
+  <!-- 老城核心：前金 -->
+  <g id="Qianjin" class="blk c6 h">
     <title>前金｜前衿</title>
-    <path d="M400,100 L450,110 L460,160 L410,150 Z" />
+    <path d="M 520 460 L 630 460 L 660 510 L 640 560 L 560 560 L 520 520 Z"/>
   </g>
 
-  <g id="xinxing" fill="#FFD3B6" stroke="#666" stroke-width="0.5">
+  <!-- 都市核心：新興 -->
+  <g id="Xinxing" class="blk c7 h">
     <title>新興｜逮港埔</title>
-    <path d="M340,190 L400,180 L410,230 L350,240 Z" />
+    <path d="M 560 560 L 640 560 L 660 620 L 620 660 L 540 650 L 520 600 Z"/>
   </g>
 
-  <g id="lingya" fill="#FFAAA5" stroke="#666" stroke-width="0.5">
+  <!-- 都市南緣：苓雅 -->
+  <g id="Lingya" class="blk c8 h">
     <title>苓雅｜笭仔寮</title>
-    <path d="M400,180 L460,170 L470,220 L410,230 Z" />
+    <path d="M 460 610 L 540 600 L 560 650 L 520 710 L 460 700 L 430 650 Z"/>
   </g>
 
-  <g id="qijin" fill="#84DCC6" stroke="#666" stroke-width="0.5">
+  <!-- 西岸狹長半島：旗津 -->
+  <g id="Qijin" class="blk c9 h">
     <title>旗津｜旗後</title>
-    <path d="M180,140 L230,160 L210,200 L170,180 Z" />
+    <path d="M 220 520 L 260 520 L 270 900 L 230 900 Z"/>
   </g>
 
-  <g id="qianzhen" fill="#E8C547" stroke="#666" stroke-width="0.5">
+  <!-- 南側工業港區：前鎮 -->
+  <g id="Qianzhen" class="blk c10 h">
     <title>前鎮｜前鎮</title>
-    <path d="M410,230 L470,220 L480,270 L420,280 Z" />
+    <path d="M 520 710 L 600 700 L 660 750 L 650 820 L 560 840 L 500 780 Z"/>
   </g>
 
-  <g id="xiaogang" fill="#C3AED6" stroke="#666" stroke-width="0.5">
+  <!-- 最南側：小港 -->
+  <g id="Xiaogang" class="blk c11 h">
     <title>小港｜港仔墘</title>
-    <path d="M420,280 L480,270 L490,320 L430,330 Z" />
+    <path d="M 520 840 L 660 820 L 720 880 L 710 980 L 560 980 L 500 900 Z"/>
   </g>
 
 </svg>
