@@ -1,1 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>台語學習打地鼠：真平第5冊第1課</title>
+    <style>
+        body { 
+            font-family: '微軟正黑體', 'Arial', sans-serif; 
+            text-align: center; 
+            background-color: #f0f8ff; /* 淺藍色背景 */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 { 
+            color: #2c3e50; 
+            margin-bottom: 20px;
+        }
+        .instructions {
+            background-color: #fffacd; /* 淺黃色 */
+            border: 2px solid #daa520;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 600px;
+            text-align: left;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .instructions h2 {
+            color: #8b4513; /* 深棕色 */
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        .instructions ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
 
+        .game-area {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .info { 
+            font-size: 28px; 
+            margin-bottom: 20px; 
+            color: #34495e;
+            font-weight: bold;
+        }
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            width: 330px; /* 3 * 100px + 2 * 15px (margin) */
+            height: 330px;
+            margin: 0 auto;
+            border: 6px solid #8b4513; /* 泥土邊框 */
+            background-color: #a0522d; /* 土地顏色 */
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        .hole {
+            width: 100px;
+            height: 100px;
+            margin: 5px; /* 洞間距 */
+            background-color: #694a2e; /* 洞的深色 */
+            border-radius: 50%; /* 圓形 */
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid #5a3c26; /* 洞口邊緣 */
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+        }
+        
+        .mole {
+            width: 90%;
+            height: 90%;
+            background-color: #e0b088; /* 普通地鼠顏色 */
+            border-radius: 45% 45% 0 0;
+            position: absolute;
+            bottom: -100%; /* 初始位置在洞底下 */
+            left: 5%;
+            transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈出動畫 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* 文字靠下 */
+            font-weight: bold;
+            color: #4a2e1f;
+            font-size: 1.5em; /* 地鼠文字大小 */
+            padding-bottom: 5px; /* 文字離底部一些空間 */
+            border: 2px solid #c2956c;
+            box-sizing: border-box;
+        }
+        /* 正確地鼠的樣式 */
+        .mole.correct {
+            background-color: #90ee90; /* 淺綠色 */
+            color: #1a5e1a;
+            border-color: #6bbd6b;
+        }
+        /* 錯誤地鼠的樣式 */
+        .mole.wrong {
+            background-color: #ffb6c1; /* 淺紅色 */
+            color: #8b0000;
+            border-color: #d17f8a;
+        }
+
+        /* 當地鼠冒出時的樣式 */
+        .hole.up .mole {
+            bottom: 0;
+        }
+        
+        .start-button { 
+            padding: 15px 30px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .start-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .start-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
+        }
+        
+        .game-over-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 3em;
+            display: none; /* 預設隱藏 */
+            z-index: 1000;
+        }
+        .game-over-screen h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        .game-over-screen button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>台語學習打地鼠</h1>
+    <div class="instructions">
+        <h2>遊戲說明：</h2>
+        <ul>
+            <li>**目標**：在 60 秒內，盡可能多地敲擊「**正確的台語漢字**」。</li>
+            <li>**正確台語地鼠** (綠色)：敲擊會得分，並播放該詞彙的台語發音。</li>
+            <li>**錯誤詞彙地鼠** (紅色)：敲擊會扣分。</li>
+            <li>**分數**：敲對 +10 分，敲錯 -5 分。</li>
+            <li>**難度**：地鼠出現頻率和速度會隨著遊戲進行而加快。</li>
+        </ul>
+    </div>
+
+    <div class="game-area">
+        <div class="info">分數: <span id="score">0</span> | 時間: <span id="time">60</span></div>
+        <button class="start-button" onclick="startGame()">開始遊戲!</button>
+        <div class="grid" id="grid">
+            </div>
+    </div>
+
+    <div class="game-over-screen" id="gameOverScreen">
+        <h2>遊戲結束!</h2>
+        <p>你的最終分數是: <span id="finalScore">0</span></p>
+        <button class="start-button" onclick="restartGame()">再玩一次!</button>
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const startButton = document.querySelector('.start-button');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreDisplay = document.getElementById('finalScore');
+
+        let score = 0;
+        let timeLeft = 60; // 遊戲時間增加到 60 秒
+        let timerId = null; 
+        let moleTimerId = null; // 地鼠冒出計時器
+        let lastHole = null;
+        let isPlaying = false;
+        let currentPeepTimeout = null; // 用來清除下一個地鼠冒出的計時器
+        let moleAppearanceInterval = 1200; // 初始地鼠冒出頻率 (毫秒)
+        let moleStayDuration = 1000;      // 初始地鼠停留時間 (毫秒)
+
+        // --- 音效檔案路徑 ---
+        // 請確保這些路徑與您 GitHub 倉庫中的檔案位置完全一致
+        const audioBasePath = './whackamole_assets/';
+        const bgm = new Audio(audioBasePath + 'background music.mp3');
+        bgm.loop = true; // 背景音樂循環播放
+        bgm.volume = 0.3; // 調整背景音樂音量
+
+        const dingSound = new Audio(audioBasePath + 'ding.mp3');
+        dingSound.volume = 0.8;
+
+        const missSound = new Audio(audioBasePath + 'miss.mp3');
+        missSound.volume = 0.6;
+
+        const wrongSound = new Audio(audioBasePath + 'wrong.mp3');
+        wrongSound.volume = 0.8;
+
+        // --- 題庫資料 ---
+        const wordDatabase = [
+            { correct: "食晝", wrong: "吃晝", audio: audioBasePath + "01.tsia̍h-tàu.mp3" },
+            { correct: "食啥物", wrong: "吃什麼", audio: audioBasePath + "02.tsia̍h-siánn-mih.mp3" },
+            { correct: "今仔日", wrong: "今天", audio: audioBasePath + "03.kim-á-ji̍t.mp3" }, 
+            { correct: "炕肉", wrong: "爌肉", audio: audioBasePath + "04.khòng-bah.mp3" },
+            { correct: "早頓", wrong: "早餐", audio: audioBasePath + "05.chá-tǹg.mp3" },
+            { correct: "中晝頓", wrong: "中餐", audio: audioBasePath + "06.tiong-tàu-tǹg.mp3" },
+            { correct: "暗頓", wrong: "晚餐", audio: audioBasePath + "07.àm-tǹg.mp3" },
+            { correct: "菜脯卵", wrong: "菜脯蛋", audio: audioBasePath + "08.chhài-póo-nn̄g.mp3" },
+            { correct: "足好食", wrong: "很好吃", audio: audioBasePath + "09.chiok-hó-chia̍h.mp3" },
+            { correct: "天烏烏", wrong: "天黑黑", audio: audioBasePath + "10.thiⁿ-oo-oo.mp3" },
+            { correct: "麭", wrong: "麵包", audio: audioBasePath + "11.phang.mp3" },
+            { correct: "滷卵", wrong: "滷蛋", audio: audioBasePath + "12.lóo-nn̄g.mp3" },
+            { correct: "排骨湯", wrong: "排古湯", audio: audioBasePath + "13.pâi-kut-thng.mp3" },
+            { correct: "菜頭", wrong: "蔡頭", audio: audioBasePath + "14.chhài-thâu.mp3" },
+            { correct: "青菜", wrong: "清菜", audio: audioBasePath + "15.chheng-chhài.mp3" },
+            { correct: "做伙佮", wrong: "作伙佮", audio: audioBasePath + "16.chòe-hóe-kap.mp3" },
+            { correct: "牛奶", wrong: "牛艿", audio: audioBasePath + "17.gû-ling.mp3" },
+            { correct: "雞肉", wrong: "肌肉", audio: audioBasePath + "18.ke-bah.mp3" },
+            { correct: "糜", wrong: "稀飯", audio: audioBasePath + "19.môe.mp3" }, 
+            { correct: "紅豆湯", wrong: "紅荳湯", audio: audioBasePath + "20.âng-tāu-thng.mp3" }
+        ];
+
+        // --- 遊戲初始化：產生9個洞 ---
+        const holes = [];
+        for (let i = 0; i < 9; i++) {
+            let hole = document.createElement('div');
+            hole.classList.add('hole');
+            let mole = document.createElement('div');
+            mole.classList.add('mole');
+            mole.innerText = ""; // 初始無文字
+            
+            hole.appendChild(mole);
+            grid.appendChild(hole);
+            holes.push(hole);
+
+            // 加入點擊事件
+            hole.addEventListener('click', function() {
+                if(!isPlaying || !this.classList.contains('up')) return; // 只有在地鼠冒出時才能點擊
+
+                const clickedMole = this.querySelector('.mole');
+                // 防止重複點擊同一隻地鼠
+                if (clickedMole.dataset.hit === 'true') return; 
+                clickedMole.dataset.hit = 'true'; // 標記為已點擊
+
+                if(clickedMole.dataset.type === "correct") {
+                    score += 10;
+                    dingSound.play();
+                    // 播放台語發音
+                    const wordAudio = new Audio(clickedMole.dataset.audioSrc);
+                    wordAudio.play();
+                    clickedMole.innerText = clickedMole.dataset.originalText + " ✅"; // 顯示打對標誌
+                    clickedMole.style.backgroundColor = '#6be66b'; // 打對後顏色
+                } else { // 點到錯誤地鼠
+                    score = Math.max(0, score - 5); // 扣分，最低為0
+                    wrongSound.play();
+                    clickedMole.innerText = clickedMole.dataset.originalText + " ❌"; // 顯示打錯標誌
+                    clickedMole.style.backgroundColor = '#ff7f7f'; // 打錯後顏色
+                }
+                scoreDisplay.innerText = score;
+                this.classList.remove('up'); // 地鼠立刻縮回
+                clearTimeout(clickedMole.dataset.hideTimeoutId); // 清除其自動縮回計時器
+            });
+        }
+
+        // --- 隨機選擇一個洞 (避免連續同洞) ---
+        function randomHole() {
+            const idx = Math.floor(Math.random() * holes.length);
+            const hole = holes[idx];
+            if (hole === lastHole || hole.classList.contains('up')) { // 避免連續同洞或洞裡已經有地鼠
+                return randomHole();
+            }
+            lastHole = hole;
+            return hole;
+        }
+
+        // --- 地鼠冒出邏輯 ---
+        function peep() {
+            if (!isPlaying) return;
+
+            const hole = randomHole();
+            const mole = hole.querySelector('.mole');
+
+            // 重置地鼠狀態
+            mole.innerText = "";
+            mole.style.backgroundColor = ''; // 清除自定義顏色
+            mole.classList.remove('correct', 'wrong');
+            mole.dataset.hit = 'false'; // 重置點擊狀態
+
+            // 隨機選擇一組題目
+            const randomIndex = Math.floor(Math.random() * wordDatabase.length);
+            const wordPair = wordDatabase[randomIndex];
+            
+            // 隨機決定這隻地鼠要顯示正確還是錯誤的詞 (例如 70% 機率是正確的，30% 是錯誤的，可調整)
+            const showCorrect = Math.random() < 0.7; 
+            
+            if (showCorrect) {
+                mole.innerText = wordPair.correct;
+                mole.classList.add('correct');
+                mole.dataset.type = "correct";
+                mole.dataset.audioSrc = wordPair.audio;
+                mole.dataset.originalText = wordPair.correct;
+            } else {
+                mole.innerText = wordPair.wrong;
+                mole.classList.add('wrong');
+                mole.dataset.type = "wrong";
+                mole.dataset.originalText = wordPair.wrong;
+            }
+            
+            hole.classList.add('up');
+            
+            // 地鼠自動縮回的計時器
+            const hideTimeout = setTimeout(() => {
+                if (hole.classList.contains('up')) { // 如果還在地鼠還沒被敲中
+                    hole.classList.remove('up');
+                    if (mole.dataset.type === "correct" && mole.dataset.hit === 'false') {
+                        // 錯過了正確地鼠，播放錯過音效
+                        missSound.play(); 
+                        // 可選：錯過時播放語音提醒
+                        // const wordAudio = new Audio(mole.dataset.audioSrc);
+                        // wordAudio.play();
+                    }
+                }
+                // 設定下一個地鼠冒出的計時器
+                currentPeepTimeout = setTimeout(peep, moleAppearanceInterval); 
+            }, moleStayDuration);
+            mole.dataset.hideTimeoutId = hideTimeout; // 儲存計時器ID以便點擊時清除
+        }
+
+        // --- 遊戲開始 ---
+        function startGame() {
+            if(isPlaying) return;
+
+            score = 0;
+            timeLeft = 60;
+            moleAppearanceInterval = 1200; // 重置初始頻率
+            moleStayDuration = 1000;      // 重置初始停留時間
+            scoreDisplay.innerText = score;
+            timeDisplay.innerText = timeLeft;
+            isPlaying = true;
+            startButton.style.display = 'none'; // 隱藏開始按鈕
+            gameOverScreen.style.display = 'none'; // 隱藏遊戲結束畫面
+            bgm.play(); // 播放背景音樂
+
+            // 開始地鼠循環
+            clearTimeout(currentPeepTimeout); // 清除可能殘留的計時器
+            peep(); 
+            
+            // 開始倒數計時
+            timerId = setInterval(() => {
+                timeLeft--;
+                timeDisplay.innerText = timeLeft;
+                
+                // 難度逐漸增加：地鼠停留時間變短，出現頻率加快
+                if (timeLeft % 10 === 0 && timeLeft > 0) { // 每10秒增加難度
+                    moleStayDuration = Math.max(300, moleStayDuration - 100); // 最短0.3秒
+                    moleAppearanceInterval = Math.max(500, moleAppearanceInterval - 80); // 最快0.5秒
+                    console.log(`難度提升! 停留: ${moleStayDuration}ms, 間隔: ${moleAppearanceInterval}ms`);
+                }
+
+                if(timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // --- 遊戲結束 ---
+        function endGame() {
+            clearInterval(timerId);
+            clearTimeout(currentPeepTimeout);
+            isPlaying = false;
+            bgm.pause();
+            bgm.currentTime = 0; // 重置背景音樂
+
+            // 隱藏所有冒出的地鼠
+            holes.forEach(hole => hole.classList.remove('up'));
+
+            finalScoreDisplay.innerText = score;
+            gameOverScreen.style.display = 'flex'; // 顯示遊戲結束畫面
+            startButton.style.display = 'block'; // 再次顯示開始按鈕供重玩
+        }
+
+        // --- 重新開始遊戲 ---
+        function restartGame() {
+            // 清理所有計時器
+            clearInterval(timerId);
+            clearTimeout(currentPeepTimeout);
+            holes.forEach(hole => {
+                const mole = hole.querySelector('.mole');
+                clearTimeout(mole.dataset.hideTimeoutId); // 清除所有地鼠的自動縮回計時器
+                hole.classList.remove('up');
+            });
+            
+            // 重置遊戲狀態
+            score = 0;
+            timeLeft = 60;
+            moleAppearanceInterval = 1200;
+            moleStayDuration = 1000;
+            scoreDisplay.innerText = score;
+            timeDisplay.innerText = timeLeft;
+            isPlaying = false;
+            startButton.style.display = 'block';
+            gameOverScreen.style.display = 'none';
+            bgm.pause();
+            bgm.currentTime = 0; // 重置背景音樂
+
+            // 然後重新開始
+            startGame();
+        }
+
+        // 預載入音頻，避免第一次播放延遲
+        window.onload = () => {
+            bgm.load();
+            dingSound.load();
+            missSound.load();
+            wrongSound.load();
+            wordDatabase.forEach(item => {
+                new Audio(item.audio).load();
+            });
+        };
+
+    </script>
+
+</body>
+</html>
