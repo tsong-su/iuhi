@@ -152,10 +152,10 @@
 
             <!-- 操作功能紐 -->
             <div class="flex items-center gap-1.5">
-                <button id="show-answers" onclick="toggleAnswers()" class="px-2 py-0.5 text-[11px] font-bold rounded-full border border-stone-300 text-stone-600 hover:bg-stone-50 transition-all flex items-center gap-0.5">
+                <button id="show-answers" onclick="toggleAnswers()" class="px-2 py-0.5 text-[11px] font-bold rounded-full border border-stone-300 text-stone-600 hover:bg-stone-50 transition-all flex items-center gap-0.5" title="顯示參考答案">
                     <i class="fa-regular fa-eye"></i> 填答案
                 </button>
-                <button onclick="cheatComplete()" class="px-2 py-0.5 text-[11px] font-bold rounded-full border border-amber-300 text-amber-700 hover:bg-amber-50 transition-all flex items-center gap-0.5">
+                <button onclick="cheatComplete()" class="px-2 py-0.5 text-[11px] font-bold rounded-full border border-amber-300 text-amber-700 hover:bg-amber-50 transition-all flex items-center gap-0.5" title="老師一鍵過關演示">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> 歐印
                 </button>
                 <button onclick="resetGame()" class="px-2.5 py-0.5 bg-zodiac-red hover:bg-red-800 text-white font-bold text-[11px] rounded-full shadow transition-all flex items-center gap-0.5">
@@ -240,14 +240,13 @@
         </div>
     </div>
 
-    <!-- 💡 通關恭喜視窗 (已優化：增加「返回遊戲」以便隨意瀏覽延伸詞) 💡 -->
+    <!-- 💡 通關恭喜視窗 💡 -->
     <div id="victory-modal" class="fixed inset-0 bg-stone-900/60 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="bg-white rounded-2xl border-2 border-zodiac-gold max-w-xs w-full p-5 text-center shadow-2xl transform scale-95 transition-transform duration-300">
             <span class="text-3xl animate-bounce block">👑</span>
             <h2 class="font-serif font-black text-xl text-zodiac-red my-1">真厲害！全部配對成功！</h2>
             <p class="text-xs text-stone-500 mb-4">您是台語生肖小達人！</p>
             
-            <!-- 堆疊式大按鈕設計，最適合行動端操作 -->
             <div class="flex flex-col gap-2 mt-2">
                 <!-- 返回主介面 -->
                 <button onclick="closeVictory()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full shadow text-xs transition-colors flex items-center justify-center gap-1">
@@ -268,20 +267,176 @@
     <script>
         const GITHUB_BASE_URL = "https://raw.githubusercontent.com/tsong-su/iuhi/main/zodiac_assets/";
 
-        // 核心資料：維持您最完美精確的生肖與詞彙配置
+        // 核心資料：教育部延伸詞、聲音、網頁、詞頭與詞尾連結完全對接
         const ZODIAC_DATA = [
-            { id: 1, chinese: "鼠", lomaji: "tshí", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10356.mp3", extWord: "鳥鼠仔糖", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14306.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/14306/#", image: "01.鼠.png", emoji: "🐭", explanation: "「鳥鼠仔糖」(tshí-á-thn̂g) 指的就是「棒棒糖」。因為早期傳統手工糖果做成小老鼠的形狀（帶有細長線形尾巴），因而在台語中有了這個極其可愛的暱稱。" },
-            { id: 2, chinese: "牛", lomaji: "gû", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1218.mp3", extWord: "牛屎龜", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1251.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1251/", image: "02.牛.png", emoji: "🐮", explanation: "「牛屎龜」(gû-sái-ku) 就是昆蟲界中的「糞金龜」。因為牠們習慣在牧場周邊推滾糞球（尤其是牛糞），在早期臺灣農村極為常見。" },
-            { id: 3, chinese: "虎", lomaji: "hóo", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4482.mp3", extWord: "虎咬豬", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/HL/s9/293311.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/29331/", image: "03.虎.png", emoji: "🐯", explanation: "「虎咬豬」(hóo-kā-ti) 是臺灣小吃「刈包」的生動俗稱。白嫩的麵皮對摺展開像老虎的大嘴，裡頭咬著一塊肥美多汁的豬五花肉，極富生活趣味。" },
-            { id: 4, chinese: "兔", lomaji: "thòo", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3581.mp3", extWord: "掠兔仔", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7348.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/7348/", image: "04.兔.png", emoji: "🐰", explanation: "「掠兔仔」(lia̍h-thòo-á) 是「嘔吐」的台語俗稱。此詞來自人在嘔吐時肚子猛烈抽搐、彎腰的身體動作，與獵人用力按住蹦跳野兔時的情景非常相似而得名。" },
-            { id: 5, chinese: "龍", lomaji: "lîng", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12091.mp3", extWord: "扒龍船", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1817.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1817/", image: "05.龍.png", emoji: "🐲", explanation: "「扒龍船」(pê-lîng-tsûn) 代表「慢速或快速度划龍舟」。「扒」(pê) 在台語代表用槳划動、刨扒的意思，是端午佳節最具代表性的傳統民俗體育運動。" },
-            { id: 6, chinese: "蛇", lomaji: "tsuâ", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7818.mp3", extWord: "蛇瓜", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7824.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/7824/", image: "06.蛇.png", emoji: "🐍", explanation: "「蛇瓜」(tsuâ-kue) 是一種外觀十分奇特、彎曲盤繞形如長蛇的蛇瓜屬植物，表皮多具有不規則的白色與淺綠條紋，在農田裡生長時常讓人大吃一驚。" },
-            { id: 7, chinese: "馬", lomaji: "bé", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6798.mp3", extWord: "花條馬", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14111.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/14111/", image: "7.馬.png", emoji: "🐴", explanation: "「花條馬」(hue-tiâu-bé) 即是「斑馬」。在台語裡，身上有著黑白斑紋（花條）的非洲馬科動物，就叫作花條馬。" },
-            { id: 8, chinese: "羊", lomaji: "iûnn", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2588.mp3", extWord: "羊仔目", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2634.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/2634/", image: "08.羊.png", emoji: "🐑", explanation: "「羊仔目」(iûnn-á-ba̍k) 在部分地方是指「楊桃」水果。因為其側邊橫切面成漂亮的五角星形，像極了羊眼睛（羊瞳孔常呈現獨特的扁平橫向長條狀）而得名。" },
-            { id: 9, chinese: "猴", lomaji: "kâu", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8571.mp3", extWord: "皮猴戲", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1962.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1962/", image: "09.猴.png", emoji: "🐵", explanation: "「皮猴戲」(phuê-kâu-hì / phê-kâu-hì) 指「皮影戲」。早期皮影戲偶多利用牛皮或羊皮製成，人偶靈巧動作像活潑的小猴子，因而俗稱皮猴戲。" },
-            { id: 10, chinese: "雞", lomaji: "ke", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12657.mp3", extWord: "雞鵤仔車", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12685.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/12685/", image: "10.雞.png", emoji: "🐔", explanation: "「雞鵤仔車」(ke-kak-á-tshia) 指古老農村常見的「獨輪手推車」。前方僅有一單輪，推動時由於輪軸摩擦會發出支支高亢叫聲，且形態類似神氣的公雞（雞鵤仔）行走。" },
-            { id: 11, chinese: "狗", lomaji: "káu", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4329.mp3", extWord: "海狗", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6179.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/6179/", image: "11.狗.png", emoji: "🐶", explanation: "「海狗」(hái-káu) 即海洋哺乳動物海狗。台語亦直接將海中生活且頭部神態激似陸地上犬類的海底萌獸命名為海狗，發音非常好聽好記！" },
-            { id: 12, chinese: "豬", lomaji: "ti", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11384.mp3", extWord: "海豬", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6215.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/6215/", image: "12.豬.png", emoji: "🐷", explanation: "「海豬」(hái-ti) 就是我們熟悉的「海豚」。因為古代沿海居民看到海豚在海面上翻騰，體形圓潤，像極了海中奔跑 of 豬隻。" }
+            { 
+                id: 1, 
+                chinese: "鼠", 
+                lomaji: "tshí", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10356.mp3", 
+                extWord: "鳥鼠仔糖", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14306.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/14306/#", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BC%A0",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0%24",
+                image: "01.鼠.png", 
+                emoji: "🐭", 
+                explanation: "「鳥鼠仔糖」(tshí-á-thn̂g) 指的就是「棒棒糖」。因為早期傳統手工糖果做成小老鼠的形狀（帶有細長線形尾巴），因而在台語中有了這個極其可愛的暱稱。" 
+            },
+            { 
+                id: 2, 
+                chinese: "牛", 
+                lomaji: "gû", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1218.mp3", 
+                extWord: "牛屎龜", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1251.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/1251/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%89%9B",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B%24",
+                image: "02.牛.png", 
+                emoji: "🐮", 
+                explanation: "「牛屎龜」(gû-sái-ku) 就是昆蟲界中的「糞金龜」。因為牠們習慣在牧場周邊推滾糞球（尤其是牛糞），在早期臺灣農村極為常見。" 
+            },
+            { 
+                id: 3, 
+                chinese: "虎", 
+                lomaji: "hóo", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4482.mp3", 
+                extWord: "虎咬豬", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/HL/s9/293311.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/29331/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%99%8E",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E%24",
+                image: "03.虎.png", 
+                emoji: "🐯", 
+                explanation: "「虎咬豬」(hóo-kā-ti) 是臺灣小吃「刈包」的生動俗稱。白嫩的麵皮對摺展開像老虎的大嘴，裡頭咬著一塊肥美多汁的豬五花肉，極富生活趣味。" 
+            },
+            { 
+                id: 4, 
+                chinese: "兔", 
+                lomaji: "thòo", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3581.mp3", 
+                extWord: "掠兔仔", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7348.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/7348/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E5%85%94",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94%24",
+                image: "04.兔.png", 
+                emoji: "🐰", 
+                explanation: "「掠兔仔」(lia̍h-thòo-á) 是「嘔吐」的台語俗稱。此詞來自人在嘔吐時肚子猛烈抽搐、彎腰的身體動作，與獵人用力按住蹦跳野兔時的情景非常相似而得名。" 
+            },
+            { 
+                id: 5, 
+                chinese: "龍", 
+                lomaji: "lîng", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12091.mp3", 
+                extWord: "扒龍船", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1817.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/1817/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BE%8D",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D%24",
+                image: "05.龍.png", 
+                emoji: "🐲", 
+                explanation: "「扒龍船」(pê-lîng-tsûn) 代表「慢速或快速度划龍舟」。「扒」(pê) 在台語代表用槳划動、刨扒的意思，是端午佳節最具代表性的傳統民俗體育運動。" 
+            },
+            { 
+                id: 6, 
+                chinese: "蛇", 
+                lomaji: "tsuâ", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7818.mp3", 
+                extWord: "蛇瓜", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7824.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/7824/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%9B%87",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87%24",
+                image: "06.蛇.png", 
+                emoji: "🐍", 
+                explanation: "「蛇瓜」(tsuâ-kue) 是一種外觀十分奇特、彎曲盤繞形如長蛇的蛇瓜屬植物，表皮多具有不規則的白色與淺綠條紋，在農田裡生長時常讓人大吃一驚。" 
+            },
+            { 
+                id: 7, 
+                chinese: "馬", 
+                lomaji: "bé", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6798.mp3", 
+                extWord: "花條馬", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14111.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/14111/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%A6%AC",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC%24",
+                image: "7.馬.png", 
+                emoji: "🐴", 
+                explanation: "「花條馬」(hue-tiâu-bé) 即是「斑馬」。在台語裡，身上有著黑白斑紋（花條）的非洲馬科動物，就叫作花條馬。" 
+            },
+            { 
+                id: 8, 
+                chinese: "羊", 
+                lomaji: "iûnn", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2588.mp3", 
+                extWord: "羊仔目", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2634.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/2634/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%BE%8A",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A%24",
+                image: "08.羊.png", 
+                emoji: "🐑", 
+                explanation: "「羊仔目」(iûnn-á-ba̍k) 在部分地方是指「楊桃」水果。因為其側邊橫切面成漂亮的五角星形，像極了羊眼睛（羊瞳孔常呈現獨特的扁平橫向長條狀）而得名。" 
+            },
+            { 
+                id: 9, 
+                chinese: "猴", 
+                lomaji: "kâu", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8571.mp3", 
+                extWord: "皮猴戲", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1962.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/1962/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8C%B4",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4%24",
+                image: "09.猴.png", 
+                emoji: "🐵", 
+                explanation: "「皮猴戲」(phuê-kâu-hì / phê-kâu-hì) 指「皮影戲」。早期皮影戲偶多利用牛皮或羊皮製成，人偶靈巧動作像活潑的小猴子，因而俗稱皮猴戲。" 
+            },
+            { 
+                id: 10, 
+                chinese: "雞", 
+                lomaji: "ke", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12657.mp3", 
+                extWord: "雞鵤仔車", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12685.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/12685/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%91%9E", // 教育部對應字 雞 (繁體：雞)
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E%24",
+                image: "10.雞.png", 
+                emoji: "🐔", 
+                explanation: "「雞鵤仔車」(ke-kak-á-tshia) 指古老農村常見的「獨輪手推車」。前方僅有一單輪，推動時由於輪軸摩擦會發出支支高亢叫聲，且形態類似神氣的公雞（雞鵤仔）行走。" 
+            },
+            { 
+                id: 11, 
+                chinese: "狗", 
+                lomaji: "káu", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4329.mp3", 
+                extWord: "海狗", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6179.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/6179/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8B%97",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97%24",
+                image: "11.狗.png", 
+                emoji: "🐶", 
+                explanation: "「海狗」(hái-káu) 即海洋哺乳動物海狗。台語亦直接將海中生活且頭部神態激似陸地上犬類的海底萌獸命名為海狗，發音非常好聽好記！" 
+            },
+            { 
+                id: 12, 
+                chinese: "豬", 
+                lomaji: "ti", 
+                audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11384.mp3", 
+                extWord: "海豬", 
+                extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6215.mp3", 
+                extWeb: "https://sutian.moe.edu.tw/und-hani/su/6215/", 
+                prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%B1%AC",
+                suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC%24",
+                image: "12.豬.png", 
+                emoji: "🐷", 
+                explanation: "「海豬」(hái-ti) 就是我們熟悉的「海豚」。因為古代沿海居民看到海豚在海面上翻騰，體形圓潤，像極了海中奔跑的豬隻。" 
+            }
         ];
 
         let gameState = {
@@ -307,7 +462,7 @@
             gameState.selectedCardId = null;
         }
 
-        // 渲染配對棋盤
+        // 渲染配對棋盤 (將排序編號修改為純數字 1-12，無前導零)
         function renderSlots() {
             const grid = document.getElementById('board-grid');
             grid.innerHTML = '';
@@ -317,10 +472,11 @@
                 slot.className = `relative aspect-[1.1/1] md:aspect-square rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 flex flex-col items-center justify-center p-1 text-center transition-all cursor-pointer group hover:bg-stone-100/60`;
                 slot.dataset.slotId = zodiac.id;
                 
-                const orderNum = String(zodiac.id).padStart(2, '0');
+                // 💡 調整為不帶前導零的純整數排序 1-12
+                const orderNum = zodiac.id;
                 
                 slot.innerHTML = `
-                    <div class="absolute top-0.5 left-1 text-[9px] font-bold text-stone-400 group-hover:text-zodiac-red">
+                    <div class="absolute top-0.5 left-1 text-[10px] font-bold text-stone-400 group-hover:text-zodiac-red">
                         ${orderNum}
                     </div>
                     
@@ -332,7 +488,7 @@
                     </div>
                 `;
 
-                // 綁定事件
+                // 綁定拖曳與觸控事件
                 slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
                 slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
                 slot.addEventListener('drop', handleDrop);
@@ -365,7 +521,7 @@
             displayList.forEach(zodiac => {
                 const card = document.createElement('div');
                 card.id = `card-${zodiac.id}`;
-                card.className = `zodiac-card flex-shrink-0 w-16 h-16 md:w-full md:h-auto md:aspect-square bg-white p-1 rounded-xl shadow border border-stone-200 cursor-grab flex flex-col items-center justify-center text-center select-none`;
+                card.className = `zodiac-card flex-shrink-0 w-16 h-16 md:w-full md:h-auto md:aspect-square bg-white p-1 rounded-xl shadow border border-stone-200 cursor-grab flex flex-col items-center justify-center text-center select-none touch-none`;
                 card.draggable = true;
                 card.dataset.zodiacId = zodiac.id;
                 
@@ -379,10 +535,80 @@
                     <span class="text-[11px] font-black font-serif text-stone-700 block pointer-events-none leading-none">${zodiac.chinese}</span>
                 `;
 
+                // 電腦端滑鼠拖曳
                 card.addEventListener('dragstart', e => {
                     e.dataTransfer.setData('text/plain', e.target.dataset.zodiacId);
                     clearMobileSelection();
                 });
+                
+                // 行動裝置手指原生觸控拖曳引擎
+                let touchGhost = null;
+                let dragActive = false;
+
+                card.addEventListener('touchstart', function(e) {
+                    const touch = e.touches[0];
+                    gameState.selectedCardId = zodiac.id; 
+                    
+                    touchGhost = card.cloneNode(true);
+                    touchGhost.style.position = 'fixed';
+                    touchGhost.style.width = card.offsetWidth + 'px';
+                    touchGhost.style.height = card.offsetHeight + 'px';
+                    touchGhost.style.opacity = '0.85';
+                    touchGhost.style.zIndex = '9999';
+                    touchGhost.style.pointerEvents = 'none'; 
+                    touchGhost.classList.add('shadow-2xl', 'border-zodiac-red', 'scale-105');
+                    
+                    updateGhostPosition(touch.clientX, touch.clientY);
+                    document.body.appendChild(touchGhost);
+                    
+                    card.classList.add('opacity-40');
+                    dragActive = true;
+                }, { passive: true });
+
+                card.addEventListener('touchmove', function(e) {
+                    if (!dragActive || !touchGhost) return;
+                    const touch = e.touches[0];
+                    updateGhostPosition(touch.clientX, touch.clientY);
+                    
+                    const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                    const slot = elementUnder ? elementUnder.closest('[data-slot-id]') : null;
+                    
+                    document.querySelectorAll('[data-slot-id]').forEach(s => s.classList.remove('drag-over'));
+                    if (slot && !gameState.matches[slot.dataset.slotId]) {
+                        slot.classList.add('drag-over');
+                    }
+                    
+                    if (e.cancelable) e.preventDefault();
+                }, { passive: false });
+
+                card.addEventListener('touchend', function(e) {
+                    if (!dragActive) return;
+                    dragActive = false;
+                    card.classList.remove('opacity-40');
+                    
+                    if (touchGhost) {
+                        const touch = e.changedTouches[0];
+                        const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                        const slot = elementUnder ? elementUnder.closest('[data-slot-id]') : null;
+                        
+                        touchGhost.remove();
+                        touchGhost = null;
+                        document.querySelectorAll('[data-slot-id]').forEach(s => s.classList.remove('drag-over'));
+                        
+                        if (slot) {
+                            const slotId = parseInt(slot.dataset.slotId);
+                            processMatch(zodiac.id, slotId, slot);
+                        }
+                    }
+                    clearMobileSelection();
+                });
+
+                function updateGhostPosition(x, y) {
+                    if (!touchGhost) return;
+                    touchGhost.style.left = (x - card.offsetWidth / 2) + 'px';
+                    touchGhost.style.top = (y - card.offsetHeight / 2) + 'px';
+                }
+
                 card.addEventListener('click', e => { e.stopPropagation(); handleCardClick(zodiac.id); });
 
                 pool.appendChild(card);
@@ -443,7 +669,7 @@
             }
         }
 
-        // 配對成功：左上方新增該生肖排序圓形徽章
+        // 配對成功：大尺寸排序圓形徽章 (1-12) + 左下角「頭」「尾」檢索連結
         function transformSlotToCorrect(zodiacId, slotElement) {
             const data = ZODIAC_DATA.find(z => z.id === zodiacId);
             if (!data) return;
@@ -452,8 +678,8 @@
             const imageSrc = getImageUrl(data);
 
             slotElement.innerHTML = `
-                <!-- 💡 卡片左上方標示該生肖的排序數字 💡 -->
-                <div class="absolute top-1 left-1.5 bg-zodiac-red text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-md">
+                <!-- 💡 卡片左上方標示該生肖的排序數字 (放大調整為 w-6 h-6, 數字為純數大字) 💡 -->
+                <div class="absolute top-1 left-1 bg-zodiac-red text-white text-xs md:text-sm font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md select-none">
                     ${data.id}
                 </div>
                 
@@ -461,6 +687,17 @@
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
 
+                <!-- 💡 左下角「頭」「尾」教育部常用詞辭典檢索連結 💡 -->
+                <div class="absolute bottom-1 left-1.5 flex gap-1 z-20" onclick="event.stopPropagation();">
+                    <a href="${data.prefixWeb}" target="_blank" class="px-1.5 py-0.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字頭「^${data.chinese}」">
+                        頭
+                    </a>
+                    <a href="${data.suffixWeb}" target="_blank" class="px-1.5 py-0.5 rounded bg-purple-500 hover:bg-purple-600 text-white text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字尾「${data.chinese}$」">
+                        尾
+                    </a>
+                </div>
+
+                <!-- 右下角延伸詞入口 -->
                 <button class="absolute bottom-0.5 right-0.5 px-1 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-950 text-[9px] font-black tracking-tighter flex items-center scale-95 hover:scale-105" 
                         onclick="event.stopPropagation(); openExtModal(${zodiacId})">
                     📖詞
@@ -582,6 +819,7 @@
             document.getElementById('progress-bar').style.width = `${(count / 12) * 100}%`;
         }
 
+        // 洗牌算法
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -665,10 +903,8 @@
         // 勝利判定與通關歡呼
         function checkVictory() {
             if (Object.keys(gameState.matches).length === 12) {
-                // 1. 物理聲波合成祝賀樂 (保證在沒有網路、CORS或任何安全限制時也一定會發聲響起！)
                 playVictorySynthesizedFanfare();
 
-                // 2. 播放谷歌官方頂級 CDN 提供的 Crowd Applause (群眾掌聲與歡呼) OGG 格式高音質音訊檔
                 const cheerAudio = document.getElementById('victory-cheer-audio');
                 cheerAudio.src = "https://actions.google.com/sounds/v1/crowds/cheering_and_applause.ogg";
                 cheerAudio.play().catch(e => {
