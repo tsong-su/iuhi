@@ -2,84 +2,91 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>臺灣台語十二生相互動學習遊戲</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #F6F4F0; font-family: 'Noto Sans TC', sans-serif; }
-        .zodiac-slot { border: 2px dashed #D1D5DB; }
-        .drag-over { border-color: #9A1D23; background-color: #FEF2F2; }
+        body { font-family: 'Zen Maru Gothic', sans-serif; background-color: #FDFBF7; }
+        .board-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; border: 2px solid #8B4513; border-radius: 12px; padding: 10px; background: #fff; }
+        .drop-zone { border: 2px dashed #8B4513; border-radius: 8px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FFF; position: relative; }
+        .card { width: 85px; height: 85px; cursor: grab; object-fit: contain; }
+        .card-pool { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-6">
-
-    <header class="flex items-center justify-between pb-4 border-b mb-4">
-        <div class="flex items-center gap-3">
-            <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" alt="Logo" class="w-10 h-10 object-cover rounded-full">
-            <h1 class="text-xl font-black text-red-900">臺灣台語十二生相互動學習遊戲</h1>
+<body class="p-6">
+    <header class="flex items-center gap-4 mb-6">
+        <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" class="w-16 h-16 rounded-full border-4 border-[#D4AF37]">
+        <div>
+            <h1 class="text-3xl font-black text-[#9A1D23]">臺灣台語十二生相互動學習遊戲</h1>
+            <p class="text-stone-600 mt-1">請將生肖拖入正確的【台語配對格】。配對成功後，請點選綠色長框查看延伸詞，有詞頭、詞尾、部分符合可選擇。</p>
         </div>
-        <div class="flex gap-2">
-            <span class="bg-white px-3 py-1 rounded-full text-sm font-bold text-red-700">⏱️ <span id="timer">0</span> 秒</span>
-            <button onclick="resetGame()" class="bg-red-700 text-white px-4 py-1 rounded-full text-sm font-bold">重新開始</button>
-        </div>
+        <div id="timer" class="ml-auto text-2xl font-bold text-[#9A1D23]">使用：0 秒</div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- 左側：配對區 -->
-        <section>
-            <p class="text-sm text-gray-600 mb-2 font-bold">拖曳圖片至正確格，成功後點選「詞頭、詞尾、部」查詢：</p>
-            <div id="board" class="grid grid-cols-3 md:grid-cols-4 gap-3"></div>
-        </section>
+    <div class="flex gap-8">
+        <div class="flex-1">
+            <div id="board-grid" class="board-grid"></div>
+        </div>
 
-        <!-- 右側：卡片庫 -->
-        <section>
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-sm font-bold text-gray-700">生肖卡片庫</h2>
-                <button onclick="playFullSong()" class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">🎵 聽全歌謠</button>
+        <div class="w-80 bg-[#EFEBE0] p-5 rounded-2xl border border-stone-300">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-stone-800">生肖卡片庫</h2>
+                <button onclick="document.getElementById('song-player').play()" class="bg-[#9A1D23] text-white px-4 py-2 rounded-lg font-bold text-sm shadow">播放全歌謠</button>
             </div>
-            <div id="pool" class="grid grid-cols-4 gap-2"></div>
-        </section>
+            <audio id="song-player" src="十二生相1鼠.12豬.mp3"></audio>
+            <div id="card-pool" class="card-pool"></div>
+        </div>
     </div>
 
-    <audio id="audio-player" class="hidden"></audio>
-
     <script>
-        const IMG_PATH = "https://raw.githubusercontent.com/tsong-su/iuhi/main/zodiac_assets/";
-        const FULL_SONG = "https://raw.githubusercontent.com/tsong-su/iuhi/main/" + encodeURIComponent("十二生相1鼠.12豬.mp3");
-
-        const DATA = [
-            { id: 1, name: "鼠", lomaji: "tshí", img: "01.鼠.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10356.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14306.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/14306/#", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BC%A0", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0" },
-            { id: 2, name: "牛", lomaji: "gû", img: "02.牛.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1218.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1251.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1251/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%89%9B", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B" },
-            { id: 3, name: "虎", lomaji: "hóo", img: "03.虎.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4482.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/HL/s9/293311.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/29331/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%99%8E", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E" },
-            { id: 4, name: "兔", lomaji: "thòo", img: "04.兔.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3581.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7348.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/7348/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E5%85%94", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94" },
-            { id: 5, name: "龍", lomaji: "lîng", img: "05.龍.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12091.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1817.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1817/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BE%8D", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D" },
-            { id: 6, name: "蛇", lomaji: "tsuâ", img: "06.蛇.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7818.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7824.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/7824/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%9B%87", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87" },
-            { id: 7, name: "馬", lomaji: "bé", img: "7.馬.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6798.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14111.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/14111/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%A6%AC", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC" },
-            { id: 8, name: "羊", lomaji: "iûnn", img: "08.羊.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2588.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2634.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/2634/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%BE%8A", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A" },
-            { id: 9, name: "猴", lomaji: "kâu", img: "09.猴.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8571.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1962.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/1962/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8C%B4", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4" },
-            { id: 10, name: "雞", lomaji: "ke", img: "10.雞.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12657.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12685.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/12685/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%91%9E", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E" },
-            { id: 11, name: "狗", lomaji: "káu", img: "11.狗.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4329.mp3", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6179.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/6179/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8B%97", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97" },
-            { id: 12, name: "豬", lomaji: "ti", img: "12.豬.png", audio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11384.mp3", extWord: "海豬", extAudio: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6215.mp3", extWeb: "https://sutian.moe.edu.tw/und-hani/su/6215/", prefix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%B1%AC", suffix: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC%24", partial: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC" }
+        const BASE_URL = "https://raw.githubusercontent.com/tsong-su/iuhi/main/zodiac_assets/";
+        const ZODIAC_DATA = [
+            { id: 1, name: "鼠", sound: "tshí", img: "01.鼠.png" },
+            { id: 2, name: "牛", sound: "gû", img: "02.牛.png" },
+            { id: 3, name: "虎", sound: "hóo", img: "03.虎.png" },
+            { id: 4, name: "兔", sound: "thòo", img: "04.兔.png" },
+            { id: 5, name: "龍", sound: "lîng", img: "05.龍.png" },
+            { id: 6, name: "蛇", sound: "tsuâ", img: "06.蛇.png" },
+            { id: 7, name: "馬", sound: "bé", img: "7.馬.png" },
+            { id: 8, name: "羊", sound: "iûnn", img: "08.羊.png" },
+            { id: 9, name: "猴", sound: "kâu", img: "09.猴.png" },
+            { id: 10, name: "雞", sound: "ke", img: "10.雞.png" },
+            { id: 11, name: "狗", sound: "káu", img: "11.狗.png" },
+            { id: 12, name: "豬", sound: "ti", img: "12.豬.png" }
         ];
 
         let seconds = 0;
-        let timer = setInterval(() => { seconds++; document.getElementById('timer').innerText = seconds; }, 1000);
+        setInterval(() => { seconds++; document.getElementById('timer').innerText = "使用：" + seconds + " 秒"; }, 1000);
 
-        function resetGame() { location.reload(); }
-        function playFullSong() { new Audio(FULL_SONG).play(); }
+        function init() {
+            const grid = document.getElementById('board-grid');
+            const pool = document.getElementById('card-pool');
+            
+            ZODIAC_DATA.forEach(z => {
+                const slot = document.createElement('div');
+                slot.className = "drop-zone";
+                // 使用 encodeURIComponent 確保中文檔名能被正確讀取
+                const encodedImg = BASE_URL + encodeURIComponent(z.img);
+                
+                slot.innerHTML = `<span class="font-bold text-xl">${z.name}</span><span class="text-red-700 font-bold">${z.sound}</span>`;
+                slot.ondragover = (e) => e.preventDefault();
+                slot.ondrop = (e) => {
+                    e.preventDefault();
+                    const data = e.dataTransfer.getData("text");
+                    e.currentTarget.appendChild(document.getElementById(data));
+                };
+                grid.appendChild(slot);
 
-        function render() {
-            const board = document.getElementById('board');
-            const pool = document.getElementById('pool');
-            board.innerHTML = ""; pool.innerHTML = "";
-            DATA.forEach(d => {
-                board.innerHTML += `<div class="zodiac-slot h-24 rounded-lg flex flex-col items-center justify-center">${d.name}</div>`;
-                pool.innerHTML += `<img src="${IMG_PATH + d.img}" class="w-16 h-16 border rounded cursor-grab" draggable="true" ondragstart="event.dataTransfer.setData('text', '${d.id}')">`;
+                const card = document.createElement('img');
+                card.src = encodedImg;
+                card.className = "card";
+                card.id = "card" + z.id;
+                card.draggable = true;
+                card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+                pool.appendChild(card);
             });
         }
-        render();
+        init();
     </script>
 </body>
 </html>
