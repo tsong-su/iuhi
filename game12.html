@@ -127,15 +127,16 @@
     <!-- 頂部裝飾條 -->
     <div class="h-1 bg-gradient-to-r from-zodiac-red via-zodiac-gold to-zodiac-red w-full flex-shrink-0"></div>
 
-    <!-- 頁首導覽 -->
+    <!-- 頁首導覽（融入原創 logo） -->
     <header class="bg-white border-b border-stone-200 py-1.5 px-4 shadow-sm flex-shrink-0 z-40">
         <div class="w-full flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full bg-zodiac-red flex items-center justify-center text-white text-xs shadow">
-                    <span class="font-serif font-black">生</span>
+                <!-- 💡 頁首個人原創 logo 圖標，防止剽竊 💡 -->
+                <div class="w-8 h-8 rounded-full overflow-hidden border border-zodiac-gold shadow flex-shrink-0 bg-stone-100">
+                    <img src="./logo.jpg" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.jpg'; this.onerror=null;">
                 </div>
                 <div>
-                    <h1 class="text-sm md:text-base font-black text-zodiac-red font-serif leading-tight">
+                    <h1 class="text-xs sm:text-sm md:text-base font-black text-zodiac-red font-serif leading-tight">
                         臺灣台語十二生肖互動學習遊戲
                     </h1>
                 </div>
@@ -185,20 +186,31 @@
             </div>
         </section>
 
-        <!-- 右側/下半部：生肖卡片庫 -->
+        <!-- 右側/下半部：生肖卡片庫 + 專屬防偽防盜水印 -->
         <section class="w-full md:w-64 bg-stone-200/70 rounded-xl border border-stone-300 p-2 shadow-inner flex flex-col justify-between flex-shrink-0 overflow-y-auto no-scrollbar">
-            <div class="flex md:flex-col justify-between items-center md:items-start gap-1 border-b border-stone-300/60 pb-1 md:pb-2 mb-1.5">
-                <h2 class="font-serif font-black text-xs text-stone-700 flex items-center gap-1">
-                    <i class="fa-solid fa-cubes text-stone-500"></i> 生肖卡片庫
-                </h2>
-                <button onclick="shufflePool()" class="text-[10px] text-stone-600 hover:text-zodiac-red flex items-center gap-0.5 bg-white px-2 py-0.5 rounded-full border border-stone-200 shadow-xs transition-colors">
-                    <i class="fa-solid fa-shuffle"></i> 洗牌
-                </button>
+            <div class="flex flex-col gap-2">
+                <div class="flex md:flex-col justify-between items-center md:items-start gap-1 border-b border-stone-300/60 pb-1 md:pb-2 mb-1">
+                    <h2 class="font-serif font-black text-xs text-stone-700 flex items-center gap-1">
+                        <i class="fa-solid fa-cubes text-stone-500"></i> 生肖卡片庫
+                    </h2>
+                    <button onclick="shufflePool()" class="text-[10px] text-stone-600 hover:text-zodiac-red flex items-center gap-0.5 bg-white px-2 py-0.5 rounded-full border border-stone-200 shadow-xs transition-colors">
+                        <i class="fa-solid fa-shuffle"></i> 洗牌
+                    </button>
+                </div>
+                
+                <!-- 卡片庫容器 -->
+                <div id="card-pool" class="flex md:grid md:grid-cols-3 gap-2 overflow-x-auto md:overflow-x-visible p-1 no-scrollbar items-center justify-start md:justify-center">
+                    <!-- 12 張精美卡片 -->
+                </div>
             </div>
-            
-            <!-- 卡片庫容器 -->
-            <div id="card-pool" class="flex md:grid md:grid-cols-3 gap-2 overflow-x-auto md:overflow-x-visible p-1 no-scrollbar items-center justify-start md:justify-center">
-                <!-- 12 張精美卡片 -->
+
+            <!-- 💡 獨一無二：原創權益水印簽名徽章（捍衛您的心血創想！） 💡 -->
+            <div class="mt-3 p-2 bg-gradient-to-r from-amber-50 to-red-50 border border-amber-200 rounded-xl flex items-center gap-2 shadow-sm select-none">
+                <img src="./logo.jpg" alt="Logo" class="w-8 h-8 rounded-full border border-zodiac-gold object-cover shadow-xs flex-shrink-0" onerror="this.src='https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.jpg'; this.onerror=null;">
+                <div class="text-[10px] leading-tight text-stone-600 font-sans">
+                    <p class="font-bold text-zodiac-red">講台語 寫Lô-má-jī 原創設計</p>
+                    <p class="text-[9px] text-stone-400 mt-0.5">專屬教學版權所有 ‧ 嚴禁抄襲剽竊</p>
+                </div>
             </div>
         </section>
     </main>
@@ -279,6 +291,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/14306/#", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BC%A0",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0",
                 image: "01.鼠.png", 
                 emoji: "🐭", 
                 explanation: "「鳥鼠仔糖」(tshí-á-thn̂g) 指的就是「棒棒糖」。因為早期傳統手工糖果做成小老鼠的形狀（帶有細長線形尾巴），因而在台語中有了這個極其可愛的暱稱。" 
@@ -293,6 +306,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/1251/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%89%9B",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B",
                 image: "02.牛.png", 
                 emoji: "🐮", 
                 explanation: "「牛屎龜」(gû-sái-ku) 就是昆蟲界中的「糞金龜」。因為牠們習慣在牧場周邊推滾糞球（尤其是牛糞），在早期臺灣農村極為常見。" 
@@ -307,6 +321,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/29331/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%99%8E",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E",
                 image: "03.虎.png", 
                 emoji: "🐯", 
                 explanation: "「虎咬豬」(hóo-kā-ti) 是臺灣小吃「刈包」的生動俗稱。白嫩的麵皮對摺展開像老虎的大嘴，裡頭咬著一塊肥美多汁的豬五花肉，極富生活趣味。" 
@@ -321,6 +336,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/7348/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E5%85%94",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94",
                 image: "04.兔.png", 
                 emoji: "🐰", 
                 explanation: "「掠兔仔」(lia̍h-thòo-á) 是「嘔吐」的台語俗稱。此詞來自人在嘔吐時肚子猛烈抽搐、彎腰的身體動作，與獵人用力按住蹦跳野兔時的情景非常相似而得名。" 
@@ -335,6 +351,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/1817/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%BE%8D",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D",
                 image: "05.龍.png", 
                 emoji: "🐲", 
                 explanation: "「扒龍船」(pê-lîng-tsûn) 代表「慢速或快速度划龍舟」。「扒」(pê) 在台語代表用槳划動、刨扒的意思，是端午佳節最具代表性的傳統民俗體育運動。" 
@@ -349,6 +366,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/7824/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%9B%87",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87",
                 image: "06.蛇.png", 
                 emoji: "🐍", 
                 explanation: "「蛇瓜」(tsuâ-kue) 是一種外觀十分奇特、彎曲盤繞形如長蛇的蛇瓜屬植物，表皮多具有不規則的白色與淺綠條紋，在農田裡生長時常讓人大吃一驚。" 
@@ -363,6 +381,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/14111/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%A6%AC",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC",
                 image: "7.馬.png", 
                 emoji: "🐴", 
                 explanation: "「花條馬」(hue-tiâu-bé) 即是「斑馬」。在台語裡，身上有著黑白斑紋（花條）的非洲馬科動物，就叫作花條馬。" 
@@ -377,6 +396,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/2634/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%BE%8A",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A",
                 image: "08.羊.png", 
                 emoji: "🐑", 
                 explanation: "「羊仔目」(iûnn-á-ba̍k) 在部分地方是指「楊桃」水果。因為其側邊橫切面成漂亮的五角星形，像極了羊眼睛（羊瞳孔常呈現獨特的扁平橫向長條狀）而得名。" 
@@ -391,6 +411,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/1962/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8C%B4",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4",
                 image: "09.猴.png", 
                 emoji: "🐵", 
                 explanation: "「皮猴戲」(phuê-kâu-hì / phê-kâu-hì) 指「皮影戲」。早期皮影戲偶多利用牛皮或羊皮製成，人偶靈巧動作像活潑的小猴子，因而俗稱皮猴戲。" 
@@ -405,6 +426,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/12685/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E9%91%9E", // 教育部對應字 雞 (繁體：雞)
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E",
                 image: "10.雞.png", 
                 emoji: "🐔", 
                 explanation: "「雞鵤仔車」(ke-kak-á-tshia) 指古老農村常見的「獨輪手推車」。前方僅有一單輪，推動時由於輪軸摩擦會發出支支高亢叫聲，且形態類似神氣的公雞（雞鵤仔）行走。" 
@@ -419,6 +441,7 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/6179/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E7%8B%97",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97",
                 image: "11.狗.png", 
                 emoji: "🐶", 
                 explanation: "「海狗」(hái-káu) 即海洋哺乳動物海狗。台語亦直接將海中生活且頭部神態激似陸地上犬類的海底萌獸命名為海狗，發音非常好聽好記！" 
@@ -433,9 +456,10 @@
                 extWeb: "https://sutian.moe.edu.tw/und-hani/su/6215/", 
                 prefixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%5E%E8%B1%AC",
                 suffixWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC%24",
+                partialWeb: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC",
                 image: "12.豬.png", 
                 emoji: "🐷", 
-                explanation: "「海豬」(hái-ti) 就是我們熟悉的「海豚」。因為古代沿海居民看到海豚在海面上翻騰，體形圓潤，像極了海中奔跑的豬隻。" 
+                explanation: "「海豬」(hái-ti) 就是我們熟悉的「海豚」。因為古代沿海居民看到海豚在海面上翻騰，體形圓潤，像極了海中奔跑 of 豬隻。" 
             }
         ];
 
@@ -500,7 +524,7 @@
             if(gameState.showAnswersEnabled) showAnswersVisuals();
         }
 
-        // 渲染生肖卡片庫
+        // 渲染生肖卡片庫 (並搭載專屬的行動端原生手指拖曳引擎)
         function renderCardPool(shuffledList = null) {
             const pool = document.getElementById('card-pool');
             pool.innerHTML = '';
@@ -535,13 +559,13 @@
                     <span class="text-[11px] font-black font-serif text-stone-700 block pointer-events-none leading-none">${zodiac.chinese}</span>
                 `;
 
-                // 電腦端滑鼠拖曳
+                // --- 電腦版滑鼠拖曳事件 ---
                 card.addEventListener('dragstart', e => {
                     e.dataTransfer.setData('text/plain', e.target.dataset.zodiacId);
                     clearMobileSelection();
                 });
                 
-                // 行動裝置手指原生觸控拖曳引擎
+                // --- 💡 行動裝置(手機/平板)手指原生觸控拖曳引擎 💡 ---
                 let touchGhost = null;
                 let dragActive = false;
 
@@ -669,7 +693,7 @@
             }
         }
 
-        // 配對成功：大尺寸排序圓形徽章 (1-12) + 左下角「頭」「尾」檢索連結
+        // 配對成功：大尺寸排序圓形徽章 (1-12) + 左下角「頭」「尾」「部」檢索連結
         function transformSlotToCorrect(zodiacId, slotElement) {
             const data = ZODIAC_DATA.find(z => z.id === zodiacId);
             if (!data) return;
@@ -677,9 +701,9 @@
             slotElement.className = `relative aspect-[1.1/1] md:aspect-square rounded-xl border-2 border-emerald-600 bg-emerald-50/40 flex flex-col items-center justify-center p-1 text-center transition-all cursor-pointer shadow success-pulse`;
             const imageSrc = getImageUrl(data);
 
+            // 💡 配對成功時：左上角圓形徽章(w-6 h-6, 數字特大、加粗)，左下角「頭、尾、部」三網合一連結 💡
             slotElement.innerHTML = `
-                <!-- 💡 卡片左上方標示該生肖的排序數字 (放大調整為 w-6 h-6, 數字為純數大字) 💡 -->
-                <div class="absolute top-1 left-1 bg-zodiac-red text-white text-xs md:text-sm font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md select-none">
+                <div class="absolute top-1 left-1 bg-zodiac-red text-white text-xs md:text-sm font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md select-none z-20">
                     ${data.id}
                 </div>
                 
@@ -687,17 +711,19 @@
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
 
-                <!-- 💡 左下角「頭」「尾」教育部常用詞辭典檢索連結 💡 -->
-                <div class="absolute bottom-1 left-1.5 flex gap-1 z-20" onclick="event.stopPropagation();">
-                    <a href="${data.prefixWeb}" target="_blank" class="px-1.5 py-0.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字頭「^${data.chinese}」">
+                <!-- 💡 左下角「頭、尾、部(部分符合)」教育部常用詞辭典檢索三膠囊 💡 -->
+                <div class="absolute bottom-1 left-1 flex gap-0.5 md:gap-1 z-20" onclick="event.stopPropagation();">
+                    <a href="${data.prefixWeb}" target="_blank" class="px-1 py-0.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-[8px] md:text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字頭「^${data.chinese}」">
                         頭
                     </a>
-                    <a href="${data.suffixWeb}" target="_blank" class="px-1.5 py-0.5 rounded bg-purple-500 hover:bg-purple-600 text-white text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字尾「${data.chinese}$」">
+                    <a href="${data.suffixWeb}" target="_blank" class="px-1 py-0.5 rounded bg-purple-500 hover:bg-purple-600 text-white text-[8px] md:text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：查詢字尾「${data.chinese}$」">
                         尾
+                    </a>
+                    <a href="${data.partialWeb}" target="_blank" class="px-1 py-0.5 rounded bg-orange-500 hover:bg-orange-600 text-white text-[8px] md:text-[9px] font-black tracking-tighter shadow-xs transition-colors flex items-center justify-center" title="教育部辭典：部分符合「${data.chinese}」">
+                        部
                     </a>
                 </div>
 
-                <!-- 右下角延伸詞入口 -->
                 <button class="absolute bottom-0.5 right-0.5 px-1 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-950 text-[9px] font-black tracking-tighter flex items-center scale-95 hover:scale-105" 
                         onclick="event.stopPropagation(); openExtModal(${zodiacId})">
                     📖詞
@@ -819,7 +845,6 @@
             document.getElementById('progress-bar').style.width = `${(count / 12) * 100}%`;
         }
 
-        // 洗牌算法
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -889,6 +914,7 @@
             });
         }
 
+        // 歐印/過關
         function cheatComplete() {
             ZODIAC_DATA.forEach(zodiac => {
                 if(!gameState.matches[zodiac.id]) {
@@ -903,8 +929,10 @@
         // 勝利判定與通關歡呼
         function checkVictory() {
             if (Object.keys(gameState.matches).length === 12) {
+                // 1. 實體合成祝賀樂 (保證不受阻擋)
                 playVictorySynthesizedFanfare();
 
+                // 2. 播放群眾掌聲與歡呼
                 const cheerAudio = document.getElementById('victory-cheer-audio');
                 cheerAudio.src = "https://actions.google.com/sounds/v1/crowds/cheering_and_applause.ogg";
                 cheerAudio.play().catch(e => {
