@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一工 ê 時間軸 - 挑戰遊戲！</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fa; /* 乾淨清爽的背景 */
+        }
+        /* 充滿童趣與質感的立體卡片陰影效果 */
+        .play-shadow {
+            box-shadow: 0 8px 0px #e2d1b5, 0 15px 20px rgba(0,0,0,0.08);
+        }
+        /* 答對時的彈跳動畫 */
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-bounce-in {
+            animation: bounce-in 0.5s ease-out forwards;
+        }
+        /* 答錯時的左右搖晃動畫 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        /* 寫實SVG陰影 */
+        .svg-shadow {
+            filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.15));
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full overflow-y-auto flex flex-col items-center justify-start p-3 md:p-6 select-none pb-12">
+
+    <!-- 頂部標題與工具列 -->
+    <div class="w-full max-w-7xl flex flex-col sm:flex-row justify-between items-center bg-amber-50 px-6 py-3 rounded-2xl border-2 border-amber-200 shadow-sm gap-3 mb-4">
+        <div class="flex items-center gap-3">
+            <!-- 🌟 【新增】Lē-gio̍k 老師專屬圓形 Logo 框，帶有陰影與防錯字樣 -->
+            <div class="relative w-16 h-16 rounded-full bg-white border-2 border-amber-300 shadow-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" 
+                     alt="Lē-gio̍k Logo" 
+                     class="w-full h-full object-cover"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="hidden text-amber-800 text-[10px] font-black text-center px-1" style="display: none;">Lē-gio̍k</span>
+            </div>
+            
+            <span class="text-3xl">⏰</span>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-amber-950 tracking-wide">一工 ê 時間軸</h1>
+                <p class="text-xs md:text-sm text-amber-800 font-bold">請將上方的【台語時間詞】放到下方對應的【時間區間】中！(配對成功自動播音 🔊，過關點「返回遊戲」可開啟 📖 延伸造句學習)</p>
+            </div>
+        </div>
+        
+        <!-- 操作提示與音效開關 -->
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex flex-col items-end text-xs text-amber-900 font-bold bg-white/80 px-4 py-1.5 rounded-xl">
+                <span>💡 提示：</span>
+                <span>先點選字卡，再點選下方對應格子也能完成配對喔！</span>
+            </div>
+            <button id="audio-toggle" onclick="toggleAudio()" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-extrabold rounded-full shadow transition flex items-center gap-2 text-sm md:text-base cursor-pointer">
+                <span id="speaker-icon">🔊</span> <span id="speaker-text">音效開啟</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 中間主要遊戲區：100% 寬度完美呈現 7 欄時間軸 -->
+    <div class="w-full max-w-7xl flex flex-col gap-4 my-2 flex-grow">
+        
+        <!-- 待配對台語字卡區 (隨機打亂) -->
+        <div class="w-full bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <div class="text-center text-sm font-bold text-slate-500 mb-2">⭐ 待配對字卡（點選或拖曳）：</div>
+            <div id="word-bank" class="w-full flex flex-wrap gap-2.5 justify-center items-center p-3 bg-amber-50/30 rounded-2xl border-4 border-dashed border-amber-200 min-h-[100px]">
+                <!-- 由 JavaScript 動態產生字卡 -->
+            </div>
+        </div>
+
+        <!-- 下方：橫式時間軸格子 (全寬 7 欄) -->
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-7 gap-3">
+            
+            <!-- 天光 (1) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-blue-50 to-amber-50 transition-all duration-300 cursor-pointer hover:border-amber-400 min-h-[220px]" data-id="1">
+                <span class="text-center bg-amber-400 text-amber-955 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">05:00 - 06:30</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實清晨日出 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sky1" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#1E3A8A"/>
+                                <stop offset="60%" stop-color="#3B82F6"/>
+                                <stop offset="100%" stop-color="#FDBA74"/>
+                            </linearGradient>
+                            <radialGradient id="sunGlow1" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#FFFBEB" stop-opacity="1"/>
+                                <stop offset="100%" stop-color="#FEF08A" stop-opacity="0"/>
+                            </radialGradient>
+                        </defs>
+                        <rect width="100" height="100" rx="16" fill="url(#sky1)"/>
+                        <circle cx="50" cy="65" r="25" fill="url(#sunGlow1)"/>
+                        <circle cx="50" cy="65" r="14" fill="#FEF08A"/>
+                        <path d="M10 75 Q 35 60, 60 75 T 90 75 L 100 100 L 0 100 Z" fill="#1E293B" opacity="0.8"/>
+                        <path d="M0 85 Q 25 75, 50 85 T 100 85 L 100 100 L 0 100 Z" fill="#0F172A"/>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">天微微亮</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-amber-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 早起 (2) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-sky-50 to-blue-50 transition-all duration-300 cursor-pointer hover:border-sky-400 min-h-[220px]" data-id="2">
+                <span class="text-center bg-sky-400 text-sky-955 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">06:30 - 11:30</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實可愛早餐與小書包 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sky2" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#7DD3FC"/>
+                                <stop offset="100%" stop-color="#E0F2FE"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- 藍天背景 -->
+                        <rect width="100" height="100" rx="16" fill="url(#sky2)"/>
+                        <!-- 太陽 -->
+                        <circle cx="82" cy="18" r="8" fill="#FDE047"/>
+                        <circle cx="82" cy="18" r="5" fill="#F59E0B"/>
+
+                        <!-- 大盤子 -->
+                        <ellipse cx="50" cy="76" rx="38" ry="13" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <ellipse cx="50" cy="76" rx="30" ry="9" fill="#FFFFFF"/>
+
+                        <!-- 吐司 -->
+                        <path d="M 22 72 Q 26 66, 31 68 Q 36 66, 40 72 L 38 80 L 24 80 Z" fill="#F59E0B"/>
+                        <path d="M 24 74 Q 27 70, 31 71 Q 35 70, 38 74 L 36 79 L 26 79 Z" fill="#FEF3C7"/>
+
+                        <!-- 荷包蛋 -->
+                        <ellipse cx="60" cy="77" rx="13" ry="6" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+                        <circle cx="58" cy="76" r="4.5" fill="#F59E0B"/>
+                        <circle cx="56.5" cy="74.5" r="1.2" fill="#FFFFFF" opacity="0.8"/>
+
+                        <!-- 可愛紅色小書包 -->
+                        <g transform="translate(10, -5)">
+                            <rect x="35" y="32" width="26" height="28" rx="6" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5"/>
+                            <rect x="39" y="44" width="18" height="14" rx="3" fill="#F97316"/>
+                            <path d="M 43 32 Q 48 24, 53 32" stroke="#475569" stroke-width="2.5" fill="none"/>
+                            <circle cx="48" cy="38" r="2.5" fill="#FDE047"/>
+                        </g>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">吃早餐上課</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-sky-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 中晝 (3) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-orange-50 to-amber-50 transition-all duration-300 cursor-pointer hover:border-orange-400 min-h-[220px]" data-id="3">
+                <span class="text-center bg-orange-400 text-orange-950 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">11:30 - 13:30</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實美味便當 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="16" fill="#FFEAD2"/>
+                        <!-- 便當盒底 -->
+                        <rect x="20" y="30" width="60" height="45" rx="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>
+                        <!-- 便當內層與食物 -->
+                        <rect x="25" y="35" width="23" height="35" rx="4" fill="#FFFFFF"/>
+                        <circle cx="36" cy="52" r="6" fill="#EF4444"/> <!-- 梅子飯 -->
+                        <rect x="52" y="35" width="23" height="15" rx="4" fill="#FBBF24"/> <!-- 玉子燒 -->
+                        <rect x="52" y="55" width="23" height="15" rx="4" fill="#22C55E"/> <!-- 青菜 -->
+                        <!-- 筷子 -->
+                        <line x1="15" y1="20" x2="85" y2="20" stroke="#78350F" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="15" y1="25" x2="85" y2="25" stroke="#78350F" stroke-width="3" stroke-linecap="round"/>
+                        <!-- 熱氣 -->
+                        <path d="M40 15 Q43 10, 40 5" stroke="#FDBA74" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                        <path d="M50 15 Q53 10, 50 5" stroke="#FDBA74" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">中午吃便當</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-orange-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 下晡 (4) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-green-50 to-emerald-50 transition-all duration-300 cursor-pointer hover:border-green-400 min-h-[220px]" data-id="4">
+                <span class="text-center bg-green-400 text-green-950 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">13:30 - 17:00</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實英式下午茶蛋糕 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="16" fill="#E8F5E9"/>
+                        <!-- 茶杯托盤 -->
+                        <ellipse cx="50" cy="75" rx="35" ry="10" fill="#E2E8F0"/>
+                        <!-- 茶杯 -->
+                        <path d="M25 45 C25 65, 30 75, 50 75 C70 75, 75 65, 75 45 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+                        <path d="M72 48 C82 48, 82 62, 72 62" stroke="#CBD5E1" stroke-width="3" fill="none"/>
+                        <!-- 熱紅茶液面 -->
+                        <ellipse cx="50" cy="48" rx="22" ry="5" fill="#92400E"/>
+                        <!-- 熱氣 -->
+                        <path d="M45 35 Q48 25, 45 15" stroke="#A16207" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                        <path d="M55 35 Q58 25, 55 15" stroke="#A16207" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                        <!-- 小蛋糕 -->
+                        <path d="M12 70 L 25 55 L 38 70 Z" fill="#FBCFE8"/>
+                        <circle cx="25" cy="53" r="3" fill="#EF4444"/> <!-- 草莓 -->
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">點心與熱茶</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-green-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 欲暗仔 (5) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-rose-50 to-orange-50 transition-all duration-300 cursor-pointer hover:border-rose-400 min-h-[220px]" data-id="5">
+                <span class="text-center bg-rose-400 text-rose-955 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">17:00 - 19:00</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實唯美夕陽落日 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sky5" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#F43F5E"/>
+                                <stop offset="60%" stop-color="#FB923C"/>
+                                <stop offset="100%" stop-color="#FCD34D"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="100" height="100" rx="16" fill="url(#sky5)"/>
+                        <!-- 沉落的太陽 -->
+                        <circle cx="50" cy="55" r="20" fill="#FEF08A" opacity="0.9"/>
+                        <!-- 遠山 -->
+                        <path d="M-10 65 L 30 45 L 60 65 Z" fill="#9F1239" opacity="0.7"/>
+                        <path d="M40 65 L 75 50 L 110 65 Z" fill="#9F1239" opacity="0.9"/>
+                        <!-- 水面與光影 -->
+                        <rect x="0" y="65" width="100" height="35" fill="#E11D48"/>
+                        <ellipse cx="50" cy="72" rx="25" ry="2" fill="#FDE047" opacity="0.8"/>
+                        <ellipse cx="50" cy="78" rx="15" ry="1.5" fill="#FDE047" opacity="0.7"/>
+                        <ellipse cx="50" cy="85" rx="8" ry="1" fill="#FDE047" opacity="0.6"/>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">美麗日落時</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-rose-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 暗頭仔 (6) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-indigo-50 to-purple-50 transition-all duration-300 cursor-pointer hover:border-indigo-400 min-h-[220px]" data-id="6">
+                <span class="text-center bg-indigo-400 text-indigo-950 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">19:00 - 22:00</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實可愛放鬆泡泡浴與小鴨 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sky6" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#1A1B4B"/>
+                                <stop offset="100%" stop-color="#3B3B98"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="100" height="100" rx="16" fill="url(#sky6)"/>
+                        
+                        <!-- 溫馨彎月與星星 -->
+                        <path d="M80 15 C80 22, 86 22, 86 22 C82 22, 76 18, 78 15" fill="#F2C94C"/>
+                        <circle cx="20" cy="20" r="1.5" fill="#FFFFFF"/>
+                        <circle cx="50" cy="15" r="1" fill="#FFFFFF"/>
+                        
+                        <!-- 浴缸本體 -->
+                        <path d="M20 55 L80 55 C80 72, 70 82, 50 82 C30 82, 20 72, 20 55 Z" fill="#E2E8F0"/>
+                        <rect x="15" y="50" width="70" height="7" rx="3.5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <rect x="28" y="82" width="6" height="6" fill="#94A3B8"/>
+                        <rect x="66" y="82" width="6" height="6" fill="#94A3B8"/>
+                        
+                        <!-- 夢幻肥皂泡泡 -->
+                        <circle cx="35" cy="46" r="6" fill="#E0F2FE" opacity="0.9"/>
+                        <circle cx="45" cy="48" r="5" fill="#FFFFFF" opacity="0.8"/>
+                        <circle cx="52" cy="45" r="7" fill="#E0F2FE" opacity="0.9"/>
+                        <circle cx="62" cy="47" r="6" fill="#FFFFFF" opacity="0.9"/>
+                        
+                        <!-- 超可愛黃色小鴨 -->
+                        <g transform="translate(42, 38) scale(0.65)">
+                            <path d="M10 20 C10 12, 26 12, 26 20 C26 28, 10 28, 10 20 Z" fill="#F2C94C"/> <!-- 鴨身 -->
+                            <circle cx="18" cy="10" r="7" fill="#F2C94C"/> <!-- 鴨頭 -->
+                            <path d="M24 10 L29 12 L24 14 Z" fill="#F2994A"/> <!-- 鴨嘴 -->
+                            <circle cx="16" cy="8" r="1" fill="#000000"/> <!-- 眼睛 -->
+                        </g>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">吃晚餐洗澡</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-indigo-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+            <!-- 半暝 (7) -->
+            <div class="drop-zone flex flex-col justify-between p-3 rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-200 to-slate-300 transition-all duration-300 cursor-pointer hover:border-slate-400 min-h-[220px]" data-id="7">
+                <span class="text-center bg-slate-400 text-slate-950 font-black text-[10px] md:text-xs px-2 py-0.5 rounded-full shadow-inner">22:00 - 05:00</span>
+                <div class="text-center my-auto flex flex-col items-center">
+                    <!-- 寫實安靜睡眠星空 SVG -->
+                    <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="sky7" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#030712"/>
+                                <stop offset="100%" stop-color="#1F2937"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="100" height="100" rx="16" fill="url(#sky7)"/>
+                        <!-- 星星 -->
+                        <circle cx="20" cy="20" r="1.5" fill="#FFFFFF"/>
+                        <circle cx="80" cy="30" r="1" fill="#FFFFFF"/>
+                        <circle cx="75" cy="15" r="2" fill="#FDE047"/>
+                        <circle cx="35" cy="40" r="1.5" fill="#FFFFFF"/>
+                        <!-- 雲床與彎月 -->
+                        <path d="M55 45 C65 45, 75 35, 75 25 C65 25, 55 35, 55 45" fill="#FDE047"/>
+                        <!-- 睡床/枕頭 -->
+                        <rect x="25" y="60" width="50" height="25" rx="5" fill="#E2E8F0"/>
+                        <rect x="30" y="52" width="20" height="10" rx="3" fill="#FFFFFF"/>
+                        <path d="M35 60 L 75 60" stroke="#94A3B8" stroke-width="2"/>
+                        <!-- Zzz -->
+                        <text x="58" y="48" fill="#F8FAFC" font-size="8" font-family="monospace">Z</text>
+                        <text x="65" y="42" fill="#F8FAFC" font-size="12" font-family="monospace">Z</text>
+                    </svg>
+                    <div class="text-slate-600 text-[10px] md:text-xs mt-1.5 font-bold">安靜進入夢鄉</div>
+                </div>
+                <div class="target-slot h-12 w-full border-2 border-dashed border-slate-300 rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold">放這裡</div>
+            </div>
+
+        </div>
+
+        <!-- 下方特別類別：日時與暝時 (廣義白天與晚上) -->
+        <div class="w-full mt-2">
+            <div class="text-center text-sm font-black text-slate-500 mb-2">⭐ 白天與晚上（日時、暝時區間）：</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                
+                <!-- 日時 (8) -->
+                <div class="drop-zone flex flex-row items-center justify-between p-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-yellow-50 to-amber-50 transition-all duration-300 cursor-pointer hover:border-yellow-400 min-h-[120px]" data-id="8">
+                    <div class="flex items-center gap-4">
+                        <!-- 寫實明亮太陽與雲 SVG -->
+                        <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow flex-shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="sky8" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#38BDF8"/>
+                                    <stop offset="100%" stop-color="#7DD3FC"/>
+                                </linearGradient>
+                            </defs>
+                            <rect width="100" height="100" rx="16" fill="url(#sky8)"/>
+                            <circle cx="50" cy="50" r="18" fill="#F59E0B"/>
+                            <circle cx="50" cy="50" r="14" fill="#FBBF24"/>
+                            <line x1="50" y1="10" x2="50" y2="24" stroke="#FBBF24" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="50" y1="76" x2="50" y2="90" stroke="#FBBF24" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="10" y1="50" x2="24" y2="50" stroke="#FBBF24" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="76" y1="50" x2="90" y2="50" stroke="#FBBF24" stroke-width="4" stroke-linecap="round"/>
+                            <!-- 飄動雲朵 -->
+                            <path d="M 60 70 A 10 10 0 0 1 80 70 A 12 12 0 0 1 95 80 A 10 10 0 0 1 85 90 L 55 90 A 10 10 0 0 1 60 70" fill="#FFFFFF" opacity="0.9"/>
+                        </svg>
+                        <div>
+                            <span class="bg-yellow-400 text-yellow-955 font-black text-xs px-2.5 py-1 rounded-full shadow-inner">06:00 - 18:00</span>
+                            <div class="text-slate-600 text-sm mt-1.5 font-bold">日時 ji̍t--sî (白天)</div>
+                        </div>
+                    </div>
+                    <div class="target-slot h-16 w-32 md:w-40 border-2 border-dashed border-yellow-300 rounded-xl bg-white/80 flex items-center justify-center text-xs text-slate-400 font-bold flex-shrink-0">放這裡</div>
+                </div>
+
+                <!-- 暝時 (9) -->
+                <div class="drop-zone flex flex-row items-center justify-between p-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-teal-955/20 to-indigo-955/20 transition-all duration-300 cursor-pointer hover:border-teal-400 min-h-[120px]" data-id="9">
+                    <div class="flex items-center gap-4">
+                        <!-- 寫實夜空精緻小屋 SVG -->
+                        <svg class="w-16 h-16 md:w-20 md:h-20 svg-shadow flex-shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="sky9" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#0F172A"/>
+                                    <stop offset="100%" stop-color="#1E293B"/>
+                                </linearGradient>
+                            </defs>
+                            <rect width="100" height="100" rx="16" fill="url(#sky9)"/>
+                            <circle cx="25" cy="25" r="1.5" fill="#FFFFFF"/>
+                            <circle cx="75" cy="35" r="1" fill="#FFFFFF"/>
+                            <path d="M55 45 C65 45, 75 35, 75 25 C65 25, 55 35, 55 45" fill="#FCD34D"/>
+                            <!-- 溫馨小房子 -->
+                            <rect x="25" y="60" width="30" height="25" fill="#64748B" rx="3"/>
+                            <polygon points="20,60 40,42 60,60" fill="#EF4444"/>
+                            <rect x="35" y="70" width="10" height="15" fill="#FCD34D"/>
+                        </svg>
+                        <div>
+                            <span class="bg-teal-400 text-teal-955 font-black text-xs px-2.5 py-1 rounded-full shadow-inner">18:00 - 06:00</span>
+                            <div class="text-slate-600 text-sm mt-1.5 font-bold">暝時 mê--sî (晚上)</div>
+                        </div>
+                    </div>
+                    <div class="target-slot h-16 w-32 md:w-40 border-2 border-dashed border-teal-300 rounded-xl bg-white/80 flex items-center justify-center text-xs text-slate-400 font-bold flex-shrink-0">放這裡</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 底部資訊與功能按鈕列 -->
+    <div class="w-full max-w-7xl bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-sm mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <!-- 左：闖關進度 -->
+        <div class="text-lg md:text-xl font-black text-slate-700 flex items-center gap-2">
+            <span>闖關進度：</span>
+            <span id="score" class="text-green-600 text-2xl font-black">0</span> / 9
+        </div>
+        
+        <!-- 中：安靜角落計時狀態 -->
+        <div class="bg-indigo-50/80 border border-indigo-100 rounded-full px-5 py-2 flex items-center gap-2 text-indigo-700 text-sm font-extrabold shadow-inner">
+            <span id="timer" class="flex items-center gap-1.5">
+                <span class="animate-pulse">⏳</span> 挑戰中...
+            </span>
+        </div>
+        
+        <!-- 右：功能動作按鈕群 -->
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button onclick="openLeaderboardModal()" class="px-5 py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-extrabold rounded-full shadow-md transition flex items-center gap-1.5 text-sm cursor-pointer">
+                🏆 英雄榜
+            </button>
+            <button onclick="initGame()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-extrabold rounded-full shadow-md transition text-sm cursor-pointer">
+                🔄 重新洗牌挑戰
+            </button>
+        </div>
+    </div>
+
+    <!-- 🏆 英雄排行榜彈窗 (Modal) -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 border-4 border-amber-300 shadow-2xl transform scale-90 transition-all duration-300">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-5">
+                <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">🥇 英雄排行榜</h2>
+                <button onclick="clearLeaderboard()" class="text-xs text-red-500 hover:text-red-700 font-black">清除紀錄</button>
+            </div>
+            <div id="leaderboard-list" class="flex flex-col gap-3 mb-6"></div>
+            <div class="text-center text-xs text-slate-400 font-bold mb-6">※ 紀錄將自動儲存於此裝置</div>
+            <button onclick="closeLeaderboardModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-lg rounded-full transition active:scale-95 cursor-pointer">關閉視窗</button>
+        </div>
+    </div>
+
+    <!-- 💥 滿分過關自訂彈出視窗 (過關時跳出，設有兩個選項) -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 text-center border-4 border-emerald-300 shadow-2xl transform scale-90 transition-all duration-300">
+            <div class="text-7xl mb-4 animate-bounce">🎇🧨</div>
+            <h2 class="text-3xl font-black text-emerald-950 mb-2">恭喜滿分過關！</h2>
+            <p class="text-slate-500 text-sm font-bold mb-4">聽見響炮音效了嗎？你太厲害了！</p>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl py-3 px-4 mb-6">
+                <p class="text-slate-600 font-bold text-sm">您的挑戰時間為：</p>
+                <p id="final-time" class="text-3xl font-mono font-extrabold text-emerald-800">0.00 秒</p>
+            </div>
+            
+            <!-- 新紀錄輸入名字區塊 -->
+            <div id="new-record-section" class="hidden mb-6 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                <p class="text-green-600 font-black text-base mb-2">🎉 恭喜！打破歷史排行榜紀錄！</p>
+                <input type="text" id="player-name" placeholder="請輸入名字 (最多5字)" maxlength="5" class="w-full px-4 py-3 border-2 border-amber-300 rounded-xl text-center font-bold text-lg focus:outline-none focus:ring-4 focus:ring-amber-200 mb-2">
+                <button onclick="saveRecord()" class="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white font-black text-base rounded-xl shadow-md transition active:scale-95 cursor-pointer">寫入排行榜</button>
+            </div>
+
+            <!-- 雙按鈕選項 (您指定的兩個關鍵選項) -->
+            <div class="flex flex-col gap-3">
+                <button onclick="closeVictoryModalAndEnterStudyMode()" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg rounded-full shadow-lg transition active:scale-95 cursor-pointer flex items-center justify-center gap-2">
+                    🔍 返回遊戲頁面 (開啟 📖 延伸詞)
+                </button>
+                <button onclick="restartGameFromVictory()" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-black text-lg rounded-full shadow-lg transition active:scale-95 cursor-pointer">
+                    🔄 再玩一次！
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📖 【升級版】台語詞彙深度延伸學習彈窗 (Study Modal) -->
+    <div id="study-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full mx-4 border-4 border-emerald-300 shadow-2xl transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+            <!-- 彈窗頂部：大字詞彙與拼音 -->
+            <div class="flex justify-between items-start border-b border-emerald-100 pb-4 mb-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span id="study-term" class="text-3xl md:text-4xl font-black text-emerald-950">天光</span>
+                        <button id="study-audio-btn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 active:scale-90 px-3 py-1.5 rounded-full shadow-inner transition text-sm flex items-center gap-1 font-bold" title="播放語音">
+                            🔊 聽詞彙發音
+                        </button>
+                    </div>
+                    <span id="study-rom" class="text-sm md:text-base font-bold text-emerald-700 font-mono">thinn-kng</span>
+                </div>
+                <button onclick="closeStudyModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-black transition p-1">✕</button>
+            </div>
+
+            <!-- 彈窗中部：例句與造句 -->
+            <div class="mb-5 bg-amber-50/70 border border-amber-200/60 p-4 rounded-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-xs font-black tracking-widest text-amber-800 uppercase">💬 生活造句例句：</h4>
+                    <button id="study-sentence-audio-btn" class="bg-amber-200 hover:bg-amber-300 text-amber-900 active:scale-90 px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        🔊 聽例句發音
+                    </button>
+                </div>
+                <p id="study-sentence" class="text-lg font-black text-slate-800 mb-1 leading-relaxed">天光矣，咱緊來去運動。</p>
+                <div class="text-xs md:text-sm text-amber-900/90 font-bold bg-white/80 py-1.5 px-3 rounded-lg inline-block mt-2">
+                    👉 華語翻譯：<span id="study-sentence-translation" class="font-bold">天亮了，我們趕快去運動。</span>
+                </div>
+            </div>
+
+            <!-- 彈窗中部：延伸台語詞彙 -->
+            <div class="mb-6">
+                <h4 class="text-xs font-black tracking-widest text-emerald-800 uppercase mb-3">📚 延伸台語詞彙：</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="study-extensions"></div>
+            </div>
+
+            <!-- 彈窗底部：教育部連結 (完全強制外連) -->
+            <div class="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <a id="study-dict-link" href="#" target="_blank" rel="noopener noreferrer" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-full shadow transition text-center text-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                        📖 教育部完全符合網頁 ➡️
+                    </a>
+                    <a id="study-related-link" href="#" target="_blank" rel="noopener noreferrer" class="py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-full shadow transition text-center text-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                        🔍 搜尋有關例句網頁 ➡️
+                    </a>
+                </div>
+                <button onclick="closeStudyModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-full transition text-sm">
+                    返回
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 滿分過關彩帶 Canvas -->
+    <canvas id="confetti" class="absolute inset-0 pointer-events-none hidden w-full h-full z-40"></canvas>
+
+    <script>
+        // 導入您整理的超完美台語時間詞教育資料庫
+        const gameData = [
+            { 
+                id: 1, 
+                term: "天光", 
+                rom: "thinn-kng", 
+                color: "bg-amber-100 text-amber-900 border-amber-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/887.mp3",
+                sentence: "天光矣，你好起來讀冊矣！",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/46/46510.mp3",
+                sentenceTrans: "天亮了，你該起來讀書了！",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%A4%A9%E5%85%89",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E5%A4%A9%E5%85%89",
+                extensions: [
+                    { term: "天欲光", rom: "thinn-beh-kng", trans: "天快亮的時候" },
+                    { term: "透早", rom: "thàu-tsá", trans: "清晨、大清早" }
+                ]
+            },
+            { 
+                id: 2, 
+                term: "早起", 
+                rom: "tsái-khí", 
+                color: "bg-sky-100 text-sky-950 border-sky-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2517.mp3",
+                sentence: "伊逐工早起攏會去公園運動。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/48/48125.mp3",
+                sentenceTrans: "他每天早上都會去公園運動。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E6%97%A9%E8%B5%B7",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E6%97%A9%E8%B5%B7",
+                extensions: [
+                    { term: "早頓", rom: "tsá-tǹg", trans: "早餐" },
+                    { term: "早起時", rom: "tsái-khí-sî", trans: "早上時分" }
+                ]
+            },
+            { 
+                id: 3, 
+                term: "中晝", 
+                rom: "tiong-tàu", 
+                color: "bg-orange-100 text-orange-900 border-orange-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/713.mp3",
+                sentence: "十二點欲食中晝矣！",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/46/46295.mp3",
+                sentenceTrans: "十二點要吃午餐了！",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E4%B8%AD%E6%99%9D",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E4%B8%AD%E6%99%9D",
+                extensions: [
+                    { term: "中晝頓", rom: "tiong-tàu-tǹg", trans: "午餐" },
+                    { term: "歇午", rom: "hioh-gōo / hia̍h-gōo", trans: "午睡、午休" }
+                ]
+            },
+            { 
+                id: 4, 
+                term: "下晡", 
+                rom: "ē-poo", 
+                color: "bg-green-100 text-green-955 border-green-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/432.mp3",
+                sentence: "下晡我欲招阿美仔去𨑨迌。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/46/46030.mp3",
+                sentenceTrans: "下午我要找阿美去玩。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E4%B8%8B%E6%99%A1",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E4%B8%8B%E6%99%A1",
+                extensions: [
+                    { term: "下晡時", rom: "ē-poo-sî", trans: "下午時分" },
+                    { term: "點心", rom: "tiám-sim", trans: "零食、茶點" }
+                ]
+            },
+            { 
+                id: 5, 
+                term: "欲暗仔", 
+                rom: "beh-àm-á", 
+                color: "bg-rose-100 text-rose-955 border-rose-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7500.mp3",
+                sentence: "欲暗仔外口較涼，若欲出門，愛加疊一領衫。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/53/53430.mp3",
+                sentenceTrans: "傍晚外面比較涼，如果要出門，要多穿一件衣服。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E6%AC%B2%E6%9A%97%E4%BB%94",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E6%AC%B2%E6%9A%97%E4%BB%94",
+                extensions: [
+                    { term: "欲暗時", rom: "beh-àm-sî", trans: "傍晚、天快黑時" },
+                    { term: "黃昏", rom: "hông-hun", trans: "日落、夕陽時分" }
+                ]
+            },
+            { 
+                id: 6, 
+                term: "暗頭仔", 
+                rom: "àm-thâu-á", 
+                color: "bg-indigo-100 text-indigo-950 border-indigo-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9629.mp3",
+                sentence: "阮翁差不多暗頭仔就會轉來，你閣等一下。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/55/55571.mp3",
+                sentenceTrans: "我先生差不多傍晚時分就會回來，你再等一下。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E6%9A%97%E9%A0%AD%E4%BB%94",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E6%9A%97%E9%A0%AD%E4%BB%94",
+                extensions: [
+                    { term: "暗頓", rom: "àm-tǹg", trans: "晚餐" },
+                    { term: "洗浴", rom: "sé-ek", trans: "洗澡" }
+                ]
+            },
+            { 
+                id: 7, 
+                term: "半暝", 
+                rom: "puànn-mê", 
+                color: "bg-slate-200 text-slate-900 border-slate-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1586.mp3",
+                sentence: "翁仔某半暝咧冤家。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/47/47111.mp3",
+                sentenceTrans: "夫妻倆半夜在吵架。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%8D%8A%E6%9A%9D",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E5%8D%8A%E6%9A%9D",
+                extensions: [
+                    { term: "半暝三更", rom: "puànn-mê-sann-kinn", trans: "深夜、深更半夜" },
+                    { term: "做夢", rom: "tsò-bāng", trans: "做夢" }
+                ]
+            },
+            { 
+                id: 8, 
+                term: "日時", 
+                rom: "ji̍t--sî", 
+                color: "bg-yellow-100 text-yellow-955 border-yellow-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1020.mp3",
+                sentence: "伊日時攏無佇厝裡。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/46/46613.mp3",
+                sentenceTrans: "他白天都不在家裡。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E6%97%A5%E6%99%82",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E6%97%A5%E6%99%82",
+                extensions: [
+                    { term: "日頭", rom: "ji̍t-thâu", trans: "太陽" },
+                    { term: "做工", rom: "tsò-khang", trans: "工作" }
+                ]
+            },
+            { 
+                id: 9, 
+                term: "暝時", 
+                rom: "mê--sî", 
+                color: "bg-teal-100 text-teal-955 border-teal-400", 
+                audioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10550.mp3",
+                sentence: "暝時毋睏，日時才咧盹龜。",
+                sentenceAudioUrl: "https://sutian.moe.edu.tw/media/senn/mp3/imtong/leku/56/56547.mp3",
+                sentenceTrans: "晚上不睡覺，白天時才在打瞌睡。",
+                wordUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E6%9A%9D%E6%99%82",
+                relatedUrl: "https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_ku&tsha=%E6%9A%9D%E6%99%82",
+                extensions: [
+                    { term: "暗時", rom: "àm-sî", trans: "晚上、夜裡" },
+                    { term: "盹龜", rom: "tún-ku", trans: "打瞌睡" }
+                ]
+            }
+        ];
+
+        let score = 0;
+        let selectedWordId = null; 
+        let audioEnabled = true;
+        let studyMode = false; // 控制是否啟用 📖 延伸學習按鈕。一開始為 false！
+
+        // 計時器變數
+        let timerInterval = null;
+        let startTime = null;
+        let elapsedTime = 0;
+        let gameFinished = false;
+
+        // 利用 Web Audio API 動態產生音效（答對/答錯/過關/響炮）
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (!audioEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start();
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                osc.stop(audioCtx.currentTime + 0.35);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.start();
+                osc.frequency.setValueAtTime(110, audioCtx.currentTime + 0.1); 
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'victory') {
+                const notes = [523.25, 659.25, 783.99, 1046.50]; 
+                notes.forEach((freq, idx) => {
+                    const subOsc = audioCtx.createOscillator();
+                    const subGain = audioCtx.createGain();
+                    subOsc.connect(subGain);
+                    subGain.connect(audioCtx.destination);
+                    subOsc.frequency.setValueAtTime(freq, audioCtx.currentTime + (idx * 0.08));
+                    subGain.gain.setValueAtTime(0.1, audioCtx.currentTime + (idx * 0.08));
+                    subGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+                    subOsc.start(audioCtx.currentTime + (idx * 0.08));
+                    subOsc.stop(audioCtx.currentTime + 0.6);
+                });
+            }
+        }
+
+        // 動態合成「響炮 (Firecracker) 煙火爆炸音效」
+        function playFirecracker() {
+            if (!audioEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // 1. 播放過關和弦 chimes
+            playSound('victory');
+
+            // 2. 連續 12 次快速清脆的辟啪鞭炮碎裂聲
+            for (let i = 0; i < 15; i++) {
+                const delay = i * 0.07;
+                setTimeout(() => {
+                    const bufferSize = audioCtx.sampleRate * 0.04; 
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let j = 0; j < bufferSize; j++) {
+                        data[j] = Math.random() * 2 - 1; // 白噪音
+                    }
+
+                    const noiseSource = audioCtx.createBufferSource();
+                    noiseSource.buffer = buffer;
+
+                    const bandpass = audioCtx.createBiquadFilter();
+                    bandpass.type = 'bandpass';
+                    bandpass.frequency.value = 1200 + Math.random() * 800;
+
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.07, audioCtx.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.035);
+
+                    noiseSource.connect(bandpass);
+                    bandpass.connect(noiseGain);
+                    noiseGain.connect(audioCtx.destination);
+                    noiseSource.start();
+                }, delay * 1000);
+            }
+
+            // 3. 最後一聲重低音的大爆炸
+            setTimeout(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.6);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.6);
+            }, 1050);
+        }
+
+        // 播放標準語音
+        function playHokkienSound(audioUrl) {
+            if (!audioEnabled) return;
+            const audio = new Audio(audioUrl);
+            audio.play().catch(err => {
+                console.log("語音播放受限。");
+            });
+        }
+
+        // 開啟延伸學習彈窗 (Study Modal) - 填入您所整理的所有音檔及相關網址
+        function openStudyModal(id) {
+            const data = gameData.find(d => d.id === id);
+            if (!data) return;
+
+            // 填入大字與拼音
+            document.getElementById('study-term').innerText = data.term;
+            document.getElementById('study-rom').innerText = data.rom;
+
+            // 填入造句
+            document.getElementById('study-sentence').innerText = data.sentence;
+            document.getElementById('study-sentence-translation').innerText = data.sentenceTrans;
+
+            // 設定詞彙聽音按鈕
+            const audioBtn = document.getElementById('study-audio-btn');
+            audioBtn.onclick = () => {
+                playHokkienSound(data.audioUrl);
+            };
+
+            // 設定例句聽音按鈕 (使用您提供的例句音檔網址)
+            const sentenceAudioBtn = document.getElementById('study-sentence-audio-btn');
+            sentenceAudioBtn.onclick = () => {
+                playHokkienSound(data.sentenceAudioUrl);
+            };
+
+            // 繪製延伸詞彙
+            const extensionsContainer = document.getElementById('study-extensions');
+            extensionsContainer.innerHTML = '';
+            data.extensions.forEach(ext => {
+                const item = document.createElement('div');
+                item.className = "p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex flex-col justify-center shadow-sm";
+                item.innerHTML = `
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base font-black text-emerald-950">${ext.term}</span>
+                        <span class="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-full font-mono">${ext.rom}</span>
+                    </div>
+                    <span class="text-xs text-slate-500 font-bold mt-1">華語：${ext.trans}</span>
+                `;
+                extensionsContainer.appendChild(item);
+            });
+
+            // 設定強制外連：教育部聽例句網頁 & 相關例句搜尋網頁 (解決官網 iframe 被擋的問題)
+            document.getElementById('study-dict-link').href = data.wordUrl;
+            document.getElementById('study-related-link').href = data.relatedUrl;
+
+            // 顯示學習視窗
+            document.getElementById('study-modal').classList.remove('hidden');
+        }
+
+        function closeStudyModal() {
+            document.getElementById('study-modal').classList.add('hidden');
+        }
+
+        // 切換音效開關
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btnText = document.getElementById('speaker-text');
+            const btnIcon = document.getElementById('speaker-icon');
+            if (audioEnabled) {
+                btnIcon.innerText = "🔊";
+                btnText.innerText = "音效開啟";
+            } else {
+                btnIcon.innerText = "🔇";
+                btnText.innerText = "音效關閉";
+            }
+        }
+
+        // 啟動計時器
+        function startTimer() {
+            clearInterval(timerInterval);
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                elapsedTime = (Date.now() - startTime) / 1000;
+            }, 30);
+        }
+
+        // 停止計時器
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // 開啟與繪製排行榜
+        function openLeaderboardModal() {
+            loadLeaderboard();
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+        }
+
+        function loadLeaderboard() {
+            const listContainer = document.getElementById('leaderboard-list');
+            listContainer.innerHTML = '';
+            let records = JSON.parse(localStorage.getItem('hokkien_time_records')) || [
+                { name: "關主老鷹", time: 30.00 },
+                { name: "挑戰精靈", time: 42.00 },
+                { name: "台語小萌星", time: 55.00 }
+            ];
+            records.sort((a, b) => a.time - b.time);
+            localStorage.setItem('hokkien_time_records', JSON.stringify(records));
+
+            records.slice(0, 3).forEach((rec, idx) => {
+                const rankIcons = ["🥇", "🥈", "🥉"];
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center px-4 py-2.5 bg-slate-50 border rounded-xl font-bold text-sm text-slate-700";
+                div.innerHTML = `
+                    <span class="flex items-center gap-2">
+                        <span>${rankIcons[idx]}</span>
+                        <span class="text-slate-800">${rec.name}</span>
+                    </span>
+                    <span class="font-mono text-indigo-600">${rec.time.toFixed(2)} 秒</span>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function clearLeaderboard() {
+            if (confirm("確定要清除所有排行榜紀錄嗎？")) {
+                localStorage.removeItem('hokkien_time_records');
+                loadLeaderboard();
+            }
+        }
+
+        // 檢查新高分
+        function checkHighScore(finalTime) {
+            let records = JSON.parse(localStorage.getItem('hokkien_time_records')) || [];
+            records.sort((a, b) => a.time - b.time);
+            if (records.length < 3 || finalTime < records[2].time) {
+                document.getElementById('new-record-section').classList.remove('hidden');
+            } else {
+                document.getElementById('new-record-section').classList.add('hidden');
+            }
+        }
+
+        // 儲存排行榜名字
+        function saveRecord() {
+            const nameInput = document.getElementById('player-name');
+            let name = nameInput.value.trim();
+            if (!name) {
+                alert("請輸入您的名字！");
+                return;
+            }
+            let records = JSON.parse(localStorage.getItem('hokkien_time_records')) || [];
+            records.push({ name: name, time: elapsedTime });
+            records.sort((a, b) => a.time - b.time);
+            records = records.slice(0, 3);
+            localStorage.setItem('hokkien_time_records', JSON.stringify(records));
+            nameInput.value = '';
+            loadLeaderboard();
+            document.getElementById('new-record-section').classList.add('hidden');
+        }
+
+        // 初始化/洗牌新遊戲
+        function initGame() {
+            score = 0;
+            selectedWordId = null;
+            gameFinished = false;
+            studyMode = false; // 一開始不要有延伸詞！
+
+            document.getElementById('score').innerText = score;
+            document.getElementById('confetti').style.display = 'none';
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('study-modal').classList.add('hidden');
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+            document.getElementById('timer').innerHTML = '<span class="animate-pulse">⏳</span> 挑戰中...';
+
+            startTimer();
+
+            // 生成隨機洗牌字卡
+            const wordBank = document.getElementById('word-bank');
+            wordBank.innerHTML = '';
+            const shuffled = [...gameData].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "px-4 py-3 border-2 rounded-2xl cursor-grab active:cursor-grabbing font-extrabold text-center transition-all flex justify-between items-center h-16 min-w-[150px] play-shadow hover:-translate-y-1 hover:brightness-105 active:translate-y-1 " + item.color;
+                card.dataset.id = item.id;
+                card.draggable = true;
+                
+                // 內建聽發音按鈕
+                card.innerHTML = `
+                    <div class="flex flex-col items-start pr-1 text-left">
+                        <span class="text-base md:text-lg leading-tight">${item.term}</span>
+                        <span class="text-[10px] md:text-xs opacity-80 font-bold font-mono tracking-tight">${item.rom}</span>
+                    </div>
+                    <button class="voice-btn bg-white/70 hover:bg-white active:scale-90 p-1.5 rounded-full shadow-inner transition ml-2 flex items-center justify-center text-sm" title="聽發音">
+                        🔊
+                    </button>
+                `;
+
+                // 播放詞語讀音
+                card.querySelector('.voice-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    playHokkienSound(item.audioUrl);
+                });
+
+                // 點選與拖曳綁定
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                    card.classList.add('opacity-40');
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('opacity-40');
+                });
+
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('#word-bank div').forEach(c => {
+                        c.classList.remove('ring-4', 'ring-indigo-500', '-translate-y-2');
+                    });
+                    if (selectedWordId === item.id) {
+                        selectedWordId = null;
+                        return;
+                    }
+                    selectedWordId = item.id;
+                    card.classList.add('ring-4', 'ring-indigo-500', '-translate-y-2');
+                });
+
+                wordBank.appendChild(card);
+            });
+
+            // 重置時間軸接收格子
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('border-green-500', 'bg-green-50', 'bg-red-50', 'animate-shake');
+                const targetSlot = zone.querySelector('.target-slot');
+                
+                // 判斷是橫向還是橫條格子
+                if (zone.dataset.id >= 8) {
+                    targetSlot.className = "target-slot h-16 w-32 md:w-40 border-2 border-dashed rounded-xl bg-white/80 flex items-center justify-center text-xs text-slate-400 font-bold flex-shrink-0 " + getBorderColorById(zone.dataset.id);
+                } else {
+                    targetSlot.className = "target-slot h-12 w-full border-2 border-dashed rounded-xl bg-white/80 flex items-center justify-center text-[10px] md:text-xs text-slate-400 font-bold " + getBorderColorById(zone.dataset.id);
+                }
+                targetSlot.innerHTML = "放這裡";
+            });
+
+            loadLeaderboard();
+        }
+
+        // 按鈕：再玩一次
+        function restartGameFromVictory() {
+            initGame();
+        }
+
+        // 按鈕：返回遊戲頁面 (開啟 📖 延伸詞)
+        function closeVictoryModalAndEnterStudyMode() {
+            document.getElementById('victory-modal').classList.add('hidden');
+            studyMode = true; // 正式啟動延伸學習模式！
+            
+            // 重新在所有格子內亮起 📖 按鈕
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                const zoneId = parseInt(zone.dataset.id);
+                const matchedItem = gameData.find(d => d.id === zoneId);
+                const targetSlot = zone.querySelector('.target-slot');
+                
+                // 將格子重新改版，使其右方顯示 📖
+                targetSlot.innerHTML = `
+                    <div class="flex flex-col items-start text-left leading-tight">
+                        <span class="text-xs md:text-sm">${matchedItem.term}</span>
+                        <span class="text-[9px] opacity-90 font-mono">${matchedItem.rom}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button class="voice-btn bg-white/30 hover:bg-white/50 active:scale-90 p-0.5 rounded-full shadow transition flex items-center justify-center text-[10px]">
+                            🔊
+                        </button>
+                        <button class="study-btn bg-amber-400 hover:bg-amber-300 active:scale-90 p-0.5 rounded-full shadow transition flex items-center justify-center text-[10px] text-amber-950 font-black">
+                            📖
+                        </button>
+                    </div>
+                `;
+
+                // 重新綁定事件
+                targetSlot.querySelector('.voice-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    playHokkienSound(matchedItem.audioUrl);
+                };
+                targetSlot.querySelector('.study-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    openStudyModal(matchedItem.id);
+                };
+            });
+        }
+
+        function getBorderColorById(id) {
+            const colors = {
+                1: 'border-amber-300',
+                2: 'border-sky-300',
+                3: 'border-orange-300',
+                4: 'border-green-300',
+                5: 'border-rose-300',
+                6: 'border-indigo-300',
+                7: 'border-slate-300',
+                8: 'border-yellow-300',
+                9: 'border-teal-300'
+            };
+            return colors[id] || 'border-slate-300';
+        }
+
+        // 綁定九個格子的放置/點擊事件
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            const targetId = zone.dataset.id;
+
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('scale-105', 'brightness-95');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('scale-105', 'brightness-95');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('scale-105', 'brightness-95');
+                const dragId = parseInt(e.dataTransfer.getData('text/plain'));
+                handleMatchAttempt(dragId, targetId, zone);
+            });
+
+            zone.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (selectedWordId === null) return;
+                handleMatchAttempt(parseInt(selectedWordId), targetId, zone);
+            });
+        });
+
+        // 進行配對檢查
+        function handleMatchAttempt(dragId, targetId, zone) {
+            // 如果這格已經配對好，就不予操作
+            if (zone.querySelector('.correct-card')) return;
+
+            if (dragId === parseInt(targetId)) {
+                // 配對成功！
+                score++;
+                document.getElementById('score').innerText = score;
+
+                const matchedItem = gameData.find(d => d.id === dragId);
+                const targetSlot = zone.querySelector('.target-slot');
+                
+                // 決定配對成功時顯示的內容 (此時只有 🔊 按鈕，不顯示 📖 書本，符合您「過關後才能看延伸詞」的要求)
+                targetSlot.className = "target-slot h-12 w-full rounded-xl bg-green-500 flex items-center justify-between px-3 text-white font-extrabold animate-bounce-in correct-card shadow-md";
+                if (dragId >= 8) {
+                    targetSlot.className = "target-slot h-16 w-32 md:w-40 rounded-xl bg-green-500 flex items-center justify-between px-3 text-white font-extrabold animate-bounce-in correct-card shadow-md flex-shrink-0";
+                }
+                
+                targetSlot.innerHTML = `
+                    <div class="flex flex-col items-start text-left leading-tight">
+                        <span class="text-xs md:text-sm">${matchedItem.term}</span>
+                        <span class="text-[9px] opacity-90 font-mono">${matchedItem.rom}</span>
+                    </div>
+                    <button class="voice-btn bg-white/30 hover:bg-white/50 active:scale-90 p-1.5 rounded-full shadow transition flex items-center justify-center text-xs">
+                        🔊
+                    </button>
+                `;
+
+                // 播放詞彙真人語音
+                playHokkienSound(matchedItem.audioUrl);
+
+                // 綁定發音
+                targetSlot.querySelector('.voice-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    playHokkienSound(matchedItem.audioUrl);
+                };
+
+                // 清除待選區對應的字卡
+                const originCard = document.querySelector(`#word-bank div[data-id="${dragId}"]`);
+                if (originCard) originCard.remove();
+
+                selectedWordId = null;
+
+                // 九格全部答對過關！
+                if (score === 9) {
+                    setTimeout(triggerVictory, 600);
+                }
+            } else {
+                playSound('wrong');
+                zone.classList.add('animate-shake', 'bg-red-50');
+                setTimeout(() => {
+                    zone.classList.remove('animate-shake', 'bg-red-50');
+                }, 400);
+            }
+        }
+
+        // 觸發滿分響炮與彩帶
+        function triggerVictory() {
+            stopTimer();
+            playFirecracker(); // 播放熱鬧的鞭炮煙火音效！
+            gameFinished = true;
+
+            const canvas = document.getElementById('confetti');
+            canvas.style.display = 'block';
+            runConfetti();
+            
+            document.getElementById('timer').innerHTML = '🎉 挑戰成功！';
+            document.getElementById('final-time').innerText = elapsedTime.toFixed(2) + " 秒";
+            
+            checkHighScore(elapsedTime);
+            document.getElementById('victory-modal').classList.remove('hidden');
+        }
+
+        // 滿分彩帶效果
+        function runConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach((p, index) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                    p.x += Math.sin(p.tiltAngle);
+                    p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+
+                update();
+            }
+
+            function update() {
+                let remaining = 0;
+                particles.forEach(p => {
+                    if (p.y < canvas.height) remaining++;
+                });
+                if (remaining > 0 && gameFinished) {
+                    requestAnimationFrame(draw);
+                } else {
+                    canvas.style.display = 'none';
+                }
+            }
+
+            draw();
+        }
+
+        // 點擊空白處可取消選取卡片
+        window.addEventListener('click', () => {
+            selectedWordId = null;
+            document.querySelectorAll('#word-bank div').forEach(c => {
+                c.classList.remove('ring-4', 'ring-indigo-500', '-translate-y-2');
+            });
+        });
+
+        // 啟動遊戲
+        initGame();
+    </script>
+</body>
+</html>
