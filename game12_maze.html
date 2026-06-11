@@ -19,7 +19,7 @@
         /* 迷宮畫布陰影與圓潤雙邊框 */
         canvas {
             image-rendering: pixelated;
-            box-shadow: 0 15px 30px -10px rgba(148, 163, 184, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.25);
             border-radius: 24px;
         }
         /* 彈跳引導動畫 */
@@ -42,72 +42,72 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between pb-4 overflow-x-hidden">
+<body class="min-h-screen flex flex-col items-center justify-between pb-2 overflow-x-hidden">
 
-    <header class="w-full bg-[#0f172a] text-white shadow-lg p-3 sticky top-0 z-20">
-        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+    <header class="w-full bg-[#0f172a] text-white shadow-lg p-2.5 sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
             <!-- 標題與個人 Logo -->
-            <div class="flex items-center gap-3">
-                <img id="personal-logo" class="w-11 h-11 object-contain rounded-full border-2 border-white shadow-sm bg-white" 
+            <div class="flex items-center gap-2.5">
+                <img id="personal-logo" class="w-10 h-10 object-contain rounded-full border-2 border-white shadow-sm bg-white" 
                      src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" 
                      alt="Logo" 
                      onerror="this.src='https://placehold.co/100x100/ffffff/4f46e5?text=Logo'">
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-wider flex items-center gap-2 text-yellow-300">
+                    <h1 class="text-lg md:text-xl font-black tracking-wider flex items-center gap-2 text-yellow-300">
                         十二生相揣動物大迷宮
                     </h1>
                 </div>
             </div>
 
             <!-- 課堂遊戲規則指引 -->
-            <div class="bg-white/10 px-3 py-1.5 rounded-xl text-xs md:text-sm font-semibold max-w-xl text-center md:text-left shadow-inner border border-white/20">
+            <div class="bg-white/10 px-3 py-1 rounded-xl text-xs font-semibold max-w-xl text-center md:text-left shadow-inner border border-white/20">
                 <span class="text-yellow-300 font-bold">📢 遊戲規則：</span>
-                控制藍色勇士，依「1鼠 ➔ 12豬」順序在迷宮尋找並觸碰生肖。躲避移動的彩色精靈，一碰到生肖就會聽見台語發聲，收集完12生肖即獲勝！
+                控制藍色勇士，依「1鼠 ➔ 12豬」順序揣生肖。躲避巡邏小精靈，碰到生肖會聽見台語發聲，收集完即獲勝！
             </div>
 
             <!-- 右側功能控制 -->
             <div class="flex items-center gap-2">
                 <!-- BGM 開關 -->
-                <button id="btn-toggle-bgm" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all">
+                <button id="btn-toggle-bgm" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all">
                     <i class="fas fa-music text-yellow-300"></i> <span id="bgm-status-text">音樂: 關</span>
                 </button>
-                <button id="btn-restart" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-all">
+                <button id="btn-restart" class="bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all">
                     <i class="fas fa-redo text-emerald-300"></i> 重來
                 </button>
-                <button id="btn-guide" class="bg-yellow-300 hover:bg-yellow-200 text-indigo-950 px-3 py-1.5 rounded-full text-xs font-black flex items-center gap-1 transition-all shadow-md">
+                <button id="btn-guide" class="bg-yellow-300 hover:bg-yellow-200 text-indigo-950 px-2.5 py-1 rounded-full text-xs font-black flex items-center gap-1 transition-all shadow-md">
                     <i class="fas fa-map-signs"></i> <span>開啟提示</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow w-full max-w-5xl px-4 py-4 flex flex-col lg:flex-row gap-5 items-center justify-center">
+    <main class="flex-grow w-full max-w-5xl px-3 py-2 flex flex-col lg:flex-row gap-4 items-center justify-center">
         
-        <!-- 左側：狀態指標與控制面板 -->
-        <div class="w-full lg:w-1/3 flex flex-col gap-3">
-            <!-- 任務目標指示卡（馬卡龍粉色調） -->
-            <div class="bg-gradient-to-br from-pink-50 to-rose-100 rounded-3xl p-5 shadow-md border-4 border-pink-200">
-                <h3 class="text-pink-600 text-xs font-black uppercase tracking-wider mb-2 text-center">🎯 目前尋找的生相</h3>
-                <div id="target-card" class="flex items-center gap-4 bg-white/80 p-4 rounded-2xl border border-pink-100 shadow-inner">
-                    <div class="w-18 h-18 bg-white rounded-2xl flex items-center justify-center text-4xl shadow border-4 border-pink-300 overflow-hidden relative" id="target-img-container">
+        <!-- 左側：狀態指標與控制面板 (在手機平板上改為更緊湊的橫向或縮小排列) -->
+        <div class="w-full lg:w-1/3 flex flex-col md:flex-row lg:flex-col gap-2.5">
+            <!-- 任務目標指示卡 -->
+            <div class="flex-1 bg-gradient-to-br from-pink-50 to-rose-100 rounded-2xl p-4 shadow-sm border-2 border-pink-200">
+                <h3 class="text-pink-600 text-[11px] font-black uppercase tracking-wider mb-1.5 text-center">🎯 目前尋找的生相</h3>
+                <div id="target-card" class="flex items-center gap-3 bg-white/80 p-2.5 rounded-xl border border-pink-100 shadow-inner">
+                    <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-3xl shadow border-2 border-pink-300 overflow-hidden relative" id="target-img-container">
                         <span id="target-emoji">🐭</span>
                         <img id="target-img" class="absolute inset-0 w-full h-full object-cover hidden" src="" alt="target" onerror="this.classList.add('hidden')">
                     </div>
-                    <div>
-                        <div class="text-xs text-pink-500 font-extrabold" id="target-index-text">第 1 關 (1/12)</div>
-                        <div class="text-2xl font-black text-slate-800" id="target-name">1. 鼠 tshí</div>
-                        <button id="btn-target-audio" class="mt-2 text-xs bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1.5 px-3 rounded-full flex items-center gap-1 shadow transition-all active:scale-95">
-                            <i class="fas fa-volume-up"></i> 聽台語發音
+                    <div class="flex-grow">
+                        <div class="text-[10px] text-pink-500 font-extrabold" id="target-index-text">第 1 關 (1/12)</div>
+                        <div class="text-lg font-black text-slate-800" id="target-name">1. 鼠 tshí</div>
+                        <button id="btn-target-audio" class="mt-1 text-[11px] bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-2.5 rounded-full flex items-center gap-1 shadow transition-all active:scale-95">
+                            <i class="fas fa-volume-up"></i> 聽發音
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- 生命值與計時器（馬卡龍天藍與暖黃） -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-gradient-to-br from-sky-50 to-blue-100 rounded-2xl p-3 shadow-md border-2 border-sky-200 flex flex-col items-center">
-                    <span class="text-xs text-sky-600 font-black mb-1">冒險生命</span>
-                    <div id="heart-container" class="flex gap-1 text-rose-400 text-lg">
+            <div class="flex-1 grid grid-cols-2 gap-2.5">
+                <div class="bg-gradient-to-br from-sky-50 to-blue-100 rounded-2xl p-2.5 shadow-sm border-2 border-sky-200 flex flex-col items-center justify-center">
+                    <span class="text-[11px] text-sky-600 font-black mb-1">冒險生命</span>
+                    <div id="heart-container" class="flex gap-0.5 text-rose-400 text-base">
                         <i class="fas fa-heart"></i>
                         <i class="fas fa-heart"></i>
                         <i class="fas fa-heart"></i>
@@ -115,16 +115,16 @@
                         <i class="fas fa-heart"></i>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl p-3 shadow-md border-2 border-yellow-200 flex flex-col items-center">
-                    <span class="text-xs text-amber-600 font-black mb-1">挑戰時間</span>
-                    <span id="timer-text" class="text-xl font-black text-slate-700">00:00</span>
+                <div class="bg-gradient-to-br from-amber-50 to-yellow-100 rounded-2xl p-2.5 shadow-sm border-2 border-yellow-200 flex flex-col items-center justify-center">
+                    <span class="text-[11px] text-amber-600 font-black mb-1">挑戰時間</span>
+                    <span id="timer-text" class="text-lg font-black text-slate-700">00:00</span>
                 </div>
             </div>
 
             <!-- 生相進度條 -->
-            <div class="bg-white rounded-3xl p-4 shadow-md border-2 border-slate-100">
-                <span class="text-xs text-slate-400 font-bold block mb-2 text-center">🐾 十二生相收集進度</span>
-                <div class="grid grid-cols-4 gap-1.5" id="progress-bar">
+            <div class="flex-1 bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
+                <span class="text-[10px] text-slate-400 font-bold block mb-1 text-center">🐾 十二生相收集進度</span>
+                <div class="grid grid-cols-6 gap-1" id="progress-bar">
                     <!-- 進度由JS動態生成 -->
                 </div>
             </div>
@@ -132,78 +132,109 @@
 
         <!-- 中間：迷宮畫布與浮動提示容器 -->
         <div class="w-full lg:w-2/3 flex flex-col items-center justify-center relative">
-            <div class="relative w-full aspect-square max-w-[450px] bg-slate-50 rounded-3xl overflow-hidden shadow-xl border-8 border-indigo-200">
+            <div class="relative w-full aspect-square max-w-[360px] md:max-w-[380px] bg-slate-50 rounded-3xl overflow-hidden shadow-lg border-4 border-indigo-200">
                 <canvas id="mazeCanvas" class="w-full h-full block"></canvas>
                 
                 <!-- 遊戲首頁覆蓋層：每次重新開始或剛進網頁時必定顯示，點擊才開始計時 -->
-                <div id="loading-overlay" class="absolute inset-0 bg-gradient-to-br from-sky-300 via-indigo-300 to-pink-300 flex flex-col items-center justify-center text-white p-6 text-center z-10 transition-opacity duration-300">
-                    <img class="w-24 h-24 object-contain rounded-full border-4 border-white shadow-md bg-white mb-3 bounce-ui" 
+                <div id="loading-overlay" class="absolute inset-0 bg-gradient-to-br from-sky-300 via-indigo-300 to-pink-300 flex flex-col items-center justify-center text-white p-4 text-center z-10 transition-opacity duration-300">
+                    <img class="w-16 h-16 object-contain rounded-full border-2 border-white shadow-md bg-white mb-2 bounce-ui" 
                          src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" 
                          alt="Logo">
-                    <h2 class="text-3xl font-black mb-1 text-yellow-100">十二生相揣動物大迷宮</h2>
-                    <p class="text-xs text-indigo-50 mb-6 max-w-sm">準備好了嗎？點擊下方按鈕，伴隨歡樂音樂，一邊走迷宮一邊學台語吧！</p>
-                    <button id="btn-start-game" class="bg-gradient-to-r from-yellow-300 to-amber-400 hover:from-yellow-200 hover:to-amber-300 text-indigo-950 font-black px-12 py-4 rounded-full shadow-lg text-xl transform hover:scale-105 active:scale-95 transition-all">
+                    <h2 class="text-2xl font-black mb-1 text-yellow-100">十二生相揣動物大迷宮</h2>
+                    <p class="text-xs text-indigo-50 mb-4 max-w-xs">準備好了嗎？點擊下方按鈕，伴隨歡樂音樂，一邊走迷宮一邊學台語吧！</p>
+                    <button id="btn-start-game" class="bg-gradient-to-r from-yellow-300 to-amber-400 hover:from-yellow-200 hover:to-amber-300 text-indigo-950 font-black px-10 py-3 rounded-full shadow-md text-base transform hover:scale-105 active:scale-95 transition-all">
                         開始闖關挑戰！ 🎮
                     </button>
                 </div>
 
                 <!-- 課堂免中斷：無干擾浮動學習提示框 (Toast) -->
-                <div id="toast-container" class="absolute bottom-6 left-0 right-0 px-4 pointer-events-none z-10 hidden transition-opacity duration-300">
+                <div id="toast-container" class="absolute bottom-4 left-0 right-0 px-4 pointer-events-none z-10 hidden transition-opacity duration-300">
                     <!-- 浮動元件由 JS 動態生成並注入 -->
+                </div>
+            </div>
+
+            <!-- 📱 平板與手機專用：極簡萌系 D-Pad 虛擬方向盤 -->
+            <div id="virtual-dpad" class="mt-3 flex justify-center items-center">
+                <div class="grid grid-cols-3 gap-1.5 w-28 h-28">
+                    <div></div>
+                    <!-- 向上鍵 -->
+                    <button id="btn-up" class="w-9 h-9 bg-indigo-500 active:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all text-sm select-none">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <div></div>
+                    <!-- 向左鍵 -->
+                    <button id="btn-left" class="w-9 h-9 bg-indigo-500 active:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all text-sm select-none">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <!-- 中間裝飾鍵 -->
+                    <div class="w-9 h-9 bg-slate-200/60 rounded-full flex items-center justify-center text-[10px] text-slate-500 font-bold select-none">
+                        🎮
+                    </div>
+                    <!-- 向右鍵 -->
+                    <button id="btn-right" class="w-9 h-9 bg-indigo-500 active:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all text-sm select-none">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div></div>
+                    <!-- 向下鍵 -->
+                    <button id="btn-down" class="w-9 h-9 bg-indigo-500 active:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all text-sm select-none">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div></div>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- 頁尾控制：完全刪除上下左右按鈕，只保留鍵盤教學提示 (符合無滾動、純鍵盤遊玩需求) -->
+    <!-- 頁尾控制：提示訊息 -->
     <footer class="w-full max-w-md px-4 mt-1 text-center">
-        <p class="text-[13px] text-slate-500 font-bold bg-white/80 py-2 px-5 rounded-full shadow-sm inline-block border border-slate-100">
-            🎮 操作提示：請使用鍵盤方向鍵 <span class="text-indigo-600 font-black">↑ ↓ ← →</span> 或 <span class="text-indigo-600 font-black">W A S D</span> 移動小藍人
+        <p class="text-[11px] text-slate-500 font-bold bg-white/80 py-1.5 px-4 rounded-full shadow-sm inline-block border border-slate-100">
+            💻 鍵盤可用 <span class="text-indigo-600 font-black">↑↓←→</span> 或 <span class="text-indigo-600 font-black">WASD</span> ｜📱 平板/手機可直接觸碰下方藍色按鈕
         </p>
     </footer>
 
+    <!-- 勝利結算彈窗 -->
     <div id="victory-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-gradient-to-b from-yellow-50 via-white to-sky-50 rounded-3xl w-full max-w-lg border-8 border-yellow-300 shadow-2xl p-8 text-center relative overflow-hidden">
+        <div class="bg-gradient-to-b from-yellow-50 via-white to-sky-50 rounded-3xl w-full max-w-lg border-8 border-yellow-300 shadow-2xl p-6 text-center relative overflow-hidden">
             
             <!-- 閃亮獎盃 -->
-            <div class="text-7xl mb-3 animate-bounce">🏆</div>
-            <h1 class="text-3xl font-black text-red-500 tracking-wide mb-1">榮登 12 生相迷宮冠軍！</h1>
-            <p class="text-slate-600 font-bold text-sm mb-5">您真厲害！成功從「1鼠」認到「12豬」！</p>
+            <div class="text-6xl mb-2 animate-bounce">🏆</div>
+            <h1 class="text-2xl font-black text-red-500 tracking-wide mb-1">榮登 12 生相迷宮冠軍！</h1>
+            <p class="text-slate-600 font-bold text-xs mb-4">您真厲害！成功從「1鼠」認到「12豬」！</p>
             
             <!-- 計分結算板 -->
-            <div class="grid grid-cols-2 gap-4 bg-white/80 rounded-2xl p-4 mb-6 border border-sky-100 shadow-inner">
+            <div class="grid grid-cols-2 gap-3 bg-white/80 rounded-xl p-3 mb-4 border border-sky-100 shadow-inner">
                 <div>
-                    <div class="text-xs text-slate-400 font-bold">總共花費時間</div>
-                    <div id="victory-time" class="text-2xl font-black text-slate-700">00:00</div>
+                    <div class="text-[10px] text-slate-400 font-bold">總共花費時間</div>
+                    <div id="victory-time" class="text-xl font-black text-slate-700">00:00</div>
                 </div>
                 <div>
-                    <div class="text-xs text-slate-400 font-bold">碰撞精靈次數</div>
-                    <div id="victory-hits" class="text-2xl font-black text-red-400">0 次</div>
+                    <div class="text-[10px] text-slate-400 font-bold">碰撞精靈次數</div>
+                    <div id="victory-hits" class="text-xl font-black text-red-400">0 次</div>
                 </div>
             </div>
 
             <!-- 音訊播放廣播說明 -->
-            <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-6">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <span class="relative flex h-3 w-3">
+            <div class="bg-sky-50 border-2 border-sky-200 rounded-xl p-3 mb-4">
+                <div class="flex items-center justify-center gap-2 mb-1.5">
+                    <span class="relative flex h-2.5 w-2.5">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500"></span>
                     </span>
-                    <span class="text-indigo-800 font-black text-base">廣播放送中：十二生相綴我講</span>
+                    <span class="text-indigo-800 font-black text-sm">廣播放送中：十二生相綴我講</span>
                 </div>
-                <p class="text-xs text-sky-600 mb-3 font-semibold">《十二生相 1鼠. 12豬》</p>
-                <div class="flex justify-center gap-3">
-                    <button id="btn-victory-audio-play" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-5 rounded-full text-xs shadow-md flex items-center gap-1 active:scale-95 transition-all">
+                <p class="text-[11px] text-sky-600 mb-2 font-semibold">《十二生相 1鼠. 12豬》</p>
+                <div class="flex justify-center gap-2">
+                    <button id="btn-victory-audio-play" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1.5 px-4 rounded-full text-xs shadow-md flex items-center gap-1 active:scale-95 transition-all">
                         <i class="fas fa-play"></i> 播放音樂
                     </button>
-                    <button id="btn-victory-audio-pause" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-2 px-5 rounded-full text-xs shadow-md flex items-center gap-1 active:scale-95 transition-all">
+                    <button id="btn-victory-audio-pause" class="bg-slate-400 hover:bg-slate-500 text-white font-bold py-1.5 px-4 rounded-full text-xs shadow-md flex items-center gap-1 active:scale-95 transition-all">
                         <i class="fas fa-pause"></i> 靜音
                     </button>
                 </div>
             </div>
 
-            <button id="btn-victory-restart" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-4 rounded-2xl text-xl shadow-lg transform hover:-translate-y-0.5 active:translate-y-0 transition-all border-b-4 border-emerald-700">
+            <button id="btn-victory-restart" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-3 rounded-xl text-lg shadow-md transform hover:-translate-y-0.5 active:translate-y-0 transition-all border-b-4 border-emerald-700">
                 重新挑戰！ <i class="fas fa-redo ml-1"></i>
             </button>
         </div>
@@ -253,7 +284,7 @@
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // 內建 BGM 模組變數 (更輕快、具有童趣刺激感的 8-bit 電玩 BGM 旋律)
+        // 內建 BGM 模組變數
         let bgmInterval = null;
         let bgmPlaying = false;
         const bgmNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // C4 - C5 音階
@@ -265,7 +296,6 @@
             bgmPlaying = true;
             document.getElementById('bgm-status-text').innerHTML = `音樂: 開 <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>`;
             
-            // 嘗試解鎖瀏覽器 AudioContext 限制
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
@@ -273,7 +303,6 @@
             bgmInterval = setInterval(() => {
                 if (!gameState.isPlaying || gameState.isModalOpen || !bgmPlaying) return;
                 try {
-                    // 主音符
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.connect(gain);
@@ -284,13 +313,12 @@
                     
                     osc.type = 'triangle'; // 軟萌 8-bit 三角波
                     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 提高音量，確保能清晰聽到背景音樂
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 清晰背景音量
                     gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
                     
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.25);
                     
-                    // 規律打擊節奏低音
                     if (bgmStep % 4 === 0) {
                         const bassOsc = audioCtx.createOscillator();
                         const bassGain = audioCtx.createGain();
@@ -305,7 +333,7 @@
                     }
                     bgmStep++;
                 } catch(e) { console.log(e); }
-            }, 300); // 稍微加快節拍，增加走迷宮的緊張刺激感
+            }, 300);
         }
 
         function stopProceduralBGM() {
@@ -381,10 +409,10 @@
             } catch (e) { console.log(e); }
         }
 
-        // 語音載入與控制 (將 grandAudioElement 設為不循環播放)
+        // 語音載入與控制 (僅播放一次)
         let activeAudioElement = null;
         let grandAudioElement = new Audio(GRAND_AUDIO_URL);
-        grandAudioElement.loop = false; // 音檔不要循環播放，播放 1 次就好。
+        grandAudioElement.loop = false; 
 
         function playZodiacAudio(url) {
             if (activeAudioElement) {
@@ -420,7 +448,7 @@
             maze[1][1] = 0;
             carve(1, 1);
             
-            // 開闢額外的輔助捷徑
+            // 開闢捷徑
             for (let i = 1; i < size - 1; i++) {
                 for (let j = 1; j < size - 1; j++) {
                     if (maze[i][j] === 1 && Math.random() < 0.1) {
@@ -450,7 +478,6 @@
             return cells;
         }
 
-        // 佈局生相
         function distributeZodiacs(maze, size) {
             let available = getAvailableCells(maze, size);
             available.sort(() => Math.random() - 0.5);
@@ -476,44 +503,11 @@
             return positions;
         }
 
-        // 尋找最短路徑 (BFS)
-        function findShortestPath(maze, start, end) {
-            let size = maze.length;
-            let queue = [ [start] ];
-            let visited = Array(size).fill().map(() => Array(size).fill(false));
-            visited[start.y][start.x] = true;
-
-            const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-
-            while (queue.length > 0) {
-                let path = queue.shift();
-                let curr = path[path.length - 1];
-
-                if (curr.x === end.x && curr.y === end.y) {
-                    return path;
-                }
-
-                for (let [dx, dy] of dirs) {
-                    let nx = curr.x + dx;
-                    let ny = curr.y + dy;
-
-                    if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
-                        if (maze[ny][nx] === 0 && !visited[ny][nx]) {
-                            visited[ny][nx] = true;
-                            queue.push([...path, { x: nx, y: ny }]);
-                        }
-                    }
-                }
-            }
-            return [];
-        }
-
         const canvas = document.getElementById('mazeCanvas');
         const ctx = canvas.getContext('2d');
         let tileCount = gameState.gridSize;
         let tileSize = 0;
 
-        // 初始化阻路小精靈 (Spirits)
         function initSpirits() {
             gameState.spirits = [];
             let available = getAvailableCells(gameState.maze, gameState.gridSize);
@@ -536,7 +530,7 @@
         }
 
         function idxToHue(idx) {
-            const hues = [330, 260, 190, 80]; // 粉紅、粉紫、天藍、嫩綠
+            const hues = [330, 260, 190, 80]; 
             return hues[idx % hues.length];
         }
 
@@ -568,7 +562,7 @@
             }
 
             // 3. 繪製起點
-            ctx.fillStyle = '#fbcfe8'; // 粉紅櫻花
+            ctx.fillStyle = '#fbcfe8'; 
             ctx.fillRect(1 * tileSize + 2, 1 * tileSize + 2, tileSize - 4, tileSize - 4);
             ctx.fillStyle = '#db2777';
             ctx.font = `bold ${tileSize * 0.35}px sans-serif`;
@@ -619,10 +613,8 @@
                     ctx.arc(x, y, tileSize * 0.45 * pulse, 0, Math.PI * 2);
                     ctx.stroke();
 
-                    // Emoji
                     ctx.font = `${tileSize * 0.52}px Arial`;
                     ctx.fillText(item.emoji, x, y - 1);
-                    // 名字
                     ctx.fillStyle = '#be123c';
                     ctx.font = `bold ${tileSize * 0.3}px sans-serif`;
                     ctx.fillText(item.name, x, y + tileSize * 0.34);
@@ -654,7 +646,6 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // 可愛精靈眼
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
                 ctx.arc(x - 5, y - 3, 3.5, 0, Math.PI * 2);
@@ -673,15 +664,14 @@
             
             const isInvincible = Date.now() < gameState.invincibleUntil;
             
-            // 如果在無敵時間內，繪製亮黃色的金色防護罩
             if (isInvincible) {
                 ctx.shadowColor = '#fbbf24';
                 ctx.shadowBlur = 14;
-                ctx.fillStyle = '#fbbf24'; // 金黃無敵外殼
+                ctx.fillStyle = '#fbbf24'; 
             } else {
                 ctx.shadowColor = '#60a5fa';
                 ctx.shadowBlur = 8;
-                ctx.fillStyle = '#3b82f6'; // 經典小藍人
+                ctx.fillStyle = '#3b82f6'; 
             }
             
             ctx.beginPath();
@@ -689,7 +679,6 @@
             ctx.fill();
             ctx.shadowBlur = 0; 
 
-            // 眼神
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(px - 4, py - 2, 4.5, 0, Math.PI * 2);
@@ -701,17 +690,13 @@
             ctx.arc(px + 5, py - 2, 1.8, 0, Math.PI * 2);
             ctx.fill();
             
-            // 無敵時發出金色閃爍小嘴，平時是白線微笑
             ctx.strokeStyle = isInvincible ? '#b45309' : '#ffffff';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.arc(px, py + 3, 3.5, 0, Math.PI);
             ctx.stroke();
 
-            // 8. 繪製粒子特效
             drawParticles();
-
-            // 9. 繪製煙火
             drawFireworks();
 
             if (gameState.isPlaying) {
@@ -805,7 +790,6 @@
                     let nextX = spirit.x + spirit.dx;
                     let nextY = spirit.y + spirit.dy;
 
-                    // 加固規則：精靈不能踩到當前目標生肖格子，也不能踩到起點格子(1, 1)
                     const isTargetCell = (currentTarget && nextX === currentTarget.x && nextY === currentTarget.y);
                     const isStartCell = (nextX === 1 && nextY === 1);
 
@@ -846,7 +830,6 @@
         }
 
         function checkSpiritCollision(spirit) {
-            // 如果玩家正處於無敵護盾期，不觸發任何碰撞懲罰
             if (Date.now() < gameState.invincibleUntil) return;
 
             if (spirit.x === gameState.player.x && spirit.y === gameState.player.y) {
@@ -858,7 +841,6 @@
                 canvas.classList.add('animate-pulse');
                 setTimeout(() => canvas.classList.remove('animate-pulse'), 250);
 
-                // 受到懲罰回彈到起點
                 gameState.player = { x: 1, y: 1 };
 
                 if (gameState.lives <= 0) {
@@ -893,52 +875,43 @@
                 playSynthSound('chime');
                 const item = ZODIAC_DATA[gameState.currentLevelIndex];
 
-                // 產生碰觸時的粒子大爆炸特效
                 createParticles(
                     (currentTarget.x + 0.5) * tileSize, 
                     (currentTarget.y + 0.5) * tileSize, 
-                    '#fbbf24' // 金色爆炸
+                    '#fbbf24' 
                 );
 
-                // 關鍵優化 ──── 觸碰生肖成功時：
-                // 1. 給予學生 2秒 護盾無敵期，呈現金色光圈，完全免受精靈干擾，停留在原地！
+                // 2秒無敵護盾
                 gameState.invincibleUntil = Date.now() + 2000;
 
-                // 2. 立即撥音檔
                 playZodiacAudio(item.audio);
-
-                // 3. 顯示無干擾浮動提示 (Toast)
                 showFloatingToast(item);
 
-                // 4. 馬上將進度條中的格子點亮，代表已解鎖
                 const progressCells = document.querySelectorAll('#progress-bar div');
                 if (progressCells[gameState.currentLevelIndex]) {
                     progressCells[gameState.currentLevelIndex].classList.remove('bg-indigo-50', 'text-indigo-400');
                     progressCells[gameState.currentLevelIndex].classList.add('bg-emerald-400', 'text-white', 'border-emerald-500');
                 }
 
-                // 5. 移到下一關（學生留在原地不彈回起點，可以直接接續遊戲！）
                 if (gameState.currentLevelIndex < 11) {
                     gameState.currentLevelIndex++;
                     updateUI();
                 } else {
-                    // 全數完成！ (到 12 豬)
                     triggerVictory();
                 }
             }
         }
 
-        // 無阻礙學習浮動通知 (Toast)
         function showFloatingToast(item) {
             const container = document.getElementById('toast-container');
             container.innerHTML = `
-                <div class="toast-animate bg-white/95 border-4 border-yellow-400 rounded-3xl p-3 shadow-2xl flex items-center gap-3 max-w-xs mx-auto">
-                    <div class="w-12 h-12 rounded-xl border-2 border-yellow-200 bg-yellow-50 flex items-center justify-center text-3xl shadow-sm">
+                <div class="toast-animate bg-white/95 border-4 border-yellow-400 rounded-3xl p-2.5 shadow-2xl flex items-center gap-3 max-w-xs mx-auto">
+                    <div class="w-10 h-10 rounded-xl border-2 border-yellow-200 bg-yellow-50 flex items-center justify-center text-2xl shadow-sm">
                         <span>${item.emoji}</span>
                     </div>
                     <div class="text-left flex-grow">
-                        <div class="text-[10px] text-amber-500 font-extrabold tracking-widest">👑 成功解鎖！</div>
-                        <div class="text-lg font-black text-slate-800 leading-tight">${item.id}. ${item.name} (${item.pinyin})</div>
+                        <div class="text-[9px] text-amber-500 font-extrabold tracking-widest">👑 成功解鎖！</div>
+                        <div class="text-sm font-black text-slate-800 leading-tight">${item.id}. ${item.name} (${item.pinyin})</div>
                     </div>
                 </div>
             `;
@@ -954,10 +927,8 @@
             gameState.isPlaying = false;
             stopProceduralBGM();
             
-            // 1. 立即發出成功的響炮鞭炮聲
             playSynthesizedFirecracker();
 
-            // 2. 施放全螢幕歡慶煙火
             const width = canvas.width;
             const height = canvas.height;
             for (let i = 0; i < 6; i++) {
@@ -966,16 +937,14 @@
                 }, i * 220);
             }
 
-            // 3. 隔 1 秒馬上出現冠軍圖樣並直接播放音檔
             setTimeout(() => {
                 document.getElementById('victory-time').innerText = document.getElementById('timer-text').innerText;
                 document.getElementById('victory-hits').innerText = gameState.totalHits + " 次";
                 document.getElementById('victory-modal').classList.remove('hidden');
 
-                // 播放「十二生相1鼠.12豬.mp3」(不循環只播放 1 次)
                 grandAudioElement.currentTime = 0;
                 grandAudioElement.play().catch(e => {
-                    console.log("Auto-play was blocked. Teacher can click Play manually.", e);
+                    console.log("Auto-play was blocked.", e);
                 });
             }, 1000);
         }
@@ -995,7 +964,7 @@
             const progressCells = document.querySelectorAll('#progress-bar div');
             progressCells.forEach((cell, idx) => {
                 if (idx === gameState.currentLevelIndex) {
-                    cell.className = "h-11 bg-pink-400 text-white font-black border-2 border-pink-500 rounded-xl flex flex-col items-center justify-center text-xs shadow-md animate-bounce";
+                    cell.className = "h-9 bg-pink-400 text-white font-black border-2 border-pink-500 rounded-xl flex flex-col items-center justify-center text-xs shadow-md animate-bounce";
                 }
             });
         }
@@ -1012,7 +981,6 @@
             }
         }
 
-        // 修改後的安全計時器 (保證每次重新挑戰或重來都能完全重設為00:00)
         function startTimer() {
             if (window.timerInterval) {
                 clearInterval(window.timerInterval);
@@ -1031,41 +999,36 @@
             }, 1000);
         }
 
-        // 重新初始化遊戲數據，但「不立即開始計時」，必須等玩家按開始
         function prepareNewGame() {
             gameState.currentLevelIndex = 0;
             gameState.score = 0;
             gameState.lives = 5;
             gameState.totalHits = 0;
             gameState.elapsedTime = 0;
-            gameState.isPlaying = false; // 關鍵：等待點擊開始
+            gameState.isPlaying = false; 
             gameState.isModalOpen = false;
             gameState.player = { x: 1, y: 1 };
             gameState.fireworks = [];
             gameState.particles = [];
             gameState.invincibleUntil = 0;
 
-            // 停止舊定時器
             if (window.timerInterval) clearInterval(window.timerInterval);
             if (window.spiritTimer) clearInterval(window.spiritTimer);
 
-            // 重設計時器文字
             document.getElementById('timer-text').innerText = "00:00";
 
-            // 生成迷宮與生肖
             gameState.maze = generateMaze(gameState.gridSize);
             gameState.zodiacPositions = distributeZodiacs(gameState.maze, gameState.gridSize);
             
             initSpirits();
 
-            // 繪製糖果小進度格
             const pBar = document.getElementById('progress-bar');
             pBar.innerHTML = '';
             ZODIAC_DATA.forEach((item, idx) => {
                 pBar.innerHTML += `
-                    <div class="h-11 bg-indigo-50 text-indigo-400 font-extrabold border-2 border-indigo-100 rounded-xl flex flex-col items-center justify-center text-xs transition-colors">
-                        <span class="text-[13px]">${item.name}</span>
-                        <span class="text-[9px] font-normal">${item.id}</span>
+                    <div class="h-9 bg-indigo-50 text-indigo-400 font-extrabold border-2 border-indigo-100 rounded-xl flex flex-col items-center justify-center text-xs transition-colors">
+                        <span class="text-[11px]">${item.name}</span>
+                        <span class="text-[8px] font-normal">${item.id}</span>
                     </div>
                 `;
             });
@@ -1073,64 +1036,48 @@
             updateHearts();
             updateUI();
             resizeCanvas();
-
-            // 繪製靜止迷宮
             drawGame();
 
-            // 彈出首頁覆蓋層，讓學生準備好再點擊開始
             const overlay = document.getElementById('loading-overlay');
             overlay.classList.remove('hidden', 'opacity-0');
         }
 
-        // 正式啟動遊戲 (計時器、BGM及精靈活動)
         function startGameSession() {
             gameState.isPlaying = true;
             
-            // 啟動背景音樂
             if (bgmPlaying) {
                 startProceduralBGM();
             }
 
-            // 開啟小精靈定時器
             if (window.spiritTimer) clearInterval(window.spiritTimer);
             window.spiritTimer = setInterval(updateSpirits, 50);
 
-            // 開始精準計時
             startTimer();
-
-            // 啟動繪圖迴圈
             requestAnimationFrame(drawGame);
         }
 
-        // 綁定各類交互事件
         window.onload = function() {
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
-            // 準備首局遊戲狀態
             prepareNewGame();
 
-            // 點擊「開始闖關挑戰！」按鈕
             document.getElementById('btn-start-game').addEventListener('click', () => {
-                // 強制解鎖並啟用瀏覽器 AudioContext 資源
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
                 playSynthSound('click');
                 
-                // 隱藏開始遮罩
                 const overlay = document.getElementById('loading-overlay');
                 overlay.classList.add('opacity-0');
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                 }, 300);
 
-                // 預設為開啟音樂並啟動
                 bgmPlaying = true; 
                 startGameSession();
             });
 
-            // 右上角「重來」按鈕 (強制回到「開始」畫面，重新按下才計時)
             document.getElementById('btn-restart').addEventListener('click', () => {
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -1141,7 +1088,6 @@
                 prepareNewGame();
             });
 
-            // BGM音樂切換開關
             document.getElementById('btn-toggle-bgm').addEventListener('click', () => {
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -1154,7 +1100,6 @@
                 }
             });
 
-            // 最短路徑導航提示
             const btnGuide = document.getElementById('btn-guide');
             btnGuide.addEventListener('click', () => {
                 playSynthSound('click');
@@ -1170,7 +1115,6 @@
                 }
             });
 
-            // 主動點擊重新發音
             document.getElementById('btn-target-audio').addEventListener('click', () => {
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -1179,7 +1123,6 @@
                 playZodiacAudio(ZODIAC_DATA[gameState.currentLevelIndex].audio);
             });
 
-            // 冠軍結算音樂控制
             document.getElementById('btn-victory-audio-play').addEventListener('click', () => {
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -1192,7 +1135,6 @@
                 grandAudioElement.pause();
             });
 
-            // 結算後再試一次 (返回開始畫面)
             document.getElementById('btn-victory-restart').addEventListener('click', () => {
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
@@ -1203,7 +1145,24 @@
                 prepareNewGame();
             });
 
-            // 鍵盤監聽事件
+            // 📱 綁定 D-Pad 方向鍵 pointerdown 事件 (通用支援滑鼠與觸控)
+            const bindDPadButton = (id, dx, dy) => {
+                const btn = document.getElementById(id);
+                btn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    movePlayer(dx, dy);
+                });
+            };
+
+            bindDPadButton('btn-up', 0, -1);
+            bindDPadButton('btn-down', 0, 1);
+            bindDPadButton('btn-left', -1, 0);
+            bindDPadButton('btn-right', 1, 0);
+
+            // 💻 鍵盤監聽事件
             window.addEventListener('keydown', (e) => {
                 if (gameState.isModalOpen) return;
                 switch (e.key) {
