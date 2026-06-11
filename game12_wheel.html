@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>古錐ê十二生相轉盤</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 導入 Gaegu (手寫活潑風) 與 Noto Sans TC -->
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght=700&family=Fredoka+One&family=Noto+Sans+TC:wght=400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #fdf6ec; /* 溫暖柔和的粉黃色底 */
+    }
+    /* 活潑可愛的手寫風格字體 */
+    .lively-font {
+      font-family: 'Gaegu', 'Noto Sans TC', sans-serif;
+    }
+    .fredoka {
+      font-family: 'Fredoka One', cursive;
+    }
+    /* 轉盤外圍發光效果 */
+    .wheel-shadow {
+      filter: drop-shadow(0 10px 25px rgba(229, 115, 115, 0.3));
+    }
+    /* 播放中按鈕波浪動畫 */
+    @keyframes musicPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); filter: brightness(1.05); }
+    }
+    .music-playing {
+      animation: musicPulse 1.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden text-slate-800 justify-between">
+
+  <!-- 頂部標題區 -->
+  <header class="w-full bg-white shadow-sm border-b border-orange-100 py-3 px-4 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <!-- 專屬 Logo 區 -->
+        <div class="bg-amber-50 p-1 rounded-full shadow-md border border-amber-200 shrink-0 transition-transform hover:scale-110 duration-200">
+          <img 
+            src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" 
+            alt="Logo" 
+            class="h-12 w-12 object-contain rounded-full"
+            onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23f59e0b\'><circle cx=\'12\' cy=\'12\' r=\'10\'/></svg>'"
+          />
+        </div>
+        <div>
+          <!-- 標題改為活潑體並將生肖改為生相 -->
+          <h1 class="text-2xl sm:text-3.5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500 tracking-wide lively-font">
+            古錐ê十二生相轉盤
+          </h1>
+          <!-- 修正：將拼音 subtitle 修改為 Kóo-tsui ê tsa̍p-jī senn-siunn tsuán-puânn -->
+          <p class="text-xs text-orange-400 font-bold tracking-wider">Kóo-tsui ê tsa̍p-jī senn-siunn tsuán-puânn</p>
+        </div>
+      </div>
+      
+      <!-- 控制按鈕組：僅保留完整朗讀 -->
+      <div class="flex items-center gap-2">
+        <button id="btn-play-all" class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white bg-emerald-500 hover:bg-emerald-600 shadow-md transition-all duration-200 active:scale-95">
+          <span id="btn-play-all-icon">🎵</span>
+          <span id="btn-play-all-text">聽生相(1鼠-12豬)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主要內容區：自適應排版（轉盤與結果並排） -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6 items-center justify-center">
+    
+    <!-- 左側：轉盤舞台區 -->
+    <div class="w-full md:flex-1 flex flex-col items-center justify-center bg-white rounded-3xl p-4 sm:p-6 shadow-md border border-orange-100 relative min-h-[400px] max-w-[460px]">
+      
+      <!-- 轉盤指向箭頭 (頂部 12 點鐘方向) -->
+      <div class="absolute top-2 sm:top-4 z-20 flex flex-col items-center">
+        <!-- 可愛三角形箭頭 -->
+        <div class="w-0 h-0 border-l-[18px] border-l-transparent border-r-[18px] border-r-transparent border-t-[32px] border-t-rose-500 drop-shadow-md"></div>
+        <!-- 點綴小圓點 -->
+        <div class="w-3.5 h-3.5 rounded-full bg-rose-500 -mt-1 shadow-sm"></div>
+      </div>
+
+      <!-- 轉盤畫布容器 -->
+      <div id="canvas-container" class="w-full aspect-square flex items-center justify-center relative wheel-shadow">
+        <!-- 純 Canvas 繪製，絕不跑位 -->
+        <canvas id="wheel-canvas" class="cursor-pointer transition-transform duration-75 rounded-full"></canvas>
+        
+        <!-- 中央啟動按鈕 -->
+        <button id="btn-spin" class="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500 text-white font-black text-lg sm:text-xl shadow-[0_6px_16px_rgba(239,68,68,0.4)] hover:shadow-[0_8px_24px_rgba(239,68,68,0.6)] border-4 border-white active:scale-95 transition-all duration-150 flex flex-col items-center justify-center z-10">
+          <span class="tracking-widest lively-font text-xl sm:text-2xl">GO!</span>
+          <span class="text-[10px] opacity-90 font-bold -mt-0.5">開轉</span>
+        </button>
+      </div>
+
+      <!-- 快速提示說明 -->
+      <p class="text-xs text-slate-400 mt-4 text-center">
+        💡 點擊轉盤中央的 <span class="text-rose-500 font-bold">GO!</span> 或直接點擊轉盤即可啟動！
+      </p>
+    </div>
+
+    <!-- 右側：結果面板 (全面改版為暖白蜜桃對比卡片，確保極致可讀性) -->
+    <div class="w-full md:w-[400px] flex flex-col gap-5 self-stretch justify-center">
+      
+      <!-- 結果看板 -->
+      <div class="bg-amber-50/95 text-slate-800 rounded-3xl p-6 shadow-xl border-4 border-amber-300 relative overflow-hidden flex flex-col justify-center min-h-[300px] transition-all duration-300">
+        <!-- 背景裝飾圓形 -->
+        <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-amber-200/20 rounded-full"></div>
+        <div class="absolute -left-4 -top-4 w-16 h-16 bg-amber-200/20 rounded-full"></div>
+        
+        <h2 class="text-sm font-black uppercase tracking-wider text-amber-800 mb-3 flex items-center gap-1.5 z-10">
+          <span>🌟 轉盤結果與台語學習 🌟</span>
+        </h2>
+        
+        <div id="result-placeholder" class="py-12 flex flex-col items-center justify-center z-10">
+          <div class="text-6xl mb-3 animate-pulse">🎡</div>
+          <p class="font-bold text-base text-amber-800">快來轉動盤，聽生相台語！</p>
+        </div>
+
+        <div id="result-display" class="hidden flex flex-col gap-4 py-1 z-10">
+          <!-- 上半部：生肖與大圖 -->
+          <div class="flex items-center gap-4">
+            <!-- 結果大圖 -->
+            <div id="result-img-container" class="w-20 h-20 rounded-2xl bg-white p-2 shadow-inner flex items-center justify-center shrink-0 border-2 border-amber-200">
+              <!-- 動態插入生肖圖片 -->
+            </div>
+            <!-- 結果文字 -->
+            <div class="flex-1">
+              <div class="flex items-baseline gap-2">
+                <span id="result-ch" class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 lively-font"></span>
+                <!-- 修正：將拼音字體顏色改為鮮豔正深藍色 text-[#1d4ed8] -->
+                <span id="result-pinyin" class="text-lg sm:text-xl font-bold text-[#1d4ed8] fredoka"></span>
+              </div>
+              <p id="result-desc" class="text-xs text-slate-600 mt-1 font-bold leading-relaxed"></p>
+              
+              <button id="btn-replay" class="mt-2 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black bg-white text-orange-600 hover:bg-orange-100 border border-orange-200 transition-all duration-150 shadow-sm active:scale-95">
+                <span>🔊 閣聽一次</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 下半部：延伸學習詞彙 -->
+          <div class="border-t border-amber-200 pt-3">
+            <h3 class="text-xs font-black text-amber-800 mb-2 flex items-center gap-1">
+              <span>📖 點擊詞彙聽發音：</span>
+            </h3>
+            <div id="vocab-container" class="space-y-2">
+              <!-- 延伸詞彙卡片 -->
+            </div>
+          </div>
+
+          <!-- 教育部辭典外連按鈕 -->
+          <div class="mt-2">
+            <a id="link-moe" href="#" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl text-xs font-black bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white transition-all duration-150 shadow-md border border-orange-400 active:scale-95 text-center">
+              <span>🔍 進入「教育部閩南語辭典」看詳細</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="w-full text-center py-4 text-xs text-orange-400 font-bold">
+    古錐ê十二生相轉盤 © 2026 • 響應式台語學習教具
+  </footer>
+
+  <!-- 彈出視窗：瀏覽器語音啟用提示 -->
+  <div id="modal-audio-hint" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 text-center shadow-2xl border border-orange-100">
+      <div class="text-5xl mb-3">🎵</div>
+      <h3 class="font-black text-lg text-slate-800">開啟生相台語讀音</h3>
+      <p class="text-sm text-slate-500 mt-2 mb-4">歡迎使用！為了讓轉盤停止時能自動為您播放十二生肖台語音檔，請點擊下方按鈕以啟用聲音播放權限喔！</p>
+      <button id="btn-enable-audio" class="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black rounded-2xl shadow-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-150 active:scale-95">
+        好的，開啟遊戲！
+      </button>
+    </div>
+  </div>
+
+  <!-- 核心遊戲控制腳本 -->
+  <script>
+    // 12生相完整資料結構
+    const ZODIAC_DATA = [
+      { 
+        id: 1, 
+        name: '鼠', 
+        pinyin: 'tshí', 
+        emoji: '🐭', 
+        color: '#ffb3ba', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/10/10356.mp3', 
+        description: '十二生相頭一名，精靈聰明真靈活！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BC%A0',
+        vocab: [
+          { word: '鳥鼠', pinyin: 'niáu-tshí', mean: '老鼠的統稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8129.mp3' },
+          { word: '鳥鼠仔色', pinyin: 'niáu-tshí-á-sik', mean: '灰色、老鼠灰色', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14305.mp3' }
+        ]
+      },
+      { 
+        id: 2, 
+        name: '牛', 
+        pinyin: 'gû', 
+        emoji: '🐮', 
+        color: '#ffdfba', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1218.mp3', 
+        description: '牛步踏實肯打拼，骨力作穡真好心！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%89%9B',
+        vocab: [
+          { word: '牛奶喙仔', pinyin: 'gû-ling-tshuì-á', mean: '乳臭未乾、黃毛小兒', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1231.mp3' },
+          { word: '地牛翻身', pinyin: 'tē-gû-huan-sin', mean: '地震的俗稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2303.mp3' }
+        ]
+      },
+      { 
+        id: 3, 
+        name: '虎', 
+        pinyin: 'hóo', 
+        emoji: '🐯', 
+        color: '#ffffba', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4482.mp3', 
+        description: '山中之王真威風，威震八方氣勢洪！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%99%8E',
+        vocab: [
+          { word: '虎鼻師', pinyin: 'hóo-phīnn-sai', mean: '嗅覺靈敏的人（引申消息靈通）', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4636.mp3' },
+          { word: '大日虎', pinyin: 'tuā-ji̍t-hóo', mean: '指農曆大凶日、忌諱成婚日', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/Xm/dI/292071.mp3' }
+        ]
+      },
+      { 
+        id: 4, 
+        name: '兔', 
+        pinyin: 'thòo', 
+        emoji: '🐰', 
+        color: '#baffc9', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3581.mp3', 
+        description: '兔仔跳跳真古錐，耳仔長長愛食菜！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E5%85%94',
+        vocab: [
+          { word: '掠兔仔', pinyin: 'lia̍h-thòo-á', mean: '暈車或酒後嘔吐的俗稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7348.mp3' },
+          { word: '兔仔尾', pinyin: 'thòo-á-bué', mean: '極短小的尾巴、兔尾巴', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/3/3623.mp3' }
+        ]
+      },
+      { 
+        id: 5, 
+        name: '龍', 
+        pinyin: 'lîng', 
+        emoji: '🐲', 
+        color: '#bae1ff', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12091.mp3', 
+        description: '飛龍在天展神通，吉祥如意好運通！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%BE%8D',
+        vocab: [
+          { word: '起蛟龍', pinyin: 'khí-kau-lîng', mean: '龍捲風發威的俗稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/14/14248.mp3' },
+          { word: '扒龍船', pinyin: 'pê-lîng-tsûn', mean: '划龍舟，端午傳統競賽', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1817.mp3' }
+        ]
+      },
+      { 
+        id: 6, 
+        name: '蛇', 
+        pinyin: 'tsuâ', 
+        emoji: '🐍', 
+        color: '#e8cbff', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7818.mp3', 
+        description: '身軀長長真會溜，頭腦聰明智慧高！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%9B%87',
+        vocab: [
+          { word: '蛇瓜', pinyin: 'tsuâ-kue', mean: '蛇瓜（一種長條斑紋的瓜菜）', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/7/7824.mp3' },
+          { word: '死蛇活尾溜', pinyin: 'sí-tsuâ-ua̍h-bué-liu', mean: '形容百折不撓、垂死掙扎', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/m6/yJ/270131.mp3' }
+        ]
+      },
+      { 
+        id: 7, 
+        name: '馬', 
+        pinyin: 'bé', 
+        emoji: '🐴', 
+        color: '#ffd1dc', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/6/6798.mp3', 
+        description: '駿馬奔馳行千里，事業發達萬事起！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%A6%AC',
+        vocab: [
+          { word: '碌硞馬', pinyin: 'lo̍k-kho̍k-bé', mean: '木馬或搖擺玩具馬', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/9/9794.mp3' },
+          { word: '打馬膠', pinyin: 'tá-má-ka', mean: '瀝青、柏油路面的原料', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1754.mp3' }
+        ]
+      },
+      { 
+        id: 8, 
+        name: '羊', 
+        pinyin: 'iûnn', 
+        emoji: '🐑', 
+        color: '#e1f7d5', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2588.mp3', 
+        description: '溫柔綿羊真和氣，三陽開泰好福氣！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%BE%8A',
+        vocab: [
+          { word: '羊母', pinyin: 'iûnn-bó', mean: '母羊', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2640.mp3' },
+          { word: '羊犅', pinyin: 'iûnn-káng', mean: '公羊', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/2/2738.mp3' }
+        ]
+      },
+      { 
+        id: 9, 
+        name: '猴', 
+        pinyin: 'kâu', 
+        emoji: '🐵', 
+        color: '#ffebd3', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/8/8571.mp3', 
+        description: '猴學爬樹上靈活，手腳敏捷笑呵呵！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8C%B4', 
+        vocab: [
+          { word: '蝦猴', pinyin: 'hê-kâu', mean: '螻蛄蝦（鹿港特色海鮮）', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11341.mp3' },
+          { word: '麵猴', pinyin: 'mī-kâu', mean: '麵疙瘩、古早味麵點', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/13/13067.mp3' }
+        ]
+      },
+      { 
+        id: 10, 
+        name: '雞', 
+        pinyin: 'ke', 
+        emoji: '🐔', 
+        color: '#f1ffc4', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12657.mp3', 
+        description: '金雞報曉起大早，骨力讀書免煩惱！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E9%9B%9E',
+        vocab: [
+          { word: '雞仔目', pinyin: 'ke-á-ba̍k', mean: '夜盲症、近視或視力極差的俗稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12668.mp3' },
+          { word: '雞鵤仔車', pinyin: 'ke-kak-á-tshia', mean: '獨輪手推車', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/12/12685.mp3' }
+        ]
+      },
+      { 
+        id: 11, 
+        name: '狗', 
+        pinyin: 'káu', 
+        emoji: '🐶', 
+        color: '#d2f3fc', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/4/4329.mp3', 
+        description: '忠心守家好夥伴，守護平安最安心！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E7%8B%97',
+        vocab: [
+          { word: '天狗熱', pinyin: 'thian-káu-jia̍t', mean: '登革熱的台語雅俗稱', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/0/972.mp3' },
+          { word: '目狗針', pinyin: 'ba̍k-káu-tsiam', mean: '針眼、麥粒腫', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/1/1912.mp3' }
+        ]
+      },
+      { 
+        id: 12, 
+        name: '豬', 
+        pinyin: 'ti', 
+        emoji: '🐷', 
+        color: '#fdd7e4', 
+        sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11384.mp3', 
+        description: '憨厚福泰大耳朵，福氣滿載好生活！',
+        moeUrl: 'https://sutian.moe.edu.tw/und-hani/tshiau/?lui=tai_su&tsha=%E8%B1%AC',
+        vocab: [
+          { word: '豬牢', pinyin: 'ti-tiâu', mean: '豬圈、豬欄', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/subak/11/11417.mp3' },
+          { word: '海豬仔泅', pinyin: 'hái-ti-á-siû', mean: '海豚游泳戲水的奇觀', sound: 'https://sutian.moe.edu.tw/media/senn/mp3/imtong/vF/Fc/294371.mp3' }
+        ]
+      }
+    ];
+
+    // 全生肖朗讀語音網址
+    const AUDIO_ALL_URL = 'https://raw.githubusercontent.com/tsong-su/iuhi/main/%E5%8D%81%E4%BA%8C%E7%94%9F%E7%9B%B81%E9%BC%A0.12%E8%B1%AC.mp3';
+
+    // 系統固定變數 (安全寫死)
+    const IMAGE_PREFIX = 'https://raw.githubusercontent.com/tsong-su/iuhi/main/zodiac_assets/';
+    const IMAGE_EXT = 'png';
+
+    // 聲音播放與 Web Audio 刻度音效
+    let currentAudio = null;
+    let audioAllObj = null; // 完整 1~12 朗讀音檔
+    let audioContext = null;
+
+    // 智慧公平牌組演算法變數：儲存生肖卡牌組
+    let zodiacDeck = [];
+
+    // 轉盤狀態
+    let currentRotation = 0; // 當前旋轉角度 (弧度)
+    let isSpinning = false;
+    let lastTickAngle = 0;
+    const totalSlices = 12;
+    const sliceAngle = (2 * Math.PI) / totalSlices;
+
+    // 幾何定位：1. 鼠 在 12 點鐘方向
+    const baseOffset = -Math.PI / 2 - sliceAngle / 2;
+
+    // DOM 元素
+    const canvas = document.getElementById('wheel-canvas');
+    const ctx = canvas.getContext('2d');
+    const btnSpin = document.getElementById('btn-spin');
+    const resultPlaceholder = document.getElementById('result-placeholder');
+    const resultDisplay = document.getElementById('result-display');
+    const resultCh = document.getElementById('result-ch');
+    const resultPinyin = document.getElementById('result-pinyin');
+    const resultDesc = document.getElementById('result-desc');
+    const btnReplay = document.getElementById('btn-replay');
+    
+    // 詞彙與辭典 DOM
+    const vocabContainer = document.getElementById('vocab-container');
+    const linkMoe = document.getElementById('link-moe');
+
+    // 朗讀按鈕相關 DOM
+    const btnPlayAll = document.getElementById('btn-play-all');
+    const btnPlayAllIcon = document.getElementById('btn-play-all-icon');
+    const btnPlayAllText = document.getElementById('btn-play-all-text');
+
+    const modalAudioHint = document.getElementById('modal-audio-hint');
+    const btnEnableAudio = document.getElementById('btn-enable-audio');
+
+    // 儲存已載入的圖片物件 (用於 Canvas 渲染)
+    const loadedImages = {};
+
+    // 智慧型圖片載入器：使用 CORS 載入圖片並快取至 Canvas
+    function loadZodiacImages() {
+      ZODIAC_DATA.forEach(item => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // 啟用跨域，防止污染畫布
+        
+        // 檔名格式：「01.鼠.png」
+        const idStr2 = String(item.id).padStart(2, '0');
+        const filename = `${idStr2}.${item.name}.${IMAGE_EXT}`;
+        img.src = `${IMAGE_PREFIX}${encodeURIComponent(filename)}`;
+
+        img.onload = () => {
+          loadedImages[item.id] = img;
+          drawWheel(); // 重新渲染轉盤
+        };
+        img.onerror = () => {
+          loadedImages[item.id] = null;
+          drawWheel();
+        };
+      });
+    }
+
+    // 建立轉動刻度叮咚聲
+    function playTickSound() {
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+        
+        const osc = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.08);
+        
+        gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.09);
+      } catch (err) {
+        console.warn('Audio Context 無法建立:', err);
+      }
+    }
+
+    // 播放特定生相或延伸詞彙的單獨音檔
+    function playZodiacAudio(url) {
+      pauseAudioAll(); // 如果完整朗讀正在播放，先將其暫停
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      
+      currentAudio = new Audio(url);
+      currentAudio.play().catch(err => {
+        console.warn('播放被阻止：', err);
+        modalAudioHint.classList.remove('hidden');
+      });
+    }
+
+    // 播放「全生相1鼠到12豬」完整朗讀音檔
+    function togglePlayAll() {
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+
+      if (!audioAllObj) {
+        audioAllObj = new Audio(AUDIO_ALL_URL);
+        audioAllObj.onended = () => {
+          resetPlayAllButton();
+        };
+      }
+
+      if (audioAllObj.paused) {
+        audioAllObj.play()
+          .then(() => {
+            btnPlayAll.classList.add('bg-rose-500', 'music-playing');
+            btnPlayAll.classList.remove('bg-emerald-500');
+            btnPlayAllIcon.textContent = '⏸️';
+            btnPlayAllText.textContent = '暫停朗讀 (1-12)';
+          })
+          .catch(err => {
+            console.warn('朗讀音檔播放失敗:', err);
+            modalAudioHint.classList.remove('hidden');
+          });
+      } else {
+        pauseAudioAll();
+      }
+    }
+
+    // 暫停完整朗讀音檔
+    function pauseAudioAll() {
+      if (audioAllObj && !audioAllObj.paused) {
+        audioAllObj.pause();
+        resetPlayAllButton();
+      }
+    }
+
+    // 還原朗讀按鈕樣式
+    function resetPlayAllButton() {
+      btnPlayAll.classList.remove('bg-rose-500', 'music-playing');
+      btnPlayAll.classList.add('bg-emerald-500');
+      btnPlayAllIcon.textContent = '🎵';
+      btnPlayAllText.textContent = '聽生相(1鼠-12豬)';
+    }
+
+    // 響應式調整 Canvas 大小
+    function resizeCanvas() {
+      const container = document.getElementById('canvas-container');
+      const size = Math.min(container.clientWidth, 420);
+      
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      
+      ctx.scale(dpr, dpr);
+      drawWheel();
+    }
+
+    // 核心繪圖：將背景、文字、12生相圖片 100% 繪製在 Canvas 上
+    function drawWheel() {
+      const size = canvas.width / (window.devicePixelRatio || 1);
+      const center = size / 2;
+      const radius = center - 8;
+      
+      if (size <= 0) return;
+      
+      ctx.clearRect(0, 0, size, size);
+      
+      // 1. 金色外框
+      ctx.beginPath();
+      ctx.arc(center, center, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(center, center, radius - 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fffbeb';
+      ctx.fill();
+
+      // 2. 繪製 12 個生肖扇形、文字、與圖片
+      for (let i = 0; i < totalSlices; i++) {
+        const item = ZODIAC_DATA[i];
+        const startAngle = i * sliceAngle + baseOffset + currentRotation;
+        const endAngle = startAngle + sliceAngle;
+        
+        // 畫出扇形區塊
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius - 10, startAngle, endAngle);
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        
+        // 畫出白色分界線
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius - 10, startAngle, endAngle);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        
+        // 3. 在扇形偏外側繪製「生肖圖片」與「文字」
+        const midAngle = startAngle + sliceAngle / 2;
+        
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(midAngle);
+        
+        const imgRadius = (radius - 10) * 0.65;
+        
+        // 繪製圖片
+        ctx.save();
+        ctx.translate(imgRadius, 0);
+        ctx.rotate(Math.PI / 2); // 讓圖片面朝外側、站立對齊
+        
+        // 圖片底盤
+        ctx.beginPath();
+        ctx.arc(0, 0, 27, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        const imgObj = loadedImages[item.id];
+        if (imgObj && imgObj.complete && imgObj.naturalWidth !== 0) {
+          ctx.drawImage(imgObj, -23, -23, 46, 46);
+        } else {
+          // 備用 Emoji
+          ctx.font = '28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(item.emoji, 0, 1);
+        }
+        ctx.restore();
+
+        // 4. 繪製中文名字與羅馬字
+        const textRadius = (radius - 10) * 0.32;
+        ctx.save();
+        ctx.translate(textRadius, 0);
+        ctx.rotate(Math.PI / 2); // 直立面外
+        
+        // 漢字
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '900 16px "Noto Sans TC"';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(item.name, 0, -2);
+        
+        // ★ 羅馬字：正深藍色 (#1d4ed8)，並描白邊
+        ctx.font = 'bold 11px "Fredoka One", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 0;
+        
+        // 厚白描邊
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3.5;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(item.pinyin, 0, 10);
+        
+        // 實心鮮豔深藍色填色
+        ctx.fillStyle = '#1d4ed8'; // 正深藍色
+        ctx.fillText(item.pinyin, 0, 10);
+        
+        ctx.restore();
+        ctx.restore();
+      }
+
+      // 5. 中心白色圓形與金邊
+      ctx.beginPath();
+      ctx.arc(center, center, 32, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(center, center, 26, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#fef3c7';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // ★ 牌組洗牌演算法：確保 12 次旋轉內，每個生肖剛好出現且只出現 1 次，機率絕對均勻！
+    function getNextZodiacIndex() {
+      if (zodiacDeck.length === 0) {
+        // 卡牌抽完了，重新放入 0 至 11
+        for (let i = 0; i < 12; i++) {
+          zodiacDeck.push(i);
+        }
+        // Fisher-Yates 完美隨機洗牌
+        for (let i = zodiacDeck.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [zodiacDeck[i], zodiacDeck[j]] = [zodiacDeck[j], zodiacDeck[i]];
+        }
+      }
+      return zodiacDeck.pop();
+    }
+
+    // 啟動旋轉（使用洗牌牌組 + Cubic Ease-Out 平滑旋轉）
+    function startSpin() {
+      if (isSpinning) return;
+      
+      pauseAudioAll(); // 停止全體朗讀防止語音重疊
+
+      // 1. 從洗好牌的牌組中抽一張，100% 杜絕集群問題
+      const targetIndex = getNextZodiacIndex();
+      
+      // 2. 建立 Web Audio 播放
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+
+      isSpinning = true;
+      btnSpin.disabled = true;
+      btnSpin.style.opacity = '0.6';
+      
+      resultDisplay.classList.add('hidden');
+      resultPlaceholder.classList.remove('hidden');
+      resultPlaceholder.innerHTML = `
+        <div class="text-6xl mb-3 animate-spin">🎡</div>
+        <p class="font-bold text-lg text-amber-800 animate-pulse">正在尋找您的幸運生相...</p>
+      `;
+
+      // 3. 計算旋轉目標角度
+      const rounds = 5 + Math.floor(Math.random() * 3); // 5 到 7 圈隨機
+      // 加上微幅隨機偏角
+      const randomOffset = (Math.random() - 0.5) * 0.4 * sliceAngle; 
+      const targetStopRotation = (rounds * 2 * Math.PI) - (targetIndex * sliceAngle) + randomOffset;
+
+      // 4. 動畫時程設定
+      let startTime = null;
+      const duration = 4800; // 4.8 秒轉動時間
+      const startRot = currentRotation % (2 * Math.PI);
+      const dist = targetStopRotation - startRot;
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function animate(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        currentRotation = startRot + dist * easeOutCubic(progress);
+
+        const currentTickSegment = Math.floor(currentRotation / (sliceAngle / 2));
+        if (currentTickSegment !== lastTickAngle) {
+          playTickSound();
+          lastTickAngle = currentTickSegment;
+        }
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          btnSpin.disabled = false;
+          btnSpin.style.opacity = '1';
+          showResult(ZODIAC_DATA[targetIndex]);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // 顯示轉動結果、詞彙卡片與教育部的正確外連
+    function showResult(winner) {
+      resultPlaceholder.classList.add('hidden');
+      resultDisplay.classList.remove('hidden');
+      
+      resultCh.textContent = winner.name;
+      resultPinyin.textContent = winner.pinyin;
+      resultDesc.textContent = winner.description;
+      
+      btnReplay.onclick = () => playZodiacAudio(winner.sound);
+      
+      // 直接綁定您提供的精準教育部常用詞辭典連結
+      linkMoe.href = winner.moeUrl;
+      
+      // 繪製延伸詞彙卡片 (白底、點擊 🔊 即時發音)
+      vocabContainer.innerHTML = '';
+      if (winner.vocab && winner.vocab.length > 0) {
+        winner.vocab.forEach(voc => {
+          const vocabEl = document.createElement('button');
+          vocabEl.className = 'w-full bg-white hover:bg-orange-100/70 border-2 border-amber-200 hover:border-orange-300 transition-all text-slate-800 p-2.5 rounded-2xl flex items-center justify-between shadow-sm active:scale-98 group text-left';
+          
+          // 延伸卡片裡面的拼音也改用深藍色 text-[#1d4ed8] 渲染
+          vocabEl.innerHTML = `
+            <div class="flex flex-col">
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-base font-black text-slate-900 group-hover:text-orange-600 transition-colors">${voc.word}</span>
+                <span class="text-xs font-bold text-[#1d4ed8] fredoka">${voc.pinyin}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">釋義：${voc.mean}</p>
+            </div>
+            <div class="bg-orange-50 group-hover:bg-orange-500 text-orange-500 group-hover:text-white p-2 rounded-full transition-all shrink-0">
+              🔊
+            </div>
+          `;
+          
+          vocabEl.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡
+            playZodiacAudio(voc.sound);
+          });
+
+          vocabContainer.appendChild(vocabEl);
+        });
+      }
+
+      // 更新結果面版大圖片
+      const imgContainer = document.getElementById('result-img-container');
+      imgContainer.innerHTML = '';
+      
+      const cachedImg = loadedImages[winner.id];
+      if (cachedImg && cachedImg.complete && cachedImg.naturalWidth !== 0) {
+        const resultImg = document.createElement('img');
+        resultImg.src = cachedImg.src;
+        resultImg.className = 'w-16 h-16 object-contain animate-bounce';
+        imgContainer.appendChild(resultImg);
+      } else {
+        const emojiDiv = document.createElement('div');
+        emojiDiv.className = 'text-5xl animate-bounce';
+        emojiDiv.textContent = winner.emoji;
+        imgContainer.appendChild(emojiDiv);
+      }
+      
+      // 自動播放生相台語
+      playZodiacAudio(winner.sound);
+    }
+
+    // 監聽按鈕與轉盤點擊
+    btnSpin.addEventListener('click', startSpin);
+    btnPlayAll.addEventListener('click', togglePlayAll);
+    
+    // 直接點選轉盤邊框也可轉動
+    canvas.addEventListener('click', (e) => {
+      const size = canvas.width / (window.devicePixelRatio || 1);
+      const center = size / 2;
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      const distance = Math.sqrt((clickX - center) ** 2 + (clickY - center) ** 2);
+      
+      if (distance > 45) {
+        startSpin();
+      }
+    });
+
+    // 語音啟用
+    btnEnableAudio.addEventListener('click', () => {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      audioContext.resume();
+      modalAudioHint.classList.add('hidden');
+      playZodiacAudio(ZODIAC_DATA[0].sound);
+    });
+
+    // RWD 自適應調整
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+
+    // 初始化
+    window.onload = () => {
+      loadZodiacImages();
+      resizeCanvas();
+    };
+  </script>
+</body>
+</html>
