@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二十四節氣郵票配對遊戲</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background-color: #f7f9fa;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #2c3e50;
+      font-size: 28px;
+    }
+    .season-select {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 10px 18px;
+      font-size: 16px;
+      border: 2px solid #3498db;
+      background-color: #fff;
+      color: #3498db;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    .btn:hover, .btn.active {
+      background-color: #3498db;
+      color: #fff;
+    }
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      max-width: 800px;
+      width: 100%;
+    }
+    .card {
+      aspect-ratio: 3 / 4;
+      background-color: #e0e0e0;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      user-select: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s, background-color 0.3s;
+      text-align: center;
+      padding: 10px;
+    }
+    .card.flipped, .card.matched {
+      background-color: #ffffff;
+      border: 2px solid #2ecc71;
+    }
+    .card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .card.matched {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .ruby-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .ruby-text .roma {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>二十四節氣郵票配對遊戲</h1>
+
+  <!-- 關卡選擇區 -->
+  <div class="season-select">
+    <button class="btn active" onclick="loadSeason('spring')">春季</button>
+    <button class="btn" onclick="loadSeason('summer')">夏季</button>
+    <button class="btn" onclick="loadSeason('autumn')">秋季</button>
+    <button class="btn" onclick="loadSeason('winter')">冬季</button>
+  </div>
+
+  <!-- 遊戲卡片區域 -->
+  <div class="game-board" id="gameBoard"></div>
+
+  <script>
+    // 節氣資料庫（依您的檔名與台語羅馬字設定）
+    const solarTermsData = {
+      spring: [
+        { name: "立春", roma: "liptshun", img: "./solar_terms_assets/01_stamp_liptshun.png" },
+        { name: "雨水", roma: "usui", img: "./solar_terms_assets/02_stamp_usui.png" },
+        // 此處可繼續補充：驚蟄、春分、清明、穀雨...
+      ],
+      summer: [
+        // 夏季 6 節氣：立夏、小滿、芒種、夏至、小暑、大暑...
+      ],
+      autumn: [
+        // 秋季 6 節氣...
+      ],
+      winter: [
+        // 冬季 6 節氣...
+      ]
+    };
+
+    let selectedCards = [];
+    let lockBoard = false;
+
+    // 載入指定季節的節氣並初始化遊戲板
+    function loadSeason(seasonKey) {
+      // 切換按鈕樣式
+      document.querySelectorAll('.season-select .btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const board = document.getElementById('gameBoard');
+      board.innerHTML = '';
+      selectedCards = [];
+      lockBoard = false;
+
+      const dataList = solarTermsData[seasonKey] || [];
+      if (dataList.length === 0) {
+        board.innerHTML = '<p style="grid-column: span 4; text-align:center;">此季節圖案建置中...</p>';
+        return;
+      }
+
+      // 建立配對對象：一個圖案卡、一個文字卡
+      let cardsData = [];
+      dataList.forEach((item, index) => {
+        cardsData.push({ id: index, type: 'img', content: item.img, alt: item.name });
+        cardsData.push({ id: index, type: 'text', name: item.name, roma: item.roma });
+      });
+
+      // 洗牌演算法
+      cardsData.sort(() => Math.random() - 0.5);
+
+      // 產生 DOM 元素
+      cardsData.forEach(cardData => {
+        const cardElem = document.createElement('div');
+        cardElem.classList.add('card');
+        cardElem.dataset.id = cardData.id;
+
+        if (cardData.type === 'img') {
+          cardElem.dataset.contentType = 'img';
+          cardElem.dataset.value = cardData.content;
+        } else {
+          cardElem.dataset.contentType = 'text';
+          cardElem.dataset.name = cardData.name;
+          cardElem.dataset.roma = cardData.roma;
+        }
+
+        cardElem.innerHTML = '❓'; // 未翻開時的背面預設圖示
+        cardElem.addEventListener('click', flipCard);
+        board.appendChild(cardElem);
+      });
+    }
+
+    // 翻牌邏輯
+    function flipCard() {
+      if (lockBoard) return;
+      if (this.classList.contains('flipped') || this.classList.contains('matched')) return;
+
+      this.classList.add('flipped');
+
+      if (this.dataset.contentType === 'img') {
+        this.innerHTML = `<img src="${this.dataset.value}" alt="${this.dataset.alt}">`;
+      } else {
+        this.innerHTML = `<div class="ruby-text"><span>${this.dataset.name}</span><span class="roma">${this.dataset.roma}</span></div>`;
+      }
+
+      selectedCards.push(this);
+
+      if (selectedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    // 檢查是否配對成功
+    function checkMatch() {
+      const [card1, card2] = selectedCards;
+      const isMatch = card1.dataset.id === card2.dataset.id;
+
+      if (isMatch) {
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        selectedCards = [];
+      } else {
+        lockBoard = true;
+        setTimeout(() => {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          card1.innerHTML = '❓';
+          card2.innerHTML = '❓';
+          selectedCards = [];
+          lockBoard = false;
+        }, 1000);
+      }
+    }
+
+    // 預設載入春季遊戲
+    loadSeason('spring');
+  </script>
+</body>
+</html>
