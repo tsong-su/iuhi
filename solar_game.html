@@ -38,11 +38,11 @@
         }
         .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        /* 四季顏色統一：春(綠) / 夏(黃) / 秋(橘) / 冬(藍) */
-        .season-badge-春 { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
-        .season-badge-夏 { background-color: #fef3c7; color: #b45309; border-color: #fde047; }
-        .season-badge-秋 { background-color: #ffedd5; color: #c2410c; border-color: #fdba74; }
-        .season-badge-冬 { background-color: #e0f2fe; color: #0369a1; border-color: #7dd3fc; }
+        /* 四季顏色統一：春(深綠) / 夏(深紅) / 秋(深橘) / 冬(深藍) */
+        .season-badge-春 { background-color: #dcfce7; color: #166534; border-color: #4ade80; }
+        .season-badge-夏 { background-color: #fee2e2; color: #991b1b; border-color: #f87171; }
+        .season-badge-秋 { background-color: #ffedd5; color: #9a3412; border-color: #fb923c; }
+        .season-badge-冬 { background-color: #dbeafe; color: #1e40af; border-color: #60a5fa; }
 
         /* 自訂隱藏滾動條 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -55,6 +55,9 @@
     <script type="text/babel">
         const GITHUB_ASSET_BASE = "https://raw.githubusercontent.com/tsong-su/iuhi/main/solar_terms_assets/";
         const LOGO_URL = "https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png";
+        
+        const EXTERNAL_WRONG_SOUND = "https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3";
+        const EXTERNAL_VICTORY_SOUND = "https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory1.mp3";
         
         // 全域音檔快取與播放器
         const audioCache = {};
@@ -92,33 +95,13 @@
             } catch (e) {}
         };
 
+        const playWrongSound = () => {
+            playAudio(EXTERNAL_WRONG_SOUND);
+        };
+
         // 配對/排序通關歡慶勝利音效
         const playVictorySound = () => {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const notes = [
-                    { note: 523.25, time: 0, duration: 0.12 },    // C5
-                    { note: 659.25, time: 0.12, duration: 0.12 },  // E5
-                    { note: 783.99, time: 0.24, duration: 0.12 },  // G5
-                    { note: 1046.50, time: 0.36, duration: 0.4 }   // C6
-                ];
-                notes.forEach(n => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(n.note, ctx.currentTime + n.time);
-                    gain.gain.setValueAtTime(0.3, ctx.currentTime + n.time);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.time + n.duration);
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(ctx.currentTime + n.time);
-                    osc.stop(ctx.currentTime + n.time + n.duration);
-                });
-            } catch (e) {
-                console.log("勝利音效播放錯誤", e);
-            }
+            playAudio(EXTERNAL_VICTORY_SOUND);
         };
 
         const solarTermsData = [
@@ -157,10 +140,10 @@
 
         const TimelineBar = ({ activeId, onSelectTerm }) => {
             const seasons = [
-                { name: '春', color: 'bg-emerald-500', labelColor: 'text-emerald-700' },
-                { name: '夏', color: 'bg-amber-500', labelColor: 'text-amber-700' },
-                { name: '秋', color: 'bg-orange-500', labelColor: 'text-orange-700' },
-                { name: '冬', color: 'bg-sky-500', labelColor: 'text-sky-700' }
+                { name: '春', color: 'bg-green-600', labelColor: 'text-green-800' },
+                { name: '夏', color: 'bg-red-600', labelColor: 'text-red-800' },
+                { name: '秋', color: 'bg-orange-600', labelColor: 'text-orange-800' },
+                { name: '冬', color: 'bg-blue-600', labelColor: 'text-blue-800' }
             ];
 
             return (
@@ -178,10 +161,10 @@
                         <div className="min-w-[860px] relative flex flex-col">
                             {/* 對應四季底色 bar */}
                             <div className="grid grid-cols-4 gap-1.5 h-3.5 rounded-full overflow-hidden bg-slate-100 shadow-inner mb-6">
-                                <div className="bg-emerald-500"></div>
-                                <div className="bg-amber-500"></div>
-                                <div className="bg-orange-500"></div>
-                                <div className="bg-sky-500"></div>
+                                <div className="bg-green-600"></div>
+                                <div className="bg-red-600"></div>
+                                <div className="bg-orange-600"></div>
+                                <div className="bg-blue-600"></div>
                             </div>
 
                             <div className="flex justify-between items-center relative -mt-8">
@@ -386,10 +369,10 @@
             const [selectedItem, setSelectedItem] = React.useState(solarTermsData[0]);
 
             const seasonColors = {
-                '春': { bg: '#10b981', stroke: '#86efac', text: '#047857' },
-                '夏': { bg: '#f59e0b', stroke: '#fde047', text: '#b45309' },
-                '秋': { bg: '#f97316', stroke: '#fdba74', text: '#c2410c' },
-                '冬': { bg: '#0284c7', stroke: '#7dd3fc', text: '#0369a1' }
+                '春': { bg: '#16a34a', stroke: '#4ade80', text: '#14532d' },
+                '夏': { bg: '#dc2626', stroke: '#f87171', text: '#7f1d1d' },
+                '秋': { bg: '#ea580c', stroke: '#fb923c', text: '#7c2d12' },
+                '冬': { bg: '#2563eb', stroke: '#60a5fa', text: '#1e3a8a' }
             };
 
             const size = 380;
@@ -572,6 +555,7 @@
                     setSelectedStamp(null);
                 } else {
                     // 放錯位置
+                    playWrongSound();
                     setWrongSlot(targetOrder);
                     setTimeout(() => setWrongSlot(null), 500);
                 }
@@ -588,10 +572,10 @@
             const radius = 175;
 
             const seasonColors = {
-                '春': { bg: '#10b981', stroke: '#86efac', text: '#047857' },
-                '夏': { bg: '#f59e0b', stroke: '#fde047', text: '#b45309' },
-                '秋': { bg: '#f97316', stroke: '#fdba74', text: '#c2410c' },
-                '冬': { bg: '#0284c7', stroke: '#7dd3fc', text: '#0369a1' }
+                '春': { bg: '#16a34a', stroke: '#4ade80', text: '#14532d' },
+                '夏': { bg: '#dc2626', stroke: '#f87171', text: '#7f1d1d' },
+                '秋': { bg: '#ea580c', stroke: '#fb923c', text: '#7c2d12' },
+                '冬': { bg: '#2563eb', stroke: '#60a5fa', text: '#1e3a8a' }
             };
 
             return (
@@ -622,10 +606,10 @@
                             <div className="w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-full border-8 border-amber-300 p-2 shadow-2xl flex items-center justify-center relative">
                                 <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full">
                                     {/* 四季底色弧形背景環 */}
-                                    <path d={`M ${center} ${center - radius} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke="#86efac" strokeWidth="22" opacity="0.35" />
-                                    <path d={`M ${center + radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center + radius}`} fill="none" stroke="#fde047" strokeWidth="22" opacity="0.35" />
-                                    <path d={`M ${center} ${center + radius} A ${radius} ${radius} 0 0 1 ${center - radius} ${center}`} fill="none" stroke="#fdba74" strokeWidth="22" opacity="0.35" />
-                                    <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center - radius}`} fill="none" stroke="#7dd3fc" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center} ${center - radius} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke="#4ade80" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center + radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center + radius}`} fill="none" stroke="#f87171" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center} ${center + radius} A ${radius} ${radius} 0 0 1 ${center - radius} ${center}`} fill="none" stroke="#fb923c" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center - radius}`} fill="none" stroke="#60a5fa" strokeWidth="22" opacity="0.35" />
 
                                     {/* 24 個插槽節點 */}
                                     {solarTermsData.map((item, index) => {
@@ -863,6 +847,7 @@
                             setScore(s => s + 100);
                         }, 300);
                     } else {
+                        playWrongSound();
                         setTimeout(() => {
                             setSelectedCards([]);
                             setIsChecking(false);
@@ -971,17 +956,17 @@
             };
 
             const seasonBgStyles = {
-                '春': 'from-emerald-200 via-amber-100 to-teal-100',
-                '夏': 'from-amber-200 via-orange-100 to-yellow-100',
-                '秋': 'from-orange-200 via-amber-100 to-amber-200',
-                '冬': 'from-sky-200 via-blue-100 to-cyan-100'
+                '春': 'from-green-200 via-emerald-100 to-teal-100',
+                '夏': 'from-red-200 via-rose-100 to-pink-100',
+                '秋': 'from-orange-200 via-amber-100 to-yellow-100',
+                '冬': 'from-blue-200 via-sky-100 to-cyan-100'
             };
 
             const seasonBtnThemes = {
-                '春': 'bg-emerald-500 text-white shadow-emerald-200',
-                '夏': 'bg-amber-500 text-white shadow-amber-200',
-                '秋': 'bg-orange-500 text-white shadow-orange-200',
-                '冬': 'bg-sky-500 text-white shadow-sky-200'
+                '春': 'bg-green-600 text-white shadow-green-200',
+                '夏': 'bg-red-600 text-white shadow-red-200',
+                '秋': 'bg-orange-600 text-white shadow-orange-200',
+                '冬': 'bg-blue-600 text-white shadow-blue-200'
             };
 
             return (
