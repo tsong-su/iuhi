@@ -56,7 +56,7 @@
         const GITHUB_ASSET_BASE = "https://raw.githubusercontent.com/tsong-su/iuhi/main/solar_terms_assets/";
         const LOGO_URL = "https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png";
         
-        // 全域音檔快取與播放器，保證翻牌零卡頓
+        // 全域音檔快取與播放器
         const audioCache = {};
         const playAudio = (url) => {
             if (!url) return;
@@ -72,7 +72,27 @@
             }
         };
 
-        // 配對通關歡慶勝利音效 (Web Audio API 合成，無外部延遲與跨域問題)
+        // 放置成功提示音
+        const playSuccessChime = () => {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08); // A5
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.25);
+            } catch (e) {}
+        };
+
+        // 配對/排序通關歡慶勝利音效
         const playVictorySound = () => {
             try {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -210,18 +230,14 @@
             const [isFlipped, setIsFlipped] = React.useState(false);
             const isActive = activeId === item.id;
 
-            // 當節氣切換時重置翻面狀態
             React.useEffect(() => {
                 setIsFlipped(false);
             }, [item.id]);
 
             const handleCardClick = (e) => {
                 e.stopPropagation();
-                // 1. 同步時間軸
                 onSelectTerm(item);
-                // 2. 獨立進行 3D 翻面
                 setIsFlipped(prev => !prev);
-                // 3. 播放發音
                 playAudio(item.audio);
             };
 
@@ -230,7 +246,6 @@
                     className={`perspective-1000 w-full cursor-pointer h-[400px] sm:h-[430px] transition-transform duration-200 ${isActive ? 'scale-[1.02]' : ''}`}
                     onClick={handleCardClick}
                 >
-                    {/* 獨立 3D 翻轉層 */}
                     <div className={`relative w-full h-full transform-style-3d rounded-3xl ${isFlipped ? 'rotate-y-180' : ''} ${isActive ? 'ring-4 ring-amber-400 shadow-2xl' : 'shadow-md'}`}>
                         
                         {/* 正面 FRONT */}
@@ -244,7 +259,6 @@
                                 </span>
                             </div>
 
-                            {/* 郵票與語音播放區：統一容器高度與中央對稱音檔按鈕 */}
                             <div className="w-full h-44 sm:h-48 relative my-1 bg-amber-50/60 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-2 border border-amber-100">
                                 <div className="w-full h-32 flex items-center justify-center">
                                     <img 
@@ -257,7 +271,7 @@
 
                                 <button 
                                     onClick={(e) => {
-                                        e.stopPropagation(); // 播放音檔不翻卡片
+                                        e.stopPropagation();
                                         playAudio(item.audio);
                                     }}
                                     title="播放閩南語發音"
@@ -371,7 +385,6 @@
         const WheelMode = () => {
             const [selectedItem, setSelectedItem] = React.useState(solarTermsData[0]);
 
-            // 統一四季色彩配置：春(綠)、夏(黃/琥珀)、秋(橘)、冬(藍)
             const seasonColors = {
                 '春': { bg: '#10b981', stroke: '#86efac', text: '#047857' },
                 '夏': { bg: '#f59e0b', stroke: '#fde047', text: '#b45309' },
@@ -408,7 +421,6 @@
                                         >
                                             <line x1={center} y1={center} x2={x} y2={y} stroke="#fcd34d" strokeWidth="2" strokeDasharray="3 3" />
 
-                                            {/* 純 SVG 半徑動態控制，避免 CSS Transform 位移錯位 */}
                                             <circle 
                                                 cx={x} 
                                                 cy={y} 
@@ -527,6 +539,260 @@
             );
         };
 
+        const SortWheelMode = () => {
+            const [placedMap, setPlacedMap] = React.useState({}); // order (1..24) -> item
+            const [selectedStamp, setSelectedStamp] = React.useState(null);
+            const [filterSeason, setFilterSeason] = React.useState('全部');
+            const [isGameWon, setIsGameWon] = React.useState(false);
+            const [wrongSlot, setWrongSlot] = React.useState(null);
+
+            // 尚未擺放的郵票清單
+            const unplacedStamps = solarTermsData.filter(item => !Object.values(placedMap).some(p => p.id === item.id));
+
+            const filteredUnplaced = filterSeason === '全部' 
+                ? unplacedStamps 
+                : unplacedStamps.filter(s => s.season === filterSeason);
+
+            const handleSlotClick = (targetOrder) => {
+                if (!selectedStamp) return;
+
+                if (selectedStamp.order === targetOrder) {
+                    // 放對位置
+                    setPlacedMap(prev => {
+                        const next = { ...prev, [targetOrder]: selectedStamp };
+                        if (Object.keys(next).length === 24) {
+                            setIsGameWon(true);
+                            playVictorySound();
+                        } else {
+                            playSuccessChime();
+                        }
+                        return next;
+                    });
+                    playAudio(selectedStamp.audio);
+                    setSelectedStamp(null);
+                } else {
+                    // 放錯位置
+                    setWrongSlot(targetOrder);
+                    setTimeout(() => setWrongSlot(null), 500);
+                }
+            };
+
+            const resetGame = () => {
+                setPlacedMap({});
+                setSelectedStamp(null);
+                setIsGameWon(false);
+            };
+
+            const size = 480;
+            const center = size / 2;
+            const radius = 175;
+
+            const seasonColors = {
+                '春': { bg: '#10b981', stroke: '#86efac', text: '#047857' },
+                '夏': { bg: '#f59e0b', stroke: '#fde047', text: '#b45309' },
+                '秋': { bg: '#f97316', stroke: '#fdba74', text: '#c2410c' },
+                '冬': { bg: '#0284c7', stroke: '#7dd3fc', text: '#0369a1' }
+            };
+
+            return (
+                <div className="flex flex-col items-center w-full py-2">
+                    {/* 遊戲資訊頂欄 */}
+                    <div className="w-full max-w-4xl bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 p-3 sm:p-4 rounded-2xl shadow-lg flex items-center justify-between mb-4 border-2 border-white text-white">
+                        <div className="flex items-center gap-2 sm:gap-4 font-black text-xs sm:text-base">
+                            <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/40">
+                                🎯 已完成：{Object.keys(placedMap).length} / 24 節氣
+                            </span>
+                            {selectedStamp && (
+                                <span className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full border border-amber-300 font-bold animate-pulse text-xs">
+                                    👉 已選取【{selectedStamp.term}】，請點擊圓環上位置 {selectedStamp.order}
+                                </span>
+                            )}
+                        </div>
+                        <button 
+                            onClick={resetGame}
+                            className="bg-white text-amber-800 hover:bg-amber-100 font-black px-4 py-1.5 rounded-full text-xs sm:text-sm shadow-md active:scale-95 transition-all"
+                        >
+                            🔄 重新排序
+                        </button>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-6 w-full max-w-6xl">
+                        {/* 24節氣四季彩虹圓環圖 */}
+                        <div className="relative flex items-center justify-center">
+                            <div className="w-[340px] h-[340px] sm:w-[480px] sm:h-[480px] bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-full border-8 border-amber-300 p-2 shadow-2xl flex items-center justify-center relative">
+                                <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full">
+                                    {/* 四季底色弧形背景環 */}
+                                    <path d={`M ${center} ${center - radius} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke="#86efac" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center + radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center + radius}`} fill="none" stroke="#fde047" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center} ${center + radius} A ${radius} ${radius} 0 0 1 ${center - radius} ${center}`} fill="none" stroke="#fdba74" strokeWidth="22" opacity="0.35" />
+                                    <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center} ${center - radius}`} fill="none" stroke="#7dd3fc" strokeWidth="22" opacity="0.35" />
+
+                                    {/* 24 個插槽節點 */}
+                                    {solarTermsData.map((item, index) => {
+                                        const order = item.order;
+                                        const angle = (index * (360 / 24)) - 90;
+                                        const radians = (angle * Math.PI) / 180;
+                                        const x = center + radius * Math.cos(radians);
+                                        const y = center + radius * Math.sin(radians);
+                                        
+                                        const placedItem = placedMap[order];
+                                        const isWrong = wrongSlot === order;
+                                        const seasonStyle = seasonColors[item.season];
+
+                                        return (
+                                            <g 
+                                                key={`sort-slot-${order}`} 
+                                                onClick={() => handleSlotClick(order)}
+                                                className="cursor-pointer group"
+                                            >
+                                                <line x1={center} y1={center} x2={x} y2={y} stroke="#fcd34d" strokeWidth="1.5" strokeDasharray="3 3" />
+
+                                                {/* 插槽實體圈 */}
+                                                <circle 
+                                                    cx={x} 
+                                                    cy={y} 
+                                                    r={placedItem ? 18 : 14} 
+                                                    fill={placedItem ? seasonStyle.bg : (isWrong ? '#f87171' : '#ffffff')}
+                                                    stroke={isWrong ? '#ef4444' : seasonStyle.stroke}
+                                                    strokeWidth={isWrong ? 4 : (placedItem ? 3 : 2)}
+                                                    className="transition-all duration-200"
+                                                />
+
+                                                {/* 內容呈現：若擺放成功顯示郵票文字，否則顯示序號 */}
+                                                <text 
+                                                    x={x} 
+                                                    y={y} 
+                                                    textAnchor="middle" 
+                                                    dominantBaseline="middle" 
+                                                    fontSize={placedItem ? "11" : "10"} 
+                                                    fontWeight="900"
+                                                    fill={placedItem ? "#ffffff" : seasonStyle.text}
+                                                >
+                                                    {placedItem ? placedItem.term.substring(0, 1) : order}
+                                                </text>
+
+                                                {/* 標籤 */}
+                                                {(() => {
+                                                    const labelRadius = radius + 28;
+                                                    const lx = center + labelRadius * Math.cos(radians);
+                                                    const ly = center + labelRadius * Math.sin(radians);
+                                                    return (
+                                                        <text 
+                                                            x={lx} 
+                                                            y={ly} 
+                                                            textAnchor="middle" 
+                                                            dominantBaseline="middle" 
+                                                            fontSize="10"
+                                                            fontWeight="bold"
+                                                            fill={placedItem ? seasonStyle.text : "#94a3b8"}
+                                                        >
+                                                            {placedItem ? placedItem.term : `${order}.${item.term}`}
+                                                        </text>
+                                                    );
+                                                })()}
+                                            </g>
+                                        );
+                                    })}
+
+                                    {/* 圓心大標題 */}
+                                    <circle cx={center} cy={center} r="60" fill="#ffffff" stroke="#f59e0b" strokeWidth="4" className="shadow-lg" />
+                                    <text x={center} y={center - 12} textAnchor="middle" dominantBaseline="middle" className="text-xs fill-amber-700 font-black">
+                                        二十四節氣
+                                    </text>
+                                    <text x={center} y={center + 12} textAnchor="middle" dominantBaseline="middle" className="text-base font-black fill-amber-900">
+                                        圓環排序遊戲
+                                    </text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* 未擺放郵票備選卡片區 (附季節篩選) */}
+                        <div className="w-full max-w-lg bg-amber-50/80 rounded-3xl p-4 border-4 border-amber-200 shadow-inner flex flex-col">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="font-extrabold text-amber-900 text-sm flex items-center gap-1">
+                                    📮 待擺放節氣郵票庫 ({filteredUnplaced.length})
+                                </span>
+                                
+                                {/* 季節分類按鈕 */}
+                                <div className="flex bg-white rounded-full p-1 border border-amber-200 text-xs font-bold gap-1">
+                                    {['全部', '春', '夏', '秋', '冬'].map(s => (
+                                        <button 
+                                            key={`filter-${s}`}
+                                            onClick={() => setFilterSeason(s)}
+                                            className={`px-2.5 py-1 rounded-full transition-all ${filterSeason === s ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-amber-800 font-bold mb-3 bg-amber-200/60 p-2 rounded-xl text-center">
+                                💡 提示：點擊郵票卡選取後，再點選圓環對應位置即可擺入！
+                            </p>
+
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar p-1">
+                                {filteredUnplaced.map(item => {
+                                    const isSelected = selectedStamp?.id === item.id;
+                                    return (
+                                        <div 
+                                            key={`unplaced-${item.id}`}
+                                            onClick={() => {
+                                                setSelectedStamp(item);
+                                                playAudio(item.audio);
+                                            }}
+                                            className={`
+                                                bg-white rounded-2xl p-2 border-2 flex flex-col items-center justify-between cursor-pointer transition-all shadow-sm
+                                                ${isSelected ? 'border-amber-500 ring-4 ring-amber-300 scale-105 bg-amber-100' : 'border-amber-200 hover:border-amber-400 hover:scale-102'}
+                                            `}
+                                        >
+                                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full border ${'season-badge-' + item.season}`}>
+                                                {item.season}季 · 第{item.order}
+                                            </span>
+                                            <div className="w-full h-16 flex items-center justify-center my-1">
+                                                <img 
+                                                    src={`${GITHUB_ASSET_BASE}${item.img}`} 
+                                                    alt={item.term} 
+                                                    className="object-contain max-h-full max-w-full drop-shadow-sm"
+                                                    onError={(e) => { e.target.src = `https://placehold.co/100x120/eeeeee/999999?text=${item.term}`; }}
+                                                />
+                                            </div>
+                                            <span className="text-xs font-black text-slate-800">{item.term}</span>
+                                        </div>
+                                    );
+                                })}
+
+                                {filteredUnplaced.length === 0 && (
+                                    <div className="col-span-full py-8 text-center text-amber-800/60 font-black text-sm">
+                                        🎉 此分類郵票已全部成功排入圓環！
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 通關勝利彈窗 */}
+                    {isGameWon && (
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border-4 border-amber-400 animate-pop">
+                                <div className="text-5xl mb-2">🎉🏵️🎉</div>
+                                <h3 className="text-2xl font-black text-amber-900 mb-2">恭喜完成 24 節氣圓滿排序！</h3>
+                                <p className="text-sm font-bold text-slate-600 mb-6">
+                                    太厲害了！您已經將二十四節氣順序全數正確歸位！
+                                </p>
+                                <button 
+                                    onClick={resetGame}
+                                    className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 text-white font-black py-3 rounded-2xl shadow-lg transition-all text-base"
+                                >
+                                    🎮 再挑戰一次
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
         const MatchMode = ({ seasonData }) => {
             const [cards, setCards] = React.useState([]);
             const [selectedCards, setSelectedCards] = React.useState([]);
@@ -535,11 +801,9 @@
             const [score, setScore] = React.useState(0);
             const [isGameWon, setIsGameWon] = React.useState(false);
 
-            // 初始化配對遊戲卡片
             const initGame = () => {
                 const gameCards = [];
                 seasonData.forEach(item => {
-                    // 1. 郵票圖片卡
                     gameCards.push({
                         instanceId: `stamp-${item.id}`,
                         termId: item.id,
@@ -548,7 +812,6 @@
                         img: item.img,
                         audio: item.audio
                     });
-                    // 2. 純拼音卡（不含中文字樣）
                     gameCards.push({
                         instanceId: `pinyin-${item.id}`,
                         termId: item.id,
@@ -559,7 +822,6 @@
                     });
                 });
 
-                // 洗牌算法
                 const shuffled = gameCards.sort(() => Math.random() - 0.5);
                 setCards(shuffled);
                 setSelectedCards([]);
@@ -577,7 +839,6 @@
                 if (selectedCards.some(c => c.instanceId === card.instanceId)) return;
                 if (matchedPairs.includes(card.termId)) return;
 
-                // 點擊即朗讀聲音
                 playAudio(card.audio);
 
                 const newSelected = [...selectedCards, card];
@@ -587,14 +848,13 @@
                     setIsChecking(true);
                     const [first, second] = newSelected;
 
-                    // 配對成功判斷
                     if (first.termId === second.termId && first.type !== second.type) {
                         setTimeout(() => {
                             setMatchedPairs(prev => {
                                 const updated = [...prev, first.termId];
                                 if (updated.length === seasonData.length) {
                                     setIsGameWon(true);
-                                    playVictorySound(); // 觸發通關勝利號角音效
+                                    playVictorySound();
                                 }
                                 return updated;
                             });
@@ -603,7 +863,6 @@
                             setScore(s => s + 100);
                         }, 300);
                     } else {
-                        // 配對失敗
                         setTimeout(() => {
                             setSelectedCards([]);
                             setIsChecking(false);
@@ -631,7 +890,6 @@
                         </button>
                     </div>
 
-                    {/* 配對卡片陣列 */}
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5 sm:gap-3 w-full max-w-5xl">
                         {cards.map((card) => {
                             const isSelected = selectedCards.some(c => c.instanceId === card.instanceId);
@@ -661,7 +919,6 @@
                                             </div>
                                         </div>
                                     ) : (
-                                        /* 拼音卡：單行完整呈現不截斷，文字大小彈性調整 */
                                         <div className="w-full h-full flex flex-col items-center justify-between py-2 px-1">
                                             <span className="text-[10px] sm:text-[11px] font-black text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full">🔤 拼音卡</span>
                                             <div className="text-center my-auto w-full px-1 flex flex-col items-center justify-center overflow-hidden">
@@ -677,7 +934,6 @@
                         })}
                     </div>
 
-                    {/* 通關勝利彈窗 */}
                     {isGameWon && (
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                             <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border-4 border-amber-400 animate-pop">
@@ -721,7 +977,6 @@
                 '冬': 'from-sky-200 via-blue-100 to-cyan-100'
             };
 
-            // 對應時間軸與季節切換按鈕顏色
             const seasonBtnThemes = {
                 '春': 'bg-emerald-500 text-white shadow-emerald-200',
                 '夏': 'bg-amber-500 text-white shadow-amber-200',
@@ -731,7 +986,6 @@
 
             return (
                 <div className={`min-h-screen pb-16 bg-gradient-to-br ${seasonBgStyles[season]} transition-colors duration-500`}>
-                    {/* 童趣導覽列 */}
                     <header className="bg-white/95 text-slate-800 shadow-md sticky top-0 z-50 border-b-4 border-amber-300">
                         <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col md:flex-row items-center justify-between gap-2.5">
                             <div className="flex items-center gap-3">
@@ -746,23 +1000,29 @@
                                 </h1>
                             </div>
                             
-                            {/* 三大模式切換按鈕 */}
-                            <div className="flex bg-amber-100 p-1.5 rounded-full gap-1 border-2 border-amber-300 shadow-inner">
+                            {/* 四大模式切換按鈕 */}
+                            <div className="flex bg-amber-100 p-1.5 rounded-full gap-1 border-2 border-amber-300 shadow-inner flex-wrap justify-center">
                                 <button 
                                     onClick={() => setMode('learn')}
-                                    className={`px-3.5 sm:px-4 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'learn' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
+                                    className={`px-3 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'learn' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
                                 >
                                     📖 翻牌時間軸
                                 </button>
                                 <button 
                                     onClick={() => setMode('wheel')}
-                                    className={`px-3.5 sm:px-4 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'wheel' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
+                                    className={`px-3 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'wheel' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
                                 >
                                     ⭕ 節氣圓環圖
                                 </button>
                                 <button 
+                                    onClick={() => setMode('sort')}
+                                    className={`px-3 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'sort' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
+                                >
+                                    🎯 圓環排序遊戲
+                                </button>
+                                <button 
                                     onClick={() => setMode('match')}
-                                    className={`px-3.5 sm:px-4 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'match' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
+                                    className={`px-3 py-1.5 rounded-full font-black text-xs sm:text-sm transition-all ${mode === 'match' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md scale-105' : 'text-slate-700 hover:text-slate-900'}`}
                                 >
                                     🎮 拼音配對
                                 </button>
@@ -770,11 +1030,10 @@
                         </div>
                     </header>
 
-                    {/* 主要內容區 */}
                     <main className="max-w-7xl mx-auto px-3 sm:px-4 mt-4 flex flex-col items-center">
                         
-                        {/* 季節選擇按鈕：顏色與彩虹時間軸完美一致 */}
-                        {mode !== 'wheel' && (
+                        {/* 季節選擇按鈕 */}
+                        {(mode === 'learn' || mode === 'match') && (
                             <div className="flex gap-2 sm:gap-3 mb-4 bg-white/90 p-2 rounded-2xl shadow-md border-2 border-amber-300">
                                 {seasons.map(s => {
                                     const isSelected = season === s;
@@ -809,6 +1068,7 @@
                                 />
                             )}
                             {mode === 'wheel' && <WheelMode />}
+                            {mode === 'sort' && <SortWheelMode />}
                             {mode === 'match' && <MatchMode seasonData={currentSeasonData} key={`match-${season}`} />}
                         </div>
                     </main>
