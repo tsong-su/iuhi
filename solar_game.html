@@ -528,6 +528,48 @@
             const [filterSeason, setFilterSeason] = React.useState('全部');
             const [isGameWon, setIsGameWon] = React.useState(false);
             const [wrongSlot, setWrongSlot] = React.useState(null);
+            const [seconds, setSeconds] = React.useState(0);
+            const [isTimerRunning, setIsTimerRunning] = React.useState(false);
+            const [hasStarted, setHasStarted] = React.useState(false);
+
+            React.useEffect(() => {
+                let interval = null;
+                if (isTimerRunning && !isGameWon) {
+                    interval = setInterval(() => {
+                        setSeconds(s => s + 1);
+                    }, 1000);
+                } else {
+                    clearInterval(interval);
+                }
+                return () => clearInterval(interval);
+            }, [isTimerRunning, isGameWon]);
+
+            const handleStartGame = () => {
+                setHasStarted(true);
+                setIsTimerRunning(true);
+            };
+
+            const ensureGameStarted = () => {
+                if (!hasStarted) {
+                    setHasStarted(true);
+                    setIsTimerRunning(true);
+                }
+            };
+
+            const formatTime = (totalSecs) => {
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const formatTimeChinese = (totalSecs) => {
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                if (mins > 0) {
+                    return `${mins} 分 ${secs} 秒`;
+                }
+                return `${secs} 秒`;
+            };
 
             // 尚未擺放的郵票清單
             const unplacedStamps = solarTermsData.filter(item => !Object.values(placedMap).some(p => p.id === item.id));
@@ -538,6 +580,7 @@
 
             const handleSlotClick = (targetOrder) => {
                 if (!selectedStamp) return;
+                ensureGameStarted();
 
                 if (selectedStamp.order === targetOrder) {
                     // 放對位置
@@ -545,6 +588,7 @@
                         const next = { ...prev, [targetOrder]: selectedStamp };
                         if (Object.keys(next).length === 24) {
                             setIsGameWon(true);
+                            setIsTimerRunning(false);
                             playVictorySound();
                         } else {
                             playSuccessChime();
@@ -565,6 +609,9 @@
                 setPlacedMap({});
                 setSelectedStamp(null);
                 setIsGameWon(false);
+                setSeconds(0);
+                setIsTimerRunning(false);
+                setHasStarted(false);
             };
 
             const size = 480;
@@ -572,20 +619,34 @@
             const radius = 175;
 
             const seasonColors = {
-                '春': { bg: '#16a34a', stroke: '#4ade80', text: '#14532d' },
-                '夏': { bg: '#dc2626', stroke: '#f87171', text: '#7f1d1d' },
-                '秋': { bg: '#ea580c', stroke: '#fb923c', text: '#7c2d12' },
-                '冬': { bg: '#2563eb', stroke: '#60a5fa', text: '#1e3a8a' }
+                '春': { bg: '#166534', stroke: '#22c55e', text: '#14532d' },
+                '夏': { bg: '#991b1b', stroke: '#ef4444', text: '#7f1d1d' },
+                '秋': { bg: '#9a3412', stroke: '#f97316', text: '#7c2d12' },
+                '冬': { bg: '#1e40af', stroke: '#3b82f6', text: '#1e3a8a' }
             };
 
             return (
                 <div className="flex flex-col items-center w-full py-2">
                     {/* 遊戲資訊頂欄 */}
                     <div className="w-full max-w-4xl bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 p-3 sm:p-4 rounded-2xl shadow-lg flex items-center justify-between mb-4 border-2 border-white text-white">
-                        <div className="flex items-center gap-2 sm:gap-4 font-black text-xs sm:text-base">
+                        <div className="flex items-center gap-2 sm:gap-4 font-black text-xs sm:text-base flex-wrap">
                             <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/40">
                                 🎯 已完成：{Object.keys(placedMap).length} / 24 節氣
                             </span>
+
+                            {!hasStarted ? (
+                                <button 
+                                    onClick={handleStartGame}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-1 rounded-full text-xs sm:text-sm shadow-md animate-bounce active:scale-95 transition-all border-2 border-white flex items-center gap-1"
+                                >
+                                    ▶️ 開始遊戲／計時
+                                </button>
+                            ) : (
+                                <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/40 flex items-center gap-1">
+                                    ⏱️ 計時：{formatTime(seconds)}
+                                </span>
+                            )}
+
                             {selectedStamp && (
                                 <span className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full border border-amber-300 font-bold animate-pulse text-xs">
                                     👉 已選取【{selectedStamp.term}】，請點擊圓環上位置 {selectedStamp.order}
@@ -714,14 +775,14 @@
                             <p className="text-xs text-amber-800 font-bold mb-3 bg-amber-200/60 p-2 rounded-xl text-center">
                                 💡 提示：點擊郵票卡選取後，再點選圓環對應位置即可擺入！
                             </p>
-
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar p-1">
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-[320px] overflow-y-auto no-scrollbar p-1">
                                 {filteredUnplaced.map(item => {
                                     const isSelected = selectedStamp?.id === item.id;
                                     return (
                                         <div 
                                             key={`unplaced-${item.id}`}
                                             onClick={() => {
+                                                ensureGameStarted();
                                                 setSelectedStamp(item);
                                                 playAudio(item.audio);
                                             }}
@@ -761,9 +822,12 @@
                             <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl border-4 border-amber-400 animate-pop">
                                 <div className="text-5xl mb-2">🎉🏵️🎉</div>
                                 <h3 className="text-2xl font-black text-amber-900 mb-2">恭喜完成 24 節氣圓滿排序！</h3>
-                                <p className="text-sm font-bold text-slate-600 mb-6">
+                                <p className="text-sm font-bold text-slate-600 mb-3">
                                     太厲害了！您已經將二十四節氣順序全數正確歸位！
                                 </p>
+                                <div className="bg-amber-100 border-2 border-amber-300 text-amber-900 font-black rounded-2xl py-2.5 px-4 mb-5 text-sm sm:text-base">
+                                    ⏱️ 總共花費時間：<span className="text-rose-600 font-black text-lg ml-1">{formatTimeChinese(seconds)}</span>
+                                </div>
                                 <button 
                                     onClick={resetGame}
                                     className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 text-white font-black py-3 rounded-2xl shadow-lg transition-all text-base"
