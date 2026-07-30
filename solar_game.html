@@ -109,30 +109,57 @@
         const AudioRecorder = () => {
             const [isRecording, setIsRecording] = React.useState(false);
             const [audioUrl, setAudioUrl] = React.useState(null);
+            const [micError, setMicError] = React.useState(null);
             const mediaRecorderRef = React.useRef(null);
             const audioChunksRef = React.useRef([]);
+            const mimeTypeRef = React.useRef('');
 
             const startRecording = async () => {
+                setMicError(null);
                 try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        setMicError('您的瀏覽器不支援錄音（建議改用 Safari 原生瀏覽器開啟）。');
+                        return;
+                    }
+
+                    // 智慧檢測 iOS / Safari / Android 支援的錄音格式
+                    const types = ['audio/mp4', 'audio/aac', 'audio/webm;codecs=opus', 'audio/webm', 'audio/wav'];
+                    let selectedType = '';
+                    if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
+                        for (const t of types) {
+                            if (MediaRecorder.isTypeSupported(t)) {
+                                selectedType = t;
+                                break;
+                            }
+                        }
+                    }
+                    mimeTypeRef.current = selectedType;
+
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorderRef.current = new MediaRecorder(stream);
+                    const options = selectedType ? { mimeType: selectedType } : undefined;
+                    
+                    mediaRecorderRef.current = new MediaRecorder(stream, options);
                     audioChunksRef.current = [];
 
                     mediaRecorderRef.current.ondataavailable = (e) => {
-                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
                     };
 
                     mediaRecorderRef.current.onstop = () => {
-                        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                        const blobType = mimeTypeRef.current || (audioChunksRef.current[0] && audioChunksRef.current[0].type) || 'audio/mp4';
+                        const audioBlob = new Blob(audioChunksRef.current, { type: blobType });
                         const url = URL.createObjectURL(audioBlob);
                         setAudioUrl(url);
+                        
+                        // 關閉麥克風串流，節省系統資源
                         stream.getTracks().forEach(track => track.stop());
                     };
 
                     mediaRecorderRef.current.start();
                     setIsRecording(true);
                 } catch (err) {
-                    alert('請允許瀏覽器存取麥克風，即可體驗錄音跟讀功能！');
+                    console.error("麥克風存取失敗：", err);
+                    setMicError('請允許網站存取麥克風，或用 Safari 開啟。');
                 }
             };
 
@@ -145,45 +172,57 @@
 
             const playMyAudio = () => {
                 if (audioUrl) {
-                    const audio = new Audio(audioUrl);
-                    audio.play();
+                    const audio = new Audio();
+                    audio.src = audioUrl;
+                    audio.play().catch(e => console.log("播放錄音失敗：", e));
                 }
             };
 
             return (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 my-1.5 bg-amber-500/20 p-2 rounded-2xl border border-amber-300/40 w-full text-xs font-bold">
-                    {!isRecording ? (
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                startRecording();
-                            }}
-                            className="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-all text-xs"
-                        >
-                            🎙️ 錄音跟讀練習
-                        </button>
-                    ) : (
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                stopRecording();
-                            }}
-                            className="bg-amber-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md animate-pulse active:scale-95 transition-all text-xs"
-                        >
-                            ⏹️ 停止錄音
-                        </button>
-                    )}
+                <div className="flex flex-col items-center justify-center w-full my-1.5">
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 bg-amber-500/20 p-2 rounded-2xl border border-amber-300/40 w-full text-xs font-bold">
+                        {!isRecording ? (
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    startRecording();
+                                }}
+                                className="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-all text-xs"
+                            >
+                                🎙️ 錄音跟讀練習
+                            </button>
+                        ) : (
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    stopRecording();
+                                }}
+                                className="bg-amber-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md animate-pulse active:scale-95 transition-all text-xs"
+                            >
+                                ⏹️ 停止錄音
+                            </button>
+                        )}
 
-                    {audioUrl && !isRecording && (
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                playMyAudio();
-                            }}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-all text-xs"
+                        {audioUrl && !isRecording && (
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    playMyAudio();
+                                }}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md active:scale-95 transition-all text-xs"
+                            >
+                                🎧 聽我的錄音
+                            </button>
+                        )}
+                    </div>
+
+                    {micError && (
+                        <div 
+                            onClick={(e) => e.stopPropagation()} 
+                            className="mt-1 text-[11px] bg-rose-100 text-rose-800 border border-rose-300 px-2.5 py-1 rounded-xl text-center font-extrabold w-full"
                         >
-                            🎧 聽我的錄音
-                        </button>
+                            ⚠️ {micError}
+                        </div>
                     )}
                 </div>
             );
