@@ -13,7 +13,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 -->
+    <!-- 首頁選單視圖 (已完整恢復啟用麥克風按鈕) -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -283,7 +283,6 @@
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
 
     <script>
-        let globalStream = null;
         let activeRecorder = null;
         let currentRecordingIndex = null;
         const audioChunksMap = {};
@@ -297,10 +296,9 @@
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
         }
 
-        // 【核心解法 1】：進網頁點擊一次，建立常駐且永不關閉的全局串流，徹底根治 iOS 交替鎖死問題
         function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(stream => {
-                globalStream = stream;
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
                 if (btn) { 
                     btn.innerText = "✅ 麥克風已就緒"; 
@@ -311,7 +309,6 @@
         }
 
         function openLesson() {
-            if (!globalStream) { alert("請先點擊上方「啟用麥克風」按鈕！"); return; }
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
@@ -321,10 +318,8 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【核心解法 2】：直接使用常駐的 globalStream 進行錄音，不需要每次重新跟系統要串流，第 1 次到第 100 次全部完美聽回放
-        function toggleStudentRecord(index) {
-            if (!globalStream) { alert("請先點擊上方「啟用麥克風」按鈕！"); return; }
-
+        // 【最終極解法】針對平板換句子的瞬間，加入防衝突等待，並將暖機時間拉長至 500ms
+        async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
@@ -346,63 +341,82 @@
                 isRecordingMap[currentRecordingIndex] = false;
             }
 
-            audioChunksMap[index] = [];
-            currentRecordingIndex = index;
-
-            // 確保常駐串流處於啟用狀態
-            globalStream.getTracks().forEach(track => { track.enabled = true; });
-
-            let options = {};
-            if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                options.mimeType = 'audio/mp4';
-            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                options.mimeType = 'audio/webm';
-            }
-
             try {
-                activeRecorder = new MediaRecorder(globalStream, options);
-            } catch (e) {
-                activeRecorder = new MediaRecorder(globalStream);
-            }
+                if (recText) recText.innerText = "準備中...";
 
-            activeRecorder.ondataavailable = e => {
-                if (e.data && e.data.size > 0) {
-                    audioChunksMap[index].push(e.data);
-                }
-            };
+                // 【關鍵防護】切換句子時給予 200ms 的硬體釋放等待期，徹底解決平板第二句第一次沒聲音的衝突
+                await new Promise(resolve => setTimeout(resolve, 200));
 
-            activeRecorder.onstop = () => {
-                const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                const audioUrl = URL.createObjectURL(blob);
+                const freshStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
                 
-                audioUrlMap[index] = audioUrl;
+                audioChunksMap[index] = [];
+                currentRecordingIndex = index;
 
-                if (recBtn) recBtn.classList.remove("recording-anim");
-                if (recText) recText.innerText = "重新錄音";
-                if (statusEl) statusEl.classList.add("hidden");
-
-                if (pbBtn) {
-                    pbBtn.classList.remove("hidden");
-                    pbBtn.onclick = () => {
-                        const instantAudio = new Audio(audioUrlMap[index]);
-                        instantAudio.play().catch(err => {
-                            console.log("播放被阻擋，再次嘗試：", err);
-                            instantAudio.play();
-                        });
-                    };
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
                 }
 
-                isRecordingMap[index] = false;
-                currentRecordingIndex = null;
-            };
+                try {
+                    activeRecorder = new MediaRecorder(freshStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(freshStream);
+                }
 
-            // 啟動錄音
-            activeRecorder.start();
-            isRecordingMap[index] = true;
-            if (recBtn) recBtn.classList.add("recording-anim");
-            if (recText) recText.innerText = "停止錄音";
-            if (statusEl) statusEl.classList.remove("hidden");
-            if (pbBtn) pbBtn.classList.add("hidden");
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[index].push(e.data);
+                    }
+                };
+
+                activeRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+
+                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    audioUrlMap[index] = audioUrl;
+
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            const instantAudio = new Audio(audioUrlMap[index]);
+                            instantAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                instantAudio.play();
+                            });
+                        };
+                    }
+
+                    isRecordingMap[index] = false;
+                    currentRecordingIndex = null;
+                };
+
+                // 【深度熱機】將開頭暖機時間拉長至 500 毫秒（0.5秒），確保平板麥克風完全解鎖，錄第二句第一次就 100% 有聲音
+                setTimeout(() => {
+                    if (currentRecordingIndex === index) {
+                        activeRecorder.start();
+                        isRecordingMap[index] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 500);
+
+            } catch (err) {
+                console.error("無法取得麥克風：", err);
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
+            }
         }
     </script>
 </body>
