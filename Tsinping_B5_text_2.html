@@ -241,21 +241,34 @@
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
+            
             if (!isRecordingMap[index]) {
                 audioChunksMap[index] = [];
+                // 【關鍵修改】不強行指定 mimeType，讓手機瀏覽器自動選擇適用的格式
                 const recorder = new MediaRecorder(globalStream);
                 activeRecorders[index] = recorder;
+                
                 recorder.ondataavailable = e => { if (e.data.size > 0) audioChunksMap[index].push(e.data); };
+                
                 recorder.onstop = () => {
-                    const blob = new Blob(audioChunksMap[index], { type: "audio/webm" });
+                    const blob = new Blob(audioChunksMap[index], { type: recorder.mimeType || 'audio/mp4' });
                     const audioUrl = URL.createObjectURL(blob);
-                    if (pbBtn) { pbBtn.classList.remove("hidden"); pbBtn.onclick = () => { new Audio(audioUrl).play(); }; }
+                    if (pbBtn) { 
+                        pbBtn.classList.remove("hidden"); 
+                        pbBtn.onclick = () => { 
+                            const playbackAudio = new Audio(audioUrl);
+                            playbackAudio.play().catch(err => {
+                                alert("播放被攔截，請再點一次「聽回放」按鈕即可聽到聲音！");
+                            }); 
+                        }; 
+                    }
                 };
+                
                 recorder.start();
                 isRecordingMap[index] = true;
                 if (recBtn) recBtn.classList.add("recording-anim");
                 if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.add("hidden");
+                if (statusEl) statusEl.classList.remove("hidden");
                 if (pbBtn) pbBtn.classList.add("hidden");
             } else {
                 const recorder = activeRecorders[index];
