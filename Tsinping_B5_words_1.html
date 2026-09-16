@@ -514,7 +514,7 @@
 
     <script>
         let activeRecorder = null;
-        let currentActiveKey = null; // 用來追蹤目前正在錄音的是哪一個區塊與編號 (例如 "card-0" 或 "ex-3")
+        let currentActiveKey = null; 
         
         const audioChunksMap = {};
         const audioUrlMap = {};
@@ -537,7 +537,6 @@
             const statusEl = document.getElementById("card-status-" + index);
             const pbBtn = document.getElementById("card-pb-" + index);
 
-            // 如果目前點擊的就是正在錄音的卡片，代表要停止錄音
             if (isRecordingMap[key]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -545,7 +544,6 @@
                 return;
             }
 
-            // 如果有其他地方正在錄音，先強制停止
             if (currentActiveKey !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -590,7 +588,11 @@
                     
                     audioUrlMap[key] = audioUrl;
 
-                    if (recBtn) recBtn.innerText = "重新錄音";
+                    // 【修正】停止錄音時確實移除閃爍動畫樣式
+                    if (recBtn) {
+                        recBtn.classList.remove("recording-anim");
+                        recBtn.innerText = "重新錄音";
+                    }
                     if (statusEl) statusEl.classList.add("hidden");
 
                     if (pbBtn) {
@@ -608,7 +610,6 @@
                     currentActiveKey = null;
                 };
 
-                // 熱機 400ms 後啟動，帶入 timeslice(100) 確保 Safari 穩定抓取數據包
                 setTimeout(() => {
                     if (currentActiveKey === key) {
                         activeRecorder.start(100);
@@ -636,7 +637,6 @@
             const statusEl = document.getElementById("ex-status-" + index);
             const pbBtn = document.getElementById("ex-pb-" + index);
 
-            // 如果目前點擊的就是正在錄音的例句，代表要停止錄音
             if (isRecordingMap[key]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -644,7 +644,6 @@
                 return;
             }
 
-            // 如果有其他地方正在錄音，先強制停止
             if (currentActiveKey !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -689,7 +688,11 @@
                     
                     audioUrlMap[key] = audioUrl;
 
-                    if (recBtn) recBtn.innerText = "重新錄音";
+                    // 【修正】停止錄音時確實移除閃爍動畫樣式
+                    if (recBtn) {
+                        recBtn.classList.remove("recording-anim");
+                        recBtn.innerText = "重新錄音";
+                    }
                     if (statusEl) statusEl.classList.add("hidden");
 
                     if (pbBtn) {
@@ -707,7 +710,6 @@
                     currentActiveKey = null;
                 };
 
-                // 熱機 400ms 後啟動，帶入 timeslice(100) 確保 Safari 穩定抓取數據包
                 setTimeout(() => {
                     if (currentActiveKey === key) {
                         activeRecorder.start(100);
