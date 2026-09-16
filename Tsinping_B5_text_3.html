@@ -20,10 +20,10 @@
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
                     <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
+                    <p class="text-xs text-gray-500">請點擊下方按鈕直接進入練習</p>
                 </div>
             </div>
-            <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
+            <button onclick="openLesson()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🚀 進入課程</button>
         </header>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -292,7 +292,6 @@
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
 
     <script>
-        let globalStream = null;
         let activeRecorder = null;
         let currentRecordingIndex = null;
         const audioChunksMap = {};
@@ -305,20 +304,7 @@
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
         }
 
-        function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                globalStream = stream;
-                const btn = document.getElementById("global-mic-btn");
-                if (btn) { 
-                    btn.innerText = "✅ 麥克風已就緒"; 
-                    btn.classList.remove("bg-emerald-600"); 
-                    btn.classList.add("bg-green-700"); 
-                }
-            }).catch(err => { alert("請允許麥克風權限！"); });
-        }
-
         function openLesson() {
-            if (!globalStream) { alert("請先點擊上方錄音「啟用麥克風」按鈕！"); return; }
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
@@ -328,9 +314,8 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        function toggleStudentRecord(index) {
-            if (!globalStream) { alert("請先點擊上方錄音「啟用麥克風」按鈕！"); return; }
-            
+        // 【終極核心】每次點擊錄音時，直接向系統請求全新麥克風串流，繞過 iOS 串流失效限制
+        async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
@@ -346,70 +331,79 @@
             }
 
             // 如果有其他句正在錄音，先強制停止
-            if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
+            if (currentRecordingIndex !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
                 }
             }
 
-            audioChunksMap[index] = [];
-            currentRecordingIndex = index;
-
-            // 自動適應平板錄音格式
-            let options = {};
-            if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                options.mimeType = 'audio/mp4';
-            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                options.mimeType = 'audio/webm';
-            }
-
             try {
-                activeRecorder = new MediaRecorder(globalStream, options);
-            } catch (e) {
-                activeRecorder = new MediaRecorder(globalStream);
+                // 每次錄音都重新取得權限與串流，確保 iPad 麥克風絕對不會被系統關閉
+                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                audioChunksMap[index] = [];
+                currentRecordingIndex = index;
+
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
+                }
+
+                try {
+                    activeRecorder = new MediaRecorder(freshStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(freshStream);
+                }
+
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[index].push(e.data);
+                    }
+                };
+
+                activeRecorder.onstop = () => {
+                    // 錄音結束後，主動關閉這個串流的所有音訊軌道，釋放硬體
+                    freshStream.getTracks().forEach(track => track.stop());
+
+                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
+
+                    if (hiddenAudio) {
+                        hiddenAudio.src = audioUrl;
+                        hiddenAudio.load();
+                    }
+
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            hiddenAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                hiddenAudio.play();
+                            });
+                        };
+                    }
+
+                    isRecordingMap[index] = false;
+                    currentRecordingIndex = null;
+                };
+
+                activeRecorder.start();
+                isRecordingMap[index] = true;
+                if (recBtn) recBtn.classList.add("recording-anim");
+                if (recText) recText.innerText = "停止錄音";
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
+
+            } catch (err) {
+                console.error("無法取得麥克風：", err);
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
-
-            activeRecorder.ondataavailable = e => {
-                if (e.data && e.data.size > 0) {
-                    audioChunksMap[index].push(e.data);
-                }
-            };
-
-            activeRecorder.onstop = () => {
-                const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                const audioUrl = URL.createObjectURL(blob);
-
-                // 【核心突破】將聲音綁定到該句專屬的隱藏 audio 元素中
-                if (hiddenAudio) {
-                    hiddenAudio.src = audioUrl;
-                    hiddenAudio.load();
-                }
-
-                if (recBtn) recBtn.classList.remove("recording-anim");
-                if (recText) recText.innerText = "重新錄音";
-                if (statusEl) statusEl.classList.add("hidden");
-
-                if (pbBtn) {
-                    pbBtn.classList.remove("hidden");
-                    // 點擊「聽回放」時，直接呼叫該句專屬的 audio 播放，iPad 絕不會封鎖獨立物件
-                    pbBtn.onclick = () => {
-                        hiddenAudio.play().catch(err => {
-                            console.log("播放失敗，再次嘗試：", err);
-                            hiddenAudio.play();
-                        });
-                    };
-                }
-
-                isRecordingMap[index] = false;
-                currentRecordingIndex = null;
-            };
-
-            activeRecorder.start();
-            isRecordingMap[index] = true;
-            if (recBtn) recBtn.classList.add("recording-anim");
-            if (recText) recText.innerText = "停止錄音";
-            if (statusEl) statusEl.classList.remove("hidden");
-            if (pbBtn) pbBtn.classList.add("hidden");
         }
     </script>
 </body>
