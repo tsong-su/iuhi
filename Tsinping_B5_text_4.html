@@ -269,7 +269,11 @@
             }
 
             try {
-                if (recText) recText.innerText = "準備中...";
+                // 【核心修復】點擊瞬間立刻顯示「錄音中」與動畫，不再讓學生空等待
+                if (recBtn) recBtn.classList.add("recording-anim");
+                if (recText) recText.innerText = "停止錄音";
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
 
                 const freshStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true } 
@@ -324,21 +328,15 @@
                     currentRecordingIndex = null;
                 };
 
-                // 熱機 400ms 後啟動，帶入 timeslice(100) 確保 Safari 穩定抓取數據包
-                setTimeout(() => {
-                    if (currentRecordingIndex === index) {
-                        activeRecorder.start(100);
-                        isRecordingMap[index] = true;
-                        if (recBtn) recBtn.classList.add("recording-anim");
-                        if (recText) recText.innerText = "停止錄音";
-                        if (statusEl) statusEl.classList.remove("hidden");
-                        if (pbBtn) pbBtn.classList.add("hidden");
-                    }
-                }, 400);
+                // 立即啟動錄音與 timeslice(100)，確保第一時間收音
+                activeRecorder.start(100);
+                isRecordingMap[index] = true;
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
+                if (recBtn) recBtn.classList.remove("recording-anim");
                 if (recText) recText.innerText = "開始錄音";
+                if (statusEl) statusEl.classList.add("hidden");
                 alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
         }
