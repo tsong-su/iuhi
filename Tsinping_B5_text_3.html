@@ -254,7 +254,7 @@
     <!-- 課文範例音檔播放器 -->
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
     
-    <!-- 【關鍵修改】共用學生錄音播放器，確保平板播放絕對不會被攔截 -->
+    <!-- 【關鍵修改】全域獨立儲存各句音訊網址的對應表與播放器 -->
     <audio id="shared-student-player" class="hidden" preload="auto"></audio>
 
     <script>
@@ -262,6 +262,7 @@
         const activeRecorders = {};
         const audioChunksMap = {};
         const isRecordingMap = {};
+        const audioUrlMap = {}; // 獨立儲存每一句各自的音檔網址
 
         function playLessonAudio(url) {
             const player = document.getElementById("lesson-audio-player");
@@ -301,22 +302,30 @@
             const pbBtn = document.getElementById("student-pb-" + index);
             
             if (!isRecordingMap[index]) {
+                // 開始錄音：初始化該句專屬的陣列
                 audioChunksMap[index] = [];
                 const recorder = new MediaRecorder(globalStream);
                 activeRecorders[index] = recorder;
                 
-                recorder.ondataavailable = e => { if (e.data.size > 0) audioChunksMap[index].push(e.data); };
+                recorder.ondataavailable = e => { 
+                    if (e.data.size > 0) {
+                        audioChunksMap[index].push(e.data); 
+                    } 
+                };
                 
                 recorder.onstop = () => {
                     const blob = new Blob(audioChunksMap[index], { type: recorder.mimeType || 'audio/mp4' });
                     const audioUrl = URL.createObjectURL(blob);
                     
+                    // 【關鍵】將這一句的錄音網址獨立存入對應的 index 中，避免互相覆蓋
+                    audioUrlMap[index] = audioUrl;
+
                     if (pbBtn) { 
                         pbBtn.classList.remove("hidden"); 
-                        // 使用共用固定的音訊播放器，避開平板瀏覽器的阻擋與報錯機制
+                        // 點擊「聽回放」時，讀取該句專屬的 audioUrl 進行播放
                         pbBtn.onclick = () => { 
                             const sharedPlayer = document.getElementById("shared-student-player");
-                            sharedPlayer.src = audioUrl;
+                            sharedPlayer.src = audioUrlMap[index];
                             sharedPlayer.load();
                             sharedPlayer.play().catch(err => {
                                 console.log("播放被阻擋，再次嘗試播放：", err);
@@ -334,7 +343,9 @@
                 if (pbBtn) pbBtn.classList.add("hidden");
             } else {
                 const recorder = activeRecorders[index];
-                if (recorder && recorder.state === "recording") { recorder.stop(); }
+                if (recorder && recorder.state === "recording") { 
+                    recorder.stop(); 
+                }
                 isRecordingMap[index] = false;
                 if (recBtn) recBtn.classList.remove("recording-anim");
                 if (recText) recText.innerText = "重新錄音";
