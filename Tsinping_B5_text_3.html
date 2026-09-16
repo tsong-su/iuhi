@@ -337,7 +337,6 @@
             }
 
             try {
-                // 1. 先顯示準備中，讓學生知道硬體正在連接
                 if (recText) recText.innerText = "準備中...";
                 
                 const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -364,38 +363,39 @@
                     }
                 };
 
+                // 當錄音停止時的處理
                 activeRecorder.onstop = () => {
                     freshStream.getTracks().forEach(track => track.stop());
 
-                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                    const audioUrl = URL.createObjectURL(blob);
+                    // 【核心修改】加入 400 毫秒（0.4秒）延遲，讓 iPad 硬體緩衝區完整收尾，不被截斷
+                    setTimeout(() => {
+                        const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                        const audioUrl = URL.createObjectURL(blob);
 
-                    if (hiddenAudio) {
-                        hiddenAudio.src = audioUrl;
-                        hiddenAudio.load();
-                    }
+                        if (hiddenAudio) {
+                            hiddenAudio.src = audioUrl;
+                            hiddenAudio.load();
+                        }
 
-                    if (recBtn) recBtn.classList.remove("recording-anim");
-                    if (recText) recText.innerText = "重新錄音";
-                    if (statusEl) statusEl.classList.add("hidden");
+                        if (recBtn) recBtn.classList.remove("recording-anim");
+                        if (recText) recText.innerText = "重新錄音";
+                        if (statusEl) statusEl.classList.add("hidden");
 
-                    if (pbBtn) {
-                        pbBtn.classList.remove("hidden");
-                        pbBtn.onclick = () => {
-                            hiddenAudio.play().catch(err => {
-                                console.log("播放被阻擋，再次嘗試：", err);
-                                hiddenAudio.play();
-                            });
-                        };
-                    }
-
-                    isRecordingMap[index] = false;
-                    currentRecordingIndex = null;
+                        // 延遲結束後，「聽回放」按鈕才滑順出現，此時音檔已經百分之百完美無缺
+                        if (pbBtn) {
+                            pbBtn.classList.remove("hidden");
+                            pbBtn.onclick = () => {
+                                hiddenAudio.play().catch(err => {
+                                    console.log("播放被阻擋，再次嘗試：", err);
+                                    hiddenAudio.play();
+                                });
+                            };
+                        }
+                    }, 400); 
                 };
 
-                // 【核心優化】加入 350 毫秒（0.35秒）的微小緩衝延遲，讓 iPad 麥克風完全熱機後才正式開始錄音，徹底解決第一字被截斷的問題
+                // 開頭加入 350 毫秒緩衝，避免第一字被吃掉
                 setTimeout(() => {
-                    // 確保點擊後如果使用者中途取消就不啟動
                     if (currentRecordingIndex === index) {
                         activeRecorder.start();
                         isRecordingMap[index] = true;
