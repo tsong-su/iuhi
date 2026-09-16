@@ -210,7 +210,7 @@
         <div class="space-y-1">
             <div class="font-extrabold text-base text-gray-900"><span class="tonemark">贏</span><span class="lighttone">的</span>莫臭<span class="tonemark">屁</span>，<span class="tonemark">輸</span><span class="lighttone">的</span>免失<span class="tonemark">志</span>。</div>
             <div class="text-xs font-semibold text-teal-700">Iânn--ê mài tshàu-phuì, su--ê bián sit-tsì.</div>
-            <div class="text-xs text-gray-500">(贏了不要太得意，輸了也不必氣餒。)</div>
+            <div class="text-xs text-gray-500">(贏了不要太得意，輸了也不部氣餒。)</div>
         </div>
     </div>
     <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -254,15 +254,16 @@
     <!-- 課文範例音檔播放器 -->
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
     
-    <!-- 全域共用錄音播放器，確保每句獨立播放 -->
+    <!-- 全域共用播放器 -->
     <audio id="shared-student-player" class="hidden" preload="auto"></audio>
 
     <script>
         let globalStream = null;
-        const activeRecorders = {};
+        let activeRecorder = null; // 全域共用同一台錄音機，避免 iPad 聲道衝突
+        let currentRecordingIndex = null;
         const audioChunksMap = {};
+        const audioUrlMap = {};
         const isRecordingMap = {};
-        const audioUrlMap = {}; // 獨立儲存每一句的音檔網址
 
         function playLessonAudio(url) {
             const player = document.getElementById("lesson-audio-player");
@@ -296,74 +297,86 @@
 
         function toggleStudentRecord(index) {
             if (!globalStream) { alert("請先點擊上方錄音「啟用麥克風」按鈕！"); return; }
+            
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
+
+            // 如果點擊的是「目前正在錄音的這一句」，代表要停止錄音
+            if (isRecordingMap[index]) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                return;
+            }
+
+            // 如果有其他句正在錄音，先強制關閉它
+            if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
+                stopCurrentRecording();
+            }
+
+            // 開始這一句的錄音
+            audioChunksMap[index] = [];
+            currentRecordingIndex = index;
             
-            if (!isRecordingMap[index]) {
-                audioChunksMap[index] = [];
-                
-                // 【核心修正】動態安全偵測平板/手機支援的錄音格式，若支援 mp4 則優先使用，避免格式錯誤
-                let options = {};
-                if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options.mimeType = 'audio/mp4';
-                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options.mimeType = 'audio/webm';
-                }
+            // 針對 iPad 相容性自動選取格式
+            let options = {};
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                options.mimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                options.mimeType = 'audio/webm';
+            }
 
-                let recorder;
-                try {
-                    recorder = new MediaRecorder(globalStream, options);
-                } catch (e) {
-                    recorder = new MediaRecorder(globalStream); // 降級使用預設
-                }
+            try {
+                activeRecorder = new MediaRecorder(globalStream, options);
+            } catch (e) {
+                activeRecorder = new MediaRecorder(globalStream);
+            }
 
-                activeRecorders[index] = recorder;
-                
-                recorder.ondataavailable = e => { 
-                    if (e.data && e.data.size > 0) {
-                        audioChunksMap[index].push(e.data); 
-                    } 
-                };
-                
-                recorder.onstop = () => {
-                    const blob = new Blob(audioChunksMap[index], { type: recorder.mimeType || 'audio/mp4' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    
-                    // 獨立儲存該句的音檔網址
-                    audioUrlMap[index] = audioUrl;
-
-                    if (pbBtn) { 
-                        pbBtn.classList.remove("hidden"); 
-                        // 點擊「聽回放」時，使用共用播放器播放該句的網址
-                        pbBtn.onclick = () => { 
-                            const sharedPlayer = document.getElementById("shared-student-player");
-                            sharedPlayer.src = audioUrlMap[index];
-                            sharedPlayer.load();
-                            sharedPlayer.play().catch(err => {
-                                console.log("播放被阻擋，再次嘗試：", err);
-                                sharedPlayer.play();
-                            }); 
-                        }; 
-                    }
-                };
-                
-                recorder.start();
-                isRecordingMap[index] = true;
-                if (recBtn) recBtn.classList.add("recording-anim");
-                if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.remove("hidden");
-                if (pbBtn) pbBtn.classList.add("hidden");
-            } else {
-                const recorder = activeRecorders[index];
-                if (recorder && recorder.state === "recording") { 
-                    recorder.stop(); 
+            activeRecorder.ondataavailable = e => {
+                if (e.data && e.data.size > 0) {
+                    audioChunksMap[index].push(e.data);
                 }
-                isRecordingMap[index] = false;
+            };
+
+            activeRecorder.onstop = () => {
+                const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                const audioUrl = URL.createObjectURL(blob);
+                audioUrlMap[index] = audioUrl;
+
+                // 恢復按鈕狀態並顯示「聽回放」
                 if (recBtn) recBtn.classList.remove("recording-anim");
                 if (recText) recText.innerText = "重新錄音";
                 if (statusEl) statusEl.classList.add("hidden");
+                
+                if (pbBtn) {
+                    pbBtn.classList.remove("hidden");
+                    pbBtn.onclick = () => {
+                        const sharedPlayer = document.getElementById("shared-student-player");
+                        sharedPlayer.src = audioUrlMap[index];
+                        sharedPlayer.load();
+                        sharedPlayer.play().catch(err => {
+                            console.log("播放被阻擋，再次嘗試：", err);
+                            sharedPlayer.play();
+                        });
+                    };
+                }
+                isRecordingMap[index] = false;
+                currentRecordingIndex = null;
+            };
+
+            activeRecorder.start();
+            isRecordingMap[index] = true;
+            if (recBtn) recBtn.classList.add("recording-anim");
+            if (recText) recText.innerText = "停止錄音";
+            if (statusEl) statusEl.classList.remove("hidden");
+            if (pbBtn) pbBtn.classList.add("hidden");
+        }
+
+        function stopCurrentRecording() {
+            if (currentRecordingIndex !== null && activeRecorder && activeRecorder.state === "recording") {
+                activeRecorder.stop();
             }
         }
     </script>
