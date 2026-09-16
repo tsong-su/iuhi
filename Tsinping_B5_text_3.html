@@ -13,17 +13,17 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 -->
+    <!-- 首頁選單視圖 (已完整恢復啟用麥克風按鈕) -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
                     <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊下方按鈕直接進入練習</p>
+                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
                 </div>
             </div>
-            <button onclick="openLesson()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🚀 進入課程</button>
+            <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -292,6 +292,7 @@
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
 
     <script>
+        let globalStream = null;
         let activeRecorder = null;
         let currentRecordingIndex = null;
         const audioChunksMap = {};
@@ -302,6 +303,19 @@
             if (!player) return;
             player.src = url;
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
+        }
+
+        // 首頁的「啟用麥克風」按鈕功能
+        function initGlobalMic() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                globalStream = stream;
+                const btn = document.getElementById("global-mic-btn");
+                if (btn) { 
+                    btn.innerText = "✅ 麥克風已就緒"; 
+                    btn.classList.remove("bg-emerald-600"); 
+                    btn.classList.add("bg-green-700"); 
+                }
+            }).catch(err => { alert("請允許麥克風權限！"); });
         }
 
         function openLesson() {
@@ -321,7 +335,7 @@
             const pbBtn = document.getElementById("student-pb-" + index);
             const hiddenAudio = document.getElementById("hidden-audio-" + index);
 
-            // 如果點擊的是正在錄音的那一句，則停止錄音
+            // 如果點擊的是正在錄音的那一句，代表要「停止錄音」
             if (isRecordingMap[index]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -329,7 +343,8 @@
                 return;
             }
 
-            // 如果有其他句正在錄音，先強制停止
+            // 【核心修正：無限重錄機制】
+            // 如果這句之前已經錄過音（按鈕顯示「重新錄音」），再次點擊時要能順暢地再次開始錄音！
             if (currentRecordingIndex !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -339,6 +354,7 @@
             try {
                 if (recText) recText.innerText = "準備中...";
                 
+                // 每次錄音都取得新鮮串流，確保 iPad 不會卡住
                 const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
                 audioChunksMap[index] = [];
@@ -363,11 +379,10 @@
                     }
                 };
 
-                // 當錄音停止時的處理
                 activeRecorder.onstop = () => {
                     freshStream.getTracks().forEach(track => track.stop());
 
-                    // 【核心修改】加入 400 毫秒（0.4秒）延遲，讓 iPad 硬體緩衝區完整收尾，不被截斷
+                    // 加入 400 毫秒緩衝，確保尾音完美收尾不被截斷
                     setTimeout(() => {
                         const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
                         const audioUrl = URL.createObjectURL(blob);
@@ -377,11 +392,11 @@
                             hiddenAudio.load();
                         }
 
+                        // 恢復按鈕為「重新錄音」，讓學生隨時可以再重錄！
                         if (recBtn) recBtn.classList.remove("recording-anim");
                         if (recText) recText.innerText = "重新錄音";
                         if (statusEl) statusEl.classList.add("hidden");
 
-                        // 延遲結束後，「聽回放」按鈕才滑順出現，此時音檔已經百分之百完美無缺
                         if (pbBtn) {
                             pbBtn.classList.remove("hidden");
                             pbBtn.onclick = () => {
@@ -391,10 +406,13 @@
                                 });
                             };
                         }
+
+                        isRecordingMap[index] = false;
+                        currentRecordingIndex = null;
                     }, 400); 
                 };
 
-                // 開頭加入 350 毫秒緩衝，避免第一字被吃掉
+                // 開頭加入 350 毫秒緩衝，防止第一字被吃掉
                 setTimeout(() => {
                     if (currentRecordingIndex === index) {
                         activeRecorder.start();
@@ -402,7 +420,7 @@
                         if (recBtn) recBtn.classList.add("recording-anim");
                         if (recText) recText.innerText = "停止錄音";
                         if (statusEl) statusEl.classList.remove("hidden");
-                        if (pbBtn) pbBtn.classList.add("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden"); // 錄音中時隱藏聽回放按鈕
                     }
                 }, 350);
 
