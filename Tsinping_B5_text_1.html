@@ -207,76 +207,139 @@
 </div>        </main>
     </div>
 
+    <!-- 課文範例音檔播放器 -->
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
+
     <script>
-        let globalStream = null;
-        const activeRecorders = {};
+        let activeRecorder = null;
+        let currentRecordingIndex = null;
         const audioChunksMap = {};
+        const audioUrlMap = {};
         const isRecordingMap = {};
+
         function playLessonAudio(url) {
             const player = document.getElementById("lesson-audio-player");
             if (!player) return;
             player.src = url;
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
         }
+
         function initGlobalMic() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                globalStream = stream;
+                stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
-                if (btn) { btn.innerText = "✅ 麥克風已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
+                if (btn) { 
+                    btn.innerText = "✅ 麥克風已就緒"; 
+                    btn.classList.remove("bg-emerald-600"); 
+                    btn.classList.add("bg-green-700"); 
+                }
             }).catch(err => { alert("請允許麥克風權限！"); });
         }
+
         function openLesson() {
-            if (!globalStream) { alert("請先點擊上方錄音「啟用麥克風」按鈕！"); return; }
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
+
         function backToMenu() {
             document.getElementById("lesson-view").classList.add("hidden");
             document.getElementById("menu-view").classList.remove("hidden");
         }
-        function toggleStudentRecord(index) {
-            if (!globalStream) { alert("請先點擊上方錄音「啟用麥克風」按鈕！"); return; }
+
+        async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
-            
-            if (!isRecordingMap[index]) {
+
+            // 1. 如果該句正在錄音中，點擊就是「停止錄音」
+            if (isRecordingMap[index]) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                return;
+            }
+
+            // 2. 如果有其他句正在錄音，先強制安全停止
+            if (currentRecordingIndex !== null) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                isRecordingMap[currentRecordingIndex] = false;
+            }
+
+            try {
+                if (recText) recText.innerText = "準備中...";
+
+                const freshStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
+                
                 audioChunksMap[index] = [];
-                // 【關鍵修改】不強行指定 mimeType，交由瀏覽器自動依裝置（手機/電腦）套用最適相容格式
-                const recorder = new MediaRecorder(globalStream);
-                activeRecorders[index] = recorder;
-                
-                recorder.ondataavailable = e => { if (e.data.size > 0) audioChunksMap[index].push(e.data); };
-                
-                recorder.onstop = () => {
-                    const blob = new Blob(audioChunksMap[index], { type: recorder.mimeType || 'audio/mp4' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    if (pbBtn) { 
-                        pbBtn.classList.remove("hidden"); 
-                        pbBtn.onclick = () => { 
-                            const playbackAudio = new Audio(audioUrl);
-                            playbackAudio.play().catch(err => {
-                                alert("播放被攔截，請再點一次「聽回放」按鈕即可聽到聲音！");
-                            }); 
-                        }; 
+                currentRecordingIndex = index;
+
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
+                }
+
+                try {
+                    activeRecorder = new MediaRecorder(freshStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(freshStream);
+                }
+
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[index].push(e.data);
                     }
                 };
-                
-                recorder.start();
-                isRecordingMap[index] = true;
-                if (recBtn) recBtn.classList.add("recording-anim");
-                if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.remove("hidden"); // 顯示錄音中提示
-                if (pbBtn) pbBtn.classList.add("hidden");
-            } else {
-                const recorder = activeRecorders[index];
-                if (recorder && recorder.state === "recording") { recorder.stop(); }
-                isRecordingMap[index] = false;
-                if (recBtn) recBtn.classList.remove("recording-anim");
-                if (recText) recText.innerText = "重新錄音";
-                if (statusEl) statusEl.classList.add("hidden");
+
+                activeRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+
+                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    audioUrlMap[index] = audioUrl;
+
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            const instantAudio = new Audio(audioUrlMap[index]);
+                            instantAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                instantAudio.play();
+                            });
+                        };
+                    }
+
+                    isRecordingMap[index] = false;
+                    currentRecordingIndex = null;
+                };
+
+                // 熱機 400ms 後啟動，帶入 timeslice(100) 確保 Safari 穩定抓取數據包
+                setTimeout(() => {
+                    if (currentRecordingIndex === index) {
+                        activeRecorder.start(100);
+                        isRecordingMap[index] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+
+            } catch (err) {
+                console.error("無法取得麥克風：", err);
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
         }
     </script>
