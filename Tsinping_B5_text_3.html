@@ -13,7 +13,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 (已完整恢復啟用麥克風按鈕) -->
+    <!-- 首頁選單視圖 -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -318,7 +318,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【最終極解法】針對平板換句子的瞬間，加入防衝突等待，並將暖機時間拉長至 500ms
+        // 【最終破解版】：每次錄音前強制「預先熱機（Pre-warm）」串流，徹底打破奇偶數次交替鎖死限制
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
@@ -344,9 +344,12 @@
             try {
                 if (recText) recText.innerText = "準備中...";
 
-                // 【關鍵防護】切換句子時給予 200ms 的硬體釋放等待期，徹底解決平板第二句第一次沒聲音的衝突
-                await new Promise(resolve => setTimeout(resolve, 200));
+                // 【核心防護】：為了防止 iOS 發生「第二次沒聲音」的交替鎖死，我們在每次點擊時強制向系統「雙重請求」：
+                // 先開一個極短的空白串流來喚醒硬體通道並立刻關閉，讓 iPad 系統強制切換到暢通狀態
+                const dummyStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                dummyStream.getTracks().forEach(track => track.stop());
 
+                // 緊接著立刻建立正式要用的錄音串流
                 const freshStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true } 
                 });
@@ -400,7 +403,7 @@
                     currentRecordingIndex = null;
                 };
 
-                // 【深度熱機】將開頭暖機時間拉長至 500 毫秒（0.5秒），確保平板麥克風完全解鎖，錄第二句第一次就 100% 有聲音
+                // 熱機 350ms 後正式啟動錄音
                 setTimeout(() => {
                     if (currentRecordingIndex === index) {
                         activeRecorder.start();
@@ -410,7 +413,7 @@
                         if (statusEl) statusEl.classList.remove("hidden");
                         if (pbBtn) pbBtn.classList.add("hidden");
                     }
-                }, 500);
+                }, 350);
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
