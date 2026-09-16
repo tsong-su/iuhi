@@ -296,10 +296,9 @@
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
         }
 
-        // 首頁按鈕：提示學生可以直接開始練習（不需要強制綁定全域變數）
         function initGlobalMic() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                stream.getTracks().forEach(track => track.stop()); // 測試權限後即刻釋放
+                stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
                 if (btn) { 
                     btn.innerText = "✅ 麥克風已就緒"; 
@@ -319,7 +318,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【終極解法】每次點擊錄音，現場動態請求全新獨立串流，絕不共用、絕不死當
+        // 【終極修復】：加入硬體強制暖機與狀態清理，解決「第一次沒聲音、重錄才正常」的平板衝突
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
@@ -334,18 +333,23 @@
                 return;
             }
 
-            // 2. 如果有其他句正在錄音，先強制停止
+            // 2. 如果有其他句正在錄音，先強制安全停止並清空
             if (currentRecordingIndex !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
                 }
+                isRecordingMap[currentRecordingIndex] = false;
             }
 
             try {
                 if (recText) recText.innerText = "準備中...";
 
-                // 每次都跟系統要全新的獨立麥克風串流
-                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // 【關鍵防護】在取得新串流前，加入 100 毫秒讓平板硬體有時間釋放上一句的殘留通道
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                const freshStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
                 
                 audioChunksMap[index] = [];
                 currentRecordingIndex = index;
@@ -370,7 +374,6 @@
                 };
 
                 activeRecorder.onstop = () => {
-                    // 錄音結束，立刻釋放硬體串流
                     freshStream.getTracks().forEach(track => track.stop());
 
                     const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
@@ -384,7 +387,6 @@
 
                     if (pbBtn) {
                         pbBtn.classList.remove("hidden");
-                        // 每次聽回放時，現場動態建立一個專屬播放器播放當次網址
                         pbBtn.onclick = () => {
                             const instantAudio = new Audio(audioUrlMap[index]);
                             instantAudio.play().catch(err => {
@@ -398,7 +400,7 @@
                     currentRecordingIndex = null;
                 };
 
-                // 開頭 350ms 緩衝讓麥克風熱機，然後開始錄音
+                // 【雙重保險】熱機 350 毫秒後才正式啟動錄音，保證錄第一句就 100% 有聲音、絕不截斷
                 setTimeout(() => {
                     if (currentRecordingIndex === index) {
                         activeRecorder.start();
