@@ -314,7 +314,6 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【終極核心】每次點擊錄音時，直接向系統請求全新麥克風串流，繞過 iOS 串流失效限制
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
@@ -338,7 +337,9 @@
             }
 
             try {
-                // 每次錄音都重新取得權限與串流，確保 iPad 麥克風絕對不會被系統關閉
+                // 1. 先顯示準備中，讓學生知道硬體正在連接
+                if (recText) recText.innerText = "準備中...";
+                
                 const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
                 audioChunksMap[index] = [];
@@ -364,7 +365,6 @@
                 };
 
                 activeRecorder.onstop = () => {
-                    // 錄音結束後，主動關閉這個串流的所有音訊軌道，釋放硬體
                     freshStream.getTracks().forEach(track => track.stop());
 
                     const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
@@ -393,15 +393,22 @@
                     currentRecordingIndex = null;
                 };
 
-                activeRecorder.start();
-                isRecordingMap[index] = true;
-                if (recBtn) recBtn.classList.add("recording-anim");
-                if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.remove("hidden");
-                if (pbBtn) pbBtn.classList.add("hidden");
+                // 【核心優化】加入 350 毫秒（0.35秒）的微小緩衝延遲，讓 iPad 麥克風完全熱機後才正式開始錄音，徹底解決第一字被截斷的問題
+                setTimeout(() => {
+                    // 確保點擊後如果使用者中途取消就不啟動
+                    if (currentRecordingIndex === index) {
+                        activeRecorder.start();
+                        isRecordingMap[index] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 350);
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
+                if (recText) recText.innerText = "開始錄音";
                 alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
         }
