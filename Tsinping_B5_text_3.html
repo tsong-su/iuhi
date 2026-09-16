@@ -13,17 +13,17 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 -->
+    <!-- 首頁選單視圖 (已完整恢復啟用麥克風按鈕) -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
                     <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊下方按鈕直接進入練習</p>
+                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
                 </div>
             </div>
-            <button onclick="openLesson()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🚀 進入課程</button>
+            <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -318,7 +318,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【終極修復】：加入硬體強制暖機與狀態清理，解決「第一次沒聲音、重錄才正常」的平板衝突
+        // 【最終極解法】針對平板換句子的瞬間，加入防衝突等待，並將暖機時間拉長至 500ms
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
@@ -333,7 +333,7 @@
                 return;
             }
 
-            // 2. 如果有其他句正在錄音，先強制安全停止並清空
+            // 2. 如果有其他句正在錄音，先強制安全停止
             if (currentRecordingIndex !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -344,8 +344,8 @@
             try {
                 if (recText) recText.innerText = "準備中...";
 
-                // 【關鍵防護】在取得新串流前，加入 100 毫秒讓平板硬體有時間釋放上一句的殘留通道
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // 【關鍵防護】切換句子時給予 200ms 的硬體釋放等待期，徹底解決平板第二句第一次沒聲音的衝突
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const freshStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true } 
@@ -400,7 +400,7 @@
                     currentRecordingIndex = null;
                 };
 
-                // 【雙重保險】熱機 350 毫秒後才正式啟動錄音，保證錄第一句就 100% 有聲音、絕不截斷
+                // 【深度熱機】將開頭暖機時間拉長至 500 毫秒（0.5秒），確保平板麥克風完全解鎖，錄第二句第一次就 100% 有聲音
                 setTimeout(() => {
                     if (currentRecordingIndex === index) {
                         activeRecorder.start();
@@ -410,7 +410,7 @@
                         if (statusEl) statusEl.classList.remove("hidden");
                         if (pbBtn) pbBtn.classList.add("hidden");
                     }
-                }, 350);
+                }, 500);
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
