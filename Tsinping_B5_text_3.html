@@ -13,7 +13,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 (已完整恢復啟用麥克風按鈕) -->
+    <!-- 首頁選單視圖 -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -305,7 +305,6 @@
             player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
         }
 
-        // 首頁的「啟用麥克風」按鈕功能
         function initGlobalMic() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 globalStream = stream;
@@ -335,7 +334,7 @@
             const pbBtn = document.getElementById("student-pb-" + index);
             const hiddenAudio = document.getElementById("hidden-audio-" + index);
 
-            // 如果點擊的是正在錄音的那一句，代表要「停止錄音」
+            // 1. 如果該句正在錄音中，點擊就是「停止錄音」
             if (isRecordingMap[index]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -343,8 +342,7 @@
                 return;
             }
 
-            // 【核心修正：無限重錄機制】
-            // 如果這句之前已經錄過音（按鈕顯示「重新錄音」），再次點擊時要能順暢地再次開始錄音！
+            // 2. 如果有其他句正在錄音，先強制停止
             if (currentRecordingIndex !== null) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -354,7 +352,6 @@
             try {
                 if (recText) recText.innerText = "準備中...";
                 
-                // 每次錄音都取得新鮮串流，確保 iPad 不會卡住
                 const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
                 audioChunksMap[index] = [];
@@ -379,50 +376,45 @@
                     }
                 };
 
+                // 【核心修改：移除會干擾平板的延遲，改為即時同步綁定】
                 activeRecorder.onstop = () => {
                     freshStream.getTracks().forEach(track => track.stop());
 
-                    // 加入 400 毫秒緩衝，確保尾音完美收尾不被截斷
-                    setTimeout(() => {
-                        const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                        const audioUrl = URL.createObjectURL(blob);
+                    // 直接同步建立 Blob 與網址，不再透過 setTimeout 隔離，確保 iPad 記憶體與事件確實對應
+                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
 
-                        if (hiddenAudio) {
-                            hiddenAudio.src = audioUrl;
-                            hiddenAudio.load();
-                        }
+                    if (hiddenAudio) {
+                        hiddenAudio.src = audioUrl;
+                        hiddenAudio.load();
+                    }
 
-                        // 恢復按鈕為「重新錄音」，讓學生隨時可以再重錄！
-                        if (recBtn) recBtn.classList.remove("recording-anim");
-                        if (recText) recText.innerText = "重新錄音";
-                        if (statusEl) statusEl.classList.add("hidden");
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
 
-                        if (pbBtn) {
-                            pbBtn.classList.remove("hidden");
-                            pbBtn.onclick = () => {
-                                hiddenAudio.play().catch(err => {
-                                    console.log("播放被阻擋，再次嘗試：", err);
-                                    hiddenAudio.play();
-                                });
-                            };
-                        }
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        // 每次停止錄音時，強制重新綁定該句專屬的點擊播放事件
+                        pbBtn.onclick = () => {
+                            hiddenAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                hiddenAudio.play();
+                            });
+                        };
+                    }
 
-                        isRecordingMap[index] = false;
-                        currentRecordingIndex = null;
-                    }, 400); 
+                    isRecordingMap[index] = false;
+                    currentRecordingIndex = null;
                 };
 
-                // 開頭加入 350 毫秒緩衝，防止第一字被吃掉
-                setTimeout(() => {
-                    if (currentRecordingIndex === index) {
-                        activeRecorder.start();
-                        isRecordingMap[index] = true;
-                        if (recBtn) recBtn.classList.add("recording-anim");
-                        if (recText) recText.innerText = "停止錄音";
-                        if (statusEl) statusEl.classList.remove("hidden");
-                        if (pbBtn) pbBtn.classList.add("hidden"); // 錄音中時隱藏聽回放按鈕
-                    }
-                }, 350);
+                // 啟動錄音
+                activeRecorder.start();
+                isRecordingMap[index] = true;
+                if (recBtn) recBtn.classList.add("recording-anim");
+                if (recText) recText.innerText = "停止錄音";
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
