@@ -318,7 +318,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 【最終破解版】：每次錄音前強制「預先熱機（Pre-warm）」串流，徹底打破奇偶數次交替鎖死限制
+        // 【終極修復：強制加入 timeslice(100)】解決 iOS Safari 第一次錄音常因未切片而產生空檔案的 Bug
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
@@ -344,12 +344,6 @@
             try {
                 if (recText) recText.innerText = "準備中...";
 
-                // 【核心防護】：為了防止 iOS 發生「第二次沒聲音」的交替鎖死，我們在每次點擊時強制向系統「雙重請求」：
-                // 先開一個極短的空白串流來喚醒硬體通道並立刻關閉，讓 iPad 系統強制切換到暢通狀態
-                const dummyStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                dummyStream.getTracks().forEach(track => track.stop());
-
-                // 緊接著立刻建立正式要用的錄音串流
                 const freshStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true } 
                 });
@@ -403,17 +397,17 @@
                     currentRecordingIndex = null;
                 };
 
-                // 熱機 350ms 後正式啟動錄音
+                // 熱機 400ms 後啟動，【關鍵】一定要帶入 timeslice(100)，強制 Safari 穩定抓取數據包
                 setTimeout(() => {
                     if (currentRecordingIndex === index) {
-                        activeRecorder.start();
+                        activeRecorder.start(100); // 這裡加上 100ms 切片！
                         isRecordingMap[index] = true;
                         if (recBtn) recBtn.classList.add("recording-anim");
                         if (recText) recText.innerText = "停止錄音";
                         if (statusEl) statusEl.classList.remove("hidden");
                         if (pbBtn) pbBtn.classList.add("hidden");
                     }
-                }, 350);
+                }, 400);
 
             } catch (err) {
                 console.error("無法取得麥克風：", err);
