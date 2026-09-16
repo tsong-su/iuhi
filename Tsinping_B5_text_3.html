@@ -72,7 +72,6 @@
             <button id="student-pb-0" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-0" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -98,7 +97,6 @@
             <button id="student-pb-1" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-1" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -124,7 +122,6 @@
             <button id="student-pb-2" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-2" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -150,7 +147,6 @@
             <button id="student-pb-3" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-3" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -176,7 +172,6 @@
             <button id="student-pb-4" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-4" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -202,7 +197,6 @@
             <button id="student-pb-5" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-5" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -228,7 +222,6 @@
             <button id="student-pb-6" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-6" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -254,7 +247,6 @@
             <button id="student-pb-7" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-7" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -280,7 +272,6 @@
             <button id="student-pb-8" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
-            <audio id="hidden-audio-8" class="hidden" preload="auto"></audio>
         </div>
     </div>
 </div>
@@ -296,6 +287,7 @@
         let activeRecorder = null;
         let currentRecordingIndex = null;
         const audioChunksMap = {};
+        const audioUrlMap = {};
         const isRecordingMap = {};
 
         function playLessonAudio(url) {
@@ -318,6 +310,7 @@
         }
 
         function openLesson() {
+            if (!globalStream) { alert("請先點擊上方「啟用麥克風」按鈕！"); return; }
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
@@ -327,14 +320,15 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        async function toggleStudentRecord(index) {
+        function toggleStudentRecord(index) {
+            if (!globalStream) { alert("請先點擊上方「啟用麥克風」按鈕！"); return; }
+            
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
-            const hiddenAudio = document.getElementById("hidden-audio-" + index);
 
-            // 1. 如果該句正在錄音中，點擊就是「停止錄音」
+            // 1. 如果點擊的是正在錄音的那一句，代表要停止錄音
             if (isRecordingMap[index]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -349,78 +343,64 @@
                 }
             }
 
-            try {
-                if (recText) recText.innerText = "準備中...";
-                
-                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                
-                audioChunksMap[index] = [];
-                currentRecordingIndex = index;
+            audioChunksMap[index] = [];
+            currentRecordingIndex = index;
 
-                let options = {};
-                if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options.mimeType = 'audio/mp4';
-                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options.mimeType = 'audio/webm';
-                }
+            // 確保每次錄音時，全域串流的軌道是啟動的
+            globalStream.getTracks().forEach(track => { track.enabled = true; });
 
-                try {
-                    activeRecorder = new MediaRecorder(freshStream, options);
-                } catch (e) {
-                    activeRecorder = new MediaRecorder(freshStream);
-                }
-
-                activeRecorder.ondataavailable = e => {
-                    if (e.data && e.data.size > 0) {
-                        audioChunksMap[index].push(e.data);
-                    }
-                };
-
-                // 【核心修改：移除會干擾平板的延遲，改為即時同步綁定】
-                activeRecorder.onstop = () => {
-                    freshStream.getTracks().forEach(track => track.stop());
-
-                    // 直接同步建立 Blob 與網址，不再透過 setTimeout 隔離，確保 iPad 記憶體與事件確實對應
-                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                    const audioUrl = URL.createObjectURL(blob);
-
-                    if (hiddenAudio) {
-                        hiddenAudio.src = audioUrl;
-                        hiddenAudio.load();
-                    }
-
-                    if (recBtn) recBtn.classList.remove("recording-anim");
-                    if (recText) recText.innerText = "重新錄音";
-                    if (statusEl) statusEl.classList.add("hidden");
-
-                    if (pbBtn) {
-                        pbBtn.classList.remove("hidden");
-                        // 每次停止錄音時，強制重新綁定該句專屬的點擊播放事件
-                        pbBtn.onclick = () => {
-                            hiddenAudio.play().catch(err => {
-                                console.log("播放被阻擋，再次嘗試：", err);
-                                hiddenAudio.play();
-                            });
-                        };
-                    }
-
-                    isRecordingMap[index] = false;
-                    currentRecordingIndex = null;
-                };
-
-                // 啟動錄音
-                activeRecorder.start();
-                isRecordingMap[index] = true;
-                if (recBtn) recBtn.classList.add("recording-anim");
-                if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.remove("hidden");
-                if (pbBtn) pbBtn.classList.add("hidden");
-
-            } catch (err) {
-                console.error("無法取得麥克風：", err);
-                if (recText) recText.innerText = "開始錄音";
-                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
+            let options = {};
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                options.mimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                options.mimeType = 'audio/webm';
             }
+
+            try {
+                activeRecorder = new MediaRecorder(globalStream, options);
+            } catch (e) {
+                activeRecorder = new MediaRecorder(globalStream);
+            }
+
+            activeRecorder.ondataavailable = e => {
+                if (e.data && e.data.size > 0) {
+                    audioChunksMap[index].push(e.data);
+                }
+            };
+
+            activeRecorder.onstop = () => {
+                const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
+                const audioUrl = URL.createObjectURL(blob);
+                
+                // 獨立儲存每一句專屬的音檔網址
+                audioUrlMap[index] = audioUrl;
+
+                if (recBtn) recBtn.classList.remove("recording-anim");
+                if (recText) recText.innerText = "重新錄音";
+                if (statusEl) statusEl.classList.add("hidden");
+
+                if (pbBtn) {
+                    pbBtn.classList.remove("hidden");
+                    // 【核心破解】：每次聽回放時，動態透過 new Audio().play() 獨立播放該句網址，繞過 iPad 共用播放器限制
+                    pbBtn.onclick = () => {
+                        const instantAudio = new Audio(audioUrlMap[index]);
+                        instantAudio.play().catch(err => {
+                            console.log("播放被阻擋，再次嘗試：", err);
+                            instantAudio.play();
+                        });
+                    };
+                }
+
+                isRecordingMap[index] = false;
+                currentRecordingIndex = null;
+            };
+
+            activeRecorder.start();
+            isRecordingMap[index] = true;
+            if (recBtn) recBtn.classList.add("recording-anim");
+            if (recText) recText.innerText = "停止錄音";
+            if (statusEl) statusEl.classList.remove("hidden");
+            if (pbBtn) pbBtn.classList.add("hidden");
         }
     </script>
 </body>
