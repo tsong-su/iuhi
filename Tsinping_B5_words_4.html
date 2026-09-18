@@ -418,64 +418,235 @@
     </div>
 </div>        </main>
     </div>
+
+    <!-- 範例音檔播放器 -->
+    <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
+
     <script>
-        let studentStream = null;
+        let activeRecorder = null;
+        let currentActiveKey = null; 
+        
+        const audioChunksMap = {};
+        const audioUrlMap = {};
+        const isRecordingMap = {};
+
         function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => { 
-                studentStream = stream; 
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
-                btn.innerText = "✅ 麥克風已就緒"; 
-                btn.classList.remove("bg-pink-600");
-                btn.classList.add("bg-emerald-700");
-            }).catch(() => alert("請允許麥克風權限！"));
+                if (btn) { 
+                    btn.innerText = "✅ 錄音已就緒"; 
+                    btn.classList.remove("bg-pink-600"); 
+                    btn.classList.add("bg-emerald-700"); 
+                }
+            }).catch(err => { alert("請允許麥克風權限！"); });
         }
+
         function openLesson() {
-            if (!studentStream) { alert("請先點擊上方「啟用錄音」按鈕！"); return; }
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
+
         function backToMenu() {
             document.getElementById("lesson-view").classList.add("hidden");
             document.getElementById("menu-view").classList.remove("hidden");
         }
-        const sCardRec = {}, sCardChunks = {}, sCardState = {};
-        function toggleStudentCardRecord(idx) {
-            if (!studentStream) { alert("請先點擊上方啟用錄音！"); return; }
-            let btn = document.getElementById("card-rec-" + idx), status = document.getElementById("card-status-" + idx), pb = document.getElementById("card-pb-" + idx);
-            if (!sCardState[idx]) {
-                sCardChunks[idx] = [];
-                let rec = new MediaRecorder(studentStream);
-                sCardRec[idx] = rec;
-                rec.ondataavailable = e => { if(e.data.size>0) sCardChunks[idx].push(e.data); };
-                rec.onstop = () => {
-                    let url = URL.createObjectURL(new Blob(sCardChunks[idx], {type: "audio/webm"}));
-                    pb.classList.remove("hidden"); pb.onclick = () => new Audio(url).play();
+
+        // --- 語詞卡片錄音邏輯 ---
+        async function toggleStudentCardRecord(index) {
+            const key = "card-" + index;
+            const recBtn = document.getElementById("card-rec-" + index);
+            const statusEl = document.getElementById("card-status-" + index);
+            const pbBtn = document.getElementById("card-pb-" + index);
+
+            if (isRecordingMap[key]) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                return;
+            }
+
+            if (currentActiveKey !== null) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                isRecordingMap[currentActiveKey] = false;
+            }
+
+            try {
+                if (recBtn) recBtn.innerText = "準備中...";
+
+                const freshStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
+                
+                audioChunksMap[key] = [];
+                currentActiveKey = key;
+
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
+                }
+
+                try {
+                    activeRecorder = new MediaRecorder(freshStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(freshStream);
+                }
+
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[key].push(e.data);
+                    }
                 };
-                rec.start(); sCardState[idx] = true;
-                btn.innerText = "停止錄音"; status.classList.remove("hidden"); pb.classList.add("hidden");
-            } else {
-                sCardRec[idx].stop(); sCardState[idx] = false;
-                btn.innerText = "重新錄音"; status.classList.add("hidden");
+
+                activeRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+
+                    const blob = new Blob(audioChunksMap[key], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    audioUrlMap[key] = audioUrl;
+
+                    if (recBtn) {
+                        recBtn.classList.remove("recording-anim");
+                        recBtn.innerText = "重新錄音";
+                    }
+                    if (statusEl) statusEl.classList.add("hidden");
+
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            const instantAudio = new Audio(audioUrlMap[key]);
+                            instantAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                instantAudio.play();
+                            });
+                        };
+                    }
+
+                    isRecordingMap[key] = false;
+                    currentActiveKey = null;
+                };
+
+                setTimeout(() => {
+                    if (currentActiveKey === key) {
+                        activeRecorder.start(100);
+                        isRecordingMap[key] = true;
+                        if (recBtn) {
+                            recBtn.innerText = "停止錄音";
+                            recBtn.classList.add("recording-anim");
+                        }
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+
+            } catch (err) {
+                console.error("無法取得麥克風：", err);
+                if (recBtn) recBtn.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
         }
-        const sExRec = {}, sExChunks = {}, sExState = {};
-        function toggleStudentExRecord(idx) {
-            if (!studentStream) { alert("請先點擊上方啟用錄音！"); return; }
-            let btn = document.getElementById("ex-rec-" + idx), status = document.getElementById("ex-status-" + idx), pb = document.getElementById("ex-pb-" + idx);
-            if (!sExState[idx]) {
-                sExChunks[idx] = [];
-                let rec = new MediaRecorder(studentStream);
-                sExRec[idx] = rec;
-                rec.ondataavailable = e => { if(e.data.size>0) sExChunks[idx].push(e.data); };
-                rec.onstop = () => {
-                    let url = URL.createObjectURL(new Blob(sExChunks[idx], {type: "audio/webm"}));
-                    pb.classList.remove("hidden"); pb.onclick = () => new Audio(url).play();
+
+        // --- 例句造句錄音邏輯 ---
+        async function toggleStudentExRecord(index) {
+            const key = "ex-" + index;
+            const recBtn = document.getElementById("ex-rec-" + index);
+            const statusEl = document.getElementById("ex-status-" + index);
+            const pbBtn = document.getElementById("ex-pb-" + index);
+
+            if (isRecordingMap[key]) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                return;
+            }
+
+            if (currentActiveKey !== null) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                isRecordingMap[currentActiveKey] = false;
+            }
+
+            try {
+                if (recBtn) recBtn.innerText = "準備中...";
+
+                const freshStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true } 
+                });
+                
+                audioChunksMap[key] = [];
+                currentActiveKey = key;
+
+                let options = {};
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
+                }
+
+                try {
+                    activeRecorder = new MediaRecorder(freshStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(freshStream);
+                }
+
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[key].push(e.data);
+                    }
                 };
-                rec.start(); sExState[idx] = true;
-                btn.innerText = "停止錄音"; status.classList.remove("hidden"); pb.classList.add("hidden");
-            } else {
-                sExRec[idx].stop(); sExState[idx] = false;
-                btn.innerText = "重新錄音"; status.classList.add("hidden");
+
+                activeRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+
+                    const blob = new Blob(audioChunksMap[key], { type: activeRecorder.mimeType || 'audio/mp4' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    audioUrlMap[key] = audioUrl;
+
+                    if (recBtn) {
+                        recBtn.classList.remove("recording-anim");
+                        recBtn.innerText = "重新錄音";
+                    }
+                    if (statusEl) statusEl.classList.add("hidden");
+
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            const instantAudio = new Audio(audioUrlMap[key]);
+                            instantAudio.play().catch(err => {
+                                console.log("播放被阻擋，再次嘗試：", err);
+                                instantAudio.play();
+                            });
+                        };
+                    }
+
+                    isRecordingMap[key] = false;
+                    currentActiveKey = null;
+                };
+
+                setTimeout(() => {
+                    if (currentActiveKey === key) {
+                        activeRecorder.start(100);
+                        isRecordingMap[key] = true;
+                        if (recBtn) {
+                            recBtn.innerText = "停止錄音";
+                            recBtn.classList.add("recording-anim");
+                        }
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+
+            } catch (err) {
+                console.error("無法取得麥克風：", err);
+                if (recBtn) recBtn.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
             }
         }
     </script>
