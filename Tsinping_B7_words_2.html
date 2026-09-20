@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B7 第 2 課 - 輕鬆學語詞 & 語詞運用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
+        .recording-anim { animation: pulse-ring 1s infinite ease-in-out; background-color: #fee2e2 !important; color: #dc2626 !important; border-color: #f87171 !important; }
+        .tonemark { color: #ea580c; font-weight: 800; border-bottom: 2px dotted #ea580c; }
+        .lighttone { color: #2563eb; font-weight: 700; border-bottom: 2px dashed #2563eb; }
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .custom-play-btn { background-color: #f59e0b; border-radius: 1rem; width: 3.25rem; height: 3.25rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; }
+        .custom-play-btn:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-50 via-amber-50 to-emerald-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <div id="menu-view" class="max-w-xl mx-auto space-y-6">
+        <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
+                <div>
+                    <h1 class="font-extrabold text-lg text-pink-950">B7 第 2 課 - 輕鬆學語詞</h1>
+                    <p class="text-xs text-gray-500">請點擊啟用錄音後進入練習</p>
+                </div>
+            </div>
+            <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用錄音</button>
+        </header>
+        <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
+            <div class="text-sm font-bold text-pink-900 mb-2 px-1">📚 教材單元列表</div>
+            <button onclick="openLesson()" class="w-full p-4 bg-slate-50 hover:bg-pink-50 border border-slate-200 hover:border-pink-300 rounded-2xl flex items-center justify-between transition shadow-sm group cursor-pointer">
+                <div class="flex items-center gap-3 text-left">
+                    <span class="w-10 h-10 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-sm">詞語</span>
+                    <div>
+                        <div class="font-bold text-gray-800 group-hover:text-pink-800 text-base">B7 第 2 課 - 輕鬆學語詞 & 語詞運用</div>
+                        <div class="text-xs text-gray-500">卡片翻面、語音與錄音練習</div>
+                    </div>
+                </div>
+                <span class="text-pink-600 font-bold text-sm">進入練習 &rarr;</span>
+            </button>
+        </main>
+    </div>
+    <div id="lesson-view" class="max-w-2xl mx-auto space-y-4 hidden">
+        <header class="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="backToMenu()" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-2xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">&larr; 返回選單</button>
+                <h1 class="font-extrabold text-sm md:text-base text-pink-900">B7 第 2 課 - 輕鬆學語詞 & 語詞運用</h1>
+            </div>
+            <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-9 h-9 object-contain" alt="Logo">
+        </header>
+        <main class="space-y-4">
+<div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-0').classList.toggle('rotate-y-180')">
+            <div id="card-0" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_1.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_1.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_1.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_0')" id="vocab-card-rec-card_0" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_0">開始錄音</span></button>
+                <span id="vocab-card-status-card_0" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_0" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_1.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">免<span class="tonemark">驚</span><span class="lighttone">啦</span>！阮<span class="tonemark">兜</span>的<span class="tonemark">狗</span>袂<span class="tonemark">咬</span><span class="lighttone">人</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Bián-kiann--lah! Guán tau ê káu bē kā--lâng.</div>
+                <div class="text-[11px] text-gray-500">(別怕啦！我家的狗不會咬人。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_0')" id="vocab-ex-rec-ex_0" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_0">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_0" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_0" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-1').classList.toggle('rotate-y-180')">
+            <div id="card-1" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_2.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_2.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_2.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_1')" id="vocab-card-rec-card_1" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_1">開始錄音</span></button>
+                <span id="vocab-card-status-card_1" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_1" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_2.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">這塊<span class="tonemark">肉</span>真<span class="tonemark">韌</span>，攏哺袂<span class="tonemark">爛</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Tsit tè bah tsin jūn, lóng pōo bē nuā.</div>
+                <div class="text-[11px] text-gray-500">(這塊肉很有韌性，都咬不爛。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_1')" id="vocab-ex-rec-ex_1" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_1">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_1" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_1" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-2').classList.toggle('rotate-y-180')">
+            <div id="card-2" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_3.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_3.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_3.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_2')" id="vocab-card-rec-card_2" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_2">開始錄音</span></button>
+                <span id="vocab-card-status-card_2" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_2" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_3.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">這杯<span class="tonemark">涼</span><span class="lighttone">的</span>真好<span class="tonemark">啉</span>，你欲<span class="tonemark">欶</span>一<span class="tonemark">喙</span><span class="lighttone">無</span>？</div>
+                <div class="text-xs font-semibold text-teal-700">Tsit pue liâng--ê tsin hó lim, lí beh suh tsi̍t tshuì--bô?</div>
+                <div class="text-[11px] text-gray-500">(這杯冰飲很好喝，你要吸一口嗎？)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_2')" id="vocab-ex-rec-ex_2" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_2">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_2" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_2" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-3').classList.toggle('rotate-y-180')">
+            <div id="card-3" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_4.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_4.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_4.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_3')" id="vocab-card-rec-card_3" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_3">開始錄音</span></button>
+                <span id="vocab-card-status-card_3" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_3" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_4.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">你佇<span class="tonemark">遐</span>摸來摸<span class="tonemark">去</span>是咧揣<span class="tonemark">啥</span>？</div>
+                <div class="text-xs font-semibold text-teal-700">Lí tī hia bong lâi bong khì sī leh tshuē siánn?</div>
+                <div class="text-[11px] text-gray-500">(你在那邊摸來摸去是在找什麼？)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_3')" id="vocab-ex-rec-ex_3" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_3">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_3" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_3" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-4').classList.toggle('rotate-y-180')">
+            <div id="card-4" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_5.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_5.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_5.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_4')" id="vocab-card-rec-card_4" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_4">開始錄音</span></button>
+                <span id="vocab-card-status-card_4" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_4" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_5.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">共<span class="tonemark">菜</span>捀予<span class="tonemark">好</span>，毋<span class="tonemark">通</span>予<span class="tonemark">落</span><span class="lighttone">落</span><span class="lighttone">去</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Kā tshài phâng hōo hó, m̄-thang hōo lak--lo̍h-khì.</div>
+                <div class="text-[11px] text-gray-500">(把菜端好，不要掉下去了。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_4')" id="vocab-ex-rec-ex_4" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_4">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_4" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_4" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-5').classList.toggle('rotate-y-180')">
+            <div id="card-5" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_6.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_6.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_6.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_5')" id="vocab-card-rec-card_5" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_5">開始錄音</span></button>
+                <span id="vocab-card-status-card_5" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_5" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_6.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">你<span class="tonemark">等</span>咧捧<span class="tonemark">水</span>共<span class="tonemark">面</span>洗<span class="tonemark">洗</span><span class="lighttone">咧</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Lí tán--leh phóng tsuí kā bīn sé-sé--leh.</div>
+                <div class="text-[11px] text-gray-500">(你等一下捧水把臉洗一洗。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_5')" id="vocab-ex-rec-ex_5" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_5">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_5" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_5" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-6').classList.toggle('rotate-y-180')">
+            <div id="card-6" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_7.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_7.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_7.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_6')" id="vocab-card-rec-card_6" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_6">開始錄音</span></button>
+                <span id="vocab-card-status-card_6" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_6" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_7.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">阿<span class="tonemark">母</span>共鉛<span class="tonemark">筆</span>一枝一<span class="tonemark">枝</span>削予<span class="tonemark">尖</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">A-bú kā iân-pit tsi̍t ki tsi̍t ki siah hōo tsiam</div>
+                <div class="text-[11px] text-gray-500">(媽媽把鉛筆一枝一枝削尖。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_6')" id="vocab-ex-rec-ex_6" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_6">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_6" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_6" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-7').classList.toggle('rotate-y-180')">
+            <div id="card-7" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_8.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_8.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_8.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_7')" id="vocab-card-rec-card_7" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_7">開始錄音</span></button>
+                <span id="vocab-card-status-card_7" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_7" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_8.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">我共物<span class="tonemark">件</span>一个一<span class="tonemark">个</span>囥予<span class="tonemark">好</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Guá kā mi̍h-kiānn tsi̍t ê tsi̍t ê khǹg hōo hó.</div>
+                <div class="text-[11px] text-gray-500">(我把東西一個一個放好。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_7')" id="vocab-ex-rec-ex_7" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_7">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_7" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_7" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-8').classList.toggle('rotate-y-180')">
+            <div id="card-8" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_9.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_9.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_9.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_8')" id="vocab-card-rec-card_8" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_8">開始錄音</span></button>
+                <span id="vocab-card-status-card_8" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_8" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_9.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">鳥<span class="tonemark">仔</span>一隻一<span class="tonemark">隻</span><span class="tonemark">飛</span><span class="lighttone">過</span><span class="lighttone">去</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Tsiáu-á tsi̍t tsiah tsi̍t tsiah pue--kuè-khì. .</div>
+                <div class="text-[11px] text-gray-500">(鳥兒一隻一隻飛過去。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_8')" id="vocab-ex-rec-ex_8" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_8">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_8" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_8" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-9').classList.toggle('rotate-y-180')">
+            <div id="card-9" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_10.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_10.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_10.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_9')" id="vocab-card-rec-card_9" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_9">開始錄音</span></button>
+                <span id="vocab-card-status-card_9" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_9" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_10.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">我共雞卵<span class="tonemark">糕</span>切做一塊一<span class="tonemark">塊</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Guá kā ke-nn̄g-ko tshiat tsò tsi̍t tè tsi̍t tè.</div>
+                <div class="text-[11px] text-gray-500">(我把蛋糕切成一塊一塊。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_9')" id="vocab-ex-rec-ex_9" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_9">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_9" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_9" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-10').classList.toggle('rotate-y-180')">
+            <div id="card-10" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_11.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_11.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_11.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_10')" id="vocab-card-rec-card_10" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_10">開始錄音</span></button>
+                <span id="vocab-card-status-card_10" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_10" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_11.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">阿<span class="tonemark">兄</span>共水<span class="tonemark">餃</span>一粒一<span class="tonemark">粒</span>食<span class="tonemark">了</span><span class="lighttone">矣</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">A-hiann kā tsuí-kiáu tsi̍t lia̍p tsi̍t lia̍p tsia̍h-liáu--ah.</div>
+                <div class="text-[11px] text-gray-500">(哥哥把水餃一顆一顆吃光了。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_10')" id="vocab-ex-rec-ex_10" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_10">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_10" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_10" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div><div class="bg-white/95 p-5 rounded-3xl shadow-md border border-pink-100 space-y-4">
+    <div class="flex flex-col sm:flex-row items-center gap-4 bg-pink-50/50 p-3.5 rounded-2xl">
+        <div class="relative w-full sm:w-48 h-36 perspective-1000 cursor-pointer shrink-0 mx-auto" onclick="document.getElementById('card-11').classList.toggle('rotate-y-180')">
+            <div id="card-11" class="relative w-full h-full duration-500 transform-style-3d rounded-2xl border border-pink-200">
+                <div class="absolute inset-0 w-full h-full bg-white rounded-2xl flex items-center justify-center p-2 backface-hidden">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_p2_12.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/fce7f3/db2777?text=正面'">
+                    <span class="absolute bottom-2 right-2 bg-pink-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+                <div class="absolute inset-0 w-full h-full bg-rose-50 rounded-2xl flex items-center justify-center p-2 backface-hidden rotate-y-180">
+                    <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_w2_12.png" class="max-w-full max-h-full object-contain rounded-xl" onerror="this.src='https://placehold.co/180x120/ffe4e6/e11d48?text=背面'">
+                    <span class="absolute bottom-2 right-2 bg-rose-600 text-white text-[10px] px-2 py-1 rounded-lg shadow font-bold z-10">翻面 🔄</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full space-y-2">
+            <div class="text-xs font-bold text-pink-900">語詞卡片發音與練習</div>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_s2_12.mp3').play()" class="px-3.5 py-1.5 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer">🔊 播放語詞</button>
+                <button onclick="toggleVocabCardRecord('card_11')" id="vocab-card-rec-card_11" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-card-rec-text-card_11">開始錄音</span></button>
+                <span id="vocab-card-status-card_11" class="text-[10px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+                <button id="vocab-card-pb-card_11" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-3">
+        <div class="flex items-start gap-3">
+            <div onclick="new Audio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_2_12.mp3').play()" class="custom-play-btn shrink-0 mt-0.5" title="播放發音">
+                <svg class="w-6 h-6 fill-current text-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <div class="space-y-1 w-full">
+                <div class="font-extrabold text-base text-gray-900">阮共面<span class="tonemark">巾</span>一條一<span class="tonemark">條</span>排甲足整<span class="tonemark">齊</span><span class="lighttone">的</span>。</div>
+                <div class="text-xs font-semibold text-teal-700">Guán kā bīn-kin tsi̍t tiâu tsi̍t tiâu pâi kah tsiok tsíng-tsê--ê.</div>
+                <div class="text-[11px] text-gray-500">(我們把毛巾ー條ー條排得很整齊。)</div>
+            </div>
+        </div>
+        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleVocabExRecord('ex_11')" id="vocab-ex-rec-ex_11" class="px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🎙️</span> <span id="vocab-ex-rec-text-ex_11">開始錄音</span></button>
+                <span id="vocab-ex-status-ex_11" class="text-[11px] text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
+            </div>
+            <div>
+                <button id="vocab-ex-pb-ex_11" class="hidden px-3.5 py-1.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"><span>🔊</span> 聽回放</button>
+            </div>
+        </div>
+    </div>
+</div>        </main>
+    </div>
+    <audio id="vocab-audio-player" class="hidden" preload="auto"></audio>
+    <script>
+        let vocabActiveRecorder = null;
+        let vocabCurrentIndex = null;
+        const vocabChunksMap = {};
+        const vocabUrlMap = {};
+        const vocabRecordingMap = {};
+        function initGlobalMic() {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                stream.getTracks().forEach(t => t.stop());
+                const btn = document.getElementById("global-mic-btn");
+                if (btn) { btn.innerText = "✅ 麥克風已就緒"; btn.classList.remove("bg-pink-600"); btn.classList.add("bg-emerald-700"); }
+            }).catch(() => alert("請允許麥克風權限！"));
+        }
+        function openLesson() {
+            document.getElementById("menu-view").classList.add("hidden");
+            document.getElementById("lesson-view").classList.remove("hidden");
+        }
+        function backToMenu() {
+            document.getElementById("lesson-view").classList.add("hidden");
+            document.getElementById("menu-view").classList.remove("hidden");
+        }
+        async function toggleVocabCardRecord(key) {
+            const recBtn = document.getElementById("vocab-card-rec-" + key);
+            const recText = document.getElementById("vocab-card-rec-text-" + key);
+            const statusEl = document.getElementById("vocab-card-status-" + key);
+            const pbBtn = document.getElementById("vocab-card-pb-" + key);
+            if (vocabRecordingMap[key]) {
+                if (vocabActiveRecorder && vocabActiveRecorder.state === "recording") vocabActiveRecorder.stop();
+                return;
+            }
+            if (vocabCurrentIndex !== null && vocabRecordingMap[vocabCurrentIndex]) {
+                if (vocabActiveRecorder && vocabActiveRecorder.state === "recording") vocabActiveRecorder.stop();
+                vocabRecordingMap[vocabCurrentIndex] = false;
+            }
+            try {
+                if (recText) recText.innerText = "準備中...";
+                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                vocabChunksMap[key] = [];
+                vocabCurrentIndex = key;
+                let options = {};
+                if (MediaRecorder.isTypeSupported("audio/mp4")) options.mimeType = "audio/mp4";
+                else if (MediaRecorder.isTypeSupported("audio/webm")) options.mimeType = "audio/webm";
+                try { vocabActiveRecorder = new MediaRecorder(freshStream, options); } catch(e) { vocabActiveRecorder = new MediaRecorder(freshStream); }
+                vocabActiveRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) vocabChunksMap[key].push(e.data); };
+                vocabActiveRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+                    const blob = new Blob(vocabChunksMap[key], { type: vocabActiveRecorder.mimeType || "audio/mp4" });
+                    const audioUrl = URL.createObjectURL(blob);
+                    vocabUrlMap[key] = audioUrl;
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => { new Audio(vocabUrlMap[key]).play().catch(() => { new Audio(vocabUrlMap[key]).play(); }); };
+                    }
+                    vocabRecordingMap[key] = false;
+                    vocabCurrentIndex = null;
+                };
+                setTimeout(() => {
+                    if (vocabCurrentIndex === key) {
+                        vocabActiveRecorder.start(100);
+                        vocabRecordingMap[key] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+            } catch(err) {
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認授權！");
+            }
+        }
+        async function toggleVocabExRecord(key) {
+            const recBtn = document.getElementById("vocab-ex-rec-" + key);
+            const recText = document.getElementById("vocab-ex-rec-text-" + key);
+            const statusEl = document.getElementById("vocab-ex-status-" + key);
+            const pbBtn = document.getElementById("vocab-ex-pb-" + key);
+            if (vocabRecordingMap[key]) {
+                if (vocabActiveRecorder && vocabActiveRecorder.state === "recording") vocabActiveRecorder.stop();
+                return;
+            }
+            if (vocabCurrentIndex !== null && vocabRecordingMap[vocabCurrentIndex]) {
+                if (vocabActiveRecorder && vocabActiveRecorder.state === "recording") vocabActiveRecorder.stop();
+                vocabRecordingMap[vocabCurrentIndex] = false;
+            }
+            try {
+                if (recText) recText.innerText = "準備中...";
+                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                vocabChunksMap[key] = [];
+                vocabCurrentIndex = key;
+                let options = {};
+                if (MediaRecorder.isTypeSupported("audio/mp4")) options.mimeType = "audio/mp4";
+                else if (MediaRecorder.isTypeSupported("audio/webm")) options.mimeType = "audio/webm";
+                try { vocabActiveRecorder = new MediaRecorder(freshStream, options); } catch(e) { vocabActiveRecorder = new MediaRecorder(freshStream); }
+                vocabActiveRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) vocabChunksMap[key].push(e.data); };
+                vocabActiveRecorder.onstop = () => {
+                    freshStream.getTracks().forEach(track => track.stop());
+                    const blob = new Blob(vocabChunksMap[key], { type: vocabActiveRecorder.mimeType || "audio/mp4" });
+                    const audioUrl = URL.createObjectURL(blob);
+                    vocabUrlMap[key] = audioUrl;
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => { new Audio(vocabUrlMap[key]).play().catch(() => { new Audio(vocabUrlMap[key]).play(); }); };
+                    }
+                    vocabRecordingMap[key] = false;
+                    vocabCurrentIndex = null;
+                };
+                setTimeout(() => {
+                    if (vocabCurrentIndex === key) {
+                        vocabActiveRecorder.start(100);
+                        vocabRecordingMap[key] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+            } catch(err) {
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認授權！");
+            }
+        }
+    </script>
+</body>
+</html>
