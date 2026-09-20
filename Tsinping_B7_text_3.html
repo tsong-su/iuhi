@@ -287,9 +287,9 @@
             if (lessonStateMap[index]) {
                 if (activeLessonRecorder && activeLessonRecorder.state === "recording") activeLessonRecorder.stop();
                 lessonStateMap[index] = false;
-                if(recBtn) recBtn.classList.remove("recording-anim");
-                if(recText) recText.innerText = "重新錄音";
-                if(statusEl) statusEl.classList.add("hidden");
+                recBtn.classList.remove("recording-anim");
+                recText.innerText = "重新錄音";
+                statusEl.classList.add("hidden");
                 return;
             }
             if (currentLessonRecIndex !== null && lessonStateMap[currentLessonRecIndex]) {
@@ -306,8 +306,8 @@
             currentLessonRecIndex = index;
             lessonStateMap[index] = true;
             if(recText) recText.innerText = "準備中...";
-            if(statusEl) statusEl.classList.remove("hidden");
-            if(pbBtn) pbBtn.classList.add("hidden");
+            statusEl.classList.remove("hidden");
+            pbBtn.classList.add("hidden");
             await new Promise(r => setTimeout(r, 400));
             try {
                 let options = {};
@@ -324,8 +324,8 @@
                 if (pbBtn) { pbBtn.classList.remove("hidden"); pbBtn.onclick = () => { new Audio(audioUrl).play(); }; }
             };
             activeLessonRecorder.start(100);
-            if(recBtn) recBtn.classList.add("recording-anim");
-            if(recText) recText.innerText = "停止錄音";
+            recBtn.classList.add("recording-anim");
+            recText.innerText = "停止錄音";
         }
     </script>
 </body>
