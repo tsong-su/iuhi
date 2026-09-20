@@ -301,4 +301,36 @@
                 activeRecorder.onstop = () => {
                     freshStream.getTracks().forEach(track => track.stop());
                     const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || "audio/mp4" });
-                    const audioUrl = U
+                    const audioUrl = URL.createObjectURL(blob);
+                    audioUrlMap[index] = audioUrl;
+                    if (recBtn) recBtn.classList.remove("recording-anim");
+                    if (recText) recText.innerText = "重新錄音";
+                    if (statusEl) statusEl.classList.add("hidden");
+                    if (pbBtn) {
+                        pbBtn.classList.remove("hidden");
+                        pbBtn.onclick = () => {
+                            const instantAudio = new Audio(audioUrlMap[index]);
+                            instantAudio.play().catch(err => { instantAudio.play(); });
+                        };
+                    }
+                    isRecordingMap[index] = false;
+                    currentRecordingIndex = null;
+                };
+                setTimeout(() => {
+                    if (currentRecordingIndex === index) {
+                        activeRecorder.start(100);
+                        isRecordingMap[index] = true;
+                        if (recBtn) recBtn.classList.add("recording-anim");
+                        if (recText) recText.innerText = "停止錄音";
+                        if (statusEl) statusEl.classList.remove("hidden");
+                        if (pbBtn) pbBtn.classList.add("hidden");
+                    }
+                }, 400);
+            } catch (err) {
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
+            }
+        }
+    </script>
+</body>
+</html>
