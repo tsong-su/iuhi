@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kh_B11 第 5 課 - 句子重組闖關</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
+        }
+        .confetti {
+            position: fixed;
+            top: -20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: fall linear infinite;
+            z-index: 9999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <div class="max-w-2xl mx-auto space-y-6">
+        <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
+                <div>
+                    <h1 class="font-extrabold text-lg text-indigo-950">kh_B11 第 5 課 - 句子重組闖關</h1>
+                    <p class="text-xs text-gray-500">拖曳下方詞語塊完成句子重組</p>
+                </div>
+            </div>
+            <button onclick="resetGame()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow transition cursor-pointer">🔄 重新開始</button>
+        </header>
+        <main id="game-main-container" class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-indigo-100 space-y-5">
+        </main>
+    </div>
+    <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
+    <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
+    <script>
+        const questions = [{"idx":1,"tokens":["阿爸","佇","灶跤","咧","煎","魚仔"],"answerStr":"阿爸佇灶跤咧煎魚仔","hint":"阿爸佇灶跤咧煎魚仔","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_1.mp3"},{"idx":2,"tokens":["阿母","糋","甜粿","予","阮","做","點心"],"answerStr":"阿母糋甜粿予阮做點心","hint":"阿母糋甜粿予阮做點心","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_2.mp3"},{"idx":3,"tokens":["今仔日","中晝頓","有","滷卵"],"answerStr":"今仔日中晝頓有滷卵","hint":"今仔日中晝頓有滷卵","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_3.mp3"},{"idx":4,"tokens":["炒菜","若有","芡芳","會","較","好食"],"answerStr":"炒菜若有芡芳會較好食","hint":"炒菜若有芡芳會較好食","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_4.mp3"},{"idx":5,"tokens":["阿媽","炒","的","炒飯","我","上愛","食"],"answerStr":"阿媽炒的炒飯我上愛食","hint":"阿媽炒的炒飯我上愛食","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_5.mp3"},{"idx":6,"tokens":["阿公","用","麵摵仔","摵","麵"],"answerStr":"阿公用麵摵仔摵麵","hint":"阿公用麵摵仔摵麵","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_5_6.mp3"}];
+        let currentIndex = 0;
+        let sortableInstance = null;
+        const colors = [
+            "bg-emerald-100 text-emerald-900 border-emerald-300",
+            "bg-pink-100 text-pink-900 border-pink-300",
+            "bg-amber-100 text-amber-900 border-amber-300",
+            "bg-teal-100 text-teal-900 border-teal-300",
+            "bg-purple-100 text-purple-900 border-purple-300",
+            "bg-cyan-100 text-cyan-900 border-cyan-300",
+            "bg-rose-100 text-rose-900 border-rose-300",
+            "bg-indigo-100 text-indigo-900 border-indigo-300"
+        ];
+        function shuffle(array) {
+            const copy = [...array];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+        function playSfx(type) {
+            const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
+            if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
+        }
+        function startConfetti() {
+            const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                confetti.style.animationDelay = (Math.random() * 1.5) + 's';
+                document.body.appendChild(confetti);
+            }
+        }
+        function renderGame() {
+            const container = document.getElementById('game-main-container');
+            if (!container) return;
+            if (currentIndex >= questions.length) {
+                container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-xl text-center space-y-4"><div class="text-5xl">🏆</div><h2 class="text-2xl font-extrabold text-white">恭喜過關！</h2><p class="text-xs text-pink-100">您已完成本課所有的句子重組挑戰！</p><button onclick="resetGame()" class="px-6 py-3 bg-white text-indigo-700 font-extrabold rounded-2xl shadow-md cursor-pointer hover:bg-pink-50 transition">🔄 閣挑戰一擺</button></div>';
+                startConfetti();
+                setTimeout(() => { playSfx('win'); }, 500);
+                return;
+            }
+            const q = questions[currentIndex];
+            const shuffled = shuffle(q.tokens);
+            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="new Audio(\'' + q.audioUrl + '\').play().catch(()=>{})" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer">🔊 聽語音</button></div>' +
+                '<div id="student-drag-box" class="p-5 rounded-3xl border-2 border-dashed border-indigo-300 min-h-[120px] flex flex-wrap items-center gap-2.5 bg-slate-50">' +
+                shuffled.map((t, i) => '<div class="' + colors[i % colors.length] + ' px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md border cursor-grab select-none transition transform hover:scale-105">' + t + '</div>').join('') +
+                '</div>' +
+                '<div id="student-msg" class="text-xs font-bold min-h-[1.5em] text-center"></div>' +
+                '<div class="flex items-center justify-between pt-2"><button onclick="checkAnswer()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow cursor-pointer">✅ 確認答案</button><button onclick="nextQuestion()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow cursor-pointer">下一關 &rarr;</button></div>';
+            const dragBox = document.getElementById('student-drag-box');
+            if (dragBox) {
+                if (sortableInstance) sortableInstance.destroy();
+                sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
+            }
+            setTimeout(() => { new Audio(q.audioUrl).play().catch(e => { console.log('等待點擊播放'); }); }, 400);
+        }
+        function checkAnswer() {
+            const q = questions[currentIndex];
+            const dragBox = document.getElementById('student-drag-box');
+            const msg = document.getElementById('student-msg');
+            if (!dragBox || !msg) return;
+            const userStr = Array.from(dragBox.children).map(el => el.textContent.trim()).join('');
+            if (userStr === q.answerStr) {
+                playSfx('win');
+                msg.textContent = "✅ 答對了！真厲害！";
+                msg.style.color = "#059669";
+            } else {
+                playSfx('wrong');
+                msg.textContent = "❌ 毋著喔！順序不對，請重新調整！";
+                msg.style.color = "#dc2626";
+            }
+        }
+        function nextQuestion() { currentIndex++; renderGame(); }
+        function resetGame() { currentIndex = 0; renderGame(); }
+        window.onload = function() {
+            renderGame();
+            document.body.addEventListener('click', function unlockAudio() {
+                const q = questions[currentIndex];
+                if (q && q.audioUrl) { new Audio(q.audioUrl).play().catch(e=>{}); }
+                document.body.removeEventListener('click', unlockAudio);
+            }, { once: true });
+        };
+    </script>
+</body>
+</html>
