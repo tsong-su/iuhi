@@ -437,7 +437,7 @@
                     if (recBtn) { recBtn.classList.remove("recording-anim"); recBtn.innerText = "重新錄音"; }
                     if (statusEl) statusEl.classList.add("hidden");
                     if (pbBtn) {
-                        pbBtn.classList.add("hidden"); pbBtn.onclick = () => { new Audio(audioUrlMap[key]).play().catch(()=>{}); };
+                        pbBtn.classList.remove("hidden"); pbBtn.onclick = () => { new Audio(audioUrlMap[key]).play().catch(()=>{}); };
                     }
                     isRecordingMap[key] = false; currentActiveKey = null;
                 };
