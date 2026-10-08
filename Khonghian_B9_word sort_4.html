@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kh_B9 第 4 課 - 句子重組闖關</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0.2; }
+        }
+        .confetti {
+            position: fixed;
+            top: -20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: fall linear infinite;
+            z-index: 9999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <div class="max-w-2xl mx-auto space-y-6">
+        <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
+                <div>
+                    <h1 class="font-extrabold text-lg text-indigo-950">kh_B9 第 4 課 - 句子重組闖關</h1>
+                    <p class="text-xs text-gray-500">拖曳下方詞語塊完成句子重組</p>
+                </div>
+            </div>
+            <button onclick="resetGame()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow transition cursor-pointer">🔄 重新開始</button>
+        </header>
+        <main id="game-main-container" class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-indigo-100 space-y-5">
+        </main>
+    </div>
+    <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
+    <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
+    <script>
+        const questions = [{"idx":1,"tokens":["基隆市","有","國際","海港"],"answerStr":"基隆市有國際海港","hint":"基隆市有國際海港","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_1.mp3"},{"idx":2,"tokens":["臺北市","是","咱","的","首都"],"answerStr":"臺北市是咱的首都","hint":"臺北市是咱的首都","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_2.mp3"},{"idx":3,"tokens":["新北市","以早","叫做","臺北縣"],"answerStr":"新北市以早叫做臺北縣","hint":"新北市以早叫做臺北縣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_3.mp3"},{"idx":4,"tokens":["桃園市","有","國際","機場"],"answerStr":"桃園市有國際機場","hint":"桃園市有國際機場","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_4.mp3"},{"idx":5,"tokens":["秋天","的","時","咱","會當","去","新竹縣","看人","曝","柿餅"],"answerStr":"秋天的時咱會當去新竹縣看人曝柿餅","hint":"秋天的時咱會當去新竹縣看人曝柿餅","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_5.mp3"},{"idx":6,"tokens":["新竹市","是","重要","的","科技","城市"],"answerStr":"新竹市是重要的科技城市","hint":"新竹市是重要的科技城市","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_6.mp3"},{"idx":7,"tokens":["苗栗縣","的","大湖","有","好食","的","草莓"],"answerStr":"苗栗縣的大湖有好食的草莓","hint":"苗栗縣的大湖有好食的草莓","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_7.mp3"},{"idx":8,"tokens":["宜蘭縣","有","好食","的","牛舌餅"],"answerStr":"宜蘭縣有好食的牛舌餅","hint":"宜蘭縣有好食的牛舌餅","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_8.mp3"},{"idx":9,"tokens":["臺中市","出名","太陽餅"],"answerStr":"臺中市出名太陽餅","hint":"臺中市出名太陽餅","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_9.mp3"},{"idx":10,"tokens":["彰化縣","的","八卦山","有","大佛"],"answerStr":"彰化縣的八卦山有大佛","hint":"彰化縣的八卦山有大佛","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_10.mp3"},{"idx":11,"tokens":["南投縣","是","臺灣","的","地理","中心"],"answerStr":"南投縣是臺灣的地理中心","hint":"南投縣是臺灣的地理中心。","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_11.mp3"},{"idx":12,"tokens":["雲林縣","是","以","農","漁業","為主","的","縣市"],"answerStr":"雲林縣是以農漁業為主的縣市","hint":"雲林縣是以農、漁業為主的縣市","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_12.mp3"},{"idx":13,"tokens":["我","捌","去過","嘉義縣","的","阿里山","看","日出"],"answerStr":"我捌去過嘉義縣的阿里山看日出","hint":"我捌去過嘉義縣的阿里山看日出","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_13.mp3"},{"idx":14,"tokens":["北回歸線","有","經過","嘉義市"],"answerStr":"北回歸線有經過嘉義市","hint":"北回歸線有經過嘉義市","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_14.mp3"},{"idx":15,"tokens":["臺南市","以早","叫","府城"],"answerStr":"臺南市以早叫府城","hint":"臺南市以早叫府城","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_15.mp3"},{"idx":16,"tokens":["高雄市","的","港口","有","大港橋"],"answerStr":"高雄市的港口有大港橋","hint":"高雄市的港口有大港橋","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_16.mp3"},{"idx":17,"tokens":["屏東縣","有","大武山"],"answerStr":"屏東縣有大武山","hint":"屏東縣有大武山","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_17.mp3"},{"idx":18,"tokens":["花蓮縣","出產","大理石"],"answerStr":"花蓮縣出產大理石","hint":"花蓮縣出產大理石","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_18.mp3"},{"idx":19,"tokens":["臺東縣","的","釋迦","真","大粒"],"answerStr":"臺東縣的釋迦真大粒","hint":"臺東縣的釋迦真大粒","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_19.mp3"},{"idx":20,"tokens":["連江縣","的","馬祖","海邊","有","藍目屎"],"answerStr":"連江縣的馬祖海邊有藍目屎","hint":"連江縣的馬祖海邊有藍目屎","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_20.mp3"},{"idx":21,"tokens":["金門縣","的","貢糖","真","有名"],"answerStr":"金門縣的貢糖真有名","hint":"金門縣的貢糖真有名","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_21.mp3"},{"idx":22,"tokens":["澎湖縣","有","跨海","大橋"],"answerStr":"澎湖縣有跨海大橋","hint":"澎湖縣有跨海大橋","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_Example_4_22.mp3"}];
+        let currentIndex = 0;
+        let sortableInstance = null;
+        const colors = [
+            "bg-emerald-100 text-emerald-900 border-emerald-300",
+            "bg-pink-100 text-pink-900 border-pink-300",
+            "bg-amber-100 text-amber-900 border-amber-300",
+            "bg-teal-100 text-teal-900 border-teal-300",
+            "bg-purple-100 text-purple-900 border-purple-300",
+            "bg-cyan-100 text-cyan-900 border-cyan-300",
+            "bg-rose-100 text-rose-900 border-rose-300",
+            "bg-indigo-100 text-indigo-900 border-indigo-300"
+        ];
+        function shuffle(array) {
+            const copy = [...array];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+        function playSfx(type) {
+            const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
+            if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
+        }
+        function startConfetti() {
+            const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
+            for (let i = 0; i < 60; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                confetti.style.animationDelay = (Math.random() * 1.5) + 's';
+                document.body.appendChild(confetti);
+            }
+        }
+        function renderGame() {
+            const container = document.getElementById('game-main-container');
+            if (!container) return;
+            if (currentIndex >= questions.length) {
+                container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-xl text-center space-y-4"><div class="text-5xl">🏆</div><h2 class="text-2xl font-extrabold text-white">恭喜過關！</h2><p class="text-xs text-pink-100">您已完成本課所有的句子重組挑戰！</p><button onclick="resetGame()" class="px-6 py-3 bg-white text-indigo-700 font-extrabold rounded-2xl shadow-md cursor-pointer hover:bg-pink-50 transition">🔄 閣挑戰一擺</button></div>';
+                startConfetti();
+                setTimeout(() => { playSfx('win'); }, 500);
+                return;
+            }
+            const q = questions[currentIndex];
+            const shuffled = shuffle(q.tokens);
+            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="new Audio(\'' + q.audioUrl + '\').play().catch(()=>{})" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer">🔊 聽語音</button></div>' +
+                '<div id="student-drag-box" class="p-5 rounded-3xl border-2 border-dashed border-indigo-300 min-h-[120px] flex flex-wrap items-center gap-2.5 bg-slate-50">' +
+                shuffled.map((t, i) => '<div class="' + colors[i % colors.length] + ' px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md border cursor-grab select-none transition transform hover:scale-105">' + t + '</div>').join('') +
+                '</div>' +
+                '<div id="student-msg" class="text-xs font-bold min-h-[1.5em] text-center"></div>' +
+                '<div class="flex items-center justify-between pt-2"><button onclick="checkAnswer()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow cursor-pointer">✅ 確認答案</button><button onclick="nextQuestion()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow cursor-pointer">下一關 &rarr;</button></div>';
+            const dragBox = document.getElementById('student-drag-box');
+            if (dragBox) {
+                if (sortableInstance) sortableInstance.destroy();
+                sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
+            }
+            setTimeout(() => { new Audio(q.audioUrl).play().catch(e => { console.log('等待點擊播放'); }); }, 400);
+        }
+        function checkAnswer() {
+            const q = questions[currentIndex];
+            const dragBox = document.getElementById('student-drag-box');
+            const msg = document.getElementById('student-msg');
+            if (!dragBox || !msg) return;
+            const userStr = Array.from(dragBox.children).map(el => el.textContent.trim()).join('');
+            if (userStr === q.answerStr) {
+                playSfx('win');
+                msg.textContent = "✅ 答對了！真厲害！";
+                msg.style.color = "#059669";
+            } else {
+                playSfx('wrong');
+                msg.textContent = "❌ 毋著喔！順序不對，請重新調整！";
+                msg.style.color = "#dc2626";
+            }
+        }
+        function nextQuestion() { currentIndex++; renderGame(); }
+        function resetGame() { currentIndex = 0; renderGame(); }
+        window.onload = function() {
+            renderGame();
+            document.body.addEventListener('click', function unlockAudio() {
+                const q = questions[currentIndex];
+                if (q && q.audioUrl) { new Audio(q.audioUrl).play().catch(e=>{}); }
+                document.body.removeEventListener('click', unlockAudio);
+            }, { once: true });
+        };
+    </script>
+</body>
+</html>
