@@ -19,10 +19,10 @@
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
                     <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
+                    <p class="text-xs text-gray-500">請點擊下方單元進入練習</p>
                 </div>
             </div>
-            <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
+            <button onclick="unlockAudioContext()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟動聲音引擎</button>
         </header>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -257,6 +257,7 @@
         </main>
     </div>
     <script>
+        let sharedStream = null;
         let activeRecorder = null;
         let currentRecordingIndex = null;
         const audioChunksMap = {};
@@ -273,12 +274,14 @@
                 }
             });
         }
-        function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                stream.getTracks().forEach(track => track.stop());
+        async function unlockAudioContext() {
+            try {
+                sharedStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
                 const btn = document.getElementById("global-mic-btn");
-                if (btn) { btn.innerText = "✅ 錄音已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
-            }).catch(err => { alert("請允許麥克風權限！"); });
+                if (btn) { btn.innerText = "✅ 聲音與錄音已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
+            } catch (err) {
+                alert("請允許麥克風權限以進行錄音練習！");
+            }
         }
         function openLesson() {
             document.getElementById("menu-view").classList.add("hidden");
@@ -290,7 +293,7 @@
         }
         async function toggleStudentRecord(index) {
             const recBtn = document.getElementById("student-rec-" + index);
-            const recText = document.getElementById("student-rec-text-" + index);
+            const recText = recBtn.querySelector("span:last-child");
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
             if (isRecordingMap[index]) {
@@ -302,17 +305,17 @@
                 isRecordingMap[currentRecordingIndex] = false;
             }
             try {
-                if (recText) recText.innerText = "準備中...";
-                const freshStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                if (!sharedStream) {
+                    sharedStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                }
                 audioChunksMap[index] = [];
                 currentRecordingIndex = index;
                 let options = {};
                 if (MediaRecorder.isTypeSupported('audio/mp4')) { options.mimeType = 'audio/mp4'; }
                 else if (MediaRecorder.isTypeSupported('audio/webm')) { options.mimeType = 'audio/webm'; }
-                try { activeRecorder = new MediaRecorder(freshStream, options); } catch (e) { activeRecorder = new MediaRecorder(freshStream); }
+                try { activeRecorder = new MediaRecorder(sharedStream, options); } catch (e) { activeRecorder = new MediaRecorder(sharedStream); }
                 activeRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunksMap[index].push(e.data); };
                 activeRecorder.onstop = () => {
-                    freshStream.getTracks().forEach(track => track.stop());
                     const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
                     const audioUrl = URL.createObjectURL(blob);
                     audioUrlMap[index] = audioUrl;
@@ -329,20 +332,24 @@
                     isRecordingMap[index] = false;
                     currentRecordingIndex = null;
                 };
-                setTimeout(() => {
-                    if (currentRecordingIndex === index) {
-                        activeRecorder.start(100);
-                        isRecordingMap[index] = true;
-                        if (recBtn) { recBtn.innerText = "停止錄音"; recBtn.classList.add("recording-anim"); }
-                        if (statusEl) statusEl.classList.remove("hidden");
-                        if (pbBtn) pbBtn.classList.add("hidden");
-                    }
-                }, 400);
+                activeRecorder.start(100);
+                isRecordingMap[index] = true;
+                if (recBtn) { recBtn.classList.add("recording-anim"); }
+                if (recText) recText.innerText = "停止錄音";
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
                 alert("無法啟用麥克風，請確認瀏覽器已授權麥克風權限！");
             }
         }
+        window.onload = () => {
+            document.body.addEventListener('click', () => {
+                if (!sharedStream) {
+                    navigator.mediaDevices.getUserMedia({ audio: true }).then(s => { sharedStream = s; }).catch(e=>{});
+                }
+            }, { once: true });
+        };
     </script>
 </body>
 </html>
