@@ -124,4 +124,11 @@
                 c.style.left = Math.random() * 100 + 'vw';
                 c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 c.style.animationDuration = (Math.random() * 2 + 2) + 's';
-             
+                c.style.animationDelay = (Math.random() * 1.5) + 's';
+                document.body.appendChild(c);
+            }
+        }
+        window.onload = initGame;
+    </script>
+</body>
+</html>
