@@ -68,4 +68,67 @@
                 return;
             }
             const secondCard = { el, pairId, audioUrl, audioFallbackUrl };
-            if (firstCard.pairId === secondCard.pairId
+            if (firstCard.pairId === secondCard.pairId) {
+                const audio = new Audio(secondCard.audioUrl);
+                audio.onerror = () => {
+                    if (audio.src !== secondCard.audioFallbackUrl) {
+                        audio.src = secondCard.audioFallbackUrl;
+                        audio.play().catch(e=>{});
+                    }
+                };
+                audio.play().catch(e=>{
+                    audio.src = secondCard.audioFallbackUrl;
+                    audio.play().catch(err=>{});
+                });
+                firstCard.el.classList.remove('ring-4', 'ring-rose-400', 'bg-rose-50');
+                secondCard.el.classList.remove('ring-4', 'ring-rose-400', 'bg-rose-50');
+                firstCard.el.classList.add('matched', 'opacity-50', 'bg-emerald-50', 'border-emerald-400', 'pointer-events-none');
+                secondCard.el.classList.add('matched', 'opacity-50', 'bg-emerald-50', 'border-emerald-400', 'pointer-events-none');
+                matchedCount++;
+                document.getElementById('score-board').innerText = '已配對：' + matchedCount + ' / ' + pairsData.length;
+                document.getElementById('game-msg').textContent = "✨ 配對成功！真厲害！";
+                firstCard = null;
+                if (matchedCount === pairsData.length) {
+                    lock = true;
+                    audio.onended = () => {
+                        setTimeout(() => {
+                            const container = document.getElementById('game-container');
+                            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-rose-600 text-white p-8 rounded-3xl shadow-2xl text-center space-y-4"><div class="text-5xl">🏆🎉</div><h3 class="text-2xl font-extrabold text-white">恭喜過關！</h3><p class="text-xs text-pink-100">太棒了！所有語詞你都成功配對囉！</p><button onclick="initGame()" class="px-6 py-3 bg-white text-rose-700 font-extrabold rounded-2xl shadow-md cursor-pointer hover:bg-rose-50 transition">🔄 閣挑戰一擺</button></div>';
+                            startConfetti();
+                            setTimeout(() => {
+                                const win = document.getElementById('sfx-win');
+                                if(win) { win.currentTime = 0; win.play().catch(e=>{}); }
+                            }, 300);
+                        }, 1000);
+                    };
+                }
+            } else {
+                lock = true;
+                const wrong = document.getElementById('sfx-wrong');
+                if(wrong) { wrong.currentTime = 0; wrong.play().catch(e=>{}); }
+                document.getElementById('game-msg').textContent = "❌ 毋著喔！再試一擺！";
+                setTimeout(() => {
+                    firstCard.el.classList.remove('ring-4', 'ring-rose-400', 'bg-rose-50');
+                    secondCard.el.classList.remove('ring-4', 'ring-rose-400', 'bg-rose-50');
+                    firstCard = null;
+                    lock = false;
+                    document.getElementById('game-msg')->textContent = "";
+                }, 800);
+            }
+        }
+        function startConfetti() {
+            const colors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
+            for (let i = 0; i < 70; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                c.style.animationDelay = (Math.random() * 1.5) + 's';
+                document.body.appendChild(c);
+            }
+        }
+        window.onload = initGame;
+    </script>
+</body>
+</html>
