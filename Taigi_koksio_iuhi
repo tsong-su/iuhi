@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台語遊戲學習樂園 - 互動統整大廳</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Noto Sans TC with bold weights for maximum legibility -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fefce8; /* Warm light yellow background for kids */
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fef08a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ca8a04;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+
+    <header class="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+                <!-- User Logo -->
+                <div class="bg-white p-1.5 rounded-xl shadow-md flex items-center justify-center hover:scale-105 transition-transform">
+                    <img src="https://tsong-su.github.io/iuhi/logo.png" alt="Logo" class="w-10 h-10 object-contain" onerror="this.src='https://placehold.co/40x40/f97316/ffffff?text=LOGO'">
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-wide drop-shadow">台語遊戲學習樂園</h1>
+                    <p class="text-xs text-amber-100 font-bold">真平版與康軒版互動教學大廳</p>
+                </div>
+            </div>
+            <!-- Search Bar -->
+            <div class="w-full sm:w-80">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-amber-200">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" onkeyup="handleSearch(event)" placeholder="搜尋版本、冊別、遊戲..." 
+                           class="w-full pl-10 pr-4 py-2.5 bg-black/20 border-2 border-white/40 rounded-xl text-sm font-bold placeholder-amber-100 text-white focus:outline-none focus:bg-white focus:text-slate-800 focus:placeholder-slate-400 focus:border-white transition-all shadow-inner">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <section class="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-2xl p-6 sm:p-10 text-white mb-10 shadow-xl relative overflow-hidden border-4 border-white">
+            <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                <i class="fa-solid fa-gamepad text-9xl"></i>
+            </div>
+            <div class="max-w-3xl relative z-10">
+                <span class="bg-yellow-300 text-yellow-900 text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-block mb-3 shadow">
+                    <i class="fa-solid fa-star mr-1"></i> 國小台語互動專區
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black mt-1 mb-3 leading-tight drop-shadow">輕鬆學台語，心適閣歡喜！</h2>
+                <p class="text-emerald-50 text-base sm:text-lg leading-relaxed font-bold block mb-1">
+                    本系統將「真平版」與「康軒版」各冊四大核心互動遊戲與影音完美統整。
+                </p>
+                <p class="text-emerald-50 text-base sm:text-lg leading-relaxed font-bold block mb-6">
+                    請先選擇下方教材版本開始快樂學習！
+                </p>
+                <!-- Breadcrumb or Active Filter Indicator -->
+                <div id="breadcrumbBar" class="hidden items-center space-x-2 text-sm font-black bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl w-fit mb-4 border border-white/30">
+                    <button onclick="goHome()" class="hover:underline flex items-center"><i class="fa-solid fa-house mr-1"></i> 首頁</button>
+                    <i class="fa-solid fa-chevron-right text-xs opacity-70"></i>
+                    <span id="breadcrumbText" class="text-yellow-300"></span>
+                </div>
+            </div>
+        </section>
+
+        <div id="contentArea">
+            <!-- Dynamically rendered via JavaScript -->
+        </div>
+
+        <!-- No results message -->
+        <div id="noResults" class="hidden text-center py-20 bg-white rounded-2xl border-4 border-dashed border-amber-300 shadow-sm mt-6">
+            <div class="text-6xl text-amber-400 mb-4"><i class="fa-solid fa-face-frown"></i></div>
+            <h3 class="text-2xl font-black text-slate-700">找不到符合的遊戲內容</h3>
+            <p class="text-slate-500 text-base font-bold mt-2">請嘗試輸入其他關鍵字或返回首頁</p>
+            <button onclick="goHome()" class="mt-4 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl text-sm shadow-md transition-all">返回首頁</button>
+        </div>
+
+    </main>
+
+    <div id="lessonModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative transform transition-all scale-95 opacity-0 border-4 border-amber-400" id="modalContainer">
+            <button onclick="closeLessonModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-xl flex items-center justify-center transition-all font-black text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modalContent">
+                <!-- Dynamically populated lessons list -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t-4 border-amber-200 mt-16 py-6 text-center text-slate-600 font-bold">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs">
+            <p>台語遊戲學習樂園 © 2026 | 專為國小學生設計之互動學習平臺</p>
+            <div class="bg-amber-100 text-amber-900 px-3 py-1 rounded-xl border border-amber-300 shadow-inner flex items-center space-x-1.5">
+                <i class="fa-solid fa-eye text-amber-600 text-xs"></i>
+                <span>瀏覽人次：<span id="visitCount" class="font-black text-orange-600">0</span> 人次</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const curriculumData = [
+            {
+                publisher: "真平版",
+                publisherBadge: "bg-amber-500 text-white border-2 border-amber-600 shadow",
+                bannerColor: "from-amber-400 to-orange-500",
+                textColor: "text-amber-950",
+                description: "真平版國小台語教材，包含第5、7、9、11冊豐富互動遊戲與影音！",
+                volumes: [
+                    {
+                        volumeName: "第5冊",
+                        subtitle: "真平版 國小台語教材 - 第5冊",
+                        badgeColor: "bg-amber-400 text-amber-950",
+                        games: [
+                            { 
+                                id: "tp-v5-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v5-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v5-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v5-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v5-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=tccAH9wPHlY&list=PLK2ADq20eGAY"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第6冊 (即將推出)",
+                        subtitle: "真平版 國小台語教材 - 第6冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "tp-v6-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v6-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v6-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v6-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v6-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    },
+                    {
+                        volumeName: "第7冊",
+                        subtitle: "真平版 國小台語教材 - 第7冊",
+                        badgeColor: "bg-amber-400 text-amber-950",
+                        games: [
+                            { 
+                                id: "tp-v7-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v7-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v7-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v7-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v7-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=jZDZgyOGF-I&list=PLOlzUNeW8wfA"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第8冊 (即將推出)",
+                        subtitle: "真平版 國小台語教材 - 第8冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "tp-v8-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v8-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v8-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v8-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v8-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    },
+                    {
+                        volumeName: "第9冊",
+                        subtitle: "真平版 國小台語教材 - 第9冊",
+                        badgeColor: "bg-amber-400 text-amber-950",
+                        games: [
+                            { 
+                                id: "tp-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v9-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v9-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v9-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v9-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=UOCQfVYNr3A&list=PLFwad_P40t4g"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第10冊 (即將推出)",
+                        subtitle: "真平版 國小台語教材 - 第10冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "tp-v10-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v10-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v10-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v10-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v10-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    },
+                    {
+                        volumeName: "第11冊",
+                        subtitle: "真平版 國小台語教材 - 第11冊",
+                        badgeColor: "bg-amber-400 text-amber-950",
+                        games: [
+                            { 
+                                id: "tp-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_4.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_4.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_4.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_4.html" }
+                                ]
+                            },
+                            { 
+                                id: "tp-v11-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=oR0-N9uFGDg&list=PLJIHIqi6ZZTg"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第12冊 (即將推出)",
+                        subtitle: "真平版 國小台語教材 - 第12冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "tp-v12-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v12-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v12-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v12-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "tp-v12-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    }
+                ]
+            },
+            {
+                publisher: "康軒版",
+                publisherBadge: "bg-sky-500 text-white border-2 border-sky-600 shadow",
+                bannerColor: "from-sky-400 to-blue-600",
+                textColor: "text-sky-950",
+                description: "康軒版國小台語教材，包含第9、11冊互動遊戲與影音專區！",
+                volumes: [
+                    {
+                        volumeName: "第9冊",
+                        subtitle: "康軒版 國小台語教材 - 第9冊",
+                        badgeColor: "bg-sky-400 text-sky-950",
+                        games: [
+                            { 
+                                id: "kh-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v9-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v9-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v9-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v9-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=hnVmrxyt5ew&list=PLLGe6ypADfQE"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第10冊 (即將推出)",
+                        subtitle: "康軒版 國小台語教材 - 第10冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "kh-v10-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v10-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v10-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v10-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v10-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    },
+                    {
+                        volumeName: "第11冊",
+                        subtitle: "康軒版 國小台語教材 - 第11冊",
+                        badgeColor: "bg-sky-400 text-sky-950",
+                        games: [
+                            { 
+                                id: "kh-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                items: [
+                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_1.html" },
+                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_2.html" },
+                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_3.html" },
+                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_4.html" },
+                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_5.html" }
+                                ]
+                            },
+                            { 
+                                id: "kh-v11-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-500 to-rose-600", desc: "觀賞本冊精選教學影片與影音", type: "external",
+                                url: "https://www.youtube.com/watch?v=Kbbs8a55uh4&list=PLRvgvsv7OZDc"
+                            }
+                        ]
+                    },
+                    {
+                        volumeName: "第12冊 (即將推出)",
+                        subtitle: "康軒版 國小台語教材 - 第12冊",
+                        badgeColor: "bg-slate-200 text-slate-600",
+                        games: [
+                            { id: "kh-v12-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-400 to-indigo-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v12-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-400 to-pink-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v12-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-400 to-teal-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v12-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-400 to-orange-500", desc: "即將推出", type: "coming" },
+                            { id: "kh-v12-g5", name: "YouTube", icon: "fa-brands fa-youtube", color: "from-red-400 to-rose-500", desc: "即將推出", type: "coming" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // State variables: 'home' | 'publisher' | 'volume'
+        let currentView = 'home';
+        let selectedPublisher = null;
+        let selectedVolume = null;
+
+        function renderApp() {
+            const container = document.getElementById('contentArea');
+            const noResults = document.getElementById('noResults');
+            const breadcrumbBar = document.getElementById('breadcrumbBar');
+            const breadcrumbText = document.getElementById('breadcrumbText');
+            
+            noResults.classList.add('hidden');
+            container.innerHTML = '';
+
+            if (currentView === 'home') {
+                breadcrumbBar.classList.add('hidden');
+                // Render Two Main Publisher Cards Cleanly
+                container.innerHTML = `
+                    <div class="text-center mb-10">
+                        <span class="bg-amber-100 text-amber-900 font-black px-4 py-2 rounded-xl text-sm border-2 border-amber-300 shadow-sm inline-block">
+                            <i class="fa-solid fa-hand-pointer mr-1"></i> 請選擇教材版本
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <!-- 真平版 Card -->
+                        <div onclick="selectPublisher('真平版')" 
+                             class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-8 text-white shadow-2xl hover:scale-105 transition-all cursor-pointer border-4 border-white flex flex-col justify-between group">
+                            <div>
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-xl font-black text-sm tracking-wide">
+                                        <i class="fa-solid fa-book mr-1.5"></i> 教材版本
+                                    </span>
+                                    <div class="w-14 h-14 bg-white text-orange-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-12 transition-transform">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-3xl font-black mb-3 drop-shadow">真平版</h3>
+                                <p class="text-amber-100 font-bold text-base leading-relaxed mb-6">
+                                    包含第5、7、9、11冊（以及預留第6、8、10、12冊），提供豐富的課文跟讀、輕鬆學語詞、句子重組、語詞對對碰與影音專區。
+                                </p>
+                            </div>
+                            <div class="bg-white text-orange-600 py-3.5 px-6 rounded-2xl font-black text-center shadow-md flex items-center justify-center space-x-2 group-hover:bg-amber-50 transition-colors">
+                                <span>進入真平版學習區</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- 康軒版 Card -->
+                        <div onclick="selectPublisher('康軒版')" 
+                             class="bg-gradient-to-br from-sky-400 to-blue-600 rounded-3xl p-8 text-white shadow-2xl hover:scale-105 transition-all cursor-pointer border-4 border-white flex flex-col justify-between group">
+                            <div>
+                                <div class="flex justify-between items-center mb-6">
+                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-xl font-black text-sm tracking-wide">
+                                        <i class="fa-solid fa-book-open mr-1.5"></i> 教材版本
+                                    </span>
+                                    <div class="w-14 h-14 bg-white text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-12 transition-transform">
+                                        <i class="fa-solid fa-school"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-3xl font-black mb-3 drop-shadow">康軒版</h3>
+                                <p class="text-sky-100 font-bold text-base leading-relaxed mb-6">
+                                    包含第9、11冊（以及預留第10、12冊），提供標準台語跟讀、詞彙運用、句子重組闖關與影音學習。
+                                </p>
+                            </div>
+                            <div class="bg-white text-blue-600 py-3.5 px-6 rounded-2xl font-black text-center shadow-md flex items-center justify-center space-x-2 group-hover:bg-sky-50 transition-colors">
+                                <span>進入康軒版學習區</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentView === 'publisher') {
+                breadcrumbBar.classList.remove('hidden');
+                breadcrumbText.innerText = selectedPublisher;
+
+                const pubObj = curriculumData.find(p => p.publisher === selectedPublisher);
+                if (!pubObj) return;
+
+                let volumesHtml = pubObj.volumes.map(vol => `
+                    <div onclick="selectVolume('${vol.volumeName}')"
+                         class="bg-white rounded-2xl p-6 border-2 border-amber-200 shadow-md hover:shadow-xl hover:border-orange-500 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="${vol.badgeColor} font-black text-base px-4 py-2 rounded-xl shadow-sm border border-black/10">${vol.volumeName}</span>
+                                <span class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-gamepad"></i>
+                                </span>
+                            </div>
+                            <h4 class="text-xl font-black text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">${vol.subtitle}</h4>
+                            <p class="text-slate-500 text-xs font-bold leading-relaxed">包含 5 項核心互動遊戲與 YouTube 影音</p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-orange-600 font-black">
+                            <span>點擊進入選擇遊戲</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="mb-8 flex items-center justify-between">
+                        <div>
+                            <span class="px-4 py-1.5 rounded-xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
+                                <i class="fa-solid fa-book-bookmark mr-2"></i>${pubObj.publisher}
+                            </span>
+                            <h3 class="text-2xl sm:text-3xl font-black text-slate-800">請選擇您要練習的冊別：</h3>
+                        </div>
+                        <button onclick="goHome()" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> 返回版本選擇
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${volumesHtml}
+                    </div>
+                `;
+            } else if (currentView === 'volume') {
+                breadcrumbBar.classList.remove('hidden');
+                breadcrumbText.innerHTML = `<button onclick="selectPublisher('${selectedPublisher}')" class="hover:underline">${selectedPublisher}</button> <i class="fa-solid fa-chevron-right text-xs opacity-70 mx-1"></i> <span class="text-yellow-300">${selectedVolume}</span>`;
+
+                const pubObj = curriculumData.find(p => p.publisher === selectedPublisher);
+                const volObj = pubObj.volumes.find(v => v.volumeName === selectedVolume);
+                if (!volObj) return;
+
+                let gamesHtml = volObj.games.map(game => {
+                    let clickAction = '';
+                    let badgeText = '立即遊玩';
+                    let badgeClass = 'bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white';
+
+                    if (game.type === 'coming') {
+                        badgeText = '即將推出';
+                        badgeClass = 'bg-slate-100 text-slate-400';
+                        clickAction = `onclick="showComingSoon()"`;
+                    } else if (game.type === 'external') {
+                        badgeText = '前往影音';
+                        badgeClass = 'bg-rose-100 text-rose-800 group-hover:bg-rose-600 group-hover:text-white';
+                        clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
+                    } else {
+                        let itemsJson = encodeURIComponent(JSON.stringify(game.items));
+                        clickAction = `onclick='incrementVisit(); openLessonSelector("${selectedPublisher}", "${selectedVolume}", "${game.name}", JSON.decode || decodeURIComponent("${itemsJson}"))'`;
+                    }
+
+                    return `
+                        <div ${clickAction}
+                             class="bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-md hover:shadow-xl hover:border-amber-400 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${game.color} text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
+                                        <i class="${game.icon.includes('fa-brands') ? game.icon : 'fa-solid ' + game.icon}"></i>
+                                    </div>
+                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-xl transition-colors ${badgeClass}">${badgeText}</span>
+                                </div>
+                                <h5 class="font-black text-slate-800 text-lg mb-2 group-hover:text-amber-600 transition-colors">${game.name}</h5>
+                                <p class="text-slate-500 text-xs font-bold leading-relaxed">${game.desc}</p>
+                            </div>
+                            <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold">
+                                <span><i class="fa-solid fa-gamepad mr-1 text-amber-500"></i>互動學習</span>
+                                <span class="text-amber-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點擊進入 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `
+                    <div class="mb-8 flex items-center justify-between">
+                        <div>
+                            <span class="px-4 py-1.5 rounded-xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
+                                <i class="fa-solid fa-book-bookmark mr-2"></i>${selectedPublisher} - ${selectedVolume}
+                            </span>
+                            <h3 class="text-2xl sm:text-3xl font-black text-slate-800">${volObj.subtitle}</h3>
+                        </div>
+                        <button onclick="selectPublisher('${selectedPublisher}')" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> 返回冊別選擇
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                        ${gamesHtml}
+                    </div>
+                `;
+            }
+        }
+
+        function goHome() {
+            currentView = 'home';
+            selectedPublisher = null;
+            selectedVolume = null;
+            document.getElementById('searchInput').value = '';
+            renderApp();
+        }
+
+        function selectPublisher(publisher) {
+            currentView = 'publisher';
+            selectedPublisher = publisher;
+            selectedVolume = null;
+            renderApp();
+        }
+
+        function selectVolume(volumeName) {
+            currentView = 'volume';
+            selectedVolume = volumeName;
+            renderApp();
+        }
+
+        function handleSearch(event) {
+            const query = event.target.value.toLowerCase().trim();
+            if (!query) {
+                if (currentView !== 'home') renderApp();
+                return;
+            }
+
+            const container = document.getElementById('contentArea');
+            const noResults = document.getElementById('noResults');
+            const breadcrumbBar = document.getElementById('breadcrumbBar');
+            breadcrumbBar.classList.add('hidden');
+            container.innerHTML = '';
+
+            let matchCards = '';
+            let foundCount = 0;
+
+            curriculumData.forEach(pub => {
+                pub.volumes.forEach(vol => {
+                    vol.games.forEach(game => {
+                        if (game.name.toLowerCase().includes(query) || 
+                            pub.publisher.toLowerCase().includes(query) || 
+                            vol.volumeName.toLowerCase().includes(query)) {
+                            
+                            foundCount++;
+                            let clickAction = '';
+                            let badgeText = '立即遊玩';
+                            if (game.type === 'coming') {
+                                badgeText = '即將推出';
+                                clickAction = `onclick="showComingSoon()"`;
+                            } else if (game.type === 'external') {
+                                badgeText = '前往影音';
+                                clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
+                            } else {
+                                let itemsJson = encodeURIComponent(JSON.stringify(game.items));
+                                clickAction = `onclick='incrementVisit(); openLessonSelector("${pub.publisher}", "${vol.volumeName}", "${game.name}", JSON.decode || decodeURIComponent("${itemsJson}"))'`;
+                            }
+
+                            matchCards += `
+                                <div ${clickAction} class="bg-white rounded-2xl p-6 border-2 border-amber-300 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between group transition-all">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <span class="text-xs font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-lg">${pub.publisher} ${vol.volumeName}</span>
+                                            <span class="text-xs font-black px-3 py-1 rounded-xl bg-amber-100 text-amber-800">${badgeText}</span>
+                                        </div>
+                                        <h5 class="font-black text-slate-800 text-lg mb-1 group-hover:text-amber-600 transition-colors">${game.name}</h5>
+                                        <p class="text-slate-500 text-xs font-bold">${game.desc}</p>
+                                    </div>
+                                    <div class="mt-4 pt-3 border-t-2 border-slate-100 text-xs text-amber-600 font-black flex items-center justify-between">
+                                        <span>點擊快速進入</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                });
+            });
+
+            if (foundCount > 0) {
+                noResults.classList.add('hidden');
+                container.innerHTML = `
+                    <div class="mb-6 flex items-center justify-between">
+                        <h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-search mr-2 text-amber-500"></i>搜尋結果：找到 ${foundCount} 項相符內容</h3>
+                        <button onclick="goHome()" class="px-4 py-2 bg-white text-slate-700 font-black rounded-xl text-xs border-2 border-slate-300 shadow-sm">返回首頁</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">${matchCards}</div>
+                `;
+            } else {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+            }
+        }
+
+        function openLessonSelector(publisher, volume, gameName, encodedItems) {
+            const modal = document.getElementById('lessonModal');
+            const container = document.getElementById('modalContainer');
+            const modalContent = document.getElementById('modalContent');
+            
+            let items = typeof encodedItems === 'string' ? JSON.parse(decodeURIComponent(encodedItems)) : encodedItems;
+
+            let lessonsButtons = items.map((lesson, idx) => `
+                <a href="${lesson.url}" target="_blank" onclick="incrementVisit()"
+                   class="flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-500 hover:text-white border-2 border-amber-200 rounded-xl font-black text-slate-800 shadow-sm transition-all group">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-lg bg-amber-400 group-hover:bg-white group-hover:text-amber-600 text-amber-950 flex items-center justify-center text-sm shadow">
+                            ${idx + 1}
+                        </span>
+                        <span class="text-base">${lesson.name}</span>
+                    </div>
+                    <span class="text-sm bg-white group-hover:bg-amber-600 group-hover:text-white text-amber-700 px-3 py-1 rounded-xl shadow-sm border border-amber-200 flex items-center">
+                        進入遊戲 <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i>
+                    </span>
+                </a>
+            `).join('');
+
+            modalContent.innerHTML = `
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl mb-3 text-2xl shadow-inner border-2 border-amber-300">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div class="flex justify-center items-center space-x-2 mb-2">
+                        <span class="text-xs font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-lg">${publisher}</span>
+                        <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3 py-1 rounded-lg">${volume}</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 mb-1">${gameName}</h3>
+                    <p class="text-slate-500 text-xs font-bold">請選擇您想要練習的課次：</p>
+                </div>
+                <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                    ${lessonsButtons}
+                </div>
+                <div class="mt-6 text-center">
+                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black rounded-xl text-sm transition-all">
+                        關閉視窗
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeLessonModal() {
+            const modal = document.getElementById('lessonModal');
+            const container = document.getElementById('modalContainer');
+            container.classList.remove('scale-100', 'opacity-100');
+            container.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function showComingSoon() {
+            const modal = document.getElementById('lessonModal');
+            const container = document.getElementById('modalContainer');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.innerHTML = `
+                <div class="text-center py-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl mb-4 text-2xl shadow-inner border-2 border-amber-300">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">即將推出</h3>
+                    <p class="text-slate-600 text-sm font-bold mb-6">此冊別與遊戲尚在製作中，敬請期待！</p>
+                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl text-sm shadow-md transition-all">
+                        我知道了
+                    </button>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        let visitCount = 0;
+        function incrementVisit() {
+            visitCount++;
+            const counterEl = document.getElementById('visitCount');
+            if (counterEl) {
+                counterEl.innerText = visitCount.toLocaleString();
+            }
+        }
+
+        window.onload = function() {
+            renderApp();
+            // Start at 0 as requested, will increment organically when users click/visit
+            document.getElementById('visitCount').innerText = visitCount;
+        }
+    </script>
+</body>
+</html>
