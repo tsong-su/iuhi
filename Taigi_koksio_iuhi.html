@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台語遊戲學習樂園 - 互動統整大廳</title>
+    <title>台語遊戲學習樂園 - 互動學習大廳</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Noto Sans TC with bold weights for maximum legibility -->
+    <!-- Google Fonts Noto Sans TC with bold weights for maximum legibility & Taiwanese characters support -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -34,12 +34,12 @@
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
                 <!-- User Logo -->
-                <div class="bg-white p-1.5 rounded-xl shadow-md flex items-center justify-center hover:scale-105 transition-transform">
+                <div class="bg-white p-1.5 rounded-2xl shadow-md flex items-center justify-center hover:scale-105 transition-transform border-2 border-white">
                     <img src="https://tsong-su.github.io/iuhi/logo.png" alt="Logo" class="w-10 h-10 object-contain" onerror="this.src='https://placehold.co/40x40/f97316/ffffff?text=LOGO'">
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-wide drop-shadow">台語遊戲學習樂園</h1>
-                    <p class="text-xs text-amber-100 font-bold">真平版與康軒版互動教學大廳</p>
+                    <p class="text-xs text-amber-100 font-bold">真平&康軒互動教學大廳</p>
                 </div>
             </div>
             <!-- Search Bar -->
@@ -48,7 +48,7 @@
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-amber-200">
                         <i class="fa-solid fa-search"></i>
                     </span>
-                    <input type="text" id="searchInput" onkeyup="handleSearch(event)" placeholder="搜尋版本、冊別、遊戲..." 
+                    <input type="text" id="searchInput" onkeyup="handleSearch(event)" placeholder="揣版本、第幾冊、遊戲..." 
                            class="w-full pl-10 pr-4 py-2.5 bg-black/20 border-2 border-white/40 rounded-xl text-sm font-bold placeholder-amber-100 text-white focus:outline-none focus:bg-white focus:text-slate-800 focus:placeholder-slate-400 focus:border-white transition-all shadow-inner">
                 </div>
             </div>
@@ -57,24 +57,21 @@
 
     <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
 
-        <section class="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-2xl p-6 sm:p-10 text-white mb-10 shadow-xl relative overflow-hidden border-4 border-white">
+        <section class="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-3xl p-6 sm:p-10 text-white mb-10 shadow-xl relative overflow-hidden border-4 border-white">
             <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
                 <i class="fa-solid fa-gamepad text-9xl"></i>
             </div>
             <div class="max-w-3xl relative z-10">
-                <span class="bg-yellow-300 text-yellow-900 text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider inline-block mb-3 shadow">
+                <span class="bg-yellow-300 text-yellow-900 text-xs font-black px-3.5 py-1.5 rounded-xl uppercase tracking-wider inline-block mb-3 shadow">
                     <i class="fa-solid fa-star mr-1"></i> 國小台語互動專區
                 </span>
                 <h2 class="text-3xl sm:text-4xl font-black mt-1 mb-3 leading-tight drop-shadow">輕鬆學台語，心適閣歡喜！</h2>
-                <p class="text-emerald-50 text-base sm:text-lg leading-relaxed font-bold block mb-1">
-                    本系統將「真平版」與「康軒版」各冊四大核心互動遊戲與影音完美統整。
-                </p>
                 <p class="text-emerald-50 text-base sm:text-lg leading-relaxed font-bold block mb-6">
-                    請先選擇下方教材版本開始快樂學習！
+                    先選下底教材版本，開始歡喜學習！
                 </p>
                 <!-- Breadcrumb or Active Filter Indicator -->
                 <div id="breadcrumbBar" class="hidden items-center space-x-2 text-sm font-black bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl w-fit mb-4 border border-white/30">
-                    <button onclick="goHome()" class="hover:underline flex items-center"><i class="fa-solid fa-house mr-1"></i> 首頁</button>
+                    <button onclick="goHome()" class="hover:underline flex items-center"><i class="fa-solid fa-house mr-1"></i> 頭頁</button>
                     <i class="fa-solid fa-chevron-right text-xs opacity-70"></i>
                     <span id="breadcrumbText" class="text-yellow-300"></span>
                 </div>
@@ -86,17 +83,17 @@
         </div>
 
         <!-- No results message -->
-        <div id="noResults" class="hidden text-center py-20 bg-white rounded-2xl border-4 border-dashed border-amber-300 shadow-sm mt-6">
+        <div id="noResults" class="hidden text-center py-20 bg-white rounded-3xl border-4 border-dashed border-amber-300 shadow-sm mt-6">
             <div class="text-6xl text-amber-400 mb-4"><i class="fa-solid fa-face-frown"></i></div>
             <h3 class="text-2xl font-black text-slate-700">找不到符合的遊戲內容</h3>
-            <p class="text-slate-500 text-base font-bold mt-2">請嘗試輸入其他關鍵字或返回首頁</p>
-            <button onclick="goHome()" class="mt-4 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl text-sm shadow-md transition-all">返回首頁</button>
+            <p class="text-slate-500 text-base font-bold mt-2">請嘗試輸入其他關鍵字或返回頭頁</p>
+            <button onclick="goHome()" class="mt-4 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl text-sm shadow-md transition-all">返回頭頁</button>
         </div>
 
     </main>
 
     <div id="lessonModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative transform transition-all scale-95 opacity-0 border-4 border-amber-400" id="modalContainer">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative transform transition-all scale-95 opacity-0 border-4 border-amber-400" id="modalContainer">
             <button onclick="closeLessonModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-xl flex items-center justify-center transition-all font-black text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -133,41 +130,41 @@
                             { 
                                 id: "tp-v5-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_5.html" }
+                                    { name: "第1課：食晝", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_1.html" },
+                                    { name: "第2課：踅夜市", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_2.html" },
+                                    { name: "第3課：運動會", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_3.html" },
+                                    { name: "第4課：擔仔位", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_4.html" },
+                                    { name: "第5課：咱的英雄", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_text_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v5-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_5.html" }
+                                    { name: "第1課：食晝", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_1.html" },
+                                    { name: "第2課：踅夜市", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_2.html" },
+                                    { name: "第3課：運動會", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_3.html" },
+                                    { name: "第4課：擔仔位", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_4.html" },
+                                    { name: "第5課：咱的英雄", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_words_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v5-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_5.html" }
+                                    { name: "第1課：食晝", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_1.html" },
+                                    { name: "第2課：踅夜市", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_2.html" },
+                                    { name: "第3課：運動會", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_3.html" },
+                                    { name: "第4課：擔仔位", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_4.html" },
+                                    { name: "第5課：咱的英雄", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20sort_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v5-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_5.html" }
+                                    { name: "第1課：食晝", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_1.html" },
+                                    { name: "第2課：踅夜市", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_2.html" },
+                                    { name: "第3課：運動會", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_3.html" },
+                                    { name: "第4課：擔仔位", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_4.html" },
+                                    { name: "第5課：咱的英雄", url: "https://tsong-su.github.io/iuhi/Tsinping_B5_word%20pair_5.html" }
                                 ]
                             },
                             { 
@@ -196,41 +193,41 @@
                             { 
                                 id: "tp-v7-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_5.html" }
+                                    { name: "第1課：好日", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_1.html" },
+                                    { name: "第2課：辦桌", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_2.html" },
+                                    { name: "第3課：青紅燈", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_3.html" },
+                                    { name: "第4課：洗身軀", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_4.html" },
+                                    { name: "第5課：摒掃", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_text_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v7-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_5.html" }
+                                    { name: "第1課：好日", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_1.html" },
+                                    { name: "第2課：辦桌", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_2.html" },
+                                    { name: "第3課：青紅燈", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_3.html" },
+                                    { name: "第4課：洗身軀", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_4.html" },
+                                    { name: "第5課：摒掃", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_words_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v7-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_5.html" }
+                                    { name: "第1課：好日", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_1.html" },
+                                    { name: "第2課：辦桌", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_2.html" },
+                                    { name: "第3課：青紅燈", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_3.html" },
+                                    { name: "第4課：洗身軀", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_4.html" },
+                                    { name: "第5課：摒掃", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20sort_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v7-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_5.html" }
+                                    { name: "第1課：好日", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_1.html" },
+                                    { name: "第2課：辦桌", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_2.html" },
+                                    { name: "第3課：青紅燈", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_3.html" },
+                                    { name: "第4課：洗身軀", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_4.html" },
+                                    { name: "第5課：摒掃", url: "https://tsong-su.github.io/iuhi/Tsinping_B7_word%20pair_5.html" }
                                 ]
                             },
                             { 
@@ -259,41 +256,41 @@
                             { 
                                 id: "tp-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_5.html" }
+                                    { name: "第1課：線頂買賣", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_1.html" },
+                                    { name: "第2課：未來一直來", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_2.html" },
+                                    { name: "第3課：燒冷冰", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_3.html" },
+                                    { name: "第4課：媠䆀無地比", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_4.html" },
+                                    { name: "第5課：過年", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_text_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v9-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_5.html" }
+                                    { name: "第1課：線頂買賣", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_1.html" },
+                                    { name: "第2課：未來一直來", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_2.html" },
+                                    { name: "第3課：燒冷冰", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_3.html" },
+                                    { name: "第4課：媠䆀無地比", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_4.html" },
+                                    { name: "第5課：過年", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_words_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v9-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_5.html" }
+                                    { name: "第1課：線頂買賣", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_1.html" },
+                                    { name: "第2課：未來一直來", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_2.html" },
+                                    { name: "第3課：燒冷冰", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_3.html" },
+                                    { name: "第4課：媠䆀無地比", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_4.html" },
+                                    { name: "第5課：過年", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20sort_5.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v9-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_5.html" }
+                                    { name: "第1課：線頂買賣", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_1.html" },
+                                    { name: "第2課：未來一直來", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_2.html" },
+                                    { name: "第3課：燒冷冰", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_3.html" },
+                                    { name: "第4課：媠䆀無地比", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_4.html" },
+                                    { name: "第5課：過年", url: "https://tsong-su.github.io/iuhi/Tsinping_B9_word%20pair_5.html" }
                                 ]
                             },
                             { 
@@ -322,37 +319,37 @@
                             { 
                                 id: "tp-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_4.html" }
+                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_1.html" },
+                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_2.html" },
+                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_3.html" },
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_4.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_4.html" }
+                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_1.html" },
+                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_2.html" },
+                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_3.html" },
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_4.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_4.html" }
+                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_1.html" },
+                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_2.html" },
+                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_3.html" },
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_4.html" }
                                 ]
                             },
                             { 
                                 id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_4.html" }
+                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
+                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
+                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_3.html" },
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_4.html" }
                                 ]
                             },
                             { 
@@ -390,41 +387,41 @@
                             { 
                                 id: "kh-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_5.html" }
+                                    { name: "第1課：科技顧健康", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_1.html" },
+                                    { name: "第2課：作田人", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_2.html" },
+                                    { name: "第3課：向前衝", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_3.html" },
+                                    { name: "第4課：臺灣 美麗的海翁", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_4.html" },
+                                    { name: "第5課：舊地名真趣味", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_text_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v9-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_5.html" }
+                                    { name: "第1課：科技顧健康", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_1.html" },
+                                    { name: "第2課：作田人", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_2.html" },
+                                    { name: "第3課：向前衝", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_3.html" },
+                                    { name: "第4課：臺灣 美麗的海翁", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_4.html" },
+                                    { name: "第5課：舊地名真趣味", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_words_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v9-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_5.html" }
+                                    { name: "第1課：科技顧健康", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_1.html" },
+                                    { name: "第2課：作田人", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_2.html" },
+                                    { name: "第3課：向前衝", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_3.html" },
+                                    { name: "第4課：臺灣 美麗的海翁", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_4.html" },
+                                    { name: "第5課：舊地名真趣味", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20sort_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v9-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_5.html" }
+                                    { name: "第1課：科技顧健康", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_1.html" },
+                                    { name: "第2課：作田人", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_2.html" },
+                                    { name: "第3課：向前衝", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_3.html" },
+                                    { name: "第4課：臺灣 美麗的海翁", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_4.html" },
+                                    { name: "第5課：舊地名真趣味", url: "https://tsong-su.github.io/iuhi/Khonghian_B9_word%20pair_5.html" }
                                 ]
                             },
                             { 
@@ -453,41 +450,41 @@
                             { 
                                 id: "kh-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_5.html" }
+                                    { name: "第1課：馬偕", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_1.html" },
+                                    { name: "第2課：紙箱仔揣朋友", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_2.html" },
+                                    { name: "第3課：畢業旅行", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_3.html" },
+                                    { name: "第4課：地球人", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_4.html" },
+                                    { name: "第5課：食桌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_5.html" }
+                                    { name: "第1課：馬偕", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_1.html" },
+                                    { name: "第2課：紙箱仔揣朋友", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_2.html" },
+                                    { name: "第3課：畢業旅行", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_3.html" },
+                                    { name: "第4課：地球人", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_4.html" },
+                                    { name: "第5課：食桌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_5.html" }
+                                    { name: "第1課：馬偕", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_1.html" },
+                                    { name: "第2課：紙箱仔揣朋友", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_2.html" },
+                                    { name: "第3課：畢業旅行", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_3.html" },
+                                    { name: "第4課：地球人", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_4.html" },
+                                    { name: "第5課：食桌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_5.html" }
                                 ]
                             },
                             { 
                                 id: "kh-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_1.html" },
-                                    { name: "第2課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_2.html" },
-                                    { name: "第3課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_3.html" },
-                                    { name: "第4課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_4.html" },
-                                    { name: "第5課", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_5.html" }
+                                    { name: "第1課：馬偕", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_1.html" },
+                                    { name: "第2課：紙箱仔揣朋友", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_2.html" },
+                                    { name: "第3課：畢業旅行", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_3.html" },
+                                    { name: "第4課：地球人", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_4.html" },
+                                    { name: "第5課：食桌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_5.html" }
                                 ]
                             },
                             { 
@@ -517,6 +514,16 @@
         let selectedPublisher = null;
         let selectedVolume = null;
 
+        // Visit counter starting at 0, incrementing only upon use/visits
+        let visitCount = 0;
+        function incrementVisit() {
+            visitCount++;
+            const counterEl = document.getElementById('visitCount');
+            if (counterEl) {
+                counterEl.innerText = visitCount.toLocaleString();
+            }
+        }
+
         function renderApp() {
             const container = document.getElementById('contentArea');
             const noResults = document.getElementById('noResults');
@@ -531,17 +538,17 @@
                 // Render Two Main Publisher Cards Cleanly
                 container.innerHTML = `
                     <div class="text-center mb-10">
-                        <span class="bg-amber-100 text-amber-900 font-black px-4 py-2 rounded-xl text-sm border-2 border-amber-300 shadow-sm inline-block">
-                            <i class="fa-solid fa-hand-pointer mr-1"></i> 請選擇教材版本
+                        <span class="bg-amber-100 text-amber-900 font-black px-5 py-2.5 rounded-2xl text-base border-2 border-amber-300 shadow-sm inline-block">
+                            <i class="fa-solid fa-hand-pointer mr-2"></i> 請選擇教材版本
                         </span>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         <!-- 真平版 Card -->
-                        <div onclick="selectPublisher('真平版')" 
+                        <div onclick="incrementVisit(); selectPublisher('真平版')" 
                              class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-3xl p-8 text-white shadow-2xl hover:scale-105 transition-all cursor-pointer border-4 border-white flex flex-col justify-between group">
                             <div>
                                 <div class="flex justify-between items-center mb-6">
-                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-xl font-black text-sm tracking-wide">
+                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-2xl font-black text-sm tracking-wide">
                                         <i class="fa-solid fa-book mr-1.5"></i> 教材版本
                                     </span>
                                     <div class="w-14 h-14 bg-white text-orange-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-12 transition-transform">
@@ -550,21 +557,21 @@
                                 </div>
                                 <h3 class="text-3xl font-black mb-3 drop-shadow">真平版</h3>
                                 <p class="text-amber-100 font-bold text-base leading-relaxed mb-6">
-                                    包含第5、7、9、11冊（以及預留第6、8、10、12冊），提供豐富的課文跟讀、輕鬆學語詞、句子重組、語詞對對碰與影音專區。
+                                    包含第 5、7、9、11 冊（以及預留第 6、8、10、12 冊），提供豐富的課文跟讀、輕鬆學語詞、句子重組、語詞對對碰與影音專區。
                                 </p>
                             </div>
                             <div class="bg-white text-orange-600 py-3.5 px-6 rounded-2xl font-black text-center shadow-md flex items-center justify-center space-x-2 group-hover:bg-amber-50 transition-colors">
-                                <span>進入真平版學習區</span>
+                                <span>uì tsia 開始</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </div>
                         </div>
 
                         <!-- 康軒版 Card -->
-                        <div onclick="selectPublisher('康軒版')" 
+                        <div onclick="incrementVisit(); selectPublisher('康軒版')" 
                              class="bg-gradient-to-br from-sky-400 to-blue-600 rounded-3xl p-8 text-white shadow-2xl hover:scale-105 transition-all cursor-pointer border-4 border-white flex flex-col justify-between group">
                             <div>
                                 <div class="flex justify-between items-center mb-6">
-                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-xl font-black text-sm tracking-wide">
+                                    <span class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-2xl font-black text-sm tracking-wide">
                                         <i class="fa-solid fa-book-open mr-1.5"></i> 教材版本
                                     </span>
                                     <div class="w-14 h-14 bg-white text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg group-hover:rotate-12 transition-transform">
@@ -573,11 +580,11 @@
                                 </div>
                                 <h3 class="text-3xl font-black mb-3 drop-shadow">康軒版</h3>
                                 <p class="text-sky-100 font-bold text-base leading-relaxed mb-6">
-                                    包含第9、11冊（以及預留第10、12冊），提供標準台語跟讀、詞彙運用、句子重組闖關與影音學習。
+                                    包含第 9、11 冊（以及預留第 10、12 冊），提供標準台語跟讀、詞彙運用、句子重組闖關與影音學習。
                                 </p>
                             </div>
                             <div class="bg-white text-blue-600 py-3.5 px-6 rounded-2xl font-black text-center shadow-md flex items-center justify-center space-x-2 group-hover:bg-sky-50 transition-colors">
-                                <span>進入康軒版學習區</span>
+                                <span>uì tsia 開始</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </div>
                         </div>
@@ -591,20 +598,20 @@
                 if (!pubObj) return;
 
                 let volumesHtml = pubObj.volumes.map(vol => `
-                    <div onclick="selectVolume('${vol.volumeName}')"
-                         class="bg-white rounded-2xl p-6 border-2 border-amber-200 shadow-md hover:shadow-xl hover:border-orange-500 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
+                    <div onclick="incrementVisit(); selectVolume('${vol.volumeName}')"
+                         class="bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-md hover:shadow-xl hover:border-orange-500 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
                         <div>
                             <div class="flex items-center justify-between mb-4">
-                                <span class="${vol.badgeColor} font-black text-base px-4 py-2 rounded-xl shadow-sm border border-black/10">${vol.volumeName}</span>
-                                <span class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                                    <i class="fa-solid fa-gamepad"></i>
+                                <span class="${vol.badgeColor} font-black text-base px-4 py-2 rounded-2xl shadow-sm border border-black/10">${vol.volumeName}</span>
+                                <span class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                    <i class="fa-solid fa-gamepad text-lg"></i>
                                 </span>
                             </div>
                             <h4 class="text-xl font-black text-slate-800 mb-2 group-hover:text-orange-600 transition-colors">${vol.subtitle}</h4>
                             <p class="text-slate-500 text-xs font-bold leading-relaxed">包含 5 項核心互動遊戲與 YouTube 影音</p>
                         </div>
                         <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-orange-600 font-black">
-                            <span>點擊進入選擇遊戲</span>
+                            <span>點tsia 入去選遊戲</span>
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                         </div>
                     </div>
@@ -613,13 +620,13 @@
                 container.innerHTML = `
                     <div class="mb-8 flex items-center justify-between">
                         <div>
-                            <span class="px-4 py-1.5 rounded-xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
+                            <span class="px-4.5 py-2 rounded-2xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
                                 <i class="fa-solid fa-book-bookmark mr-2"></i>${pubObj.publisher}
                             </span>
-                            <h3 class="text-2xl sm:text-3xl font-black text-slate-800">請選擇您要練習的冊別：</h3>
+                            <h3 class="text-2xl sm:text-3xl font-black text-slate-800">請選擇你欲練習的：</h3>
                         </div>
-                        <button onclick="goHome()" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
-                            <i class="fa-solid fa-arrow-left mr-2"></i> 返回版本選擇
+                        <button onclick="goHome()" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-2xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> 轉去重選第幾冊
                         </button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -636,7 +643,7 @@
 
                 let gamesHtml = volObj.games.map(game => {
                     let clickAction = '';
-                    let badgeText = '立即遊玩';
+                    let badgeText = '入來遮耍';
                     let badgeClass = 'bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white';
 
                     if (game.type === 'coming') {
@@ -654,20 +661,20 @@
 
                     return `
                         <div ${clickAction}
-                             class="bg-white rounded-2xl p-6 border-2 border-slate-200 shadow-md hover:shadow-xl hover:border-amber-400 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
+                             class="bg-white rounded-3xl p-6 border-2 border-slate-200 shadow-md hover:shadow-xl hover:border-amber-400 cursor-pointer flex flex-col justify-between group transition-all transform hover:-translate-y-1">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
                                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${game.color} text-white flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform">
                                         <i class="${game.icon.includes('fa-brands') ? game.icon : 'fa-solid ' + game.icon}"></i>
                                     </div>
-                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-xl transition-colors ${badgeClass}">${badgeText}</span>
+                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl transition-colors ${badgeClass}">${badgeText}</span>
                                 </div>
                                 <h5 class="font-black text-slate-800 text-lg mb-2 group-hover:text-amber-600 transition-colors">${game.name}</h5>
                                 <p class="text-slate-500 text-xs font-bold leading-relaxed">${game.desc}</p>
                             </div>
                             <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold">
                                 <span><i class="fa-solid fa-gamepad mr-1 text-amber-500"></i>互動學習</span>
-                                <span class="text-amber-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點擊進入 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                                <span class="text-amber-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點tsia 入去選遊戲 <i class="fa-solid fa-arrow-right ml-1"></i></span>
                             </div>
                         </div>
                     `;
@@ -676,13 +683,13 @@
                 container.innerHTML = `
                     <div class="mb-8 flex items-center justify-between">
                         <div>
-                            <span class="px-4 py-1.5 rounded-xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
+                            <span class="px-4.5 py-2 rounded-2xl text-sm font-black shadow ${pubObj.publisherBadge} mb-2 inline-block">
                                 <i class="fa-solid fa-book-bookmark mr-2"></i>${selectedPublisher} - ${selectedVolume}
                             </span>
                             <h3 class="text-2xl sm:text-3xl font-black text-slate-800">${volObj.subtitle}</h3>
                         </div>
-                        <button onclick="selectPublisher('${selectedPublisher}')" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
-                            <i class="fa-solid fa-arrow-left mr-2"></i> 返回冊別選擇
+                        <button onclick="selectPublisher('${selectedPublisher}')" class="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-black rounded-2xl text-sm border-2 border-slate-300 shadow-sm transition-all flex items-center">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> 轉去重選第幾冊
                         </button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -738,7 +745,7 @@
                             
                             foundCount++;
                             let clickAction = '';
-                            let badgeText = '立即遊玩';
+                            let badgeText = '入來遮耍';
                             if (game.type === 'coming') {
                                 badgeText = '即將推出';
                                 clickAction = `onclick="showComingSoon()"`;
@@ -751,17 +758,17 @@
                             }
 
                             matchCards += `
-                                <div ${clickAction} class="bg-white rounded-2xl p-6 border-2 border-amber-300 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between group transition-all">
+                                <div ${clickAction} class="bg-white rounded-3xl p-6 border-2 border-amber-300 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-between group transition-all">
                                     <div>
                                         <div class="flex items-center justify-between mb-3">
-                                            <span class="text-xs font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-lg">${pub.publisher} ${vol.volumeName}</span>
-                                            <span class="text-xs font-black px-3 py-1 rounded-xl bg-amber-100 text-amber-800">${badgeText}</span>
+                                            <span class="text-xs font-black bg-amber-400 text-amber-950 px-3.5 py-1.5 rounded-xl">${pub.publisher} ${vol.volumeName}</span>
+                                            <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl bg-amber-100 text-amber-800">${badgeText}</span>
                                         </div>
                                         <h5 class="font-black text-slate-800 text-lg mb-1 group-hover:text-amber-600 transition-colors">${game.name}</h5>
                                         <p class="text-slate-500 text-xs font-bold">${game.desc}</p>
                                     </div>
                                     <div class="mt-4 pt-3 border-t-2 border-slate-100 text-xs text-amber-600 font-black flex items-center justify-between">
-                                        <span>點擊快速進入</span>
+                                        <span>點tsia 入去選遊戲</span>
                                         <i class="fa-solid fa-arrow-right"></i>
                                     </div>
                                 </div>
@@ -776,7 +783,7 @@
                 container.innerHTML = `
                     <div class="mb-6 flex items-center justify-between">
                         <h3 class="text-xl font-black text-slate-800"><i class="fa-solid fa-search mr-2 text-amber-500"></i>搜尋結果：找到 ${foundCount} 項相符內容</h3>
-                        <button onclick="goHome()" class="px-4 py-2 bg-white text-slate-700 font-black rounded-xl text-xs border-2 border-slate-300 shadow-sm">返回首頁</button>
+                        <button onclick="goHome()" class="px-4 py-2 bg-white text-slate-700 font-black rounded-2xl text-xs border-2 border-slate-300 shadow-sm">返回頭頁</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">${matchCards}</div>
                 `;
@@ -795,15 +802,15 @@
 
             let lessonsButtons = items.map((lesson, idx) => `
                 <a href="${lesson.url}" target="_blank" onclick="incrementVisit()"
-                   class="flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-500 hover:text-white border-2 border-amber-200 rounded-xl font-black text-slate-800 shadow-sm transition-all group">
+                   class="flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-500 hover:text-white border-2 border-amber-200 rounded-2xl font-black text-slate-800 shadow-sm transition-all group">
                     <div class="flex items-center space-x-3">
-                        <span class="w-8 h-8 rounded-lg bg-amber-400 group-hover:bg-white group-hover:text-amber-600 text-amber-950 flex items-center justify-center text-sm shadow">
+                        <span class="w-9 h-9 rounded-xl bg-amber-400 group-hover:bg-white group-hover:text-amber-600 text-amber-950 flex items-center justify-center text-sm shadow">
                             ${idx + 1}
                         </span>
                         <span class="text-base">${lesson.name}</span>
                     </div>
-                    <span class="text-sm bg-white group-hover:bg-amber-600 group-hover:text-white text-amber-700 px-3 py-1 rounded-xl shadow-sm border border-amber-200 flex items-center">
-                        進入遊戲 <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i>
+                    <span class="text-sm bg-white group-hover:bg-amber-600 group-hover:text-white text-amber-700 px-4 py-1.5 rounded-2xl shadow-sm border border-amber-200 flex items-center">
+                        入來遮耍 <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i>
                     </span>
                 </a>
             `).join('');
@@ -814,8 +821,8 @@
                         <i class="fa-solid fa-list-check"></i>
                     </div>
                     <div class="flex justify-center items-center space-x-2 mb-2">
-                        <span class="text-xs font-black bg-amber-400 text-amber-950 px-3 py-1 rounded-lg">${publisher}</span>
-                        <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3 py-1 rounded-lg">${volume}</span>
+                        <span class="text-xs font-black bg-amber-400 text-amber-950 px-3.5 py-1.5 rounded-xl">${publisher}</span>
+                        <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3.5 py-1.5 rounded-xl">${volume}</span>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 mb-1">${gameName}</h3>
                     <p class="text-slate-500 text-xs font-bold">請選擇您想要練習的課次：</p>
@@ -824,7 +831,7 @@
                     ${lessonsButtons}
                 </div>
                 <div class="mt-6 text-center">
-                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black rounded-xl text-sm transition-all">
+                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black rounded-2xl text-sm transition-all">
                         關閉視窗
                     </button>
                 </div>
@@ -859,7 +866,7 @@
                     </div>
                     <h3 class="text-2xl font-black text-slate-800 mb-2">即將推出</h3>
                     <p class="text-slate-600 text-sm font-bold mb-6">此冊別與遊戲尚在製作中，敬請期待！</p>
-                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl text-sm shadow-md transition-all">
+                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-2xl text-sm shadow-md transition-all">
                         我知道了
                     </button>
                 </div>
@@ -871,18 +878,8 @@
             }, 10);
         }
 
-        let visitCount = 0;
-        function incrementVisit() {
-            visitCount++;
-            const counterEl = document.getElementById('visitCount');
-            if (counterEl) {
-                counterEl.innerText = visitCount.toLocaleString();
-            }
-        }
-
         window.onload = function() {
             renderApp();
-            // Start at 0 as requested, will increment organically when users click/visit
             document.getElementById('visitCount').innerText = visitCount;
         }
     </script>
