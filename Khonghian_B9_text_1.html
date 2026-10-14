@@ -20,18 +20,26 @@
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo" onerror="this.src='https://placehold.co/48x48/10b981/ffffff?text=Logo'">
                 <div>
                     <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
+                    <p class="text-xs text-gray-500">跨平台全裝置語音練習系統</p>
                 </div>
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
 
-        <!-- LINE/In-App Browser Warning Banner (適應 iOS / Android 不同選單位置說明) -->
-        <div id="browser-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl text-xs space-y-2 shadow-sm">
-            <div class="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
-                <span>⚠️</span> 偵測到您目前可能使用 LINE 或社群軟體內建瀏覽器
+        <!-- LINE / 內建瀏覽器超級防呆警告 Banner（針對低年級家長與小朋友設計） -->
+        <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
+            <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
+                <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
             </div>
-            <p>為確保麥克風與錄音回放 100% 正常，請點擊畫面選單（iPhone 通常在右上角 <span class="font-bold">「...」</span> 或右下角 <span class="font-bold">「分享/Safari」</span>），並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器中開啟」</span>！</p>
+            <p class="text-xs leading-relaxed text-red-800 font-medium">
+                因為手機軟體安全限制，<span class="font-bold underline">在 LINE 裡面無法順利錄音喔！</span>為了讓小朋友能順利練習，請點擊下方按鈕或右上角選單，改用手機內建的 <span class="font-bold text-red-900">「Safari (iPhone/iPad)」</span> 或 <span class="font-bold text-red-900">「Chrome (Android)」</span> 開啟！
+            </p>
+            <div class="pt-1">
+                <button onclick="forceOpenExternalBrowser()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2">
+                    <span>🚀</span> 點我一鍵跳轉至預設瀏覽器開啟
+                </button>
+            </div>
+            <p class="text-[11px] text-gray-500 text-center pt-1">💡 小撇步：若按鈕無法跳轉，請點擊右下角 <span class="font-bold">「...」</span> 選擇「在瀏覽器中開啟」</p>
         </div>
 
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
@@ -41,7 +49,7 @@
                     <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">課文</span>
                     <div>
                         <div class="font-bold text-gray-800 group-hover:text-emerald-800 text-base">第 9 冊 > 第 1 課：科技顧健康</div>
-                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（1.5秒智慧黃金緩衝防呆版）</div>
+                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（全裝置防呆強化版）</div>
                     </div>
                 </div>
                 <span class="text-emerald-600 font-bold text-sm">進入練習 &rarr;</span>
@@ -62,7 +70,7 @@
         </main>
     </div>
 
-    <!-- Hidden audio player for standard lesson mp3 playback -->
+    <!-- 隱藏的標準課文音訊播放器 -->
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
 
     <script>
@@ -86,14 +94,26 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             renderLessonUI();
-            checkInAppBrowser();
+            detectInAppBrowser();
         });
 
-        function checkInAppBrowser() {
+        // 智慧偵測 LINE / FB 內建瀏覽器
+        function detectInAppBrowser() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
-            if (/Line|FBAN|FBAV|Instagram|WebView/i.test(ua)) {
+            if (/Line|FBAN|FBAV|Instagram|WebView|Twitter/i.test(ua)) {
                 const warning = document.getElementById("browser-warning");
                 if (warning) warning.classList.remove("hidden");
+            }
+        }
+
+        // 強制嘗試跳轉至外部預設瀏覽器
+        function forceOpenExternalBrowser() {
+            const currentUrl = window.location.href;
+            // 嘗試透過 scheme 繞過 LINE 限制
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                window.location.href = currentUrl;
+            } else {
+                window.location.href = "intent://" + currentUrl.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end;";
             }
         }
 
@@ -161,6 +181,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
+        // 自動適應跨平台最佳音訊格式（同時支援 Android Chrome 與 iOS Safari）
         function getSupportedMimeType() {
             const types = [
                 'audio/webm;codecs=opus',
@@ -191,7 +212,7 @@
                 return;
             }
 
-            // 如果其他句正在錄音，安全停止
+            // 如果其他句正在錄音，安全強制停止
             if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -206,14 +227,22 @@
             }
 
             try {
-                if (recText) recText.innerText = "準備中...";
+                if (recText) recText.innerText = "硬體清理中...";
                 
+                // 1. 強制物理級大掃除：關閉並釋放所有舊的硬體串流軌道
                 if (activeStream) {
                     activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
                 }
 
+                // 2. 加入 0.3 秒的硬體冷卻期，讓 iOS / Android 晶片徹底清空上一句的殘留記憶體
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                if (recText) recText.innerText = "準備中...";
+
+                // 3. 請求全新乾淨的麥克風串流
                 activeStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true } 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
                 });
 
                 audioChunksMap[index] = [];
@@ -238,17 +267,17 @@
                 };
 
                 activeRecorder.onstop = () => {
-                    // 1. 釋放硬體串流
+                    // 釋放麥克風硬體
                     if (activeStream) {
                         activeStream.getTracks().forEach(track => track.stop());
                         activeStream = null;
                     }
 
-                    // 2. 顯示封裝處理中狀態（增加至 1.5 秒黃金緩衝，徹底根治 iOS 隨機延遲）
+                    // 顯示 1.5 秒黃金緩衝封裝中狀態
                     if (recText) recText.innerText = "⏳ 封裝處理中...";
 
                     setTimeout(() => {
-                        // 3. 清理舊的 ObjectURL
+                        // 清理舊的 ObjectURL 以防記憶體佔用
                         if (audioUrlMap[index]) {
                             URL.revokeObjectURL(audioUrlMap[index]);
                         }
@@ -256,7 +285,7 @@
                         const blobType = activeRecorder.mimeType || 'audio/webm';
                         const blob = new Blob(audioChunksMap[index], { type: blobType });
                         
-                        // 4. 驗證 Blob 是否完整有效 (大於 0 位元組)
+                        // 驗證 Blob 是否完整有效 (大於 0 位元組)
                         if (blob.size > 0) {
                             const audioUrl = URL.createObjectURL(blob);
                             audioUrlMap[index] = audioUrl;
@@ -267,7 +296,7 @@
                             }
                             if (statusEl) statusEl.classList.add("hidden");
 
-                            // 5. 檔案 100% 準備就緒，顯示回放按鈕
+                            // 顯示聽回放按鈕
                             if (pbBtn) {
                                 pbBtn.classList.remove("hidden");
                             }
@@ -280,9 +309,9 @@
                             if (statusEl) statusEl.classList.add("hidden");
                         }
 
-                        isRecordingMap[index] = null;
+                        isRecordingMap[index] = false;
                         currentRecordingIndex = null;
-                    }, 1500); // 1.5 秒黃金緩衝，確保 iOS WebKit 引擎百分之百完成記憶體寫入
+                    }, 1500); // 1.5 秒黃金緩衝時間，確保 iOS 與 Android 都能完美封裝
                 };
 
                 activeRecorder.start(100);
@@ -296,7 +325,7 @@
 
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
-                alert("無法啟用麥克風！如果您是透過 LINE 開啟，請點擊右上角或右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
+                alert("無法啟用麥克風！如果您是透過 LINE 開啟，請點擊畫面右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
             }
         }
 
