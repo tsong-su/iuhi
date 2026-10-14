@@ -35,7 +35,7 @@
             <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
                 <!-- Transparent logo without white container background -->
                 <div class="p-0.5 flex items-center justify-center hover:scale-105 transition-transform">
-                    <img src="Logo_toophinn_assets/logo.png" alt="Logo" class="w-12 h-12 object-contain drop-shadow" onerror="this.src='https://placehold.co/48x48/f97316/ffffff?text=LOGO'">
+                    <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain drop-shadow" onerror="this.src='https://placehold.co/48x48/f97316/ffffff?text=LOGO'">
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-wide drop-shadow">台語遊戲學習樂園</h1>
@@ -89,7 +89,6 @@
 
     </main>
 
-    <!-- Modal for Lessons Selection -->
     <div id="lessonModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative transform transition-all scale-95 opacity-0 border-4 border-amber-400" id="modalContainer">
             <button onclick="closeLessonModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-10 h-10 rounded-xl flex items-center justify-center transition-all font-black text-lg">
@@ -124,7 +123,7 @@
                         volumeName: "第5冊",
                         subtitle: "真平版 國小台語教材 - 第5冊",
                         badgeColor: "bg-amber-500 text-white",
-                        cardBg: "bg-gradient-to-br from-amber-100 via-yellow-100 to-orange-200 border-4 border-amber-400 text-amber-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-amber-200 via-yellow-100 to-orange-200 border-4 border-amber-400 text-amber-950 shadow-xl",
                         games: [
                             { 
                                 id: "tp-v5-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -174,8 +173,8 @@
                     {
                         volumeName: "第6冊 (即將推出)",
                         subtitle: "真平版 國小台語教材 - 第6冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "tp-v6-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "tp-v6-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -188,7 +187,7 @@
                         volumeName: "第7冊",
                         subtitle: "真平版 國小台語教材 - 第7冊",
                         badgeColor: "bg-emerald-600 text-white",
-                        cardBg: "bg-gradient-to-br from-emerald-100 via-teal-100 to-cyan-200 border-4 border-emerald-400 text-emerald-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-emerald-200 via-teal-100 to-cyan-200 border-4 border-emerald-400 text-emerald-950 shadow-xl",
                         games: [
                             { 
                                 id: "tp-v7-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -238,8 +237,8 @@
                     {
                         volumeName: "第8冊 (即將推出)",
                         subtitle: "真平版 國小台語教材 - 第8冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "tp-v8-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "tp-v8-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -252,7 +251,7 @@
                         volumeName: "第9冊",
                         subtitle: "真平版 國小台語教材 - 第9冊",
                         badgeColor: "bg-purple-600 text-white",
-                        cardBg: "bg-gradient-to-br from-purple-100 via-pink-100 to-rose-200 border-4 border-purple-400 text-purple-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-purple-200 via-pink-100 to-rose-200 border-4 border-purple-400 text-purple-950 shadow-xl",
                         games: [
                             { 
                                 id: "tp-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -302,8 +301,8 @@
                     {
                         volumeName: "第10冊 (即將推出)",
                         subtitle: "真平版 國小台語教材 - 第10冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "tp-v10-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "tp-v10-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -316,7 +315,7 @@
                         volumeName: "第11冊",
                         subtitle: "真平版 國小台語教材 - 第11冊",
                         badgeColor: "bg-sky-600 text-white",
-                        cardBg: "bg-gradient-to-br from-sky-100 via-blue-100 to-indigo-200 border-4 border-sky-400 text-sky-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-sky-200 via-blue-100 to-indigo-200 border-4 border-sky-400 text-sky-950 shadow-xl",
                         games: [
                             { 
                                 id: "tp-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -324,7 +323,8 @@
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_2.html" },
                                     { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_3.html" },
-                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_4.html" }
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_text_4.html" },
+                                    { name: "第5課：(預留)", url: "#" }
                                 ]
                             },
                             { 
@@ -333,7 +333,8 @@
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_2.html" },
                                     { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_3.html" },
-                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_4.html" }
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_words_4.html" },
+                                    { name: "第5課：(預留)", url: "#" }
                                 ]
                             },
                             { 
@@ -342,16 +343,17 @@
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_2.html" },
                                     { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_3.html" },
-                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_4.html" }
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20sort_4.html" },
+                                    { name: "第5課：(預留)", url: "#" }
                                 ]
                             },
                             { 
                                 id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
-                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_1.html" },
-                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_2.html" },
-                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_3.html" },
-                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Khonghian_B11_word%20pair_4.html" }
+                                    { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
+                                    { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
+                                    { name: "第3課：講古", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_3.html" },
+                                    { name: "第4課：烏鴉食水", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_4.html" }
                                 ]
                             },
                             { 
@@ -362,8 +364,8 @@
                     {
                         volumeName: "第12冊 (即將推出)",
                         subtitle: "真平版 國小台語教材 - 第12冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "tp-v12-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "tp-v12-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -385,7 +387,7 @@
                         volumeName: "第9冊",
                         subtitle: "康軒版 國小台語教材 - 第9冊",
                         badgeColor: "bg-purple-600 text-white",
-                        cardBg: "bg-gradient-to-br from-purple-100 via-pink-100 to-rose-200 border-4 border-purple-400 text-purple-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-purple-200 via-pink-100 to-rose-200 border-4 border-purple-400 text-purple-950 shadow-xl",
                         games: [
                             { 
                                 id: "kh-v9-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -435,8 +437,8 @@
                     {
                         volumeName: "第10冊 (即將推出)",
                         subtitle: "康軒版 國小台語教材 - 第10冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "kh-v10-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "kh-v10-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -449,7 +451,7 @@
                         volumeName: "第11冊",
                         subtitle: "康軒版 國小台語教材 - 第11冊",
                         badgeColor: "bg-rose-600 text-white",
-                        cardBg: "bg-gradient-to-br from-rose-100 via-orange-100 to-amber-200 border-4 border-rose-400 text-rose-950 shadow-lg",
+                        cardBg: "bg-gradient-to-br from-rose-200 via-orange-100 to-amber-200 border-4 border-rose-400 text-rose-950 shadow-xl",
                         games: [
                             { 
                                 id: "kh-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
@@ -499,8 +501,8 @@
                     {
                         volumeName: "第12冊 (即將推出)",
                         subtitle: "康軒版 國小台語教材 - 第12冊",
-                        badgeColor: "bg-slate-400 text-white",
-                        cardBg: "bg-gradient-to-br from-slate-200 to-slate-300 border-4 border-slate-300 text-slate-600 opacity-80 shadow-sm",
+                        badgeColor: "bg-slate-500 text-white",
+                        cardBg: "bg-gradient-to-br from-slate-200 via-zinc-300 to-slate-400 border-4 border-slate-400 text-slate-700 opacity-95 shadow-md",
                         games: [
                             { id: "kh-v12-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
                             { id: "kh-v12-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-slate-400 to-slate-500", desc: "即將推出", type: "coming" },
@@ -557,7 +559,7 @@
                 title: "YouTube教學影片",
                 desc: "YouTube台語教學影音 (即將開放)",
                 icon: "fa-brands fa-youtube",
-                gradient: "from-slate-400 to-slate-500",
+                gradient: "from-red-500 to-rose-600",
                 type: "coming"
             }
         ];
