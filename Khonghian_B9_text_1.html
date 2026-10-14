@@ -29,9 +29,9 @@
         <!-- LINE/In-App Browser Warning Banner -->
         <div id="browser-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl text-xs space-y-2 shadow-sm">
             <div class="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
-                <span>⚠️</span> 偵測到您可能使用 LINE 或社群軟體內建瀏覽器
+                <span>⚠️</span> 偵測到您目前可能使用 LINE 內建瀏覽器
             </div>
-            <p>若手機無法順利錄音，請點擊右上角選單 <span class="font-bold">「...」</span>，並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器中開啟 (Safari / Chrome)」</span> 即可正常使用！</p>
+            <p>為確保麥克風與錄音功能正常，請點擊右上角選單 <span class="font-bold">「...」</span>，並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器（Safari / Chrome）中開啟」</span>！</p>
         </div>
 
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
@@ -41,7 +41,7 @@
                     <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">課文</span>
                     <div>
                         <div class="font-bold text-gray-800 group-hover:text-emerald-800 text-base">第 9 冊 > 第 1 課：科技顧健康</div>
-                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（跨平台完美修復版）</div>
+                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（黃金緩衝防呆升級版）</div>
                     </div>
                 </div>
                 <span class="text-emerald-600 font-bold text-sm">進入練習 &rarr;</span>
@@ -89,7 +89,7 @@
             checkInAppBrowser();
         });
 
-        // 偵測是否為 LINE / 內建瀏覽器
+        // 偵測 LINE / 社群內建瀏覽器
         function checkInAppBrowser() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if (/Line|FBAN|FBAV|Instagram|WebView/i.test(ua)) {
@@ -165,7 +165,7 @@
             document.getElementById("menu-view").classList.remove("hidden");
         }
 
-        // 自動偵測裝置支援的最佳音訊格式
+        // 自動偵測支援的最佳音訊格式
         function getSupportedMimeType() {
             const types = [
                 'audio/webm;codecs=opus',
@@ -188,7 +188,7 @@
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
 
-            // 如果目前這句正在錄音，點擊代表「停止錄音」
+            // 如果目前正在錄音，點擊代表「停止錄音」
             if (isRecordingMap[index]) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -196,7 +196,7 @@
                 return;
             }
 
-            // 如果其他句正在錄音，安全強制停止
+            // 如果其他句正在錄音，安全停止
             if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
                 if (activeRecorder && activeRecorder.state === "recording") {
                     activeRecorder.stop();
@@ -213,12 +213,10 @@
             try {
                 if (recText) recText.innerText = "準備中...";
                 
-                // 釋放舊的串流軌道
                 if (activeStream) {
                     activeStream.getTracks().forEach(track => track.stop());
                 }
 
-                // 取得麥克風串流
                 activeStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true } 
                 });
@@ -245,37 +243,51 @@
                 };
 
                 activeRecorder.onstop = () => {
-                    // 釋放硬體麥克風串流
+                    // 1. 釋放麥克風硬體串流
                     if (activeStream) {
                         activeStream.getTracks().forEach(track => track.stop());
                         activeStream = null;
                     }
 
-                    // 釋放舊的 ObjectURL 以防記憶體佔用與參照失效
-                    if (audioUrlMap[index]) {
-                        URL.revokeObjectURL(audioUrlMap[index]);
-                    }
+                    // 2. 顯示黃金緩衝處理中狀態（防呆鎖定，讓手機有充裕時間打包）
+                    if (recText) recText.innerText = "⏳ 封裝處理中...";
 
-                    const blobType = activeRecorder.mimeType || 'audio/webm';
-                    const blob = new Blob(audioChunksMap[index], { type: blobType });
-                    
-                    // 建立新的穩定 Blob URL
-                    const audioUrl = URL.createObjectURL(blob);
-                    audioUrlMap[index] = audioUrl;
+                    setTimeout(() => {
+                        // 3. 清理舊的 ObjectURL
+                        if (audioUrlMap[index]) {
+                            URL.revokeObjectURL(audioUrlMap[index]);
+                        }
 
-                    if (recBtn) {
-                        recBtn.classList.remove("recording-anim");
-                        if (recText) recText.innerText = "重新錄音";
-                    }
-                    if (statusEl) statusEl.classList.add("hidden");
+                        const blobType = activeRecorder.mimeType || 'audio/webm';
+                        const blob = new Blob(audioChunksMap[index], { type: blobType });
+                        
+                        // 4. 驗證 Blob 是否完整有效 (大於 0 位元組)
+                        if (blob.size > 0) {
+                            const audioUrl = URL.createObjectURL(blob);
+                            audioUrlMap[index] = audioUrl;
 
-                    // 顯示回放按鈕
-                    if (pbBtn) {
-                        pbBtn.classList.remove("hidden");
-                    }
+                            if (recBtn) {
+                                recBtn.classList.remove("recording-anim");
+                                if (recText) recText.innerText = "重新錄音";
+                            }
+                            if (statusEl) statusEl.classList.add("hidden");
 
-                    isRecordingMap[index] = false;
-                    currentRecordingIndex = null;
+                            // 5. 檔案 100% 準備就緒，顯示回放按鈕
+                            if (pbBtn) {
+                                pbBtn.classList.remove("hidden");
+                            }
+                        } else {
+                            alert("錄音檔建立異常（無聲音資料），請重新錄製一次。");
+                            if (recBtn) {
+                                recBtn.classList.remove("recording-anim");
+                                if (recText) recText.innerText = "開始錄音";
+                            }
+                            if (statusEl) statusEl.classList.add("hidden");
+                        }
+
+                        isRecordingMap[index] = false;
+                        currentRecordingIndex = null;
+                    }, 1000); // 1.0 秒黃金緩衝時間，確保 iOS 與各類裝置完美打包
                 };
 
                 activeRecorder.start(100);
@@ -296,13 +308,13 @@
         function playStudentPlayback(index) {
             const url = audioUrlMap[index];
             if (!url) {
-                alert("目前尚無錄音檔，請先點擊「開始錄音」！");
+                alert("目前音訊檔案正在處理中或尚未錄製，請稍候再試！");
                 return;
             }
             const instantAudio = new Audio(url);
             instantAudio.play().catch(err => {
-                console.error("回放撥放失敗：", err);
-                alert("回放撥放失敗，請重新錄製一次。");
+                console.error("回放播放失敗：", err);
+                alert("回放播放失敗，請重新錄製一次。");
             });
         }
     </script>
