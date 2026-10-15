@@ -13,7 +13,6 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-emerald-50 to-green-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-    <!-- 首頁選單視圖 -->
     <div id="menu-view" class="max-w-xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -25,6 +24,12 @@
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
+        <div id="browser-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl text-xs space-y-2 shadow-sm">
+            <div class="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
+                <span>⚠️</span> 偵測到您目前可能使用 LINE 或社群軟體內建瀏覽器
+            </div>
+            <p>為確保麥克風與錄音回放正常，請點擊畫面右下角（iOS）或右上角/右下角（Android）的 <span class="font-bold">「...」</span> 選單，並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器中開啟」</span>！</p>
+        </div>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
             <button onclick="openLesson()" class="w-full p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-2xl flex items-center justify-between transition shadow-sm group cursor-pointer">
@@ -32,15 +37,13 @@
                     <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">課文</span>
                     <div>
                         <div class="font-bold text-gray-800 group-hover:text-emerald-800 text-base">第 5 冊 > 第 4 課：擔仔位</div>
-                        <div class="text-xs text-gray-500">課文跟讀與錄音練習</div>
+                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（防打架互斥鎖版）</div>
                     </div>
                 </div>
                 <span class="text-emerald-600 font-bold text-sm">進入練習 &rarr;</span>
             </button>
         </main>
     </div>
-
-    <!-- 課程練習介面視圖 (內含返回選單箭頭) -->
     <div id="lesson-view" class="max-w-2xl mx-auto space-y-4 hidden">
         <header class="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -52,8 +55,8 @@
         <main class="space-y-4">
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_1.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_1.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_1.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">第4<span class="tonemark">課</span>：擔仔<span class="tonemark">位</span></div>
             <div class="text-xs font-semibold text-teal-700">Tē 4 khò: Tànn-á-uī</div>
             <div class="text-xs text-gray-500">第4課：擔位</div>
@@ -67,15 +70,16 @@
             <span id="student-status-0" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-0" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(0)" id="student-pb-0" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_2.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_2.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_2.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">巷仔<span class="tonemark">口</span>，菜市<span class="tonemark">仔</span>真鬧<span class="tonemark">熱</span>。</div>
             <div class="text-xs font-semibold text-teal-700">Hāng-á-kháu, tshài-tshī-á tsin lāu-jia̍t.</div>
             <div class="text-xs text-gray-500">(巷子口，菜市場真熱鬧。)</div>
@@ -89,15 +93,16 @@
             <span id="student-status-1" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-1" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(1)" id="student-pb-1" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_3.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_3.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_3.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">賣<span class="tonemark">衫</span><span class="lighttone">的</span>大聲<span class="tonemark">喝</span>：<span class="tonemark">紅</span><span class="tonemark">媠</span><span class="tonemark">烏</span>大<span class="tonemark">範</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Bē-sann--ê tuā-siann huah: âng suí oo tuā-pān,</div>
             <div class="text-xs text-gray-500">(賣衣服的大聲喊：紅的漂亮，黑的高雅，)</div>
@@ -111,15 +116,16 @@
             <span id="student-status-2" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-2" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(2)" id="student-pb-2" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_4.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_4.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_4.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">公司<span class="tonemark">貨</span>賣你菜市仔<span class="tonemark">價</span>。</div>
             <div class="text-xs font-semibold text-teal-700">kong-si-huè bē lí tshài-tshī-á-kè.</div>
             <div class="text-xs text-gray-500">(公司貨賣你市場價。)</div>
@@ -133,15 +139,16 @@
             <span id="student-status-3" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-3" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(3)" id="student-pb-3" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_5.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_5.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_5.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">賣<span class="tonemark">花</span>的阿<span class="tonemark">婆</span>笑甲親像<span class="tonemark">花</span>。</div>
             <div class="text-xs font-semibold text-teal-700">Bē hue ê a-pô tshiò kah tshin-tshiūnn hue.</div>
             <div class="text-xs text-gray-500">(賣花的婆婆笑得像朵花。)</div>
@@ -155,15 +162,16 @@
             <span id="student-status-4" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-4" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(4)" id="student-pb-4" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_6.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_6.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_6.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">啥物攏<span class="tonemark">有</span>、啥物攏<span class="tonemark">鮮</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Siánn-mih lóng ū, siánn-mih lóng tshinn,</div>
             <div class="text-xs text-gray-500">(什麼都有丶什麼都新鮮，)</div>
@@ -177,15 +185,16 @@
             <span id="student-status-5" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-5" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(5)" id="student-pb-5" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div><div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
+</div>
+<div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_7.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
-        <div class="space-y-1">
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_txet_4_7.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_txet_4_7.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
+        <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">菜市<span class="tonemark">仔</span>是咱的好厝<span class="tonemark">邊</span>。</div>
             <div class="text-xs font-semibold text-teal-700">tshài-tshī-á sī lán ê hó tshù-pinn.</div>
             <div class="text-xs text-gray-500">(菜市場是我們的好鄰居。)</div>
@@ -199,146 +208,158 @@
             <span id="student-status-6" class="text-xs text-red-500 hidden font-bold animate-pulse">🔴 錄音中...</span>
         </div>
         <div>
-            <button id="student-pb-6" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+            <button onclick="playStudentPlayback(6)" id="student-pb-6" class="hidden px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
                 <span>🔊</span> 聽回放
             </button>
         </div>
     </div>
-</div>        </main>
+</div>
+        </main>
     </div>
-
-    <!-- 課文範例音檔播放器 -->
     <audio id="lesson-audio-player" class="hidden" preload="auto"></audio>
-
     <script>
         let activeRecorder = null;
+        let activeStream = null;
         let currentRecordingIndex = null;
+        let currentPlayingAudio = null;
         const audioChunksMap = {};
         const audioUrlMap = {};
         const isRecordingMap = {};
-
-        function playLessonAudio(url) {
-            const player = document.getElementById("lesson-audio-player");
-            if (!player) return;
-            player.src = url;
-            player.play().catch(err => { alert("播放失敗，請檢查網路或音檔路徑：" + url); });
+        window.addEventListener("DOMContentLoaded", () => { detectInAppBrowser(); });
+        function detectInAppBrowser() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            if (/Line|FBAN|FBAV|Instagram|WebView|Twitter/i.test(ua)) {
+                const warning = document.getElementById("browser-warning");
+                if (warning) warning.classList.remove("hidden");
+            }
         }
-
+        function stopCurrentPlayback() {
+            if (currentPlayingAudio) {
+                currentPlayingAudio.pause();
+                currentPlayingAudio.currentTime = 0;
+                currentPlayingAudio = null;
+            }
+        }
+        function playLessonAudio(primaryUrl, backupUrl) {
+            stopCurrentPlayback();
+            let audio = new Audio(primaryUrl);
+            currentPlayingAudio = audio;
+            audio.play().catch(() => {
+                if (backupUrl) {
+                    let backupAudio = new Audio(backupUrl);
+                    currentPlayingAudio = backupAudio;
+                    backupAudio.play().catch(() => alert("無法播放音檔，請檢查主與備用路徑！"));
+                } else {
+                    alert("播放失敗：" + primaryUrl);
+                }
+            });
+            audio.onended = () => { if (currentPlayingAudio === audio) currentPlayingAudio = null; };
+        }
         function initGlobalMic() {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                 stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
-                if (btn) { 
-                    btn.innerText = "✅ 麥克風已就緒"; 
-                    btn.classList.remove("bg-emerald-600"); 
-                    btn.classList.add("bg-green-700"); 
-                }
+                if (btn) { btn.innerText = "✅ 麥克風已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
             }).catch(err => { alert("請允許麥克風權限！"); });
         }
-
         function openLesson() {
+            stopCurrentPlayback();
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
-
         function backToMenu() {
+            stopCurrentPlayback();
             document.getElementById("lesson-view").classList.add("hidden");
             document.getElementById("menu-view").classList.remove("hidden");
         }
-
+        function getSupportedMimeType() {
+            const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg'];
+            for (let type of types) { if (MediaRecorder.isTypeSupported(type)) return type; }
+            return '';
+        }
         async function toggleStudentRecord(index) {
+            stopCurrentPlayback();
             const recBtn = document.getElementById("student-rec-" + index);
             const recText = document.getElementById("student-rec-text-" + index);
             const statusEl = document.getElementById("student-status-" + index);
             const pbBtn = document.getElementById("student-pb-" + index);
-
-            // 1. 如果該句正在錄音中，點擊就是「停止錄音」
             if (isRecordingMap[index]) {
-                if (activeRecorder && activeRecorder.state === "recording") {
-                    activeRecorder.stop();
-                }
+                if (activeRecorder && activeRecorder.state === "recording") { activeRecorder.stop(); }
                 return;
             }
-
-            // 2. 如果有其他句正在錄音，先強制安全停止
-            if (currentRecordingIndex !== null) {
-                if (activeRecorder && activeRecorder.state === "recording") {
-                    activeRecorder.stop();
-                }
+            if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
+                if (activeRecorder && activeRecorder.state === "recording") { activeRecorder.stop(); }
                 isRecordingMap[currentRecordingIndex] = false;
+                const oldText = document.getElementById("student-rec-text-" + currentRecordingIndex);
+                if (oldText) oldText.innerText = "開始錄音";
+                const oldStatus = document.getElementById("student-status-" + currentRecordingIndex);
+                if (oldStatus) oldStatus.classList.add("hidden");
+                const oldBtn = document.getElementById("student-rec-" + currentRecordingIndex);
+                if (oldBtn) oldBtn.classList.remove("recording-anim");
             }
-
             try {
-                // 【核心修復】點擊瞬間立刻顯示「錄音中」與動畫，不再讓學生空等待
-                if (recBtn) recBtn.classList.add("recording-anim");
-                if (recText) recText.innerText = "停止錄音";
-                if (statusEl) statusEl.classList.remove("hidden");
-                if (pbBtn) pbBtn.classList.add("hidden");
-
-                const freshStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true } 
-                });
-                
+                if (recText) recText.innerText = "準備中...";
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
+                }
+                await new Promise(resolve => setTimeout(resolve, 300));
+                activeStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
                 audioChunksMap[index] = [];
                 currentRecordingIndex = index;
-
                 let options = {};
-                if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options.mimeType = 'audio/mp4';
-                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options.mimeType = 'audio/webm';
-                }
-
-                try {
-                    activeRecorder = new MediaRecorder(freshStream, options);
-                } catch (e) {
-                    activeRecorder = new MediaRecorder(freshStream);
-                }
-
-                activeRecorder.ondataavailable = e => {
-                    if (e.data && e.data.size > 0) {
-                        audioChunksMap[index].push(e.data);
-                    }
-                };
-
+                const mime = getSupportedMimeType();
+                if (mime) options.mimeType = mime;
+                try { activeRecorder = new MediaRecorder(activeStream, options); } catch (e) { activeRecorder = new MediaRecorder(activeStream); }
+                activeRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunksMap[index].push(e.data); };
                 activeRecorder.onstop = () => {
-                    freshStream.getTracks().forEach(track => track.stop());
-
-                    const blob = new Blob(audioChunksMap[index], { type: activeRecorder.mimeType || 'audio/mp4' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    
-                    audioUrlMap[index] = audioUrl;
-
-                    if (recBtn) recBtn.classList.remove("recording-anim");
-                    if (recText) recText.innerText = "重新錄音";
-                    if (statusEl) statusEl.classList.add("hidden");
-
-                    if (pbBtn) {
-                        pbBtn.classList.remove("hidden");
-                        pbBtn.onclick = () => {
-                            const instantAudio = new Audio(audioUrlMap[index]);
-                            instantAudio.play().catch(err => {
-                                console.log("播放被阻擋，再次嘗試：", err);
-                                instantAudio.play();
-                            });
-                        };
+                    if (activeStream) {
+                        activeStream.getTracks().forEach(track => track.stop());
+                        activeStream = null;
                     }
-
-                    isRecordingMap[index] = false;
-                    currentRecordingIndex = null;
+                    if (recText) recText.innerText = "⏳ 封裝中...";
+                    setTimeout(() => {
+                        if (audioUrlMap[index]) URL.revokeObjectURL(audioUrlMap[index]);
+                        const blobType = activeRecorder.mimeType || 'audio/webm';
+                        const blob = new Blob(audioChunksMap[index], { type: blobType });
+                        if (blob.size > 0) {
+                            audioUrlMap[index] = URL.createObjectURL(blob);
+                            if (recBtn) recBtn.classList.remove("recording-anim");
+                            if (recText) recText.innerText = "重新錄音";
+                            if (statusEl) statusEl.classList.add("hidden");
+                            if (pbBtn) pbBtn.classList.remove("hidden");
+                        } else {
+                            alert("錄音檔建立異常，請重新錄製！");
+                            if (recBtn) recBtn.classList.remove("recording-anim");
+                            if (recText) recText.innerText = "開始錄音";
+                            if (statusEl) statusEl.classList.add("hidden");
+                        }
+                        isRecordingMap[index] = false;
+                        currentRecordingIndex = null;
+                    }, 1500);
                 };
-
-                // 立即啟動錄音與 timeslice(100)，確保第一時間收音
                 activeRecorder.start(100);
                 isRecordingMap[index] = true;
-
+                if (recBtn) {
+                    recBtn.classList.add("recording-anim");
+                    if (recText) recText.innerText = "停止錄音";
+                }
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
-                console.error("無法取得麥克風：", err);
-                if (recBtn) recBtn.classList.remove("recording-anim");
                 if (recText) recText.innerText = "開始錄音";
-                if (statusEl) statusEl.classList.add("hidden");
-                alert("無法啟用麥克風，請確認平板已授權瀏覽器麥克風權限！");
+                alert("無法啟用麥克風，請確認瀏覽器已授權麥克風權限！");
             }
+        }
+        function playStudentPlayback(index) {
+            const url = audioUrlMap[index];
+            if (!url) { alert("音訊處理中，請稍候！"); return;
+            }
+            stopCurrentPlayback();
+            const instantAudio = new Audio(url);
+            currentPlayingAudio = instantAudio;
+            instantAudio.play().catch(err => { alert("回放播放失敗，請重新錄製！"); });
+            instantAudio.onended = () => { if (currentPlayingAudio === instantAudio) currentPlayingAudio = null; };
         }
     </script>
 </body>
