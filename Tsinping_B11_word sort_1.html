@@ -12,7 +12,7 @@
 </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
-<div class="max-w-2xl mx-auto space-y-6">
+<div id="audio-unlock-modal" class="fixed inset-0 bg-indigo-950/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"><div class="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-white"><div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-inner">🔊</div><div class="space-y-2"><h2 class="text-xl font-extrabold text-indigo-950">歡迎進入闖關挑戰！</h2><p class="text-xs text-gray-500 leading-relaxed">請點擊下方按鈕開始遊戲與解鎖音效。</p></div><button onclick="unlockAndStart()" class="w-full py-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-extrabold rounded-2xl shadow-lg cursor-pointer text-sm">🚀 點擊開始闖關</button></div></div><div class="max-w-2xl mx-auto space-y-6 hidden" id="game-wrapper">
 <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
 <h1 class="font-extrabold text-lg text-indigo-950">B11 第 1 課 - 句子重組闖關</h1>
 <button onclick="resetGame()" class="bg-indigo-600 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow">🔄 重新開始</button>
@@ -21,25 +21,36 @@
 </div>
 <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
 <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
+<audio id="lesson-audio" class="hidden" preload="auto"></audio>
 <script>
 const questions = [{"idx":1,"tokens":["我","的","皮包仔","去","予","剪綹仔","剪去","矣"],"answerStr":"我的皮包仔去予剪綹仔剪去矣","hint":"我的皮包仔去予剪綹仔剪去矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_1.mp3","altAudioUrls":["https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_1.mp3","https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_1.mp3"]},{"idx":2,"tokens":["這","間","店","袂當","鑢卡","你","愛","納","現金"],"answerStr":"這間店袂當鑢卡你愛納現金","hint":"這間店袂當鑢卡你愛納現金","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_2.mp3","altAudioUrls":["https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_2.mp3","https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_2.mp3"]},{"idx":3,"tokens":["鑢","信用卡","愛","撙節","若無","時到","揹","一大堆","債務","就","欲哭","無目屎","矣"],"answerStr":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","hint":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_3.mp3","altAudioUrls":["https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_3.mp3","https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_3.mp3"]},{"idx":4,"tokens":["阿媽","提","寄金簿仔","欲去","郵局","領錢"],"answerStr":"阿媽提寄金簿仔欲去郵局領錢","hint":"阿媽提寄金簿仔欲去郵局領錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_4.mp3","altAudioUrls":["https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_4.mp3","https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_4.mp3"]},{"idx":5,"tokens":["這个","戶頭","內底","閣有","偌濟","錢"],"answerStr":"這个戶頭內底閣有偌濟錢","hint":"這个戶頭內底閣有偌濟錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_5.mp3","altAudioUrls":["https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_5.mp3","https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_5.mp3"]}];
 let currentIndex = 0;
 let sortableInstance = null;
 const colors = ["bg-emerald-100 text-emerald-900 border-emerald-300", "bg-pink-100 text-pink-900 border-pink-300", "bg-amber-100 text-amber-900 border-amber-300", "bg-teal-100 text-teal-900 border-teal-300", "bg-purple-100 text-purple-900 border-purple-300", "bg-cyan-100 text-cyan-900 border-cyan-300"];
 function shuffle(array) { const copy = [...array]; for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; } return copy; }
+function unlockAndStart() {
+document.getElementById('audio-unlock-modal').remove();
+document.getElementById('game-wrapper').classList.remove('hidden');
+const w = document.getElementById('sfx-win');
+if(w){ w.volume=0; w.play().then(()=>{ w.pause(); w.volume=1; }).catch(e=>{}); }
+renderGame();
+}
 function playSmartAudio(item) {
 if (!item || !item.altAudioUrls) return;
 let urls = [...item.altAudioUrls];
+const player = document.getElementById('lesson-audio');
+if (!player) return;
 function tryPlay(index) {
 if (index >= urls.length) return;
-let a = new Audio(urls[index]);
-a.play().catch(() => { tryPlay(index + 1); });
+player.src = urls[index];
+player.currentTime = 0;
+player.play().catch(() => { tryPlay(index + 1); });
 }
 tryPlay(0);
 }
 function playSfx(type) {
 const s = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
-if (s) { s.currentTime = 0; s.play().catch(e => { setTimeout(() => s.play().catch(err=>{}), 150); }); }
+if (s) { s.pause(); s.currentTime = 0; s.play().catch(e => { setTimeout(() => s.play().catch(err=>{}), 100); }); }
 }
 function startConfetti() {
 const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
@@ -87,14 +98,6 @@ msg.textContent = "❌ 毋著喔！順序不對！"; msg.style.color = "#dc2626"
 }
 function nextQuestion() { currentIndex++; renderGame(); }
 function resetGame() { currentIndex = 0; renderGame(); }
-window.onload = function() {
-renderGame();
-document.body.addEventListener('click', function unlockAudio() {
-const q = questions[currentIndex];
-if (q) { playSmartAudio(q); }
-document.body.removeEventListener('click', unlockAudio);
-}, { once: true });
-};
 </script>
 </body>
 </html>
