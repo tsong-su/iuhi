@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B5 第 5 課 - 句子重組闖關</title>
+    <title>B11 第 1 課 - 句子重組闖關</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -31,7 +31,7 @@
                 🎵
             </div>
             <div class="space-y-1">
-                <h2 class="text-xl font-extrabold text-indigo-950">B5 第 5 課 - 句子重組闖關</h2>
+                <h2 class="text-xl font-extrabold text-indigo-950">B11 第 1 課 - 句子重組闖關</h2>
                 <p class="text-xs text-gray-500 leading-relaxed">
                     請點擊下方按鈕開始闖關，解鎖語音與勝利音效！
                 </p>
@@ -49,7 +49,7 @@
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
-                    <h1 class="font-extrabold text-lg text-indigo-950">B5 第 5 課 - 句子重組闖關</h1>
+                    <h1 class="font-extrabold text-lg text-indigo-950">B11 第 1 課 - 句子重組闖關</h1>
                     <p class="text-xs text-gray-500">拖曳下方詞語塊完成句子重組</p>
                 </div>
             </div>
@@ -61,7 +61,7 @@
     <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
     <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
     <script>
-        const questions = [{"idx":1,"tokens":["我","的","皮包仔","去","予","剪綹仔","剪去","矣"],"answerStr":"我的皮包仔去予剪綹仔剪去矣","hint":"我的皮包仔去予剪綹仔剪去矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_1.mp3"},{"idx":2,"tokens":["這","間","店","袂當","鑢卡","你","愛","納","現金"],"answerStr":"這間店袂當鑢卡你愛納現金","hint":"這間店袂當鑢卡你愛納現金","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_2.mp3"},{"idx":3,"tokens":["鑢","信用卡","愛","撙節","若無","時到","揹","一大堆","債務","就","欲哭","無目屎","矣"],"answerStr":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","hint":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_3.mp3"},{"idx":4,"tokens":["阿媽","提","寄金簿仔","欲去","郵局","領錢"],"answerStr":"阿媽提寄金簿仔欲去郵局領錢","hint":"阿媽提寄金簿仔欲去郵局領錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_4.mp3"},{"idx":5,"tokens":["這个","戶頭","內底","閣有","偌濟","錢"],"answerStr":"這个戶頭內底閣有偌濟錢","hint":"這个戶頭內底閣有偌濟錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_5.mp3"}];
+        const questions = [{"idx":1,"tokens":["我","的","皮包仔","去","予","剪綹仔","剪去","矣"],"answerStr":"我的皮包仔去予剪綹仔剪去矣","hint":"我的皮包仔去予剪綹仔剪去矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_1.mp3"},{"idx":2,"tokens":["這","間","店","袂當","鑢卡","你","愛","納","現金"],"answerStr":"這間店袂當鑢卡你愛納現金","hint":"這間店袂當鑢卡你愛納現金","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_2.mp3"},{"idx":3,"tokens":["鑢","信用卡","愛","撙節","若無","時到","揹","一大堆","債務","就","欲哭","無目屎","矣"],"answerStr":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","hint":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_3.mp3"},{"idx":4,"tokens":["阿媽","提","寄金簿仔","欲去","郵局","領錢"],"answerStr":"阿媽提寄金簿仔欲去郵局領錢","hint":"阿媽提寄金簿仔欲去郵局領錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_4.mp3"},{"idx":5,"tokens":["這个","戶頭","內底","閣有","偌濟","錢"],"answerStr":"這个戶頭內底閣有偌濟錢","hint":"這个戶頭內底閣有偌濟錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_5.mp3"}];
         let currentIndex = 0;
         let sortableInstance = null;
         const colors = [
@@ -139,7 +139,6 @@
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
             }
-            setTimeout(() => { playDualAudio(q.audioUrl, q.audioBackupUrl); }, 300);
         }
         function checkAnswer() {
             const q = questions[currentIndex];
