@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B11 第 1 課 - 句子重組闖關</title>
+    <title>B5 第 5 課 - 句子重組闖關</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -24,35 +24,44 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <!-- 學生端手機音訊解鎖遮罩 -->
+    <div id="student-unlock-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center space-y-4 border border-indigo-100">
+            <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg">
+                🎵
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-extrabold text-indigo-950">B5 第 5 課 - 句子重組闖關</h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    請點擊下方按鈕開始闖關，解鎖語音與勝利音效！
+                </p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-2xl text-[11px] text-left leading-relaxed">
+                <span class="font-bold">💡 貼心提醒：</span>若透過 LINE 開啟，建議點擊右上角或右下角三點，選擇 <span class="font-bold text-amber-700 underline">「以瀏覽器開啟」</span>。
+            </div>
+            <button onclick="studentUnlockAudio()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-extrabold rounded-2xl shadow-lg hover:opacity-95 transition cursor-pointer">
+                🚀 開始闖關
+            </button>
+        </div>
+    </div>
     <div class="max-w-2xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
-                    <h1 class="font-extrabold text-lg text-indigo-950">B11 第 1 課 - 句子重組闖關</h1>
+                    <h1 class="font-extrabold text-lg text-indigo-950">B5 第 5 課 - 句子重組闖關</h1>
                     <p class="text-xs text-gray-500">拖曳下方詞語塊完成句子重組</p>
                 </div>
             </div>
             <button onclick="resetGame()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow transition cursor-pointer">🔄 重新開始</button>
         </header>
-        
-        <!-- LINE 開啟提示橫幅 -->
-        <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-2xl text-xs space-y-1 leading-relaxed shadow-sm">
-            <div class="font-bold flex items-center gap-1">
-                <span>💡</span> 貼心提醒 (手機/平板音效說明)：
-            </div>
-            <div>
-                若您是透過 LINE 連結開啟，建議點擊右上角或右下角 <span class="font-bold">「三點選單」</span>，選擇 <span class="font-bold text-amber-700 underline">「以瀏覽器開啟」</span>，勝利音效與語音播放將更順暢！
-            </div>
-        </div>
-
         <main id="game-main-container" class="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-indigo-100 space-y-5">
         </main>
     </div>
     <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
     <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
     <script>
-        const questions = [{"idx":1,"tokens":["我","的","皮包仔","去","予","剪綹仔","剪去","矣"],"answerStr":"我的皮包仔去予剪綹仔剪去矣","hint":"我的皮包仔去予剪綹仔剪去矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_1.mp3"},{"idx":2,"tokens":["這","間","店","袂當","鑢卡","你","愛","納","現金"],"answerStr":"這間店袂當鑢卡你愛納現金","hint":"這間店袂當鑢卡你愛納現金","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_2.mp3"},{"idx":3,"tokens":["鑢","信用卡","愛","撙節","若無","時到","揹","一大堆","債務","就","欲哭","無目屎","矣"],"answerStr":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","hint":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_3.mp3"},{"idx":4,"tokens":["阿媽","提","寄金簿仔","欲去","郵局","領錢"],"answerStr":"阿媽提寄金簿仔欲去郵局領錢","hint":"阿媽提寄金簿仔欲去郵局領錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_4.mp3"},{"idx":5,"tokens":["這个","戶頭","內底","閣有","偌濟","錢"],"answerStr":"這个戶頭內底閣有偌濟錢","hint":"這个戶頭內底閣有偌濟錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_Example_1_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_Example_1_5.mp3"}];
+        const questions = [{"idx":1,"tokens":["我","的","皮包仔","去","予","剪綹仔","剪去","矣"],"answerStr":"我的皮包仔去予剪綹仔剪去矣","hint":"我的皮包仔去予剪綹仔剪去矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_1.mp3"},{"idx":2,"tokens":["這","間","店","袂當","鑢卡","你","愛","納","現金"],"answerStr":"這間店袂當鑢卡你愛納現金","hint":"這間店袂當鑢卡你愛納現金","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_2.mp3"},{"idx":3,"tokens":["鑢","信用卡","愛","撙節","若無","時到","揹","一大堆","債務","就","欲哭","無目屎","矣"],"answerStr":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","hint":"鑢信用卡愛撙節若無時到揹一大堆債務就欲哭無目屎矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_3.mp3"},{"idx":4,"tokens":["阿媽","提","寄金簿仔","欲去","郵局","領錢"],"answerStr":"阿媽提寄金簿仔欲去郵局領錢","hint":"阿媽提寄金簿仔欲去郵局領錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_4.mp3"},{"idx":5,"tokens":["這个","戶頭","內底","閣有","偌濟","錢"],"answerStr":"這个戶頭內底閣有偌濟錢","hint":"這个戶頭內底閣有偌濟錢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_5_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_5_5.mp3"}];
         let currentIndex = 0;
         let sortableInstance = null;
         const colors = [
@@ -75,7 +84,7 @@
         }
         function playSfx(type) {
             const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
-            if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => { console.log('音效播放被阻擋'); }); }
+            if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
         }
         function playDualAudio(primaryUrl, backupUrl) {
             const audio = new Audio(primaryUrl);
@@ -98,13 +107,23 @@
                 document.body.appendChild(confetti);
             }
         }
+        function studentUnlockAudio() {
+            const modal = document.getElementById('student-unlock-modal');
+            if (modal) {
+                modal.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => { modal.remove(); }, 300);
+            }
+            renderGame();
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
         function renderGame() {
             const container = document.getElementById('game-main-container');
             if (!container) return;
             if (currentIndex >= questions.length) {
                 container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-xl text-center space-y-4"><div class="text-5xl">🏆</div><h2 class="text-2xl font-extrabold text-white">恭喜過關！</h2><p class="text-xs text-pink-100">您已完成本課所有的句子重組挑戰！</p><button onclick="resetGame()" class="px-6 py-3 bg-white text-indigo-700 font-extrabold rounded-2xl shadow-md cursor-pointer hover:bg-pink-50 transition">🔄 閣挑戰一擺</button></div>';
                 startConfetti();
-                setTimeout(() => { playSfx('win'); }, 400);
+                setTimeout(() => { playSfx('win'); }, 500);
                 return;
             }
             const q = questions[currentIndex];
@@ -140,14 +159,6 @@
         }
         function nextQuestion() { currentIndex++; renderGame(); }
         function resetGame() { currentIndex = 0; renderGame(); }
-        window.onload = function() {
-            renderGame();
-            document.body.addEventListener('click', function unlockAudio() {
-                const q = questions[currentIndex];
-                if (q && q.audioUrl) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
-                document.body.removeEventListener('click', unlockAudio);
-            }, { once: true });
-        };
     </script>
 </body>
 </html>
