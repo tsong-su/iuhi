@@ -37,6 +37,10 @@ a.play().catch(() => { tryPlay(index + 1); });
 }
 tryPlay(0);
 }
+function playSfx(type) {
+const s = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
+if (s) { s.currentTime = 0; s.play().catch(e => { setTimeout(() => s.play().catch(err=>{}), 150); }); }
+}
 function startConfetti() {
 const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
 for (let i = 0; i < 60; i++) {
@@ -55,7 +59,7 @@ if (!container) return;
 if (currentIndex >= questions.length) {
 container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-8 rounded-3xl shadow-xl text-center space-y-4"><div class="text-5xl">🏆</div><h2 class="text-2xl font-extrabold text-white">恭喜過關！</h2><button onclick="resetGame()" class="px-6 py-3 bg-white text-indigo-700 font-extrabold rounded-2xl shadow-md">🔄 閣挑戰一擺</button></div>';
 startConfetti();
-setTimeout(() => { const w = document.getElementById('sfx-win'); if(w) { w.currentTime=0; w.play().catch(e=>{}); } }, 500);
+setTimeout(() => { playSfx('win'); }, 300);
 return;
 }
 const q = questions[currentIndex];
@@ -66,7 +70,7 @@ if (dragBox) {
 if (sortableInstance) sortableInstance.destroy();
 sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
 }
-setTimeout(() => { playSmartAudio(q); }, 400);
+setTimeout(() => { playSmartAudio(q); }, 300);
 }
 function checkAnswer() {
 const q = questions[currentIndex];
@@ -74,10 +78,10 @@ const dragBox = document.getElementById('student-drag-box');
 const msg = document.getElementById('student-msg');
 const userStr = Array.from(dragBox.children).map(el => el.textContent.trim()).join('');
 if (userStr === q.answerStr) {
-const w = document.getElementById('sfx-win'); if(w) { w.currentTime=0; w.play().catch(e=>{}); }
+playSfx('win');
 msg.textContent = "✅ 答對了！有夠𠢕！"; msg.style.color = "#059669";
 } else {
-const wr = document.getElementById('sfx-wrong'); if(wr) { wr.currentTime=0; wr.play().catch(e=>{}); }
+playSfx('wrong');
 msg.textContent = "❌ 毋著喔！順序不對！"; msg.style.color = "#dc2626";
 }
 }
