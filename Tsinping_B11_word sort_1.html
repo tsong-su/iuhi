@@ -156,8 +156,18 @@
                 msg.style.color = "#dc2626";
             }
         }
-        function nextQuestion() { currentIndex++; renderGame(); }
-        function resetGame() { currentIndex = 0; renderGame(); }
+        function nextQuestion() { 
+            currentIndex++; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
+        function resetGame() { 
+            currentIndex = 0; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
     </script>
 </body>
 </html>
