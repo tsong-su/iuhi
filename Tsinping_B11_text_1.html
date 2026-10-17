@@ -24,13 +24,11 @@
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
-        <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
-            <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
-                <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
+        <div id="browser-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl text-xs space-y-2 shadow-sm">
+            <div class="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
+                <span>⚠️</span> 偵測到您目前可能使用 LINE 或社群軟體內建瀏覽器
             </div>
-            <p class="text-xs leading-relaxed text-red-800 font-medium">
-                因為手機軟體安全限制，<span class="font-bold underline">在 LINE 裡面無法順利錄音喔！</span>為了讓小朋友能順利練習，請點擊畫面<span class="font-bold text-red-900">右下角或右上角直式/橫式三點 (...)</span> 選單，改用手機內建的 <span class="font-bold text-red-900">「在瀏覽器中開啟」</span>！
-            </p>
+            <p>為確保麥克風與錄音正常，請點擊畫面選單（<span class="font-bold underline text-amber-900">iOS 請點右下角直式『...』</span>；<span class="font-bold underline text-amber-900">Android 請點右上角/右下角選單</span>），並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器中開啟」</span>！</p>
         </div>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -444,7 +442,7 @@
                 if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
-                alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限（若使用 LINE 內建瀏覽器請點擊右下角或右上角選單改用預設瀏覽器開啟）。");
+                alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限。");
             }
         }
         function playStudentPlayback(index) {
