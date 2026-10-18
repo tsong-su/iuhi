@@ -33,7 +33,7 @@
     <header class="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
-                <!-- Clean logo from root directory without background box -->
+                <!-- Transparent logo from root directory without background box -->
                 <div class="p-0.5 flex items-center justify-center hover:scale-105 transition-transform">
                     <img src="logo.png" alt="Logo" class="w-12 h-12 object-contain drop-shadow" onerror="this.src='https://placehold.co/48x48/f97316/ffffff?text=LOGO'">
                 </div>
@@ -321,7 +321,7 @@
                         cardBg: "bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 border-4 border-sky-400 text-sky-950 shadow-xl",
                         games: [
                             { 
-                                id: "tp-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習", type: "lessons",
+                                id: "tp-v11-g1", name: "課文跟讀", icon: "fa-microphone-lines", color: "from-blue-500 to-indigo-600", desc: "標準台語發音跟讀練習 (共4課)", type: "lessons",
                                 items: [
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_text_2.html" },
@@ -330,7 +330,7 @@
                                 ]
                             },
                             { 
-                                id: "tp-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型", type: "lessons",
+                                id: "tp-v11-g2", name: "輕鬆學語詞_語詞運用", icon: "fa-book-open-reader", color: "from-purple-500 to-pink-600", desc: "掌握本冊核心語詞與生活句型 (共4課)", type: "lessons",
                                 items: [
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_words_2.html" },
@@ -339,7 +339,7 @@
                                 ]
                             },
                             { 
-                                id: "tp-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序", type: "lessons",
+                                id: "tp-v11-g3", name: "句子重組闖關", icon: "fa-puzzle-piece", color: "from-emerald-500 to-teal-600", desc: "動腦排列組合台語語句順序 (共4課)", type: "lessons",
                                 items: [
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20sort_2.html" },
@@ -348,7 +348,7 @@
                                 ]
                             },
                             { 
-                                id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
+                                id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲 (共4課)", type: "lessons",
                                 items: [
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
@@ -518,7 +518,7 @@
             }
         ];
 
-        // Interactive Games Section Data
+        // Interactive Games Section Data with updated subsections
         const interactiveGamesData = [
             {
                 title: "十二生相系列遊戲",
@@ -552,18 +552,66 @@
             },
             {
                 title: "拼音教學網",
-                desc: "臺灣閩南語羅馬字拼音教學網",
+                desc: "臺灣閩南語羅馬字拼音教學網與練習歌曲教唱",
                 icon: "fa-language",
                 gradient: "from-purple-400 to-indigo-600",
-                type: "external",
-                url: "https://tailo.moe.edu.tw/"
+                type: "submenu",
+                items: [
+                    { name: "臺灣閩南語羅馬字拼音教學網", url: "https://tailo.moe.edu.tw/" },
+                    { name: "羅馬拼音練習", url: "https://www.youtube.com/watch?v=iGytnwKHSBQ&list=PLD590uJOIQ0IjrPvXB60EYiDqGUmV_D-y" },
+                    { name: "創作歌曲教唱", url: "https://www.youtube.com/watch?v=u_a_Pu_zBXM&list=PLD590uJOIQ0JD6llLAEz5jBYpHVQM5hfT" }
+                ]
             },
             {
                 title: "YouTube教學影片",
-                desc: "YouTube台語教學影音 (即將開放)",
+                desc: "日常生活用語、學生留聲機、繪本故事與郵票相關教學",
                 icon: "fa-brands fa-youtube",
                 gradient: "from-red-500 to-rose-600",
-                type: "coming"
+                type: "youtubeSubmenu",
+                categories: [
+                    {
+                        categoryName: "1. 日常生活用語",
+                        items: [
+                            { name: "台語動作講法", url: "https://www.youtube.com/watch?v=hYou5A4Tces&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=7" },
+                            { name: "十二生肖&十二生相｜台語按怎講", url: "https://www.youtube.com/watch?v=LZzc0Lea_ys&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=26" },
+                            { name: "看月誌｜講時間詞", url: "https://www.youtube.com/watch?v=kBqaef3vDhE&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=9" },
+                            { name: "手掌&手指頭｜台語按怎講", url: "https://www.youtube.com/watch?v=XyOR3vMSCHY&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=28" },
+                            { name: "數字1-10｜台語的文白音", url: "https://www.youtube.com/watch?v=3w_7udkxGvw&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=29" },
+                            { name: "一禮拜7工｜台語按怎講", url: "https://www.youtube.com/watch?v=4ctBO2NgwFs&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=30" }
+                        ]
+                    },
+                    {
+                        categoryName: "2. 學生留聲機",
+                        items: [
+                            { name: "我會曉看月誌&講時間詞", url: "https://www.youtube.com/watch?v=OYPixoR3g4E&list=PLD590uJOIQ0KqKKjh1daGvHeoXqgVWtRF" },
+                            { name: "繪本小書講故事&看圖講故事", url: "https://www.youtube.com/watch?v=PG_BdwL5CFo&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=41" },
+                            { name: "小小DJ《601廣播電台》廟會美食", url: "https://www.youtube.com/watch?v=qk6hN24-oa8&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=3" },
+                            { name: "小小 DJ《601廣播電台》羽毛球", url: "https://www.youtube.com/watch?v=eeu30b2QfJ4&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=4" },
+                            { name: "小小DJ《臺灣好食物》大埔砂鍋魚頭", url: "https://www.youtube.com/watch?v=dt--2O8X_S0&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=5" },
+                            { name: "鳳林廣播電台彩排", url: "https://www.youtube.com/watch?v=hXJX885ZjD4&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=46" },
+                            { name: "107鳳林兒童", url: "https://www.youtube.com/watch?v=7O6y2oQja-8&list=PLD590uJOIQ0J4VAFjAq1nsht7hrbQfJo_" }
+                        ]
+                    },
+                    {
+                        categoryName: "3. 用台語講繪本故事",
+                        items: [
+                            { name: "臺灣過年神話故事~沉海說", url: "https://www.youtube.com/watch?v=sWOJKfeAXjw&list=PLD590uJOIQ0IFQCmq2oCIDiKQV9a2RxFn&index=2" },
+                            { name: "吳郭魚的蛻變｜臺灣鯛", url: "https://www.youtube.com/watch?v=MqajcVwsTPI&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=2" },
+                            { name: "半導體女王–蘇姿丰Lisa Su", url: "https://www.youtube.com/watch?v=bo15cPiFKGo&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=13" },
+                            { name: "十二星座星光王國的精靈冒險", url: "https://www.youtube.com/watch?v=0JLZI5WMAag&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=15" },
+                            { name: "火車佮蜈蚣的祕密對話", url: "https://www.youtube.com/watch?v=DHzA0tTqliA&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=16" },
+                            { name: "果子猫的禮物", url: "https://www.youtube.com/watch?v=tUhg9rf2ix8&list=PLD590uJOIQ0IFQCmq2oCIDiKQV9a2RxFn&index=4" },
+                            { name: "美麗小社區 珊瑚", url: "https://www.youtube.com/watch?v=vw_zMVdLwRA&list=PLD590uJOIQ0IFQCmq2oCIDiKQV9a2RxFn&index=5" }
+                        ]
+                    },
+                    {
+                        categoryName: "4. 郵票相關教學",
+                        items: [
+                            { name: "咱來洗郵票", url: "https://www.youtube.com/watch?v=bSQouz7_-yQ&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=14" },
+                            { name: "郵資票出售機", url: "https://www.youtube.com/watch?v=AyCi2QADXus&list=PLD590uJOIQ0Is6h7cTDtrnoY8ZovrJhi5&index=17" }
+                        ]
+                    }
+                ]
             }
         ];
 
@@ -593,7 +641,7 @@
 
             if (currentView === 'home') {
                 breadcrumbBar.classList.add('hidden');
-                // Render Three Main Options with direct images from Logo_toophinn_assets and bulletproof fallbacks
+                // Render Three Main Options with user uploaded images from Logo_toophinn_assets and fallback handlers
                 container.innerHTML = `
                     <div class="text-center mb-10">
                         <span class="bg-amber-100 text-amber-900 font-black px-5 py-2.5 rounded-2xl text-base border-2 border-amber-300 shadow-sm inline-block">
@@ -646,7 +694,7 @@
                                 </div>
                                 <h3 class="text-2xl font-black mb-2 drop-shadow text-center">互動遊戲區</h3>
                                 <p class="text-emerald-50 font-bold text-xs leading-relaxed mb-4 text-center">
-                                    十二生相系列遊戲、一工e時間軸、二十四節氣與羅馬字拼音教學網。
+                                    十二生相系列遊戲、一工e時間軸、二十四節氣與拼音教學網、YouTube教學影片。
                                 </p>
                             </div>
                             <div class="bg-white text-emerald-700 py-3 px-6 rounded-2xl font-black text-center shadow-md flex items-center justify-center space-x-2 group-hover:bg-emerald-50 transition-colors">
@@ -775,9 +823,12 @@
                         clickAction = `onclick="showComingSoon()"`;
                     } else if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
-                    } else {
+                    } else if (game.type === 'submenu') {
                         let itemsJson = encodeURIComponent(JSON.stringify(game.items));
-                        clickAction = `onclick='incrementVisit(); openInteractiveSubmenu("${game.title}", JSON.decode || decodeURIComponent("${encodeURIComponent(JSON.stringify(game.items))}"))'`;
+                        clickAction = `onclick='incrementVisit(); openInteractiveSubmenu("${game.title}", JSON.decode || decodeURIComponent("${itemsJson}"))'`;
+                    } else if (game.type === 'youtubeSubmenu') {
+                        let catsJson = encodeURIComponent(JSON.stringify(game.categories));
+                        clickAction = `onclick='incrementVisit(); openYoutubeCategoriesModal("${game.title}", JSON.decode || decodeURIComponent("${catsJson}"))'`;
                     }
 
                     let imgOrIcon = game.image ? 
@@ -916,9 +967,12 @@
                         clickAction = `onclick="showComingSoon()"`;
                     } else if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
-                    } else {
+                    } else if (game.type === 'submenu') {
                         let itemsJson = encodeURIComponent(JSON.stringify(game.items));
                         clickAction = `onclick='incrementVisit(); openInteractiveSubmenu("${game.title}", JSON.decode || decodeURIComponent("${itemsJson}"))'`;
+                    } else if (game.type === 'youtubeSubmenu') {
+                        let catsJson = encodeURIComponent(JSON.stringify(game.categories));
+                        clickAction = `onclick='incrementVisit(); openYoutubeCategoriesModal("${game.title}", JSON.decode || decodeURIComponent("${catsJson}"))'`;
                     }
 
                     matchCards += `
@@ -1037,10 +1091,73 @@
                         <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3.5 py-1.5 rounded-xl">互動遊戲區</span>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 mb-1">${title}</h3>
-                    <p class="text-slate-500 text-xs font-bold">請選擇您想要遊玩的遊戲項目：</p>
+                    <p class="text-slate-500 text-xs font-bold">請選擇您想要遊玩的項目：</p>
                 </div>
                 <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
                     ${subButtons}
+                </div>
+                <div class="mt-6 text-center">
+                    <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black rounded-2xl text-sm transition-all">
+                        關閉視窗
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.remove('scale-95', 'opacity-0');
+                container.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function openYoutubeCategoriesModal(title, encodedCategories) {
+            const modal = document.getElementById('lessonModal');
+            const container = document.getElementById('modalContainer');
+            const modalContent = document.getElementById('modalContent');
+            
+            let categories = typeof encodedCategories === 'string' ? JSON.parse(decodeURIComponent(encodedCategories)) : encodedCategories;
+
+            let categoriesHtml = categories.map((cat, cIdx) => {
+                let itemsHtml = cat.items.map((item, iIdx) => `
+                    <a href="${item.url}" target="_blank" onclick="incrementVisit()"
+                       class="flex items-center justify-between p-3 bg-red-50 hover:bg-red-500 hover:text-white border border-red-200 rounded-xl font-black text-slate-800 shadow-xs transition-all group my-1">
+                        <div class="flex items-center space-x-2.5 overflow-hidden">
+                            <span class="w-7 h-7 rounded-lg bg-red-400 group-hover:bg-white group-hover:text-red-600 text-white flex items-center justify-center text-xs shadow flex-shrink-0">
+                                ${iIdx + 1}
+                            </span>
+                            <span class="text-sm truncate">${item.name}</span>
+                        </div>
+                        <span class="text-xs bg-white group-hover:bg-red-600 group-hover:text-white text-red-600 px-3 py-1 rounded-xl shadow-xs border border-red-200 flex items-center flex-shrink-0 ml-2">
+                            觀看影片 <i class="fa-solid fa-arrow-right ml-1 text-2xs"></i>
+                        </span>
+                    </a>
+                `).join('');
+
+                return `
+                    <div class="mb-5 bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 shadow-sm">
+                        <h4 class="text-base font-black text-slate-800 mb-2.5 flex items-center">
+                            <i class="fa-solid fa-folder-open mr-2 text-red-500"></i>${cat.categoryName}
+                        </h4>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            modalContent.innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 text-red-600 rounded-2xl mb-2 text-2xl shadow-inner border-2 border-red-300">
+                        <i class="fa-brands fa-youtube"></i>
+                    </div>
+                    <div class="flex justify-center items-center space-x-2 mb-1">
+                        <span class="text-xs font-black bg-red-500 text-white px-3.5 py-1 rounded-xl">互動遊戲區</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 mb-1">${title}</h3>
+                    <p class="text-slate-500 text-xs font-bold">請選擇分類與影片觀看學習：</p>
+                </div>
+                <div class="max-h-80 overflow-y-auto pr-1">
+                    ${categoriesHtml}
                 </div>
                 <div class="mt-6 text-center">
                     <button onclick="closeLessonModal()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black rounded-2xl text-sm transition-all">
