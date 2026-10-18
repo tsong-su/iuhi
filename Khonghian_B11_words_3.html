@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>kh_B11 第 3 課 - 輕鬆學語詞 & 語詞運用</title>
+    <!-- LINE 預覽與社群分享標籤（確保對話框能正確顯示預覽與防呆卡片） -->
+    <meta property="og:title" content="kh_B11 第 3 課 - 輕鬆學語詞 & 語詞運用">
+    <meta property="og:description" content="臺灣台語智慧備課平台 - 跨平台全裝置語音練習系統（內建 LINE 防呆與錄音跟讀功能）">
+    <meta property="og:image" content="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
@@ -31,7 +36,7 @@
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
         
-        <!-- LINE / 內建瀏覽器防呆警告 Banner（已修正大小寫與全域比對，確保 LINE 內絕對能成功顯示） -->
+        <!-- LINE / 內建瀏覽器防呆警告 Banner -->
         <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
             <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
                 <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
@@ -471,7 +476,6 @@
 
         window.addEventListener("DOMContentLoaded", () => { detectInAppBrowser(); });
 
-        // 完整升級的 LINE / 社群內嵌瀏覽器檢測（加入 line 小寫與寬鬆比對）
         function detectInAppBrowser() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if (/line|fban|fbav|instagram|webview|twitter/i.test(ua)) {
@@ -615,7 +619,7 @@
                     recBtn.classList.add("recording-anim");
                     if (recText) recText.innerText = "停止錄音";
                 }
-                if (statusEl) statusEl.classList.remove("hidden");
+                if (statusEl) statusEl.classList.add("hidden");
                 if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
@@ -635,3 +639,4 @@
     </script>
 </body>
 </html>
+```eof
