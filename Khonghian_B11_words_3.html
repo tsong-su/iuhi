@@ -30,7 +30,7 @@
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
-        <!-- LINE / 內建瀏覽器防呆警告 Banner（與第2課一模一樣） -->
+        <!-- LINE / 內建瀏覽器防呆警告 Banner（同時支援 Android 右上角 與 iOS 右下角直式三點說明） -->
         <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
             <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
                 <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
@@ -449,17 +449,14 @@
         const audioChunksMap = {};
         const audioUrlMap = {};
         const isRecordingMap = {};
-
         window.addEventListener("DOMContentLoaded", () => { detectInAppBrowser(); });
-
         function detectInAppBrowser() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
-            if (/line|fban|fbav|instagram|webview|twitter/i.test(ua)) {
+            if (/Line|FBAN|FBAV|Instagram|WebView|Twitter/i.test(ua)) {
                 const warning = document.getElementById("browser-warning");
                 if (warning) warning.classList.remove("hidden");
             }
         }
-
         function stopCurrentPlayback() {
             if (currentPlayingAudio) {
                 currentPlayingAudio.pause();
@@ -467,7 +464,6 @@
                 currentPlayingAudio = null;
             }
         }
-
         function playWithFallback(primaryUrl, backupUrl) {
             stopCurrentPlayback();
             let audio = new Audio(primaryUrl);
@@ -483,7 +479,6 @@
             });
             audio.onended = () => { if (currentPlayingAudio === audio) currentPlayingAudio = null; };
         }
-
         async function initGlobalMic() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -494,33 +489,27 @@
                 alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限。"); 
             }
         }
-
         function openLesson() {
             stopCurrentPlayback();
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
         }
-
         function backToMenu() {
             stopCurrentPlayback();
             document.getElementById("lesson-view").classList.add("hidden");
             document.getElementById("menu-view").classList.remove("hidden");
         }
-
         function getSupportedMimeType() {
             const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg'];
             for (let type of types) { if (MediaRecorder.isTypeSupported(type)) return type; }
             return '';
         }
-
         async function toggleStudentCardRecord(index) {
             await executeRecordingWorkflow("card-" + index, "card-rec-", "card-rec-text-", "card-status-", "card-pb-");
         }
-
         async function toggleStudentExRecord(index) {
             await executeRecordingWorkflow("ex-" + index, "ex-rec-", "ex-rec-text-", "ex-status-", "ex-pb-");
         }
-
         async function executeRecordingWorkflow(key, btnPrefix, textPrefix, statusPrefix, pbPrefix) {
             stopCurrentPlayback();
             const baseIndex = key.split("-")[1];
@@ -528,12 +517,10 @@
             const recText = document.getElementById(textPrefix + baseIndex);
             const statusEl = document.getElementById(statusPrefix + baseIndex);
             const pbBtn = document.getElementById(pbPrefix + baseIndex);
-
             if (isRecordingMap[key]) {
                 if (activeRecorder && activeRecorder.state === "recording") activeRecorder.stop();
                 return;
             }
-
             if (currentRecordingKey !== null && currentRecordingKey !== key) {
                 if (activeRecorder && activeRecorder.state === "recording") activeRecorder.stop();
                 isRecordingMap[currentRecordingKey] = false;
@@ -545,7 +532,6 @@
                 const oldBtn = document.getElementById(oldParts[0] + "-rec-" + oldParts[1]);
                 if (oldBtn) oldBtn.classList.remove("recording-anim");
             }
-
             try {
                 if (recText) recText.innerText = "準備中...";
                 if (activeStream) {
@@ -560,7 +546,6 @@
                 const mime = getSupportedMimeType();
                 if (mime) options.mimeType = mime;
                 try { activeRecorder = new MediaRecorder(activeStream, options); } catch (e) { activeRecorder = new MediaRecorder(activeStream); }
-
                 activeRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunksMap[key].push(e.data); };
                 activeRecorder.onstop = () => {
                     if (activeStream) {
@@ -588,7 +573,6 @@
                         currentRecordingKey = null;
                     }, 1500);
                 };
-
                 activeRecorder.start(100);
                 isRecordingMap[key] = true;
                 if (recBtn) {
@@ -602,7 +586,6 @@
                 alert("無法啟用麥克風！如果您是透過 LINE 開啟，請依照提示點擊畫面右上角或右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
             }
         }
-
         function playStudentPlayback(key) {
             const url = audioUrlMap[key];
             if (!url) { alert("音訊處理中，請稍候！"); return; }
@@ -615,4 +598,3 @@
     </script>
 </body>
 </html>
-```eof
