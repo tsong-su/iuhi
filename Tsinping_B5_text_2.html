@@ -18,17 +18,28 @@
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
-                    <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
+                    <h1 class="font-extrabold text-lg text-green-900">B5 第 2 課 - 課文跟讀</h1>
+                    <p class="text-xs text-gray-500">跨平台全裝置語音練習系統</p>
                 </div>
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
-        <div id="browser-warning" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-2xl text-xs space-y-2 shadow-sm">
-            <div class="font-bold flex items-center gap-1.5 text-amber-900 text-sm">
-                <span>⚠️</span> 偵測到您目前可能使用 LINE 或社群軟體內建瀏覽器
+        <!-- LINE / 內建瀏覽器防呆警告 Banner（同時支援 Android 右上角 與 iOS 右下角直式三點說明） -->
+        <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
+            <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
+                <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
             </div>
-            <p>為確保麥克風與錄音回放正常，請點擊畫面右下角（iOS）或右上角/右下角（Android）的 <span class="font-bold">「...」</span> 選單，並選擇 <span class="font-bold text-amber-900 underline">「在預設瀏覽器中開啟」</span>！</p>
+            <p class="text-xs leading-relaxed text-red-800 font-medium">
+                因為手機軟體安全限制，<span class="font-bold underline">在 LINE 裡面無法順利錄音喔！</span>為了讓小朋友能順利練習，請改用手機內建瀏覽器開啟：
+            </p>
+            <div class="bg-white/80 p-3 rounded-2xl space-y-1.5 text-xs text-gray-700 font-semibold border border-red-100">
+                <div class="flex items-center gap-1.5 text-red-900">
+                    <span>📱</span> <span class="font-bold">Android 手機/平板：</span>請點擊畫面<span class="underline font-bold text-red-700">右上角</span>的選單（通常為直式或橫式三點 <span class="font-bold">⋮</span>），選擇「在瀏覽器中開啟」。
+                </div>
+                <div class="flex items-center gap-1.5 text-red-900">
+                    <span>🍏</span> <span class="font-bold">iOS 蘋果手機/平板 (iPhone/iPad)：</span>請點擊畫面<span class="underline font-bold text-red-700">右下角</span>的直式三點選單（<span class="font-bold">⋮</span>），選擇「在 Safari 中開啟」。
+                </div>
+            </div>
         </div>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -37,7 +48,7 @@
                     <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">課文</span>
                     <div>
                         <div class="font-bold text-gray-800 group-hover:text-emerald-800 text-base">第 5 冊 > 第 2 課：踅夜市</div>
-                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（防打架互斥鎖版）</div>
+                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（跨平台雙系統選單防呆版）</div>
                     </div>
                 </div>
                 <span class="text-emerald-600 font-bold text-sm">進入練習 &rarr;</span>
@@ -255,12 +266,15 @@
             });
             audio.onended = () => { if (currentPlayingAudio === audio) currentPlayingAudio = null; };
         }
-        function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        async function initGlobalMic() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
                 if (btn) { btn.innerText = "✅ 麥克風已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
-            }).catch(err => { alert("請允許麥克風權限！"); });
+            } catch (err) { 
+                alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限。"); 
+            }
         }
         function openLesson() {
             stopCurrentPlayback();
@@ -317,7 +331,7 @@
                         activeStream.getTracks().forEach(track => track.stop());
                         activeStream = null;
                     }
-                    if (recText) recText.innerText = "⏳ 封裝中...";
+                    if (recText) recText.innerText = "⏳ 封裝處理中...";
                     setTimeout(() => {
                         if (audioUrlMap[index]) URL.revokeObjectURL(audioUrlMap[index]);
                         const blobType = activeRecorder.mimeType || 'audio/webm';
@@ -348,13 +362,12 @@
                 if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
-                alert("無法啟用麥克風，請確認瀏覽器已授權麥克風權限！");
+                alert("無法啟用麥克風！如果您是透過 LINE 開啟，請依照提示點擊畫面右上角或右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
             }
         }
         function playStudentPlayback(index) {
             const url = audioUrlMap[index];
-            if (!url) { alert("音訊處理中，請稍候！"); return;
-            }
+            if (!url) { alert("音訊處理中，請稍候！"); return; }
             stopCurrentPlayback();
             const instantAudio = new Audio(url);
             currentPlayingAudio = instantAudio;
