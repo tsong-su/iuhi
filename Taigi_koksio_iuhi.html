@@ -538,7 +538,8 @@
             {
                 title: "一工 ê 時間軸-挑戰遊戲",
                 desc: "挑戰一日時間軸相關台語詞彙與排序",
-                icon: "fa-clock",
+                image: "Logo_toophinn_assets/sikantik.png",
+                fallbackIcon: "fa-clock",
                 gradient: "from-emerald-400 to-teal-600",
                 type: "external",
                 isGameCard: true,
@@ -547,7 +548,8 @@
             {
                 title: "二十四節氣互動學習與遊戲網頁",
                 desc: "認識二十四節氣並參與趣味互動",
-                icon: "fa-sun",
+                image: "Logo_toophinn_assets/24_tsehkhui.png",
+                fallbackIcon: "fa-sun",
                 gradient: "from-cyan-400 to-blue-600",
                 type: "external",
                 isGameCard: true,
@@ -815,14 +817,14 @@
                 breadcrumbBar.classList.remove('hidden');
                 breadcrumbText.innerText = "互動遊戲區";
 
-                let interactiveCardsHtml = interactiveGamesData.map(game => {
+                let interactiveCardsHtml = interactiveGamesData.map((game, index) => {
                     let clickAction = '';
-                    let badgeText = game.isGameCard ? '入來遮耍' : '入來遮看';
-                    let badgeClass = game.isGameCard ? 
-                        'bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white' : 
-                        'bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white';
-                    
-                    let actionText = game.isGameCard ? '點tsia入去選遊戲' : '點tsia入去選影片';
+                    let isVideoOrPinyin = index >= 3; // 3rd and 4th are pinyin & youtube
+                    let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
+                    let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
+                    let badgeClass = isVideoOrPinyin ? 
+                        'bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white' : 
+                        'bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white';
 
                     if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
@@ -835,8 +837,8 @@
                     }
 
                     let imgOrIcon = game.image ? 
-                        `<img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/10b981/ffffff?text=Icon';">` : 
-                        `<i class="fa-solid ${game.icon} text-white text-2xl"></i>`;
+                        `<img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover" onerror="this.onerror=null; this.innerHTML='<i class=\\'fa-solid ${game.fallbackIcon} text-white text-2xl\\'></i>';">` : 
+                        `<i class="fa-solid ${game.fallbackIcon} text-white text-2xl"></i>`;
 
                     return `
                         <div ${clickAction}
