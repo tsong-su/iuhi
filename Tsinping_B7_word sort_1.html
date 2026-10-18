@@ -24,6 +24,26 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <!-- 學生端手機音訊解鎖遮罩 -->
+    <div id="student-unlock-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center space-y-4 border border-indigo-100">
+            <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg">
+                🎵
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-extrabold text-indigo-950">B7 第 1 課 - 句子重組闖關</h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    請點擊下方按鈕開始闖關，解鎖語音與勝利音效！
+                </p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-2xl text-[11px] text-left leading-relaxed">
+                <span class="font-bold">💡 貼心提醒：</span>若透過 LINE 開啟，建議點擊右上角或右下角三點，選擇 <span class="font-bold text-amber-700 underline">「以瀏覽器開啟」</span>。
+            </div>
+            <button onclick="studentUnlockAudio()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-extrabold rounded-2xl shadow-lg hover:opacity-95 transition cursor-pointer">
+                🚀 開始闖關
+            </button>
+        </div>
+    </div>
     <div class="max-w-2xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -41,7 +61,7 @@
     <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
     <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
     <script>
-        const questions = [{"idx":1,"tokens":["樹林","內","的","樹仔","懸懸低低"],"answerStr":"樹林內的樹仔懸懸低低","hint":"樹林內的樹仔懸懸低低","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_1.mp3"},{"idx":2,"tokens":["這","搭","出出入入","的","人","真","濟"],"answerStr":"這搭出出入入的人真濟","hint":"這搭出出入入的人真濟","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_2.mp3"},{"idx":3,"tokens":["車站","的","旅客","來來去去"],"answerStr":"車站的旅客來來去去","hint":"車站的旅客來來去去","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_3.mp3"},{"idx":4,"tokens":["我","時時刻刻","攏","咧","思念","你"],"answerStr":"我時時刻刻攏咧思念你","hint":"我時時刻刻攏咧思念你","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_4.mp3"},{"idx":5,"tokens":["大樓","的","電梯","起起落落"],"answerStr":"大樓的電梯起起落落","hint":"大樓的電梯起起落落","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_5.mp3"},{"idx":6,"tokens":["阿爸","拜一","欲","去","高雄","出差"],"answerStr":"阿爸拜一欲去高雄出差","hint":"阿爸拜一欲去高雄出差","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_6.mp3"},{"idx":7,"tokens":["這","間","店","攏","固定","拜二","歇睏"],"answerStr":"這間店攏固定拜二歇睏","hint":"這間店攏固定拜二歇睏","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_7.mp3"},{"idx":8,"tokens":["拜三","阮","欲","共","阿媽","做","生日"],"answerStr":"拜三阮欲共阿媽做生日","hint":"拜三阮欲共阿媽做生日","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_8.mp3"},{"idx":9,"tokens":["聽講","拜四","欲","開始","變","寒","矣"],"answerStr":"聽講拜四欲開始變寒矣","hint":"聽講拜四欲開始變寒矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_9.mp3"},{"idx":10,"tokens":["阿母","講","伊","拜五","會","加班"],"answerStr":"阿母講伊拜五會加班","hint":"阿母講伊拜五會加班","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_10.mp3"},{"idx":11,"tokens":["拜六","我","佮","朋友","欲","去","看","電影"],"answerStr":"拜六我佮朋友欲去看電影","hint":"拜六我佮朋友欲去看電影","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_11.mp3"},{"idx":12,"tokens":["阮","一家伙仔","禮拜","欲","去","露營"],"answerStr":"阮一家伙仔禮拜欲去露營","hint":"阮一家伙仔禮拜欲去露營","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_12.mp3"}];
+        const questions = [{"idx":1,"tokens":["樹林","內","的","樹仔","懸懸低低"],"answerStr":"樹林內的樹仔懸懸低低","hint":"樹林內的樹仔懸懸低低","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_1.mp3"},{"idx":2,"tokens":["這","搭","出出入入","的","人","真","濟"],"answerStr":"這搭出出入入的人真濟","hint":"這搭出出入入的人真濟","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_2.mp3"},{"idx":3,"tokens":["車站","的","旅客","來來去去"],"answerStr":"車站的旅客來來去去","hint":"車站的旅客來來去去","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_3.mp3"},{"idx":4,"tokens":["我","時時刻刻","攏","咧","思念","你"],"answerStr":"我時時刻刻攏咧思念你","hint":"我時時刻刻攏咧思念你","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_4.mp3"},{"idx":5,"tokens":["大樓","的","電梯","起起落落"],"answerStr":"大樓的電梯起起落落","hint":"大樓的電梯起起落落","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_5.mp3"},{"idx":6,"tokens":["阿爸","拜一","欲","去","高雄","出差"],"answerStr":"阿爸拜一欲去高雄出差","hint":"阿爸拜一欲去高雄出差","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_6.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_6.mp3"},{"idx":7,"tokens":["這","間","店","攏","固定","拜二","歇睏"],"answerStr":"這間店攏固定拜二歇睏","hint":"這間店攏固定拜二歇睏","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_7.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_7.mp3"},{"idx":8,"tokens":["拜三","阮","欲","共","阿媽","做","生日"],"answerStr":"拜三阮欲共阿媽做生日","hint":"拜三阮欲共阿媽做生日","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_8.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_8.mp3"},{"idx":9,"tokens":["聽講","拜四","欲","開始","變","寒","矣"],"answerStr":"聽講拜四欲開始變寒矣","hint":"聽講拜四欲開始變寒矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_9.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_9.mp3"},{"idx":10,"tokens":["阿母","講","伊","拜五","會","加班"],"answerStr":"阿母講伊拜五會加班","hint":"阿母講伊拜五會加班","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_10.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_10.mp3"},{"idx":11,"tokens":["拜六","我","佮","朋友","欲","去","看","電影"],"answerStr":"拜六我佮朋友欲去看電影","hint":"拜六我佮朋友欲去看電影","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_11.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_11.mp3"},{"idx":12,"tokens":["阮","一家伙仔","禮拜","欲","去","露營"],"answerStr":"阮一家伙仔禮拜欲去露營","hint":"阮一家伙仔禮拜欲去露營","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B7_Example_1_12.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B7_Example_1_12.mp3"}];
         let currentIndex = 0;
         let sortableInstance = null;
         const colors = [
@@ -66,6 +86,15 @@
             const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
             if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
         }
+        function playDualAudio(primaryUrl, backupUrl) {
+            const audio = new Audio(primaryUrl);
+            audio.play().catch(() => {
+                if (backupUrl) {
+                    const backupAudio = new Audio(backupUrl);
+                    backupAudio.play().catch(e => console.log('備用音檔播放失敗'));
+                }
+            });
+        }
         function startConfetti() {
             const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
             for (let i = 0; i < 60; i++) {
@@ -78,6 +107,16 @@
                 document.body.appendChild(confetti);
             }
         }
+        function studentUnlockAudio() {
+            const modal = document.getElementById('student-unlock-modal');
+            if (modal) {
+                modal.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => { modal.remove(); }, 300);
+            }
+            renderGame();
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
         function renderGame() {
             const container = document.getElementById('game-main-container');
             if (!container) return;
@@ -89,7 +128,7 @@
             }
             const q = questions[currentIndex];
             const shuffled = shuffle(q.tokens);
-            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="new Audio(\'' + q.audioUrl + '\').play().catch(()=>{})" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer">🔊 聽語音</button></div>' +
+            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="playDualAudio(\'' + q.audioUrl + '\', \'' + q.audioBackupUrl + '\')" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer hover:bg-pink-50">🔊 聽語音</button></div>' +
                 '<div id="student-drag-box" class="p-5 rounded-3xl border-2 border-dashed border-indigo-300 min-h-[120px] flex flex-wrap items-center gap-2.5 bg-slate-50">' +
                 shuffled.map((t, i) => '<div class="' + colors[i % colors.length] + ' px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md border cursor-grab select-none transition transform hover:scale-105">' + t + '</div>').join('') +
                 '</div>' +
@@ -100,7 +139,6 @@
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
             }
-            setTimeout(() => { new Audio(q.audioUrl).play().catch(e => { console.log('等待點擊播放'); }); }, 400);
         }
         function checkAnswer() {
             const q = questions[currentIndex];
@@ -118,16 +156,18 @@
                 msg.style.color = "#dc2626";
             }
         }
-        function nextQuestion() { currentIndex++; renderGame(); }
-        function resetGame() { currentIndex = 0; renderGame(); }
-        window.onload = function() {
-            renderGame();
-            document.body.addEventListener('click', function unlockAudio() {
-                const q = questions[currentIndex];
-                if (q && q.audioUrl) { new Audio(q.audioUrl).play().catch(e=>{}); }
-                document.body.removeEventListener('click', unlockAudio);
-            }, { once: true });
-        };
+        function nextQuestion() { 
+            currentIndex++; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
+        function resetGame() { 
+            currentIndex = 0; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
     </script>
 </body>
 </html>
