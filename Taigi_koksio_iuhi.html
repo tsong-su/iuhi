@@ -518,7 +518,7 @@
             }
         ];
 
-        // Interactive Games Section Data with updated subsections
+        // Interactive Games Section Data with updated subsections and full links
         const interactiveGamesData = [
             {
                 title: "十二生相系列遊戲",
@@ -814,7 +814,7 @@
 
                 let interactiveCardsHtml = interactiveGamesData.map(game => {
                     let clickAction = '';
-                    let badgeText = '入來遮耍';
+                    let badgeText = '入來遮看';
                     let badgeClass = 'bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white';
 
                     if (game.type === 'coming') {
@@ -849,8 +849,8 @@
                                 <p class="text-slate-500 text-xs font-bold leading-relaxed">${game.desc}</p>
                             </div>
                             <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold">
-                                <span><i class="fa-solid fa-gamepad mr-1 text-emerald-500"></i>台語好玩藝</span>
-                                <span class="text-emerald-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點tsia 入去選遊戲 <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                                <span></span>
+                                <span class="text-emerald-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點tsia入去選影片 <i class="fa-solid fa-arrow-right ml-1"></i></span>
                             </div>
                         </div>
                     `;
@@ -980,13 +980,13 @@
                             <div>
                                 <div class="flex items-center justify-between mb-3">
                                     <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3.5 py-1.5 rounded-xl">互動遊戲區</span>
-                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl bg-emerald-100 text-emerald-800">入來遮耍</span>
+                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl bg-emerald-100 text-emerald-800">入來遮看</span>
                                 </div>
                                 <h5 class="font-black text-slate-800 text-lg mb-1 group-hover:text-emerald-600 transition-colors">${game.title}</h5>
                                 <p class="text-slate-500 text-xs font-bold">${game.desc}</p>
                             </div>
                             <div class="mt-4 pt-3 border-t-2 border-slate-100 text-xs text-emerald-600 font-black flex items-center justify-between">
-                                <span>點tsia 入去選遊戲</span>
+                                <span>點tsia入去選影片</span>
                                 <i class="fa-solid fa-arrow-right"></i>
                             </div>
                         </div>
@@ -1077,7 +1077,7 @@
                         <span class="text-base">${item.name}</span>
                     </div>
                     <span class="text-sm bg-white group-hover:bg-emerald-700 group-hover:text-white text-emerald-700 px-4 py-1.5 rounded-2xl shadow-sm border border-emerald-200 flex items-center">
-                        入來遮耍 <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i>
+                        入來遮看 <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i>
                     </span>
                 </a>
             `).join('');
@@ -1091,7 +1091,7 @@
                         <span class="text-xs font-black bg-emerald-400 text-emerald-950 px-3.5 py-1.5 rounded-xl">互動遊戲區</span>
                     </div>
                     <h3 class="text-xl font-black text-slate-800 mb-1">${title}</h3>
-                    <p class="text-slate-500 text-xs font-bold">請選擇您想要遊玩的項目：</p>
+                    <p class="text-slate-500 text-xs font-bold">請選擇您想要觀看的項目：</p>
                 </div>
                 <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
                     ${subButtons}
