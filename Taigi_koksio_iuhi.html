@@ -348,7 +348,7 @@
                                 ]
                             },
                             { 
-                                id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲 (共4課)", type: "lessons",
+                                id: "tp-v11-g4", name: "語詞對對碰", icon: "fa-clone", color: "from-amber-500 to-orange-600", desc: "趣味翻牌記憶與語詞配對遊戲", type: "lessons",
                                 items: [
                                     { name: "第1課：驚著無代誌", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_1.html" },
                                     { name: "第2課：掛號", url: "https://tsong-su.github.io/iuhi/Tsinping_B11_word%20pair_2.html" },
@@ -382,7 +382,7 @@
                 publisherBadge: "bg-sky-500 text-white border-2 border-sky-600 shadow",
                 bannerColor: "from-sky-400 to-blue-600",
                 textColor: "text-sky-950",
-                description: "包含第9、11冊(預留第10、12冊)，提供台語跟讀、輕鬆學語詞、句子重組闖關、語詞對對碰、YouTube影音學習。",
+                description: "包含第9、11冊(預留第10、12冊) ，提供台語跟讀、輕鬆學語詞、句子重組闖關、語詞對對碰、YouTube影音學習。",
                 volumes: [
                     {
                         volumeName: "第9冊",
@@ -572,7 +572,7 @@
             {
                 title: "YouTube教學影片",
                 desc: "日常生活用語、學生留聲機、繪本故事與郵票相關教學",
-                icon: "fa-brands fa-youtube",
+                fallbackIcon: "fa-brands fa-youtube",
                 gradient: "from-red-500 to-rose-600",
                 type: "youtubeSubmenu",
                 isGameCard: false,
@@ -789,7 +789,7 @@
                                 <h5 class="font-black text-slate-800 text-lg mb-2 group-hover:text-amber-600 transition-colors">${game.name}</h5>
                                 <p class="text-slate-500 text-xs font-bold leading-relaxed">${game.desc}</p>
                             </div>
-                            <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold">
+                            <div class="mt-6 pt-4 border-t-2 border-slate-100 flex items-center justify-between text-xs text-slate-400 font-black">
                                 <span></span>
                                 <span class="text-amber-600 font-black flex items-center group-hover:translate-x-1 transition-transform">點tsia 入去選遊戲 <i class="fa-solid fa-arrow-right ml-1"></i></span>
                             </div>
@@ -967,8 +967,8 @@
                 if (game.title.toLowerCase().includes(query) || game.desc.toLowerCase().includes(query)) {
                     foundCount++;
                     let clickAction = '';
-                    let actionText = game.isGameCard ? '點tsia入去選遊戲' : '點tsia入去選影片';
-                    let badgeText = game.isGameCard ? '入來遮耍' : '入來遮看';
+                    let actionText = (game.title === '拼音教學網' || game.title === 'YouTube教學影片') ? '點tsia入去選影片' : '點tsia入去選遊戲';
+                    let badgeText = (game.title === '拼音教學網' || game.title === 'YouTube教學影片') ? '入來遮看' : '入來遮耍';
 
                     if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
@@ -1218,8 +1218,4 @@
 
         window.onload = function() {
             renderApp();
-            document.getElementById('visitCount').innerText = visitCount;
-        }
-    </script>
-</body>
-</html>
+            document.getEle
