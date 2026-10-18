@@ -18,19 +18,28 @@
             <div class="flex items-center gap-3">
                 <img src="https://github.com/tsong-su/iuhi/blob/main/logo.png?raw=true" class="w-12 h-12 object-contain" alt="Logo">
                 <div>
-                    <h1 class="font-extrabold text-lg text-green-900">臺灣台語智慧備課平台</h1>
-                    <p class="text-xs text-gray-500">請點擊啟用麥克風後進入練習</p>
+                    <h1 class="font-extrabold text-lg text-green-900">B11 第 3 課 - 課文跟讀</h1>
+                    <p class="text-xs text-gray-500">跨平台全裝置語音練習系統</p>
                 </div>
             </div>
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
+        <!-- LINE / 內建瀏覽器防呆警告 Banner（同時支援 Android 右上角 與 iOS 右下角直式三點說明） -->
         <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
             <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
                 <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
             </div>
             <p class="text-xs leading-relaxed text-red-800 font-medium">
-                因為手機軟體安全限制，<span class="font-bold underline">在 LINE 裡面無法順利錄音喔！</span>為了讓小朋友能順利練習，請點擊畫面<span class="font-bold text-red-900">右下角或右上角直式/橫式三點 (...)</span> 選單，改用手機內建的 <span class="font-bold text-red-900">「在瀏覽器中開啟」</span>！
+                因為手機軟體安全限制，<span class="font-bold underline">在 LINE 裡面無法順利錄音喔！</span>為了讓小朋友能順利練習，請改用手機內建瀏覽器開啟：
             </p>
+            <div class="bg-white/80 p-3 rounded-2xl space-y-1.5 text-xs text-gray-700 font-semibold border border-red-100">
+                <div class="flex items-center gap-1.5 text-red-900">
+                    <span>📱</span> <span class="font-bold">Android 手機/平板：</span>請點擊畫面<span class="underline font-bold text-red-700">右上角</span>的選單（通常為直式或橫式三點 <span class="font-bold">⋮</span>），選擇「在瀏覽器中開啟」。
+                </div>
+                <div class="flex items-center gap-1.5 text-red-900">
+                    <span>🍏</span> <span class="font-bold">iOS 蘋果手機/平板 (iPhone/iPad)：</span>請點擊畫面<span class="underline font-bold text-red-700">右下角</span>的直式三點選單（<span class="font-bold">⋮</span>），選擇「在 Safari 中開啟」。
+                </div>
+            </div>
         </div>
         <main class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-3">
             <div class="text-sm font-bold text-teal-900 mb-2 px-1">📚 教材單元列表</div>
@@ -39,7 +48,7 @@
                     <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">課文</span>
                     <div>
                         <div class="font-bold text-gray-800 group-hover:text-emerald-800 text-base">第 11 冊 > 第 3 課：講古</div>
-                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（防打架互斥鎖強化版）</div>
+                        <div class="text-xs text-gray-500">課文跟讀與錄音練習（跨平台雙系統選單防呆版）</div>
                     </div>
                 </div>
                 <span class="text-emerald-600 font-bold text-sm">進入練習 &rarr;</span>
@@ -57,7 +66,7 @@
         <main class="space-y-4">
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_1.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_1.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_1.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_1.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">第3<span class="tonemark">課</span>：講<span class="tonemark">古</span></div>
             <div class="text-xs font-semibold text-teal-700">Tē sann khò: Kóng-kóo</div>
@@ -80,7 +89,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_2.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_2.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_2.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_2.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">大道<span class="tonemark">公</span>佮媽<span class="tonemark">祖</span>有約<span class="tonemark">束</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Tāi-tō-kong kah Má-tsóo ū iok-sok,</div>
@@ -103,7 +112,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_3.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_3.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_3.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_3.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">兩<span class="tonemark">人</span>欲結親<span class="tonemark">情</span>，想袂到媽<span class="tonemark">祖</span>後<span class="tonemark">悔</span>，</div>
             <div class="text-xs font-semibold text-teal-700">nn̄g lâng beh kat tshin-tsiânn, siūnn-bē-kàu Má-tsóo hiō-hué,</div>
@@ -126,7 +135,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_4.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_4.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_4.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_4.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">大道<span class="tonemark">公</span>面<span class="tonemark">子</span>無地<span class="tonemark">下</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Tāi-tō-kong bīn-tsú bô-tē hē,</div>
@@ -149,7 +158,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_5.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_5.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_5.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_5.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">按算佇三月二<span class="tonemark">三</span>媽祖<span class="tonemark">生</span>的<span class="tonemark">時</span>落大<span class="tonemark">雨</span>，</div>
             <div class="text-xs font-semibold text-teal-700">àn-sǹg tī sann gue̍h jī sann Má-tsóo-senn ê sî lo̍h-tuā-hōo,</div>
@@ -172,7 +181,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_6.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_6.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_6.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_6.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">存範欲予伊歹<span class="tonemark">看</span>。</div>
             <div class="text-xs font-semibold text-teal-700">tshûn-pān beh hōo i pháinn-khuànn.</div>
@@ -195,7 +204,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_7.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_7.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_7.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_7.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">果<span class="tonemark">然</span>彼<span class="tonemark">工</span>真正落大<span class="tonemark">雨</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Kó-jiân hit kang tsin-tsiànn lo̍h-tuā-hōo,</div>
@@ -218,7 +227,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_8.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_8.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_8.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_8.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">媽<span class="tonemark">祖</span>知影是啥<span class="tonemark">人</span>咧變鬼變<span class="tonemark">怪</span>，</div>
             <div class="text-xs font-semibold text-teal-700">Má-tsóo tsai-iánn sī siánn-lâng leh pìnn-kuí-pìnn-kuài,</div>
@@ -241,7 +250,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_9.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_9.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_9.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_9.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">嘛佇三月十<span class="tonemark">五</span>大道公<span class="tonemark">生</span>的<span class="tonemark">時</span>透大<span class="tonemark">風</span>，</div>
             <div class="text-xs font-semibold text-teal-700">mā tī sann-gue̍h tsa̍p-gōo Tāi-tō-kong-senn ê sî thàu-tuā-hong,</div>
@@ -264,7 +273,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_10.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_10.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_10.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_10.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">予伊真狼<span class="tonemark">狽</span>，走去抾帽<span class="tonemark">仔</span>。</div>
             <div class="text-xs font-semibold text-teal-700">hōo i tsin liông-puē, tsáu-khì khioh bō-á.</div>
@@ -287,7 +296,7 @@
 </div>
 <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl shadow-md border border-green-100 space-y-3">
     <div class="flex items-center gap-3">
-        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_11.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_11.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer" title="播放原音">▶</button>
+        <button onclick="playLessonAudio('https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B11_txet_3_11.mp3', 'https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B11_txet_3_11.mp3')" class="w-11 h-11 bg-teal-50 hover:bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold shrink-0 cursor-pointer">▶</button>
         <div class="space-y-0.5 w-full">
             <div class="font-extrabold text-base text-gray-900">這就是大道公<span class="tonemark">風</span>、媽祖婆<span class="tonemark">雨</span>的傳<span class="tonemark">說</span>。</div>
             <div class="text-xs font-semibold text-teal-700">Tse tō-sī Tāi-tō-kong hong,  má-tsóo-pô hōo ê thuân-suat.</div>
@@ -333,8 +342,6 @@
                 currentPlayingAudio.currentTime = 0;
                 currentPlayingAudio = null;
             }
-            const lessonPlayer = document.getElementById("lesson-audio-player");
-            if (lessonPlayer) { lessonPlayer.pause(); lessonPlayer.currentTime = 0; }
         }
         function playLessonAudio(primaryUrl, backupUrl) {
             stopCurrentPlayback();
@@ -351,12 +358,15 @@
             });
             audio.onended = () => { if (currentPlayingAudio === audio) currentPlayingAudio = null; };
         }
-        function initGlobalMic() {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        async function initGlobalMic() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 stream.getTracks().forEach(track => track.stop());
                 const btn = document.getElementById("global-mic-btn");
                 if (btn) { btn.innerText = "✅ 麥克風已就緒"; btn.classList.remove("bg-emerald-600"); btn.classList.add("bg-green-700"); }
-            }).catch(err => { alert("請允許麥克風權限！"); });
+            } catch (err) { 
+                alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限。"); 
+            }
         }
         function openLesson() {
             stopCurrentPlayback();
@@ -413,7 +423,7 @@
                         activeStream.getTracks().forEach(track => track.stop());
                         activeStream = null;
                     }
-                    if (recText) recText.innerText = "⏳ 封裝中...";
+                    if (recText) recText.innerText = "⏳ 封裝處理中...";
                     setTimeout(() => {
                         if (audioUrlMap[index]) URL.revokeObjectURL(audioUrlMap[index]);
                         const blobType = activeRecorder.mimeType || 'audio/webm';
@@ -444,7 +454,7 @@
                 if (pbBtn) pbBtn.classList.add("hidden");
             } catch (err) {
                 if (recText) recText.innerText = "開始錄音";
-                alert("無法啟用麥克風！請確認瀏覽器已授權麥克風權限（若使用 LINE 內建瀏覽器請點擊右下角或右上角選單改用預設瀏覽器開啟）。");
+                alert("無法啟用麥克風！如果您是透過 LINE 開啟，請依照提示點擊畫面右上角或右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
             }
         }
         function playStudentPlayback(index) {
