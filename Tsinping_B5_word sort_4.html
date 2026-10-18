@@ -24,6 +24,26 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <!-- 學生端手機音訊解鎖遮罩 -->
+    <div id="student-unlock-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center space-y-4 border border-indigo-100">
+            <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg">
+                🎵
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-extrabold text-indigo-950">B5 第 4 課 - 句子重組闖關</h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    請點擊下方按鈕開始闖關，解鎖語音與勝利音效！
+                </p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-2xl text-[11px] text-left leading-relaxed">
+                <span class="font-bold">💡 貼心提醒：</span>若透過 LINE 開啟，建議點擊右上角或右下角三點，選擇 <span class="font-bold text-amber-700 underline">「以瀏覽器開啟」</span>。
+            </div>
+            <button onclick="studentUnlockAudio()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-extrabold rounded-2xl shadow-lg hover:opacity-95 transition cursor-pointer">
+                🚀 開始闖關
+            </button>
+        </div>
+    </div>
     <div class="max-w-2xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -41,7 +61,7 @@
     <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
     <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
     <script>
-        const questions = [{"idx":1,"tokens":["阿兄","𤆬","我","去","文具店","買","筆"],"answerStr":"阿兄𤆬我去文具店買筆","hint":"阿兄𤆬我去文具店買筆","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_1.mp3"},{"idx":2,"tokens":["便當店","的","菜色","真","濟"],"answerStr":"便當店的菜色真濟","hint":"便當店的菜色真濟","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_2.mp3"},{"idx":3,"tokens":["這","間","洗衫店","的","生理","誠","好"],"answerStr":"這間洗衫店的生理誠好","hint":"這間洗衫店的生理誠好","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_3.mp3"},{"idx":4,"tokens":["我","去","目鏡行","配","目鏡"],"answerStr":"我去目鏡行配目鏡","hint":"我去目鏡行配目鏡","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_4.mp3"},{"idx":5,"tokens":["咱","來去","冊店","買","冊"],"answerStr":"咱來去冊店買冊","hint":"咱來去冊店買冊","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_5.mp3"},{"idx":6,"tokens":["頭毛店","當咧","辦","活動","呢"],"answerStr":"頭毛店當咧辦活動呢","hint":"頭毛店當咧辦活動呢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_6.mp3"},{"idx":7,"tokens":["阮","兜","對面","欲","開","一","間","超市"],"answerStr":"阮兜對面欲開一間超市","hint":"阮兜對面欲開一間超市","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_7.mp3"},{"idx":8,"tokens":["阮","阿姨","佇","藥局","上班"],"answerStr":"阮阿姨佇藥局上班","hint":"阮阿姨佇藥局上班","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_8.mp3"},{"idx":9,"tokens":["我","去","賣鞋仔的","遐","買","新鞋"],"answerStr":"我去賣鞋仔的遐買新鞋","hint":"我去賣鞋仔的遐買新鞋","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_9.mp3"},{"idx":10,"tokens":["這","條","街","有","足濟","賣食的"],"answerStr":"這條街有足濟賣食的","hint":"這條街有足濟賣食的","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_10.mp3"},{"idx":11,"tokens":["賣𨑨迌物仔的","今仔日","無","來"],"answerStr":"賣𨑨迌物仔的今仔日無來","hint":"賣𨑨迌物仔的今仔日無來","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_11.mp3"},{"idx":12,"tokens":["這","擔","賣豬肉的","真","海派"],"answerStr":"這擔賣豬肉的真海派","hint":"這擔賣豬肉的真海派","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_12.mp3"},{"idx":13,"tokens":["緊","咧","！","賣魚的","欲","收擔","矣","。"],"answerStr":"緊咧！賣魚的欲收擔矣。","hint":"緊咧！賣魚的欲收擔矣。","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_13.mp3"},{"idx":14,"tokens":["阮","爸母","攏","是","賣果子的"],"answerStr":"阮爸母攏是賣果子的","hint":"阮爸母攏是賣果子的","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_14.mp3"}];
+        const questions = [{"idx":1,"tokens":["阿兄","𤆬","我","去","文具店","買","筆"],"answerStr":"阿兄𤆬我去文具店買筆","hint":"阿兄𤆬我去文具店買筆","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_1.mp3"},{"idx":2,"tokens":["便當店","的","菜色","真","濟"],"answerStr":"便當店的菜色真濟","hint":"便當店的菜色真濟","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_2.mp3"},{"idx":3,"tokens":["這","間","洗衫店","的","生理","誠","好"],"answerStr":"這間洗衫店的生理誠好","hint":"這間洗衫店的生理誠好","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_3.mp3"},{"idx":4,"tokens":["我","去","目鏡行","配","目鏡"],"answerStr":"我去目鏡行配目鏡","hint":"我去目鏡行配目鏡","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_4.mp3"},{"idx":5,"tokens":["咱","來去","冊店","買","冊"],"answerStr":"咱來去冊店買冊","hint":"咱來去冊店買冊","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_5.mp3"},{"idx":6,"tokens":["頭毛店","當咧","辦","活動","呢"],"answerStr":"頭毛店當咧辦活動呢","hint":"頭毛店當咧辦活動呢","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_6.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_6.mp3"},{"idx":7,"tokens":["阮","兜","對面","欲","開","一","間","超市"],"answerStr":"阮兜對面欲開一間超市","hint":"阮兜對面欲開一間超市","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_7.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_7.mp3"},{"idx":8,"tokens":["阮","阿姨","佇","藥局","上班"],"answerStr":"阮阿姨佇藥局上班","hint":"阮阿姨佇藥局上班","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_8.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_8.mp3"},{"idx":9,"tokens":["我","去","賣鞋仔的","遐","買","新鞋"],"answerStr":"我去賣鞋仔的遐買新鞋","hint":"我去賣鞋仔的遐買新鞋","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_9.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_9.mp3"},{"idx":10,"tokens":["這","條","街","有","足濟","賣食的"],"answerStr":"這條街有足濟賣食的","hint":"這條街有足濟賣食的","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_10.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_10.mp3"},{"idx":11,"tokens":["賣","𨑨迌物仔的","今仔日","無","來"],"answerStr":"賣𨑨迌物仔的今仔日無來","hint":"賣𨑨迌物仔的今仔日無來","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_11.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_11.mp3"},{"idx":12,"tokens":["這","擔","賣豬肉的","真","海派"],"answerStr":"這擔賣豬肉的真海派","hint":"這擔賣豬肉的真海派","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_12.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_12.mp3"},{"idx":13,"tokens":["緊咧","賣魚的","欲","收擔","矣"],"answerStr":"緊咧賣魚的欲收擔矣","hint":"緊咧賣魚的欲收擔矣","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_13.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_13.mp3"},{"idx":14,"tokens":["阮","爸母","攏","是","賣果子的"],"answerStr":"阮爸母攏是賣果子的","hint":"阮爸母攏是賣果子的","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/B5_Example_4_14.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/B5_Example_4_14.mp3"}];
         let currentIndex = 0;
         let sortableInstance = null;
         const colors = [
@@ -66,6 +86,15 @@
             const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
             if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
         }
+        function playDualAudio(primaryUrl, backupUrl) {
+            const audio = new Audio(primaryUrl);
+            audio.play().catch(() => {
+                if (backupUrl) {
+                    const backupAudio = new Audio(backupUrl);
+                    backupAudio.play().catch(e => console.log('備用音檔播放失敗'));
+                }
+            });
+        }
         function startConfetti() {
             const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
             for (let i = 0; i < 60; i++) {
@@ -78,6 +107,16 @@
                 document.body.appendChild(confetti);
             }
         }
+        function studentUnlockAudio() {
+            const modal = document.getElementById('student-unlock-modal');
+            if (modal) {
+                modal.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => { modal.remove(); }, 300);
+            }
+            renderGame();
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
         function renderGame() {
             const container = document.getElementById('game-main-container');
             if (!container) return;
@@ -89,7 +128,7 @@
             }
             const q = questions[currentIndex];
             const shuffled = shuffle(q.tokens);
-            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="new Audio(\'' + q.audioUrl + '\').play().catch(()=>{})" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer">🔊 聽語音</button></div>' +
+            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="playDualAudio(\'' + q.audioUrl + '\', \'' + q.audioBackupUrl + '\')" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer hover:bg-pink-50">🔊 聽語音</button></div>' +
                 '<div id="student-drag-box" class="p-5 rounded-3xl border-2 border-dashed border-indigo-300 min-h-[120px] flex flex-wrap items-center gap-2.5 bg-slate-50">' +
                 shuffled.map((t, i) => '<div class="' + colors[i % colors.length] + ' px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md border cursor-grab select-none transition transform hover:scale-105">' + t + '</div>').join('') +
                 '</div>' +
@@ -100,7 +139,6 @@
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
             }
-            setTimeout(() => { new Audio(q.audioUrl).play().catch(e => { console.log('等待點擊播放'); }); }, 400);
         }
         function checkAnswer() {
             const q = questions[currentIndex];
@@ -118,16 +156,18 @@
                 msg.style.color = "#dc2626";
             }
         }
-        function nextQuestion() { currentIndex++; renderGame(); }
-        function resetGame() { currentIndex = 0; renderGame(); }
-        window.onload = function() {
-            renderGame();
-            document.body.addEventListener('click', function unlockAudio() {
-                const q = questions[currentIndex];
-                if (q && q.audioUrl) { new Audio(q.audioUrl).play().catch(e=>{}); }
-                document.body.removeEventListener('click', unlockAudio);
-            }, { once: true });
-        };
+        function nextQuestion() { 
+            currentIndex++; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
+        function resetGame() { 
+            currentIndex = 0; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
     </script>
 </body>
 </html>
