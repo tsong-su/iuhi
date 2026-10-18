@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Noto Sans TC with bold weights for maximum legibility & Taiwanese characters support -->
+    <!-- Google Fonts Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -518,7 +518,6 @@
             }
         ];
 
-        // Interactive Games Section Data
         const interactiveGamesData = [
             {
                 title: "十二生相系列遊戲",
@@ -527,7 +526,6 @@
                 fallbackIcon: "fa-paw",
                 gradient: "from-amber-400 to-orange-500",
                 type: "submenu",
-                isGameCard: true,
                 items: [
                     { name: "臺灣台語十二生肖互動學習遊戲", url: "https://tsong-su.github.io/iuhi/game12.html" },
                     { name: "古錐e十二生相轉盤", url: "https://tsong-su.github.io/iuhi/game12_wheel.html" },
@@ -542,7 +540,6 @@
                 fallbackIcon: "fa-clock",
                 gradient: "from-emerald-400 to-teal-600",
                 type: "external",
-                isGameCard: true,
                 url: "https://tsong-su.github.io/iuhi/time-game.html"
             },
             {
@@ -552,7 +549,6 @@
                 fallbackIcon: "fa-sun",
                 gradient: "from-cyan-400 to-blue-600",
                 type: "external",
-                isGameCard: true,
                 url: "https://tsong-su.github.io/iuhi/solar_game.html"
             },
             {
@@ -562,7 +558,6 @@
                 fallbackIcon: "fa-language",
                 gradient: "from-purple-400 to-indigo-600",
                 type: "submenu",
-                isGameCard: false,
                 items: [
                     { name: "臺灣閩南語羅馬字拼音教學網", url: "https://tailo.moe.edu.tw/" },
                     { name: "羅馬拼音練習", url: "https://www.youtube.com/watch?v=iGytnwKHSBQ&list=PLD590uJOIQ0IjrPvXB60EYiDqGUmV_D-y" },
@@ -575,7 +570,6 @@
                 fallbackIcon: "fa-brands fa-youtube",
                 gradient: "from-red-500 to-rose-600",
                 type: "youtubeSubmenu",
-                isGameCard: false,
                 categories: [
                     {
                         categoryName: "1. 日常生活用語",
@@ -822,9 +816,6 @@
                     let isVideoOrPinyin = index >= 3; // 3rd and 4th are pinyin & youtube
                     let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
                     let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
-                    let badgeClass = isVideoOrPinyin ? 
-                        'bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white' : 
-                        'bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white';
 
                     if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
@@ -838,7 +829,7 @@
 
                     let imgOrIcon = game.image ? 
                         `<img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover" onerror="this.onerror=null; this.innerHTML='<i class=\\'fa-solid ${game.fallbackIcon} text-white text-2xl\\'></i>';">` : 
-                        `<i class="fa-solid ${game.fallbackIcon} text-white text-2xl"></i>`;
+                        `<i class="fa-brands fa-youtube text-white text-2xl"></i>`;
 
                     return `
                         <div ${clickAction}
@@ -848,7 +839,7 @@
                                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${game.gradient} text-white flex items-center justify-center text-2xl shadow-md overflow-hidden group-hover:scale-110 transition-transform">
                                         ${imgOrIcon}
                                     </div>
-                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl ${badgeClass} transition-colors">${badgeText}</span>
+                                    <span class="text-xs font-black px-3.5 py-1.5 rounded-2xl bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white transition-colors">${badgeText}</span>
                                 </div>
                                 <h5 class="font-black text-slate-800 text-lg mb-2 group-hover:text-emerald-600 transition-colors">${game.title}</h5>
                                 <p class="text-slate-500 text-xs font-bold leading-relaxed">${game.desc}</p>
@@ -963,12 +954,13 @@
                 });
             });
 
-            interactiveGamesData.forEach(game => {
+            interactiveGamesData.forEach((game, index) => {
                 if (game.title.toLowerCase().includes(query) || game.desc.toLowerCase().includes(query)) {
                     foundCount++;
                     let clickAction = '';
-                    let actionText = (game.title === '拼音教學網' || game.title === 'YouTube教學影片') ? '點tsia入去選影片' : '點tsia入去選遊戲';
-                    let badgeText = (game.title === '拼音教學網' || game.title === 'YouTube教學影片') ? '入來遮看' : '入來遮耍';
+                    let isVideoOrPinyin = index >= 3;
+                    let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
+                    let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
 
                     if (game.type === 'external') {
                         clickAction = `onclick="incrementVisit(); window.open('${game.url}', '_blank')"`;
@@ -1218,4 +1210,8 @@
 
         window.onload = function() {
             renderApp();
-            document.getEle
+            document.getElementById('visitCount').innerText = visitCount;
+        }
+    </script>
+</body>
+</html>
