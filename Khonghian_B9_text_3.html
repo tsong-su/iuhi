@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>kh_第 9 冊 > 第 3 課：向前衝</title>
+    <title>kh第 9 冊 > 第 3 課：向前衝</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-ring { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
@@ -26,7 +26,7 @@
             <button onclick="initGlobalMic()" id="global-mic-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-2xl text-xs font-bold shadow-md transition cursor-pointer">🎙️ 啟用麥克風</button>
         </header>
 
-        <!-- LINE / 內建瀏覽器防呆警告 Banner（同時支援 Android 與 iOS 直式三點說明） -->
+        <!-- LINE / 內建瀏覽器防呆警告 Banner -->
         <div id="browser-warning" class="hidden bg-red-50 border-2 border-red-300 text-red-900 p-5 rounded-3xl space-y-3 shadow-lg">
             <div class="font-extrabold flex items-center gap-2 text-base text-red-700">
                 <span>🚨</span> 偵測到您目前使用 LINE 或社群軟體內建畫面！
@@ -87,14 +87,14 @@
             { text: "<span class=\"tonemark\">袂</span><span class=\"lighttone\">啦</span>！放輕<span class=\"tonemark\">鬆</span>，你<span class=\"tonemark\">看</span>，", roman: "Bē--lah! Pàng khin-sang, lí khuànn,", trans: "(不會啦！放輕鬆，你看，)", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_8.mp3" },
             { text: "換阿<span class=\"tonemark\">豐</span><span class=\"lighttone\">矣</span>，伊走甲若一陣<span class=\"tonemark\">風</span>。", roman: "uānn a-hong--ah, i tsáu kah ná tsi̍t tsūn hong.", trans: "(換阿豐了，他跑得像一陣風一樣快。)", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_9.mp3" },
             { text: "<span class=\"tonemark\">真</span><span class=\"lighttone\">的</span><span class=\"lighttone\">呢</span>！阿<span class=\"tonemark\">勇</span>無放<span class=\"tonemark\">棄</span>，", roman: "Tsin--ê--neh! A-ióng bô hòng-khì,", trans: "(真的！阿勇不放棄，)", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_10.mp3" },
-            { text: "阿<span class=\"tonemark\">豐</span><span class=\"tonemark\">催</span><span class=\"lighttone\">落</span><span class=\"lighttone\">去</span>，<span class=\"tonemark\">拚</span><span class=\"lighttone\">轉</span><span class=\"lighttone\">來</span><span class=\"lighttone\">矣</span>。", roman: "A-hong tshui--lo̍h-khì, piànn--tńg-lâi--ah.", trans: "(阿豐加速往前衝，努力追回來了。) ", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_11.mp3" },
+            { text: "阿<span class=\"tonemark\">豐</span><span class=\"tonemark\">催</span><span class=\"lighttone\">落</span><span class=\"lighttone\">去</span>，<span class=\"tonemark\">拚</span><span class=\"lighttone\">轉</span><span class=\"lighttone\">來</span><span class=\"lighttone\">矣</span>。", roman: "A-hong tshui--lo̍h-khì, piànn--tńg-lâi--ah.", trans: "(阿豐加速往前衝，努力追回來了。)", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_11.mp3" },
             { text: "逐家做伙向前<span class=\"tonemark\">衝</span>，<span class=\"tonemark\">讚</span><span class=\"lighttone\">啦</span>！", roman: "Ta̍k-ke tsò-hué hiòng-tsiân tshiong, tsán--lah!", trans: "(大家一起向前衝，好棒啊！)", mp3: "https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B9_txet_3_12.mp3" }
         ];
 
         let activeRecorder = null;
         let activeStream = null;
         let currentRecordingIndex = null;
-        let currentPlayingAudio = null; // 全域追蹤目前正在播放的回放音訊實例
+        let currentPlayingAudio = null;
         const audioChunksMap = {};
         const audioUrlMap = {};
         const isRecordingMap = {};
@@ -104,7 +104,6 @@
             detectInAppBrowser();
         });
 
-        // 智慧偵測 LINE / 社群內建瀏覽器
         function detectInAppBrowser() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if (/Line|FBAN|FBAV|Instagram|WebView|Twitter/i.test(ua)) {
@@ -146,7 +145,6 @@
             container.innerHTML = html;
         }
 
-        // 播放原音（同時觸發防打架互斥鎖：停止目前的回放聲音）
         function playLessonAudio(url) {
             stopCurrentPlayback();
             const player = document.getElementById("lesson-audio-player");
@@ -155,7 +153,6 @@
             player.play().catch(err => { console.error("播放原音失敗：" + err); });
         }
 
-        // 強制停止目前正在播放的學生回放或音訊
         function stopCurrentPlayback() {
             if (currentPlayingAudio) {
                 currentPlayingAudio.pause();
@@ -178,6 +175,7 @@
             });
         }
 
+        //修復後的畫面切換函式
         function openLesson() {
             document.getElementById("menu-view").classList.add("hidden");
             document.getElementById("lesson-view").classList.remove("hidden");
@@ -186,4 +184,174 @@
         function backToMenu() {
             stopCurrentPlayback();
             document.getElementById("lesson-view").classList.add("hidden");
-            document
+            document.getElementById("menu-view").classList.remove("hidden");
+        }
+
+        function getSupportedMimeType() {
+            const types = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/mp4',
+                'audio/aac',
+                'audio/ogg'
+            ];
+            for (let type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+            return '';
+        }
+
+        async function toggleStudentRecord(index) {
+            stopCurrentPlayback();
+            const lessonPlayer = document.getElementById("lesson-audio-player");
+            if (lessonPlayer) { lessonPlayer.pause(); }
+
+            const recBtn = document.getElementById("student-rec-" + index);
+            const recText = document.getElementById("student-rec-text-" + index);
+            const statusEl = document.getElementById("student-status-" + index);
+            const pbBtn = document.getElementById("student-pb-" + index);
+
+            if (isRecordingMap[index]) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                return;
+            }
+
+            if (currentRecordingIndex !== null && currentRecordingIndex !== index) {
+                if (activeRecorder && activeRecorder.state === "recording") {
+                    activeRecorder.stop();
+                }
+                isRecordingMap[currentRecordingIndex] = false;
+                const oldRecText = document.getElementById("student-rec-text-" + currentRecordingIndex);
+                if (oldRecText) oldRecText.innerText = "開始錄音";
+                const oldStatus = document.getElementById("student-status-" + currentRecordingIndex);
+                if (oldStatus) oldStatus.classList.add("hidden");
+                const oldRecBtn = document.getElementById("student-rec-" + currentRecordingIndex);
+                if (oldRecBtn) oldRecBtn.classList.remove("recording-anim");
+            }
+
+            try {
+                if (recText) recText.innerText = "準備中...";
+                
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                    activeStream = null;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                if (recText) recText.innerText = "準備中...";
+
+                activeStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
+                });
+
+                audioChunksMap[index] = [];
+                currentRecordingIndex = index;
+
+                let options = {};
+                const mime = getSupportedMimeType();
+                if (mime) {
+                    options.mimeType = mime;
+                }
+
+                try {
+                    activeRecorder = new MediaRecorder(activeStream, options);
+                } catch (e) {
+                    activeRecorder = new MediaRecorder(activeStream);
+                }
+
+                activeRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunksMap[index].push(e.data);
+                    }
+                };
+
+                activeRecorder.onstop = () => {
+                    if (activeStream) {
+                        activeStream.getTracks().forEach(track => track.stop());
+                        activeStream = null;
+                    }
+
+                    if (recText) recText.innerText = "⏳ 封裝處理中...";
+
+                    setTimeout(() => {
+                        if (audioUrlMap[index]) {
+                            URL.revokeObjectURL(audioUrlMap[index]);
+                        }
+
+                        const blobType = activeRecorder.mimeType || 'audio/webm';
+                        const blob = new Blob(audioChunksMap[index], { type: blobType });
+                        
+                        if (blob.size > 0) {
+                            const audioUrl = URL.createObjectURL(blob);
+                            audioUrlMap[index] = audioUrl;
+
+                            if (recBtn) {
+                                recBtn.classList.remove("recording-anim");
+                                if (recText) recText.innerText = "重新錄音";
+                            }
+                            if (statusEl) statusEl.classList.add("hidden");
+
+                            if (pbBtn) {
+                                pbBtn.classList.remove("hidden");
+                            }
+                        } else {
+                            alert("錄音檔建立異常（無聲音資料），請重新錄製一次。");
+                            if (recBtn) {
+                                recBtn.classList.remove("recording-anim");
+                                if (recText) recText.innerText = "開始錄音";
+                            }
+                            if (statusEl) statusEl.classList.add("hidden");
+                        }
+
+                        isRecordingMap[index] = false;
+                        currentRecordingIndex = null;
+                    }, 1500);
+                };
+
+                activeRecorder.start(100);
+                isRecordingMap[index] = true;
+                if (recBtn) {
+                    recBtn.classList.add("recording-anim");
+                    if (recText) recText.innerText = "停止錄音";
+                }
+                if (statusEl) statusEl.classList.remove("hidden");
+                if (pbBtn) pbBtn.classList.add("hidden");
+
+            } catch (err) {
+                if (recText) recText.innerText = "開始錄音";
+                alert("無法啟用麥克風！如果您是透過 LINE 開啟，請依照提示點擊畫面右上角或右下角選單改用預設瀏覽器（Safari / Chrome）開啟。");
+            }
+        }
+
+        function playStudentPlayback(index) {
+            const url = audioUrlMap[index];
+            if (!url) {
+                alert("目前音訊檔案正在處理中，請稍候再試！");
+                return;
+            }
+            stopCurrentPlayback();
+            const lessonPlayer = document.getElementById("lesson-audio-player");
+            if (lessonPlayer) { lessonPlayer.pause(); }
+
+            const instantAudio = new Audio(url);
+            currentPlayingAudio = instantAudio;
+
+            instantAudio.play().catch(err => {
+                console.error("回放播放失敗：", err);
+                alert("回放播放失敗，請重新錄製一次。");
+            });
+
+            instantAudio.onended = () => {
+                if (currentPlayingAudio === instantAudio) {
+                    currentPlayingAudio = null;
+                }
+            };
+        }
+    </script>
+</body>
+</html>
