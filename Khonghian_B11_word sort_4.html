@@ -24,6 +24,26 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-yellow-50 via-purple-50 to-indigo-100 min-h-screen p-4 md:p-8 font-sans text-gray-800">
+    <!-- 學生端手機音訊解鎖遮罩 -->
+    <div id="student-unlock-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl text-center space-y-4 border border-indigo-100">
+            <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg">
+                🎵
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-xl font-extrabold text-indigo-950">kh_B11 第 4 課 - 句子重組闖關</h2>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    請點擊下方按鈕開始闖關，解鎖語音與勝利音效！
+                </p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3 rounded-2xl text-[11px] text-left leading-relaxed">
+                <span class="font-bold">💡 貼心提醒：</span>若透過 LINE 開啟，建議點擊右上角或右下角三點，選擇 <span class="font-bold text-amber-700 underline">「以瀏覽器開啟」</span>。
+            </div>
+            <button onclick="studentUnlockAudio()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-extrabold rounded-2xl shadow-lg hover:opacity-95 transition cursor-pointer">
+                🚀 開始闖關
+            </button>
+        </div>
+    </div>
     <div class="max-w-2xl mx-auto space-y-6">
         <header class="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -41,7 +61,7 @@
     <audio id="sfx-win" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/victory.mp3" preload="auto" class="hidden"></audio>
     <audio id="sfx-wrong" src="https://raw.githubusercontent.com/tsong-su/iuhi/main/game4_assets/wrong.mp3" preload="auto" class="hidden"></audio>
     <script>
-        const questions = [{"idx":1,"tokens":["聽講","法國人","真","慣勢","逐工","澍","芳水"],"answerStr":"聽講法國人真慣勢逐工澍芳水","hint":"聽講法國人真慣勢逐工澍芳水","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_1.mp3"},{"idx":2,"tokens":["德國","的","豬跤","皮","脆脆","是","因為","有","烘","過"],"answerStr":"德國的豬跤皮脆脆是因為有烘過","hint":"德國的豬跤皮脆脆是因為有烘過","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_2.mp3"},{"idx":3,"tokens":["越南","的","潤餅","搵料","酸甜仔","酸甜"],"answerStr":"越南的潤餅搵料酸甜仔酸甜","hint":"越南的潤餅搵料酸甜仔酸甜","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_3.mp3"},{"idx":4,"tokens":["明年","出國","𨑨迌","來去","日本","看","櫻花"],"answerStr":"明年出國𨑨迌來去日本看櫻花","hint":"明年出國𨑨迌來去日本看櫻花","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_4.mp3"},{"idx":5,"tokens":["彼間","餐廳","有","咧","賣","馬來西亞","的","肉骨茶"],"answerStr":"彼間餐廳有咧賣馬來西亞的肉骨茶","hint":"彼間餐廳有咧賣馬來西亞的肉骨茶","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_5.mp3"},{"idx":6,"tokens":["荷蘭","上懸","的","風車","有","七層","樓","懸"],"answerStr":"荷蘭上懸的風車有七層樓懸","hint":"荷蘭上懸的風車有七層樓懸","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_6.mp3"},{"idx":7,"tokens":["南非","出產","世界","上大粒","的","璇石","叫做","非洲","之星"],"answerStr":"南非出產世界上大粒的璇石叫做非洲之星","hint":"南非出產世界上大粒的璇石叫做非洲之星","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_7.mp3"},{"idx":8,"tokens":["澳洲","有","真濟","無尾熊","𪜶","攏","𢯾","佇","樹仔頂","睏"],"answerStr":"澳洲有真濟無尾熊𪜶攏𢯾佇樹仔頂睏","hint":"澳洲有真濟無尾熊𪜶攏𢯾佇樹仔頂睏","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_8.mp3"}];
+        const questions = [{"idx":1,"tokens":["聽講","法國人","真","慣勢","逐工","澍","芳水"],"answerStr":"聽講法國人真慣勢逐工澍芳水","hint":"聽講法國人真慣勢逐工澍芳水","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_1.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_1.mp3"},{"idx":2,"tokens":["德國","的","豬跤","皮","脆脆","是","因為","有","烘","過"],"answerStr":"德國的豬跤皮脆脆是因為有烘過","hint":"德國的豬跤皮脆脆是因為有烘過","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_2.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_2.mp3"},{"idx":3,"tokens":["越南","的","潤餅","搵料","酸甜仔","酸甜"],"answerStr":"越南的潤餅搵料酸甜仔酸甜","hint":"越南的潤餅搵料酸甜仔酸甜","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_3.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_3.mp3"},{"idx":4,"tokens":["明年","出國","𨑨迌","來去","日本","看","櫻花"],"answerStr":"明年出國𨑨迌來去日本看櫻花","hint":"明年出國𨑨迌來去日本看櫻花","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_4.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_4.mp3"},{"idx":5,"tokens":["彼間","餐廳","有","咧","賣","馬來西亞","的","肉骨茶"],"answerStr":"彼間餐廳有咧賣馬來西亞的肉骨茶","hint":"彼間餐廳有咧賣馬來西亞的肉骨茶","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_5.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_5.mp3"},{"idx":6,"tokens":["荷蘭","上懸","的","風車","有","七層","樓","懸"],"answerStr":"荷蘭上懸的風車有七層樓懸","hint":"荷蘭上懸的風車有七層樓懸","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_6.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_6.mp3"},{"idx":7,"tokens":["南非","出產","世界","上大粒","的","璇石","叫做","非洲","之星"],"answerStr":"南非出產世界上大粒的璇石叫做非洲之星","hint":"南非出產世界上大粒的璇石叫做非洲之星","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_7.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_7.mp3"},{"idx":8,"tokens":["澳洲","有","真濟","無尾熊","𪜶","攏","𢯾","佇","樹仔頂","睏"],"answerStr":"澳洲有真濟無尾熊𪜶攏𢯾佇樹仔頂睏","hint":"澳洲有真濟無尾熊𪜶攏𢯾佇樹仔頂睏","audioUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping_assets/kh_B11_Example_4_8.mp3","audioBackupUrl":"https://raw.githubusercontent.com/tsong-su/iuhi/main/tsinping1_assets/kh_B11_Example_4_8.mp3"}];
         let currentIndex = 0;
         let sortableInstance = null;
         const colors = [
@@ -66,6 +86,15 @@
             const sfx = document.getElementById(type === 'win' ? 'sfx-win' : 'sfx-wrong');
             if (sfx) { sfx.currentTime = 0; sfx.play().catch(e => {}); }
         }
+        function playDualAudio(primaryUrl, backupUrl) {
+            const audio = new Audio(primaryUrl);
+            audio.play().catch(() => {
+                if (backupUrl) {
+                    const backupAudio = new Audio(backupUrl);
+                    backupAudio.play().catch(e => console.log('備用音檔播放失敗'));
+                }
+            });
+        }
         function startConfetti() {
             const confettiColors = ['#f43f5e', '#ec4899', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#fbbf24'];
             for (let i = 0; i < 60; i++) {
@@ -78,6 +107,16 @@
                 document.body.appendChild(confetti);
             }
         }
+        function studentUnlockAudio() {
+            const modal = document.getElementById('student-unlock-modal');
+            if (modal) {
+                modal.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => { modal.remove(); }, 300);
+            }
+            renderGame();
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
         function renderGame() {
             const container = document.getElementById('game-main-container');
             if (!container) return;
@@ -89,7 +128,7 @@
             }
             const q = questions[currentIndex];
             const shuffled = shuffle(q.tokens);
-            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="new Audio(\'' + q.audioUrl + '\').play().catch(()=>{})" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer">🔊 聽語音</button></div>' +
+            container.innerHTML = '<div class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 text-white p-4 rounded-3xl shadow flex items-center justify-between"><div><span class="bg-white/20 text-[10px] px-2.5 py-0.5 rounded-full font-bold">第 ' + (currentIndex + 1) + ' / ' + questions.length + ' 關</span><div class="text-xs text-pink-100 mt-1">💡 提示：' + q.hint + '</div></div><button onclick="playDualAudio(\'' + q.audioUrl + '\', \'' + q.audioBackupUrl + '\')" class="bg-white text-indigo-700 px-3.5 py-2 rounded-2xl text-xs font-extrabold shadow cursor-pointer hover:bg-pink-50">🔊 聽語音</button></div>' +
                 '<div id="student-drag-box" class="p-5 rounded-3xl border-2 border-dashed border-indigo-300 min-h-[120px] flex flex-wrap items-center gap-2.5 bg-slate-50">' +
                 shuffled.map((t, i) => '<div class="' + colors[i % colors.length] + ' px-4 py-2.5 rounded-2xl font-extrabold text-xs shadow-md border cursor-grab select-none transition transform hover:scale-105">' + t + '</div>').join('') +
                 '</div>' +
@@ -100,7 +139,6 @@
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstance = new Sortable(dragBox, { animation: 150, ghostClass: 'opacity-50' });
             }
-            setTimeout(() => { new Audio(q.audioUrl).play().catch(e => { console.log('等待點擊播放'); }); }, 400);
         }
         function checkAnswer() {
             const q = questions[currentIndex];
@@ -118,16 +156,18 @@
                 msg.style.color = "#dc2626";
             }
         }
-        function nextQuestion() { currentIndex++; renderGame(); }
-        function resetGame() { currentIndex = 0; renderGame(); }
-        window.onload = function() {
-            renderGame();
-            document.body.addEventListener('click', function unlockAudio() {
-                const q = questions[currentIndex];
-                if (q && q.audioUrl) { new Audio(q.audioUrl).play().catch(e=>{}); }
-                document.body.removeEventListener('click', unlockAudio);
-            }, { once: true });
-        };
+        function nextQuestion() { 
+            currentIndex++; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
+        function resetGame() { 
+            currentIndex = 0; 
+            renderGame(); 
+            const q = questions[currentIndex];
+            if (q) { playDualAudio(q.audioUrl, q.audioBackupUrl); }
+        }
     </script>
 </body>
 </html>
