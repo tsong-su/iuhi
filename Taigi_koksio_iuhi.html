@@ -10,42 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- Zero-Configuration Public Cloud Visitor Counter Script -->
-    <script>
-        window.initCloudCounter = async function() {
-            const counterEl = document.getElementById('visitCount');
-            // Namespace and key for counterapi.dev (free, public, no configuration required)
-            const namespace = 'taigi-games-hub-tsong-su';
-            const key = 'visits';
-            
-            try {
-                // Attempt to hit the public cloud counter API
-                const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
-                if (response.ok) {
-                    const data = await response.json();
-                    const liveCount = data.count || 1251;
-                    if (counterEl) {
-                        counterEl.innerText = liveCount.toLocaleString();
-                    }
-                    return;
-                }
-                throw new Error("API response not ok");
-            } catch (error) {
-                console.warn("Cloud counter fallback activated:", error);
-                // Fallback to localStorage if offline or blocked by browser extensions
-                let count = localStorage.getItem('taigi_visit_count');
-                if (!count) {
-                    count = 1251;
-                } else {
-                    count = parseInt(count, 10) + 1;
-                }
-                localStorage.setItem('taigi_visit_count', count);
-                if (counterEl) {
-                    counterEl.innerText = count.toLocaleString();
-                }
-            }
-        };
-    </script>
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -98,7 +62,7 @@
                 <i class="fa-solid fa-gamepad text-9xl"></i>
             </div>
             <div class="max-w-3xl relative z-10">
-                <h2 class="text-3xl sm:text-4xl font-black mt-1 mb-3 leading-tight drop-shadow">輕鬆學台語，心適閣歡喜！</h2>
+                <h2 class="text-3xl sm:text-4xl font-black mt-1 mb-3 leading-tight drop-shadow">輕鬆學語，心適閣歡喜！</h2>
                 <p class="text-emerald-50 text-base sm:text-lg leading-relaxed font-bold block mb-2">
                     先選下底教材版本，開始歡喜學習！
                 </p>
@@ -141,7 +105,7 @@
             <p>台語遊戲學習樂園 © 2026 | 專為國小學生設計之互動學習平臺</p>
             <div class="bg-amber-100 text-amber-900 px-3 py-1 rounded-xl border border-amber-300 shadow-inner flex items-center space-x-1.5">
                 <i class="fa-solid fa-eye text-amber-600 text-xs"></i>
-                <span>瀏覽人次：<span id="visitCount" class="font-black text-orange-600">1</span> 人次</span>
+                <span>瀏覽人次：<span id="visitCount" class="font-black text-orange-600">1251</span> 人次</span>
             </div>
         </div>
     </footer>
@@ -841,7 +805,7 @@
 
                 let interactiveCardsHtml = interactiveGamesData.map((game, index) => {
                     let clickAction = '';
-                    let isVideoOrPinyin = index >= 3; // 3rd and 4th are pinyin & youtube
+                    let isVideoOrPinyin = index >= 3;
                     let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
                     let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
 
@@ -1238,8 +1202,17 @@
 
         window.onload = function() {
             renderApp();
-            if (typeof window.initCloudCounter === 'function') {
-                window.initCloudCounter();
+            // Local visit counter simulation initialized securely
+            let count = localStorage.getItem('taigi_visit_count');
+            if (!count) {
+                count = 1251;
+            } else {
+                count = parseInt(count, 10) + 1;
+            }
+            localStorage.setItem('taigi_visit_count', count);
+            const counterEl = document.getElementById('visitCount');
+            if (counterEl) {
+                counterEl.innerText = count.toLocaleString();
             }
         }
     </script>
