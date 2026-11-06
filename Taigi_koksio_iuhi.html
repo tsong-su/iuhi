@@ -103,10 +103,6 @@
     <footer class="bg-white border-t-4 border-amber-200 mt-16 py-6 text-center text-slate-600 font-bold">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs">
             <p>台語遊戲學習樂園 © 2026 | 專為國小學生設計之互動學習平臺</p>
-            <div class="bg-amber-100 text-amber-900 px-3 py-1 rounded-xl border border-amber-300 shadow-inner flex items-center space-x-1.5">
-                <i class="fa-solid fa-eye text-amber-600 text-xs"></i>
-                <span>瀏覽人次：<span id="visitCount" class="font-black text-orange-600">1251</span> 人次</span>
-            </div>
         </div>
     </footer>
 
@@ -1202,18 +1198,6 @@
 
         window.onload = function() {
             renderApp();
-            // Local visit counter simulation initialized securely
-            let count = localStorage.getItem('taigi_visit_count');
-            if (!count) {
-                count = 1251;
-            } else {
-                count = parseInt(count, 10) + 1;
-            }
-            localStorage.setItem('taigi_visit_count', count);
-            const counterEl = document.getElementById('visitCount');
-            if (counterEl) {
-                counterEl.innerText = count.toLocaleString();
-            }
         }
     </script>
 </body>
