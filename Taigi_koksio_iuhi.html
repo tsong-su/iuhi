@@ -10,52 +10,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs for Cloud Visitor Counter -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global Firebase configuration
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'taigi-games-hub-visits';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyDummyKeyForPublicCounter",
-            authDomain: "taigi-hub.firebaseapp.com",
-            projectId: "taigi-hub",
-            storageBucket: "taigi-hub.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123:web:abc"
-        };
-
+    <!-- Zero-Configuration Public Cloud Visitor Counter Script -->
+    <script>
         window.initCloudCounter = async function() {
             const counterEl = document.getElementById('visitCount');
+            // Namespace and key for counterapi.dev (free, public, no configuration required)
+            const namespace = 'taigi-games-hub-tsong-su';
+            const key = 'visits';
+            
             try {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                const db = getFirestore(app);
-
-                await signInAnonymously(auth);
-
-                // Path following strict rules: /artifacts/{appId}/public/data/counter
-                const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'visitor_counter');
-                
-                let docSnap = await getDoc(counterRef);
-                if (!docSnap.exists()) {
-                    // Initialize with base count 1251 on first ever creation
-                    await setDoc(counterRef, { count: 1251 });
-                    if (counterEl) counterEl.innerText = "1,251";
-                } else {
-                    // Increment count globally on each unique session visit
-                    await updateDoc(counterRef, { count: increment(1) });
-                    
-                    // Fetch updated count
-                    docSnap = await getDoc(counterRef);
-                    const newCount = docSnap.data().count || 1251;
-                    if (counterEl) counterEl.innerText = newCount.toLocaleString();
+                // Attempt to hit the public cloud counter API
+                const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const liveCount = data.count || 1251;
+                    if (counterEl) {
+                        counterEl.innerText = liveCount.toLocaleString();
+                    }
+                    return;
                 }
+                throw new Error("API response not ok");
             } catch (error) {
                 console.warn("Cloud counter fallback activated:", error);
-                // Fallback to localStorage if Firebase config is purely mocked in offline sandbox
+                // Fallback to localStorage if offline or blocked by browser extensions
                 let count = localStorage.getItem('taigi_visit_count');
                 if (!count) {
                     count = 1251;
