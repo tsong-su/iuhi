@@ -28,19 +28,35 @@
             height: calc(100vh - 4rem);
         }
         
-        /* 覆寫 Leaflet 預設彈出視窗樣式，改為透明以配合我們的郵票設計 */
+        /* 調整 Leaflet 彈出視窗，適應不同尺寸的圖片 */
         .leaflet-popup-content-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
+            border-radius: 8px !important;
             padding: 0 !important;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
         }
         .leaflet-popup-content {
             margin: 0 !important;
-            width: 280px !important;
+            width: 320px !important; /* 加寬一點，讓橫式郵票更好看 */
         }
-        .leaflet-popup-tip-container {
-            display: none;
+        /* 微調關閉按鈕，避免擋到圖片 */
+        .leaflet-popup-close-button {
+            color: #333 !important;
+            background-color: rgba(255,255,255,0.8) !important;
+            border-radius: 50% !important;
+            width: 24px !important;
+            height: 24px !important;
+            top: 8px !important;
+            right: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: bold !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        }
+        .leaflet-popup-close-button:hover {
+            background-color: #fff !important;
+            color: #e53e3e !important;
         }
         
         .custom-scrollbar::-webkit-scrollbar {
@@ -70,7 +86,6 @@
             <h1 class="text-lg font-bold tracking-wider sm:hidden">燈塔全紀錄</h1>
         </div>
         
-        <!-- 太平島飛梭按鈕 -->
         <button onclick="flyToTaiping()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 px-4 rounded shadow-lg transition-colors flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -82,16 +97,14 @@
     <!-- Main Content -->
     <main class="flex flex-col md:flex-row flex-1 content-area relative">
         
-        <!-- 左側列表 (Sidebar) -->
+        <!-- 左側列表 -->
         <aside class="w-full md:w-1/3 lg:w-1/4 bg-white shadow-lg flex flex-col z-20 h-[40vh] md:h-full transition-all duration-300">
             <div class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
                 <h2 class="text-lg font-semibold text-gray-800">燈塔列表</h2>
                 <p class="text-xs text-gray-500 mt-1">點擊列表項目即可在地圖上定位</p>
             </div>
             
-            <div class="overflow-y-auto flex-1 custom-scrollbar" id="lighthouse-list">
-                <!-- 列表內容 -->
-            </div>
+            <div class="overflow-y-auto flex-1 custom-scrollbar" id="lighthouse-list"></div>
         </aside>
 
         <!-- 右側地圖 -->
@@ -142,18 +155,8 @@
             { name: "三仙台燈杆", region: "特色燈杆", lat: 23.125, lng: 121.411, location: "臺東縣成功鎮", note: "佇立於三仙台島第二峰岩壁上，建於 1915 年" }
         ];
 
-        // ==========================================
-        // 您的 GitHub 圖片庫連結設定
-        // ==========================================
-        // 指向您 GitHub 的 Raw 網址 (能直接顯示圖片的真實路徑)
+        const customImageNames = {};
         const githubBaseUrl = "https://raw.githubusercontent.com/tsong-su/iuhi/main/Taiwan_tingthah_assets/";
-        
-        // 預設情況下，程式會自動尋找「燈塔名稱.jpg」(例如：基隆燈塔.jpg)
-        // 如果您的資料夾中，某些燈塔的副檔名是 .png 或名稱不一樣，可以寫在這裡：
-        const customImageNames = {
-            // 範例："彭佳嶼燈塔": "彭佳嶼燈塔.png",
-            // 範例："東引島燈塔": "東引_燈塔.jpg"
-        };
 
         let map;
         let markers = {}; 
@@ -190,48 +193,30 @@
                     className: 'font-bold text-blue-800 bg-white/90 px-1 rounded shadow-sm border-none'
                 });
 
-                // ==========================================
-                // 組裝您的 GitHub 圖片網址
-                // ==========================================
-                let fileName = customImageNames[lh.name] || (lh.name + ".jpg"); // 預設用 .jpg 找圖
-                let imgSrc = githubBaseUrl + fileName;
+                let numStr = String(index + 1).padStart(2, '0');
+                let autoFileName = `${numStr}.${lh.name}.jpg`; 
+                let fileName = customImageNames[lh.name] || autoFileName; 
+                let encodedFileName = encodeURIComponent(fileName);
+                let imgSrc = githubBaseUrl + encodedFileName;
 
-                // 精緻的數位郵票設計
+                // 移除假郵票外框，將圖片設為 object-contain 以適應所有長寬比例
+                // 並將高度設為 auto，最大高度限制，保護圖片不被裁切
                 const popupContent = `
-                    <div class="bg-white p-2 shadow-2xl filter drop-shadow-lg mx-auto w-full">
-                        <!-- 郵票虛線邊框 -->
-                        <div class="border-[3px] border-dotted border-gray-400 p-2 relative bg-[#fdfbf7]">
-                            
-                            <!-- 復古紅色郵戳 -->
-                            <div class="absolute -top-3 right-2 w-16 h-16 rounded-full border-[1.5px] border-red-500/60 flex flex-col items-center justify-center rotate-[-20deg] pointer-events-none z-10 bg-transparent">
-                                <span class="text-[7px] text-red-500/80 font-bold tracking-widest">TAIWAN</span>
-                                <span class="text-[7px] text-red-500/80 font-bold border-y border-red-500/50 px-3 my-[2px]">郵政</span>
-                                <span class="text-[7px] text-red-500/80 font-bold tracking-widest">2024</span>
+                    <div class="bg-white rounded-lg flex flex-col items-center">
+                        <div class="w-full flex justify-center bg-gray-100 p-2 rounded-t-lg relative">
+                            <img src="${imgSrc}" 
+                                 class="w-full h-auto max-h-[220px] object-contain drop-shadow-md" 
+                                 onerror="this.src='https://placehold.co/320x210/e2e8f0/475569?text=${encodeURIComponent(lh.name)}'" 
+                                 alt="${lh.name}郵票">
+                        </div>
+                        <div class="w-full p-4 text-center">
+                            <h3 class="text-xl font-bold text-gray-800 tracking-wider font-serif">${lh.name}</h3>
+                            <div class="flex justify-center items-center mt-2 mb-3">
+                                <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-800 text-[11px] rounded-full font-bold tracking-wider">${lh.region}</span>
                             </div>
-
-                            <!-- 郵票面額 -->
-                            <div class="flex justify-between items-start mb-2 px-1">
-                                <span class="font-serif text-2xl font-bold text-gray-800 leading-none">12<span class="text-xs ml-0.5">元</span></span>
-                                <span class="text-[9px] text-gray-500 tracking-widest uppercase">Republic of China</span>
-                            </div>
-
-                            <!-- 燈塔照片 -->
-                            <!-- 當找不到圖片時 (onerror)，會自動顯示一張寫著燈塔名稱的替代圖 -->
-                            <div class="relative w-full h-36 mb-2 overflow-hidden bg-gray-200 border border-gray-300 p-1">
-                                <img src="${imgSrc}" class="w-full h-full object-cover grayscale-[15%] sepia-[10%] object-center transition-all duration-300 hover:grayscale-0 hover:sepia-0" 
-                                     onerror="this.src='https://placehold.co/320x210/e2e8f0/475569?text=${encodeURIComponent(lh.name)}'" alt="${lh.name}">
-                            </div>
-
-                            <!-- 燈塔資訊 -->
-                            <div class="text-center pt-1">
-                                <h3 class="text-lg font-bold text-gray-800 tracking-wider font-serif">${lh.name}</h3>
-                                <div class="flex justify-center items-center mt-1 mb-2">
-                                    <span class="inline-block px-2 py-0.5 bg-gray-200 text-gray-700 text-[10px] rounded-sm tracking-wider border border-gray-300">${lh.region}</span>
-                                </div>
-                                <p class="text-[12px] text-gray-600 text-left leading-relaxed mt-2 border-t border-gray-300/50 pt-2 font-medium">
-                                    ${lh.note}
-                                </p>
-                            </div>
+                            <p class="text-[13px] text-gray-600 text-left leading-relaxed border-t border-gray-200 pt-3">
+                                ${lh.note}
+                            </p>
                         </div>
                     </div>
                 `;
