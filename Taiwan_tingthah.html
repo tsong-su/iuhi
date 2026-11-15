@@ -86,12 +86,31 @@
             <h1 class="text-lg font-bold tracking-wider sm:hidden">燈塔全紀錄</h1>
         </div>
         
-        <button onclick="flyToTaiping()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 px-4 rounded shadow-lg transition-colors flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            飛向太平島
-        </button>
+        <div class="flex items-center">
+            <!-- 新增：給使用者的提示說明 (僅在平板與電腦螢幕顯示) -->
+            <div class="hidden md:flex items-center text-xs lg:text-sm text-blue-100 bg-white/10 px-3 py-1.5 rounded-full mr-3 border border-white/20 animate-pulse">
+                <span class="mr-1">💡</span> 太平島距離遙遠，請使用右側按鈕快速切換地圖視角 👉
+            </div>
+            
+            <div class="flex space-x-2">
+                <!-- 新增：飛回臺灣按鈕 -->
+                <button onclick="flyToTaiwan()" title="將地圖視角拉回臺灣本島與周邊離島範圍" class="bg-teal-500 hover:bg-teal-600 text-white text-sm font-bold py-2 px-3 rounded shadow-lg transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="hidden sm:inline">飛回臺灣</span>
+                    <span class="sm:hidden">臺灣</span>
+                </button>
+                
+                <button onclick="flyToTaiping()" title="將地圖視角拉遠並飛向南海的太平島" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 px-3 rounded shadow-lg transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:mr-1 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span class="hidden sm:inline">飛向太平島</span>
+                    <span class="sm:hidden">太平島</span>
+                </button>
+            </div>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -160,6 +179,7 @@
 
         let map;
         let markers = {}; 
+        let taiwanBounds = []; // 新增：用來儲存臺灣本島及主要離島的範圍
 
         function initMap() {
             map = L.map('map');
@@ -177,13 +197,13 @@
                 shadowSize: [41, 41]
             });
 
-            const bounds = [];
+            taiwanBounds = []; // 初始化範圍
 
             lighthouses.forEach((lh, index) => {
                 const marker = L.marker([lh.lat, lh.lng], { icon: defaultIcon }).addTo(map);
                 
                 if (lh.name !== "太平島燈塔") {
-                    bounds.push([lh.lat, lh.lng]);
+                    taiwanBounds.push([lh.lat, lh.lng]); // 將除了太平島以外的座標存起來
                 }
                 
                 marker.bindTooltip(lh.name, {
@@ -233,7 +253,7 @@
                 markers[index] = marker; 
             });
 
-            map.fitBounds(bounds, { padding: [50, 50] });
+            map.fitBounds(taiwanBounds, { padding: [50, 50] }); // 初始視角
         }
 
         function renderList() {
@@ -276,6 +296,13 @@
         function flyToTaiping() {
             const index = lighthouses.findIndex(lh => lh.name === "太平島燈塔");
             if(index !== -1) flyToLighthouse(index);
+        }
+
+        // 新增：飛回臺灣本島的動畫函數
+        function flyToTaiwan() {
+            if (taiwanBounds.length > 0) {
+                map.flyToBounds(taiwanBounds, { padding: [50, 50], duration: 1.5 });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
