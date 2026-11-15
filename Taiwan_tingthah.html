@@ -125,7 +125,7 @@
             { name: "高美燈塔", region: "中臺灣", lat: 24.312, lng: 120.549, location: "臺中市清水區", note: "全臺唯一紅白橫紋相間的燈塔（已停用）" },
             { name: "臺中港燈塔", region: "中臺灣", lat: 24.288, lng: 120.518, location: "臺中市梧棲區", note: "全臺塔身最高（62.6 公尺），位於港區管制區" },
             { name: "芳苑燈塔", region: "中臺灣", lat: 23.963, lng: 120.326, location: "彰化縣芳苑鄉", note: "黑白直條紋相間，本島最年輕的燈塔" },
-            { name: "國聖港燈塔", region: "南臺灣", lat: 23.100, lng: 120.036, location: "臺南市七股區", note: "臺灣本島極西點，黑白相間方錐形鋼架" },
+            { name: "國聖港燈塔", region: "南臺灣", lat: 23.100, lng: 120.036, location: "臺南市七股區（頂頭額沙洲）", note: "臺灣本島極西點，黑白相間方錐形鋼架" },
             { name: "安平燈塔", region: "南臺灣", lat: 22.997, lng: 120.155, location: "臺南市安平區", note: "緊鄰觀夕平台，純白圓形鐵塔" },
             { name: "高雄燈塔", region: "南臺灣", lat: 22.616, lng: 120.264, location: "高雄市旗津區", note: "市定古蹟，純白八角磚塔，可俯瞰高雄港" },
             { name: "鵝鑾鼻燈塔", region: "南臺灣", lat: 21.902, lng: 120.852, location: "屏東縣恆春鎮", note: "臺灣本島極南點，光程最遠且有武裝防禦設計" },
@@ -199,8 +199,7 @@
                 let encodedFileName = encodeURIComponent(fileName);
                 let imgSrc = githubBaseUrl + encodedFileName;
 
-                // 移除假郵票外框，將圖片設為 object-contain 以適應所有長寬比例
-                // 並將高度設為 auto，最大高度限制，保護圖片不被裁切
+                // 在此加入了地標圖示與「縣市名稱 (lh.location)」的顯示區塊
                 const popupContent = `
                     <div class="bg-white rounded-lg flex flex-col items-center">
                         <div class="w-full flex justify-center bg-gray-100 p-2 rounded-t-lg relative">
@@ -211,9 +210,18 @@
                         </div>
                         <div class="w-full p-4 text-center">
                             <h3 class="text-xl font-bold text-gray-800 tracking-wider font-serif">${lh.name}</h3>
-                            <div class="flex justify-center items-center mt-2 mb-3">
+                            <div class="flex justify-center items-center mt-2 mb-2">
                                 <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-800 text-[11px] rounded-full font-bold tracking-wider">${lh.region}</span>
                             </div>
+                            
+                            <!-- 新增：縣市位置顯示 -->
+                            <div class="flex items-center justify-center text-[13px] text-gray-700 font-medium mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                </svg>
+                                ${lh.location}
+                            </div>
+
                             <p class="text-[13px] text-gray-600 text-left leading-relaxed border-t border-gray-200 pt-3">
                                 ${lh.note}
                             </p>
