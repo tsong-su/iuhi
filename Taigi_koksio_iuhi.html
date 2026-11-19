@@ -624,6 +624,15 @@
                     { name: "真平版 語詞拉霸機", url: "https://storage.googleapis.com/jen-pin-ebook-static-web/777-p-tai-05.html" },
                     { name: "康軒版 Wordwall + Kahoot! + AI語音小助教", url: "https://digitalmaster.knsh.com.tw/v3/pages/e/index.html#year=1151&field=tw&grade=all&item=instantquiz&bookcase=online&quiz=aitalk" }
                 ]
+            },
+            {
+                title: "臺灣及離島燈塔郵票地圖",
+                desc: "認識臺灣各地特色燈塔與相關台語詞彙趣味互動",
+                image: "",
+                fallbackIcon: "fa-tower-observation",
+                gradient: "from-sky-400 to-indigo-600",
+                type: "external",
+                url: "https://tsong-su.github.io/iuhi/Taiwan_tingthah.html"
             }
         ];
 
@@ -814,7 +823,7 @@
 
                 let interactiveCardsHtml = interactiveGamesData.map((game, index) => {
                     let clickAction = '';
-                    let isVideoOrPinyin = index >= 3;
+                    let isVideoOrPinyin = game.title === "拼音教學網" || game.title === "YouTube教學影片" || game.title === "真平&康軒互動遊戲";
                     let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
                     let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
 
@@ -830,7 +839,7 @@
 
                     let imgOrIcon = game.image ? 
                         `<img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover" onerror="this.onerror=null; this.innerHTML='<i class=\\'fa-solid ${game.fallbackIcon} text-white text-2xl\\'></i>';">` : 
-                        `<i class="fa-brands fa-youtube text-white text-2xl"></i>`;
+                        `<i class="fa-solid ${game.fallbackIcon} text-white text-2xl"></i>`;
 
                     return `
                         <div ${clickAction}
@@ -959,7 +968,7 @@
                 if (game.title.toLowerCase().includes(query) || game.desc.toLowerCase().includes(query)) {
                     foundCount++;
                     let clickAction = '';
-                    let isVideoOrPinyin = index >= 3;
+                    let isVideoOrPinyin = game.title === "拼音教學網" || game.title === "YouTube教學影片" || game.title === "真平&康軒互動遊戲";
                     let actionText = isVideoOrPinyin ? '點tsia入去選影片' : '點tsia入去選遊戲';
                     let badgeText = isVideoOrPinyin ? '入來遮看' : '入來遮耍';
 
