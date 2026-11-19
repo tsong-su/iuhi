@@ -28,7 +28,7 @@
             height: calc(100vh - 4rem);
         }
         
-        /* 調整 Leaflet 彈出視窗，適應不同尺寸的圖片 */
+        /* 調整 Leaflet 彈出視窗 */
         .leaflet-popup-content-wrapper {
             border-radius: 8px !important;
             padding: 0 !important;
@@ -37,9 +37,9 @@
         }
         .leaflet-popup-content {
             margin: 0 !important;
-            width: 320px !important; /* 加寬一點，讓橫式郵票更好看 */
+            width: 320px !important;
         }
-        /* 微調關閉按鈕，避免擋到圖片 */
+        /* 微調關閉按鈕 */
         .leaflet-popup-close-button {
             color: #333 !important;
             background-color: rgba(255,255,255,0.8) !important;
@@ -79,21 +79,17 @@
     <!-- Header -->
     <header class="bg-blue-800 text-white h-16 flex items-center justify-between px-6 shadow-md z-20 relative">
         <div class="flex items-center">
-            <!-- 將原本的 SVG 替換成您的專屬 Logo -->
             <img src="https://raw.githubusercontent.com/tsong-su/iuhi/main/logo.png" alt="Logo" class="h-10 w-auto mr-3 object-contain drop-shadow-md">
-            
-            <h1 class="text-xl font-bold tracking-wider hidden sm:block">臺灣及離島燈塔郵票全紀錄</h1>
+            <h1 class="text-xl font-bold tracking-wider hidden sm:block">臺灣及離島燈塔全紀錄</h1>
             <h1 class="text-lg font-bold tracking-wider sm:hidden">燈塔全紀錄</h1>
         </div>
         
         <div class="flex items-center">
-            <!-- 新增：給使用者的提示說明 (僅在平板與電腦螢幕顯示) -->
             <div class="hidden md:flex items-center text-xs lg:text-sm text-blue-100 bg-white/10 px-3 py-1.5 rounded-full mr-3 border border-white/20 animate-pulse">
                 <span class="mr-1">💡</span> 太平島距離遙遠，請使用右側按鈕快速切換地圖視角 👉
             </div>
             
             <div class="flex space-x-2">
-                <!-- 新增：飛回臺灣按鈕 -->
                 <button onclick="flyToTaiwan()" title="將地圖視角拉回臺灣本島與周邊離島範圍" class="bg-teal-500 hover:bg-teal-600 text-white text-sm font-bold py-2 px-3 rounded shadow-lg transition-colors flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -115,18 +111,14 @@
 
     <!-- Main Content -->
     <main class="flex flex-col md:flex-row flex-1 content-area relative">
-        
-        <!-- 左側列表 -->
         <aside class="w-full md:w-1/3 lg:w-1/4 bg-white shadow-lg flex flex-col z-20 h-[40vh] md:h-full transition-all duration-300">
             <div class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
                 <h2 class="text-lg font-semibold text-gray-800">燈塔列表</h2>
-                <p class="text-xs text-gray-500 mt-1">點擊列表項目即可在地圖上定位</p>
+                <p class="text-xs text-gray-500 mt-1">點擊項目可定位，並可聆聽臺語發音</p>
             </div>
-            
             <div class="overflow-y-auto flex-1 custom-scrollbar" id="lighthouse-list"></div>
         </aside>
 
-        <!-- 右側地圖 -->
         <section class="w-full md:w-2/3 lg:w-3/4 h-[60vh] md:h-full relative z-10">
             <div id="map"></div>
         </section>
@@ -134,52 +126,52 @@
 
     <script>
         const lighthouses = [
-            { name: "基隆燈塔", region: "北臺灣", lat: 25.1557, lng: 121.7416, location: "基隆市中山區", note: "市定古蹟，2024 年最新開放參觀" },
-            { name: "球子山燈塔", region: "北臺灣", lat: 25.144, lng: 121.737, location: "基隆市中山區", note: "第一座由國人自行設計施工的燈塔" },
-            { name: "淡水港燈塔", region: "北臺灣", lat: 25.176, lng: 121.411, location: "新北市淡水區", note: "臺灣本島唯一位於河口的燈塔" },
-            { name: "富貴角燈塔", region: "北臺灣", lat: 25.298, lng: 121.538, location: "新北市石門區", note: "臺灣本島極北點，黑白相間八角塔" },
-            { name: "鼻頭角燈塔", region: "北臺灣", lat: 25.129, lng: 121.918, location: "新北市瑞芳區", note: "步道可眺望，塔區因落石風險未開放" },
-            { name: "三貂角燈塔", region: "北臺灣", lat: 25.007, lng: 122.001, location: "新北市貢寮區", note: "臺灣本島極東點，最早開放參觀的燈塔" },
-            { name: "白沙岬燈塔", region: "北臺灣", lat: 25.041, lng: 121.076, location: "桃園市觀音區", note: "縣（市）定古蹟，紅磚砌造的雙層圓塔" },
-            { name: "高美燈塔", region: "中臺灣", lat: 24.312, lng: 120.549, location: "臺中市清水區", note: "全臺唯一紅白橫紋相間的燈塔（已停用）" },
-            { name: "臺中港燈塔", region: "中臺灣", lat: 24.288, lng: 120.518, location: "臺中市梧棲區", note: "全臺塔身最高（62.6 公尺），位於港區管制區" },
-            { name: "芳苑燈塔", region: "中臺灣", lat: 23.963, lng: 120.326, location: "彰化縣芳苑鄉", note: "黑白直條紋相間，本島最年輕的燈塔" },
-            { name: "國聖港燈塔", region: "南臺灣", lat: 23.100, lng: 120.036, location: "臺南市七股區（頂頭額沙洲）", note: "臺灣本島極西點，黑白相間方錐形鋼架" },
-            { name: "安平燈塔", region: "南臺灣", lat: 22.997, lng: 120.155, location: "臺南市安平區", note: "緊鄰觀夕平台，純白圓形鐵塔" },
-            { name: "高雄燈塔", region: "南臺灣", lat: 22.616, lng: 120.264, location: "高雄市旗津區", note: "市定古蹟，純白八角磚塔，可俯瞰高雄港" },
-            { name: "鵝鑾鼻燈塔", region: "南臺灣", lat: 21.902, lng: 120.852, location: "屏東縣恆春鎮", note: "臺灣本島極南點，光程最遠且有武裝防禦設計" },
-            { name: "蘇澳燈塔", region: "東臺灣", lat: 24.595, lng: 121.879, location: "宜蘭縣蘇澳鎮", note: "全臺塔身最矮（7.9 公尺），位於軍事管制區" },
-            { name: "奇萊鼻燈塔", region: "東臺灣", lat: 24.015, lng: 121.637, location: "花蓮縣花蓮市", note: "五角形白色混凝土塔，背倚中央山脈" },
-            { name: "花蓮港燈塔", region: "東臺灣", lat: 23.978, lng: 121.614, location: "花蓮縣花蓮市", note: "白色方形鋼架塔，位於市區公園旁" },
-            { name: "彭佳嶼燈塔", region: "離島 - 基隆外海", lat: 25.628, lng: 122.079, location: "基隆市中正區", note: "市定古蹟，軍事管制區未開放登島" },
-            { name: "基隆島燈塔", region: "離島 - 基隆外海", lat: 25.192, lng: 121.787, location: "基隆市中正區", note: "全臺最早使用太陽能發電的燈塔" },
-            { name: "塭港堆燈塔", region: "離島 - 雲林外海", lat: 23.473, lng: 119.996, location: "雲林縣口湖鄉", note: "因沙洲漂移，全臺重建次數最多的燈塔" },
-            { name: "琉球嶼燈塔", region: "離島 - 屏東外海", lat: 22.321, lng: 120.362, location: "屏東縣琉球鄉", note: "俗稱「白燈塔」，珊瑚礁岩砌成" },
-            { name: "綠島燈塔", region: "離島 - 臺東外海", lat: 22.677, lng: 121.469, location: "臺東縣綠島鄉", note: "感念美國紅十字會捐款救助船難而建" },
-            { name: "蘭嶼燈塔", region: "離島 - 臺東外海", lat: 22.062, lng: 121.512, location: "臺東縣蘭嶼鄉", note: "全臺海拔最高燈塔（燈高 216.5 公尺）" },
-            { name: "漁翁島燈塔", region: "離島 - 澎湖", lat: 23.564, lng: 119.467, location: "澎湖縣西嶼鄉", note: "全臺最古老燈塔（1778 年建），國定古蹟" },
-            { name: "目斗嶼燈塔", region: "離島 - 澎湖", lat: 23.786, lng: 119.599, location: "澎湖縣白沙鄉", note: "黑白橫紋鑄鐵塔，歷史建築" },
-            { name: "東吉嶼燈塔", region: "離島 - 澎湖", lat: 23.262, lng: 119.670, location: "澎湖縣望安鄉", note: "黑白橫紋圓形鐵塔，位於南方四島國家公園" },
-            { name: "查母嶼燈塔", region: "離島 - 澎湖", lat: 23.535, lng: 119.723, location: "澎湖縣湖西鄉", note: "八角形黑白相間磚塔，無人島燈塔" },
-            { name: "花嶼燈塔", region: "離島 - 澎湖", lat: 23.403, lng: 119.318, location: "澎湖縣望安鄉", note: "臺灣最西端燈塔，白色圓形鋼筋混凝土塔" },
-            { name: "七美嶼燈塔", region: "離島 - 澎湖", lat: 23.197, lng: 119.426, location: "澎湖縣七美鄉", note: "澎湖最南端燈塔，白色圓形混凝土塔" },
-            { name: "東引島燈塔", region: "離島 - 馬祖", lat: 26.375, lng: 120.505, location: "連江縣東引鄉", note: "國定古蹟，建於懸崖峭壁上的純白歐風建築" },
-            { name: "東莒島燈塔", region: "離島 - 馬祖", lat: 25.965, lng: 119.983, location: "連江縣莒光鄉", note: "國定古蹟，全臺第一座以花崗岩建造的燈塔" },
-            { name: "烏坵嶼燈塔", region: "離島 - 金門", lat: 24.981, lng: 119.444, location: "金門縣烏坵鄉", note: "國定古蹟，曾停燈 63 年後於 2017 年復燈" },
-            { name: "東椗島燈塔", region: "離島 - 金門", lat: 24.159, lng: 118.234, location: "金門縣金湖鎮", note: "黑色圓形磚塔，位於軍事管制區" },
-            { name: "北椗島燈塔", region: "離島 - 金門", lat: 24.404, lng: 118.455, location: "金門縣金湖鎮", note: "白色圓形磚塔，位於軍事管制區" },
-            { name: "太平島燈塔", region: "離島 - 南沙", lat: 10.377, lng: 114.364, location: "高雄市旗津區(代管)", note: "中華民國最南端燈塔（2015 年完工啟用）" },
-            { name: "野柳燈杆", region: "特色燈杆", lat: 25.213, lng: 121.696, location: "新北市萬里區", note: "造型宛如白色燭台，位於野柳地質公園內" },
-            { name: "日月潭燈杆", region: "特色燈杆", lat: 23.856, lng: 120.916, location: "南投縣魚池鄉", note: "全臺唯一不靠海的內陸助航設施，海拔達 754 公尺" },
-            { name: "三仙台燈杆", region: "特色燈杆", lat: 23.125, lng: 121.411, location: "臺東縣成功鎮", note: "佇立於三仙台島第二峰岩壁上，建於 1915 年" }
+            { name: "基隆燈塔", region: "北臺灣", lat: 25.1557, lng: 121.7416, location: "基隆市中山區", year: "1900", record: "", note: "市定古蹟，2024 年最新開放參觀" },
+            { name: "球子山燈塔", localName: "球仔山燈塔", region: "北臺灣", lat: 25.144, lng: 121.737, location: "基隆市中山區", year: "1956", record: "第一座由國人自行設計施工的燈塔", note: "塔身原為白色，後漆為迷彩，現又恢復純白" },
+            { name: "淡水港燈塔", region: "北臺灣", lat: 25.176, lng: 121.411, location: "新北市淡水區", year: "1888", record: "臺灣本島唯一位於河口的燈塔", note: "原為1796年民間建立之望高樓，後改建為現代燈塔" },
+            { name: "富貴角燈塔", region: "北臺灣", lat: 25.298, lng: 121.538, location: "新北市石門區", year: "1897", record: "臺灣本島最北的燈塔", note: "黑白相間八角塔，為方便船隻於濃霧中辨識" },
+            { name: "鼻頭角燈塔", region: "北臺灣", lat: 25.129, lng: 121.918, location: "新北市瑞芳區", year: "1897", record: "", note: "步道可眺望，塔區因落石風險未開放" },
+            { name: "三貂角燈塔", region: "北臺灣", lat: 25.007, lng: 122.001, location: "新北市貢寮區", year: "1935", record: "臺灣本島最東的燈塔", note: "被稱為「臺灣的眼睛」，是最早開放參觀的燈塔" },
+            { name: "白沙岬燈塔", region: "北臺灣", lat: 25.041, lng: 121.076, location: "桃園市觀音區", year: "1901", record: "唯一紅磚砌造的燈塔", note: "縣（市）定古蹟，曾是臺灣本島第二高的燈塔" },
+            { name: "高美燈塔", localName: "舊稱：高密", region: "中臺灣", lat: 24.312, lng: 120.549, location: "臺中市清水區", year: "1967", record: "全臺唯一紅白橫紋相間的燈塔", note: "現已停用，但仍是著名觀光地標" },
+            { name: "臺中港燈塔", region: "中臺灣", lat: 24.288, lng: 120.518, location: "臺中市梧棲區", year: "1982", record: "塔身最高的燈塔 (62.6公尺)", note: "位於港區管制區，建於遠東倉儲頂端" },
+            { name: "芳苑燈塔", localName: "王功燈塔", region: "中臺灣", lat: 23.963, lng: 120.326, location: "彰化縣芳苑鄉", year: "1983", record: "臺灣本島最年輕的燈塔", note: "黑白直條紋相間，又稱王功燈塔" },
+            { name: "國聖港燈塔", localName: "七股燈塔", region: "南臺灣", lat: 23.100, lng: 120.036, location: "臺南市七股區（頂頭額沙洲）", year: "1970", record: "臺灣本島最西的燈塔", note: "1957年原建於網仔寮沙洲，遭海潮侵蝕與颱風倒塌後，1970年移至現址重建，2022年底重新換新塔身。" },
+            { name: "安平燈塔", region: "南臺灣", lat: 22.997, lng: 120.155, location: "臺南市安平區", year: "1891", record: "", note: "緊鄰觀夕平台，純白圓形鐵塔" },
+            { name: "高雄燈塔", localName: "旗後燈塔", region: "南臺灣", lat: 22.616, lng: 120.264, location: "高雄市旗津區", year: "1883", record: "全臺唯一白色八角形磚造燈塔", note: "市定古蹟，頂部有陽臺可俯瞰高雄港" },
+            { name: "鵝鑾鼻燈塔", region: "南臺灣", lat: 21.902, lng: 120.852, location: "屏東縣恆春鎮", year: "1883", record: "光程最遠 / 本島最南 / 唯一武裝燈塔", note: "設有壕溝與槍眼，光力極強" },
+            { name: "蘇澳燈塔", region: "東臺灣", lat: 24.595, lng: 121.879, location: "宜蘭縣蘇澳鎮", year: "1927", record: "塔身最矮的燈塔 (7.9公尺)", note: "位於軍事管制區內" },
+            { name: "奇萊鼻燈塔", region: "東臺灣", lat: 24.015, lng: 121.637, location: "花蓮縣花蓮市", year: "1931", record: "唯一五角形混凝土燈塔", note: "背倚中央山脈，面向太平洋" },
+            { name: "花蓮港燈塔", region: "東臺灣", lat: 23.978, lng: 121.614, location: "花蓮縣花蓮市", year: "1931", record: "", note: "白色方形鋼架塔，位於市區公園旁" },
+            { name: "彭佳嶼燈塔", localName: "大嶼燈塔", region: "離島 - 基隆外海", lat: 25.628, lng: 122.079, location: "基隆市中正區", year: "1909", record: "", note: "市定古蹟，軍事管制區需專案申請登島。當地漁民稱之為大嶼。" },
+            { name: "基隆島燈塔", region: "離島 - 基隆外海", lat: 25.192, lng: 121.787, location: "基隆市中正區", year: "1980", record: "最早使用太陽能發電的燈塔", note: "位於基隆嶼高點，黑白直條紋八角混凝土塔" },
+            { name: "塭港堆燈塔", region: "離島 - 雲林外海", lat: 23.473, lng: 119.996, location: "雲林縣口湖鄉", year: "1914", record: "重建次數最多的燈塔 (7次)", note: "因外傘頂洲沙洲漂移，不斷面臨地基流失而重建" },
+            { name: "琉球嶼燈塔", localName: "白燈塔/白燈樓", region: "離島 - 屏東外海", lat: 22.321, lng: 120.362, location: "屏東縣琉球鄉", year: "1929", record: "", note: "由珊瑚礁岩砌成，在地台語俗稱白燈塔，老一輩亦常稱白燈樓" },
+            { name: "綠島燈塔", localName: "燈樓", region: "離島 - 臺東外海", lat: 22.677, lng: 121.469, location: "臺東縣綠島鄉", year: "1939", record: "", note: "感念美國紅十字會捐款救助船難而建，綠島人常親切稱之為「燈樓」" },
+            { name: "蘭嶼燈塔", region: "離島 - 臺東外海", lat: 22.062, lng: 121.512, location: "臺東縣蘭嶼鄉", year: "1982", record: "燈高最高的燈塔 (海拔 216.5 公尺)", note: "位於高山上，塔身雖不高但燈高極具優勢" },
+            { name: "漁翁島燈塔", localName: "西嶼燈塔", region: "離島 - 澎湖", lat: 23.564, lng: 119.467, location: "澎湖縣西嶼鄉", year: "1778", record: "歷史最悠久的燈塔", note: "全臺最古老，原為西嶼塔燈，國定古蹟" },
+            { name: "目斗嶼燈塔", localName: "北島燈塔", region: "離島 - 澎湖", lat: 23.786, lng: 119.599, location: "澎湖縣白沙鄉", year: "1902", record: "", note: "玄武岩方山台地構成，島形似木匠的「墨斗」而得名；位處澎湖北端又名北島。" },
+            { name: "東吉嶼燈塔", region: "離島 - 澎湖", lat: 23.262, lng: 119.670, location: "澎湖縣望安鄉", year: "1911", record: "", note: "黑白橫紋圓形鐵塔，位於南方四島國家公園" },
+            { name: "查母嶼燈塔", localName: "查某嶼燈塔", region: "離島 - 澎湖", lat: 23.535, lng: 119.723, location: "澎湖縣湖西鄉", year: "1913", record: "", note: "八角形黑白相間磚塔，無人島燈塔" },
+            { name: "花嶼燈塔", region: "離島 - 澎湖", lat: 23.403, lng: 119.318, location: "澎湖縣望安鄉", year: "1939", record: "國境最西的燈塔", note: "白色圓形鋼筋混凝土塔" },
+            { name: "七美嶼燈塔", localName: "南滬燈塔", region: "離島 - 澎湖", lat: 23.197, lng: 119.426, location: "澎湖縣七美鄉", year: "1939", record: "", note: "澎湖最南端燈塔，白色圓形混凝土塔" },
+            { name: "東引島燈塔", region: "離島 - 馬祖", lat: 26.375, lng: 120.505, location: "連江縣東引鄉", year: "1904", record: "國境最北的燈塔", note: "國定古蹟，建於懸崖峭壁上的純白歐風建築" },
+            { name: "東莒島燈塔", region: "離島 - 馬祖", lat: 25.965, lng: 119.983, location: "連江縣莒光鄉", year: "1872", record: "第一座以花崗岩建造的燈塔", note: "國定古蹟，前方有一堵防風用的白牆" },
+            { name: "烏坵嶼燈塔", region: "離島 - 金門", lat: 24.981, lng: 119.444, location: "金門縣烏坵鄉", year: "1874", record: "", note: "國定古蹟，曾因戰地任務停燈數十年，後於2017年復燈" },
+            { name: "東椗島燈塔", region: "離島 - 金門", lat: 24.159, lng: 118.234, location: "金門縣金湖鎮", year: "1871", record: "", note: "黑色圓形磚塔，位於軍事管制區" },
+            { name: "北椗島燈塔", region: "離島 - 金門", lat: 24.404, lng: 118.455, location: "金門縣金湖鎮", year: "1882", record: "", note: "白色圓形磚塔，位於軍事管制區" },
+            { name: "太平島燈塔", region: "離島 - 南沙", lat: 10.377, lng: 114.364, location: "高雄市旗津區(代管)", year: "2015", record: "國境最南的燈塔 (我國管理最南)", note: "確保南海航行安全而建之現代化燈塔" },
+            { name: "野柳燈杆", localName: "野柳燈柱", region: "特色燈杆", lat: 25.213, lng: 121.696, location: "新北市萬里區", year: "1967", record: "", note: "造型宛如白色燭台，位於野柳地質公園內" },
+            { name: "日月潭燈杆", localName: "土亭仔燈杆/燈柱", region: "特色燈杆", lat: 23.856, lng: 120.916, location: "南投縣魚池鄉", year: "1987", record: "全臺唯一不靠海的內陸助航設施", note: "海拔達 754 公尺" },
+            { name: "三仙台燈杆", localName: "三仙台燈柱", region: "特色燈杆", lat: 23.125, lng: 121.411, location: "臺東縣成功鎮", year: "1915", record: "", note: "佇立於三仙台島第二峰岩壁上" }
         ];
 
-        const customImageNames = {};
         const githubBaseUrl = "https://raw.githubusercontent.com/tsong-su/iuhi/main/Taiwan_tingthah_assets/";
 
         let map;
         let markers = {}; 
-        let taiwanBounds = []; // 新增：用來儲存臺灣本島及主要離島的範圍
+        let taiwanBounds = []; 
+        let currentAudio = null;
 
         function initMap() {
             map = L.map('map');
@@ -197,13 +189,13 @@
                 shadowSize: [41, 41]
             });
 
-            taiwanBounds = []; // 初始化範圍
+            taiwanBounds = [];
 
             lighthouses.forEach((lh, index) => {
                 const marker = L.marker([lh.lat, lh.lng], { icon: defaultIcon }).addTo(map);
                 
                 if (lh.name !== "太平島燈塔") {
-                    taiwanBounds.push([lh.lat, lh.lng]); // 將除了太平島以外的座標存起來
+                    taiwanBounds.push([lh.lat, lh.lng]); 
                 }
                 
                 marker.bindTooltip(lh.name, {
@@ -214,12 +206,12 @@
                 });
 
                 let numStr = String(index + 1).padStart(2, '0');
-                let autoFileName = `${numStr}.${lh.name}.jpg`; 
-                let fileName = customImageNames[lh.name] || autoFileName; 
-                let encodedFileName = encodeURIComponent(fileName);
-                let imgSrc = githubBaseUrl + encodedFileName;
+                
+                // 圖檔與音檔：嚴格對應主檔名（例如：10.芳苑燈塔.jpg 與 10.芳苑燈塔.mp3）
+                let fileBaseName = `${numStr}.${lh.name}`;
+                let imgSrc = githubBaseUrl + encodeURIComponent(fileBaseName + ".jpg");
+                let audioSrc = githubBaseUrl + encodeURIComponent(fileBaseName + ".mp3");
 
-                // 在此加入了地標圖示與「縣市名稱 (lh.location)」的顯示區塊
                 const popupContent = `
                     <div class="bg-white rounded-lg flex flex-col items-center">
                         <div class="w-full flex justify-center bg-gray-100 p-2 rounded-t-lg relative">
@@ -229,22 +221,51 @@
                                  alt="${lh.name}郵票">
                         </div>
                         <div class="w-full p-4 text-center">
-                            <h3 class="text-xl font-bold text-gray-800 tracking-wider font-serif">${lh.name}</h3>
-                            <div class="flex justify-center items-center mt-2 mb-2">
+                            
+                            <div class="flex flex-wrap items-center justify-center mb-1 gap-1">
+                                <h3 class="text-xl font-bold text-gray-800 tracking-wider font-serif">${lh.name}</h3>
+                                ${lh.localName ? `<span class="text-sm text-gray-500 font-medium tracking-wide">(${lh.localName})</span>` : ''}
+                                <button onclick="playTaiyuAudio('${audioSrc}')" 
+                                        class="bg-green-100 hover:bg-green-200 text-green-700 p-1.5 rounded-full shadow-sm transition-colors ml-1" 
+                                        title="聆聽臺語發音">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="flex justify-center items-center mt-1 mb-3">
                                 <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-800 text-[11px] rounded-full font-bold tracking-wider">${lh.region}</span>
                             </div>
                             
-                            <!-- 新增：縣市位置顯示 -->
-                            <div class="flex items-center justify-center text-[13px] text-gray-700 font-medium mb-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                </svg>
-                                ${lh.location}
+                            <div class="flex flex-col space-y-1.5 text-[13px] text-gray-700 font-medium mb-3 w-full px-1 text-left">
+                                <div class="flex items-start">
+                                    <span class="w-[65px] text-gray-500 flex-shrink-0">📍 位置：</span>
+                                    <span>${lh.location}</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <span class="w-[65px] text-gray-500 flex-shrink-0">📅 啟用：</span>
+                                    <span>西元 ${lh.year} 年</span>
+                                </div>
+                                ${lh.record ? `
+                                <div class="flex items-start text-orange-700 font-bold bg-orange-50 p-1 rounded-sm">
+                                    <span class="w-[61px] text-orange-600 flex-shrink-0">🏆 之最：</span>
+                                    <span>${lh.record}</span>
+                                </div>
+                                ` : ''}
                             </div>
 
                             <p class="text-[13px] text-gray-600 text-left leading-relaxed border-t border-gray-200 pt-3">
                                 ${lh.note}
                             </p>
+                            
+                            <a href="https://zh.wikipedia.org/zh-tw/${encodeURIComponent(lh.name)}" target="_blank" rel="noopener noreferrer" 
+                               class="mt-3 flex items-center justify-center w-full bg-slate-50 hover:bg-blue-50 text-blue-700 py-1.5 rounded-md border border-slate-200 transition-colors text-[12px] font-bold shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                </svg>
+                                前往維基百科看實景照
+                            </a>
                         </div>
                     </div>
                 `;
@@ -253,7 +274,25 @@
                 markers[index] = marker; 
             });
 
-            map.fitBounds(taiwanBounds, { padding: [50, 50] }); // 初始視角
+            map.fitBounds(taiwanBounds, { padding: [50, 50] }); 
+            
+            map.on('popupclose', function() {
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+            });
+        }
+
+        function playTaiyuAudio(audioUrl) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            currentAudio = new Audio(audioUrl);
+            currentAudio.play().catch(error => {
+                console.log("尚無音檔或無法播放:", error);
+                alert("音檔讀取中或尚未上傳完成，請稍後再試！");
+            });
         }
 
         function renderList() {
@@ -271,9 +310,10 @@
                 if (grouped[region]) {
                     html += `<div class="bg-blue-50 text-blue-800 font-bold px-4 py-2 sticky top-0 shadow-sm text-sm border-y border-blue-100">${region} (${grouped[region].length})</div>`;
                     grouped[region].forEach(item => {
+                        let displayName = item.localName ? `${item.name} <span class="text-xs text-gray-500 font-normal">(${item.localName})</span>` : item.name;
                         html += `
                             <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors" onclick="flyToLighthouse(${item.index})">
-                                <div class="font-semibold text-gray-800">${item.name}</div>
+                                <div class="font-semibold text-gray-800">${displayName}</div>
                                 <div class="text-xs text-gray-500 mt-1">${item.location}</div>
                             </div>
                         `;
@@ -298,7 +338,6 @@
             if(index !== -1) flyToLighthouse(index);
         }
 
-        // 新增：飛回臺灣本島的動畫函數
         function flyToTaiwan() {
             if (taiwanBounds.length > 0) {
                 map.flyToBounds(taiwanBounds, { padding: [50, 50], duration: 1.5 });
